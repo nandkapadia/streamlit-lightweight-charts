@@ -1,6 +1,14 @@
 """Charts module for streamlit-lightweight-charts."""
 
 from .chart import Chart, MultiPaneChart
+from .specialized_charts import (
+    CandlestickChart,
+    LineChart,
+    AreaChart,
+    BarChart,
+    HistogramChart,
+    BaselineChart
+)
 from .options import (
     ChartOptions,
     LayoutOptions,
@@ -33,6 +41,13 @@ __all__ = [
     # Charts
     'Chart',
     'MultiPaneChart',
+    # Specialized Charts
+    'CandlestickChart',
+    'LineChart',
+    'AreaChart',
+    'BarChart',
+    'HistogramChart',
+    'BaselineChart',
     # Options
     'ChartOptions',
     'LayoutOptions',
