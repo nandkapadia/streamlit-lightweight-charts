@@ -1,14 +1,12 @@
 """Charts module for streamlit-lightweight-charts."""
 
 from .chart import Chart, MultiPaneChart
-from .specialized_charts import (
-    CandlestickChart,
-    LineChart,
-    AreaChart,
-    BarChart,
-    HistogramChart,
-    BaselineChart
-)
+from .candlestick_chart import CandlestickChart
+from .line_chart import LineChart
+from .area_chart import AreaChart
+from .bar_chart import BarChart
+from .histogram_chart import HistogramChart
+from .baseline_chart import BaselineChart
 from .price_volume_chart import PriceVolumeChart
 from .comparison_chart import ComparisonChart
 from .options import (

@@ -38,6 +38,7 @@ class Trade:
         trade_type: Type of trade (long or short)
         id: Optional trade identifier
         notes: Optional trade notes
+        text: Optional tooltip text for the trade
     """
     entry_price: float
     entry_time: Union[pd.Timestamp, datetime, str, int, float]
@@ -47,6 +48,7 @@ class Trade:
     trade_type: Union[TradeType, str] = TradeType.LONG
     id: Optional[str] = None
     notes: Optional[str] = None
+    text: Optional[str] = None
     
     def __post_init__(self):
         """Validate and process trade data."""
@@ -62,6 +64,34 @@ class Trade:
         # Convert trade type to enum
         if isinstance(self.trade_type, str):
             self.trade_type = TradeType(self.trade_type.lower())
+        
+        # Generate tooltip text if not provided
+        if self.text is None:
+            self.text = self.generate_tooltip_text()
+    
+    def generate_tooltip_text(self) -> str:
+        """Generate tooltip text for the trade."""
+        pnl = self.pnl
+        pnl_pct = self.pnl_percentage
+        win_loss = "Win" if pnl > 0 else "Loss"
+        
+        # Format dates
+        entry_date = from_utc_timestamp(self._entry_timestamp)
+        exit_date = from_utc_timestamp(self._exit_timestamp)
+        
+        tooltip_parts = [
+            f"Entry: {self.entry_price:.2f}",
+            f"Exit: {self.exit_price:.2f}",
+            f"Qty: {self.quantity:.2f}",
+            f"P&L: {pnl:.2f} ({pnl_pct:.1f}%)",
+            f"{win_loss}"
+        ]
+        
+        # Add custom notes if provided
+        if self.notes:
+            tooltip_parts.append(f"Notes: {self.notes}")
+        
+        return "\n".join(tooltip_parts)
     
     @property
     def entry_timestamp(self) -> Union[int, str]:
@@ -161,6 +191,7 @@ class Trade:
             'trade_type': self.trade_type.value,
             'id': self.id,
             'notes': self.notes,
+            'text': self.text,
             'pnl': self.pnl,
             'pnl_percentage': self.pnl_percentage,
             'is_profitable': self.is_profitable

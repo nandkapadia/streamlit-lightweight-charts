@@ -6,16 +6,31 @@ from .enums import (
     LineStyle,
     LineType,
     CrosshairMode,
-    LastPriceAnimationMode,
     PriceScaleMode,
-    HorzAlign,
-    VertAlign
+    LastPriceAnimationMode
 )
 from .colors import (
-    Color,
+    Background,
     SolidColor,
-    VerticalGradientColor,
-    Background
+    VerticalGradientColor
+)
+from .protocols import (
+    ChartDataProtocol,
+    TimeSeriesDataProtocol,
+    SeriesOptionsProtocol,
+    ChartOptionsProtocol,
+    SeriesProtocol,
+    ChartProtocol,
+    MarkerProtocol,
+    TradeProtocol,
+    AnnotationProtocol,
+    TooltipProtocol,
+    VisualizationOptionsProtocol,
+    ChartData,
+    SeriesOptions,
+    ChartOptions,
+    TimeValue,
+    NumericValue
 )
 
 __all__ = [
@@ -25,13 +40,28 @@ __all__ = [
     'LineStyle',
     'LineType',
     'CrosshairMode',
-    'LastPriceAnimationMode',
     'PriceScaleMode',
-    'HorzAlign',
-    'VertAlign',
+    'LastPriceAnimationMode',
     # Colors
-    'Color',
+    'Background',
     'SolidColor',
     'VerticalGradientColor',
-    'Background'
+    # Protocols
+    'ChartDataProtocol',
+    'TimeSeriesDataProtocol',
+    'SeriesOptionsProtocol',
+    'ChartOptionsProtocol',
+    'SeriesProtocol',
+    'ChartProtocol',
+    'MarkerProtocol',
+    'TradeProtocol',
+    'AnnotationProtocol',
+    'TooltipProtocol',
+    'VisualizationOptionsProtocol',
+    # Type aliases
+    'ChartData',
+    'SeriesOptions',
+    'ChartOptions',
+    'TimeValue',
+    'NumericValue'
 ]
