@@ -65,9 +65,7 @@ chart.render(key='price_volume')
 ```
 
 #### Other Composite Charts
-- **PriceWithMAChart**: Automatic moving average calculations
 - **ComparisonChart**: Compare multiple instruments with normalization
-- **BollingerBandsChart**: Price with Bollinger Bands
 
 ### Trade Visualization - New Feature!
 

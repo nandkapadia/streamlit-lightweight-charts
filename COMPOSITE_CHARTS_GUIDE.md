@@ -47,34 +47,7 @@ chart.add_price_indicator(
 - Easy indicator overlay with `add_price_indicator()`
 - Customizable heights for each pane
 
-### 2. PriceWithMAChart
-
-Price chart with automatic moving average calculations.
-
-```python
-from streamlit_lightweight_charts import PriceWithMAChart
-
-# Create chart with multiple MAs
-chart = PriceWithMAChart(
-    df=stock_data,
-    ma_periods=[10, 20, 50, 200],  # Calculate these MAs
-    price_type='candlestick',      # or 'line'
-    ma_colors=['#2196F3', '#FF9800', '#4CAF50', '#F44336']
-)
-chart.render()
-
-# Access individual series
-chart.price_series  # The main price series
-chart.ma_series     # List of MA series
-```
-
-**Features:**
-- Automatic MA calculation from DataFrame
-- Customizable periods and colors
-- Handles NaN values appropriately
-- Supports both candlestick and line price display
-
-### 3. ComparisonChart
+### 2. ComparisonChart
 
 Compare multiple instruments with automatic normalization.
 
@@ -103,30 +76,6 @@ print(chart.normalized)    # True
 - Multiple instrument comparison
 - Customizable colors
 - Percentage scale display when normalized
-
-### 4. BollingerBandsChart
-
-Price with Bollinger Bands for volatility analysis.
-
-```python
-from streamlit_lightweight_charts import BollingerBandsChart
-
-# Create Bollinger Bands chart
-chart = BollingerBandsChart(
-    df=stock_data,
-    period=20,           # MA period
-    std_dev=2.0,        # Standard deviations
-    price_type='line',  # or 'candlestick'
-    band_color='#9E9E9E'
-)
-chart.render()
-```
-
-**Features:**
-- Automatic band calculation
-- Customizable period and standard deviation
-- Support for both line and candlestick price display
-- Clean visualization with proper styling
 
 ## Creating Custom Composite Charts
 
@@ -177,55 +126,60 @@ class RSIWithPriceChart(MultiPaneChart):
         return 100 - (100 / (1 + rs))
 ```
 
-### Example: MACD Chart
+### Example: Moving Average Chart
 
 ```python
-class MACDChart(MultiPaneChart):
-    def __init__(
-        self,
-        df: pd.DataFrame,
-        fast_period: int = 12,
-        slow_period: int = 26,
-        signal_period: int = 9
-    ):
-        # Calculate MACD
-        exp1 = df['close'].ewm(span=fast_period, adjust=False).mean()
-        exp2 = df['close'].ewm(span=slow_period, adjust=False).mean()
-        df['MACD'] = exp1 - exp2
-        df['Signal'] = df['MACD'].ewm(span=signal_period, adjust=False).mean()
-        df['Histogram'] = df['MACD'] - df['Signal']
+class PriceWithMAChart(Chart):
+    def __init__(self, df: pd.DataFrame, ma_periods: List[int] = [20, 50, 200]):
+        # Calculate moving averages
+        for period in ma_periods:
+            df[f'MA{period}'] = df['close'].rolling(window=period).mean()
         
-        # Create price chart
-        price_chart = CandlestickChart(
-            data=df_to_ohlc_data(df),
-            options=ChartOptions(height=400)
-        )
+        # Create price series
+        price_data = df_to_ohlc_data(df)
+        price_series = CandlestickSeries(data=price_data)
+        series_list = [price_series]
         
-        # Create MACD chart
-        macd_chart = Chart(options=ChartOptions(height=200))
+        # Add MA series
+        colors = ['#2196F3', '#FF9800', '#4CAF50', '#F44336', '#9C27B0']
+        for i, period in enumerate(ma_periods):
+            ma_data = df_to_line_data(df.dropna(), value_column=f'MA{period}')
+            ma_series = LineSeries(
+                data=ma_data,
+                options=LineSeriesOptions(color=colors[i % len(colors)])
+            )
+            series_list.append(ma_series)
         
-        # Add MACD line
-        macd_data = df_to_line_data(df.dropna(), value_column='MACD')
-        macd_chart.add_series(LineSeries(
-            data=macd_data,
-            options=LineSeriesOptions(color='#2196F3')
-        ))
+        super().__init__(series=series_list)
+```
+
+### Example: Bollinger Bands Chart
+
+```python
+class BollingerBandsChart(Chart):
+    def __init__(self, df: pd.DataFrame, period: int = 20, std_dev: float = 2.0):
+        # Calculate Bollinger Bands
+        df['BB_MA'] = df['close'].rolling(window=period).mean()
+        df['BB_STD'] = df['close'].rolling(window=period).std()
+        df['BB_Upper'] = df['BB_MA'] + (df['BB_STD'] * std_dev)
+        df['BB_Lower'] = df['BB_MA'] - (df['BB_STD'] * std_dev)
         
-        # Add Signal line
-        signal_data = df_to_line_data(df.dropna(), value_column='Signal')
-        macd_chart.add_series(LineSeries(
-            data=signal_data,
-            options=LineSeriesOptions(color='#FF6B6B')
-        ))
+        df_clean = df.dropna()
         
-        # Add Histogram
-        hist_data = df_to_histogram_data(df.dropna(), value_column='Histogram')
-        macd_chart.add_series(HistogramSeries(
-            data=hist_data,
-            options=HistogramSeriesOptions()
-        ))
+        # Create series
+        price_data = df_to_line_data(df_clean, value_column='close')
+        ma_data = df_to_line_data(df_clean, value_column='BB_MA')
+        upper_data = df_to_line_data(df_clean, value_column='BB_Upper')
+        lower_data = df_to_line_data(df_clean, value_column='BB_Lower')
         
-        super().__init__([price_chart, macd_chart])
+        series_list = [
+            LineSeries(data=price_data, options=LineSeriesOptions(color='#2196F3')),
+            LineSeries(data=ma_data, options=LineSeriesOptions(color='#9E9E9E')),
+            LineSeries(data=upper_data, options=LineSeriesOptions(color='#9E9E9E')),
+            LineSeries(data=lower_data, options=LineSeriesOptions(color='#9E9E9E'))
+        ]
+        
+        super().__init__(series=series_list)
 ```
 
 ## Best Practices
@@ -268,7 +222,7 @@ dark_theme = ChartOptions(
 
 # Apply to all charts
 chart1 = PriceVolumeChart(df=data1, price_options=dark_theme)
-chart2 = BollingerBandsChart(df=data2, chart_options=dark_theme)
+chart2 = ComparisonChart(dataframes=data2, chart_options=dark_theme)
 ```
 
 ### 4. Interactive Features
@@ -311,13 +265,6 @@ with col2:
             ('QQQ', qqq_data)
         ]
     ).render(key='comparison')
-
-# Technical analysis section
-st.subheader("Technical Analysis")
-PriceWithMAChart(
-    df=apple_data,
-    ma_periods=[20, 50, 200]
-).render(key='technical')
 ```
 
 ### Real-time Updates
@@ -365,7 +312,7 @@ class EnhancedPriceVolumeChart(PriceVolumeChart):
 
 ### Custom Indicators
 ```python
-def create_pivot_points_chart(df: pd.DataFrame) -> MultiPaneChart:
+def create_pivot_points_chart(df: pd.DataFrame) -> Chart:
     """Create chart with pivot points."""
     # Calculate pivot points
     df['Pivot'] = (df['high'] + df['low'] + df['close']) / 3
@@ -373,7 +320,8 @@ def create_pivot_points_chart(df: pd.DataFrame) -> MultiPaneChart:
     df['S1'] = 2 * df['Pivot'] - df['high']
     
     # Create base chart
-    chart = PriceWithMAChart(df=df, ma_periods=[])
+    price_data = df_to_ohlc_data(df)
+    chart = CandlestickChart(data=price_data)
     
     # Add pivot lines
     for col, color in [('Pivot', '#FFD700'), ('R1', '#FF0000'), ('S1', '#00FF00')]:
@@ -412,3 +360,12 @@ def debug_chart_data(df: pd.DataFrame):
     print(f"Missing values: {df.isnull().sum()}")
     print(f"Date range: {df.index.min()} to {df.index.max()}")
 ```
+
+## Summary
+
+Composite charts provide a clean way to create common chart combinations. The library focuses on the most essential patterns:
+
+- **PriceVolumeChart**: The fundamental financial chart
+- **ComparisonChart**: Multi-instrument analysis
+
+For more specific needs like moving averages or Bollinger Bands, you can easily create custom composite charts using the provided building blocks. This approach keeps the core library focused while maintaining full extensibility.

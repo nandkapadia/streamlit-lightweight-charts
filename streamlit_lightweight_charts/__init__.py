@@ -4,7 +4,7 @@ from .charts import (
     Chart, MultiPaneChart,
     CandlestickChart, LineChart, AreaChart,
     BarChart, HistogramChart, BaselineChart,
-    PriceVolumeChart, PriceWithMAChart, ComparisonChart, BollingerBandsChart,
+    PriceVolumeChart, ComparisonChart,
     ChartOptions, LayoutOptions, GridOptions, CrosshairOptions,
     PriceScaleOptions, TimeScaleOptions, WatermarkOptions,
     AreaSeries, LineSeries, BarSeries, CandlestickSeries,
@@ -44,9 +44,7 @@ __all__ = [
     'BaselineChart',
     # Composite Charts
     'PriceVolumeChart',
-    'PriceWithMAChart',
     'ComparisonChart',
-    'BollingerBandsChart',
     # Options
     'ChartOptions',
     'LayoutOptions',

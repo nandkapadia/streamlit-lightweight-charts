@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from streamlit_lightweight_charts import (
-    PriceVolumeChart, PriceWithMAChart, ComparisonChart, BollingerBandsChart,
+    PriceVolumeChart, ComparisonChart,
     ChartOptions, LayoutOptions, Background,
     CandlestickSeriesOptions, LineSeriesOptions
 )
@@ -81,30 +81,8 @@ chart = PriceVolumeChart(
 chart.render()
     """)
     
-    # Example 2: Price with Moving Averages
-    st.header("2. Price with Moving Averages")
-    st.markdown("Price chart with multiple moving averages for technical analysis.")
-    
-    ma_chart = PriceWithMAChart(
-        df=stock_data,
-        ma_periods=[10, 20, 50],
-        price_type='candlestick',
-        chart_options=chart_options,
-        ma_colors=['#2196F3', '#FF9800', '#4CAF50']
-    )
-    ma_chart.render(key='ma_chart')
-    
-    st.code("""
-# Automatically calculates and displays moving averages
-chart = PriceWithMAChart(
-    df=stock_data,
-    ma_periods=[10, 20, 50],
-    ma_colors=['#2196F3', '#FF9800', '#4CAF50']
-)
-    """)
-    
-    # Example 3: Comparison Chart
-    st.header("3. Comparison Chart")
+    # Example 2: Comparison Chart
+    st.header("2. Comparison Chart")
     st.markdown("Compare multiple instruments with automatic normalization.")
     
     # Generate data for multiple stocks
@@ -133,31 +111,8 @@ chart = ComparisonChart(
 )
     """)
     
-    # Example 4: Bollinger Bands
-    st.header("4. Bollinger Bands Chart")
-    st.markdown("Price with Bollinger Bands for volatility analysis.")
-    
-    bb_chart = BollingerBandsChart(
-        df=stock_data,
-        period=20,
-        std_dev=2.0,
-        price_type='line',
-        chart_options=chart_options
-    )
-    bb_chart.render(key='bollinger')
-    
-    st.code("""
-# Bollinger Bands with customizable parameters
-chart = BollingerBandsChart(
-    df=stock_data,
-    period=20,
-    std_dev=2.0,
-    price_type='line'  # or 'candlestick'
-)
-    """)
-    
-    # Example 5: Advanced Price-Volume with Indicators
-    st.header("5. Advanced Price-Volume Chart")
+    # Example 3: Advanced Price-Volume with Indicators
+    st.header("3. Advanced Price-Volume Chart")
     st.markdown("Price-Volume chart with added indicators.")
     
     # Calculate additional indicators
@@ -199,8 +154,8 @@ chart.add_price_indicator(
 )
     """)
     
-    # Example 6: Different Price Types
-    st.header("6. Different Price Display Types")
+    # Example 4: Different Price Types
+    st.header("4. Different Price Display Types")
     
     col1, col2 = st.columns(2)
     
@@ -235,9 +190,7 @@ chart.add_price_indicator(
     
     ### 📊 Common Use Cases
     - **PriceVolumeChart**: Standard financial chart
-    - **PriceWithMAChart**: Technical analysis
     - **ComparisonChart**: Multi-instrument analysis
-    - **BollingerBandsChart**: Volatility analysis
     
     ### 🎨 Customizable
     - All options from base charts are available
