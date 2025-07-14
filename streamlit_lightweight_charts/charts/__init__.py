@@ -9,6 +9,12 @@ from .specialized_charts import (
     HistogramChart,
     BaselineChart
 )
+from .composite_charts import (
+    PriceVolumeChart,
+    PriceWithMAChart,
+    ComparisonChart,
+    BollingerBandsChart
+)
 from .options import (
     ChartOptions,
     LayoutOptions,
@@ -48,6 +54,11 @@ __all__ = [
     'BarChart',
     'HistogramChart',
     'BaselineChart',
+    # Composite Charts
+    'PriceVolumeChart',
+    'PriceWithMAChart',
+    'ComparisonChart',
+    'BollingerBandsChart',
     # Options
     'ChartOptions',
     'LayoutOptions',

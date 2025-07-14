@@ -4,10 +4,13 @@ from .charts import (
     Chart, MultiPaneChart,
     CandlestickChart, LineChart, AreaChart,
     BarChart, HistogramChart, BaselineChart,
+    PriceVolumeChart, PriceWithMAChart, ComparisonChart, BollingerBandsChart,
     ChartOptions, LayoutOptions, GridOptions, CrosshairOptions,
     PriceScaleOptions, TimeScaleOptions, WatermarkOptions,
     AreaSeries, LineSeries, BarSeries, CandlestickSeries,
-    HistogramSeries, BaselineSeries
+    HistogramSeries, BaselineSeries,
+    AreaSeriesOptions, LineSeriesOptions, BarSeriesOptions,
+    CandlestickSeriesOptions, HistogramSeriesOptions, BaselineSeriesOptions
 )
 from .data import (
     SingleValueData, OhlcData, HistogramData, BaselineData,
@@ -38,6 +41,11 @@ __all__ = [
     'BarChart',
     'HistogramChart',
     'BaselineChart',
+    # Composite Charts
+    'PriceVolumeChart',
+    'PriceWithMAChart',
+    'ComparisonChart',
+    'BollingerBandsChart',
     # Options
     'ChartOptions',
     'LayoutOptions',
@@ -53,6 +61,13 @@ __all__ = [
     'CandlestickSeries',
     'HistogramSeries',
     'BaselineSeries',
+    # Series Options
+    'AreaSeriesOptions',
+    'LineSeriesOptions',
+    'BarSeriesOptions',
+    'CandlestickSeriesOptions',
+    'HistogramSeriesOptions',
+    'BaselineSeriesOptions',
     # Data
     'SingleValueData',
     'OhlcData',

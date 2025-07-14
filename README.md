@@ -11,13 +11,84 @@ The Lightweight Charts library is the best choice to display financial data as a
 ### Versions
 - Version 0.7.19 - FIX: React build was not been commited
 - Version 0.7.20 - Example loading from CSV
+- Version 0.8.0 - OOP API with composite charts
 
 ## How to install:
 ```
 python -m pip install streamlit-lightweight-charts
 ```
 
-## How to use:
+## New in Version 0.8.0: Object-Oriented API
+
+The library now provides a clean, type-safe object-oriented API alongside the original dictionary-based approach.
+
+### Quick Start with OOP API
+
+```python
+from streamlit_lightweight_charts import Chart, CandlestickSeries
+from streamlit_lightweight_charts.data import OhlcData
+import pandas as pd
+
+# Create data
+data = [
+    OhlcData(time=pd.Timestamp('2024-01-01'), open=100, high=105, low=98, close=102),
+    OhlcData(time=pd.Timestamp('2024-01-02'), open=102, high=108, low=101, close=106),
+    # ... more data
+]
+
+# Create and render chart
+chart = Chart(series=CandlestickSeries(data=data))
+chart.render(key='candlestick_chart')
+```
+
+### Composite Charts - New Feature!
+
+Pre-built chart combinations for common financial visualizations:
+
+#### PriceVolumeChart
+The most common financial chart with price and volume:
+```python
+from streamlit_lightweight_charts import PriceVolumeChart
+import pandas as pd
+
+# Load your DataFrame with OHLC and volume data
+df = pd.read_csv('stock_data.csv', index_col='date', parse_dates=True)
+
+# Create price-volume chart with one line
+chart = PriceVolumeChart(
+    df=df,
+    price_type='candlestick',  # or 'line', 'area', 'bar'
+    price_height=400,
+    volume_height=100
+)
+chart.render(key='price_volume')
+```
+
+#### Other Composite Charts
+- **PriceWithMAChart**: Automatic moving average calculations
+- **ComparisonChart**: Compare multiple instruments with normalization
+- **BollingerBandsChart**: Price with Bollinger Bands
+
+### Benefits of the OOP API
+- **Type Safety**: Full type hints and IDE autocompletion
+- **Cleaner Code**: No more nested dictionaries
+- **Data Validation**: Automatic validation of chart data
+- **Pandas Integration**: Seamless DataFrame support with timezone handling
+- **Extensible**: Easy to create custom chart types
+
+### Documentation
+- [TIME_HANDLING_GUIDE.md](TIME_HANDLING_GUIDE.md) - Advanced timezone and datetime handling
+- [SPECIALIZED_CHARTS_GUIDE.md](SPECIALIZED_CHARTS_GUIDE.md) - Using specialized chart classes
+- [COMPOSITE_CHARTS_GUIDE.md](COMPOSITE_CHARTS_GUIDE.md) - Pre-built chart combinations
+
+### Migration from Dictionary API
+The original dictionary-based API is still fully supported. The OOP API is an optional enhancement for better developer experience.
+
+---
+
+## Original Dictionary-Based API
+
+### How to use:
 ```
 from streamlit_lightweight_charts import renderLightweightCharts
 
