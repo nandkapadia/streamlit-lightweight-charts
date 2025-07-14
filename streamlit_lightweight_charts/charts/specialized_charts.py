@@ -1,81 +1,176 @@
-"""Specialized chart classes for different chart types."""
+"""Specialized chart classes for specific data types."""
 
 from typing import List, Optional, Union
 from .chart import Chart
-from .options import ChartOptions
 from .series import (
-    LineSeries, AreaSeries, BarSeries, CandlestickSeries,
-    HistogramSeries, BaselineSeries,
-    LineSeriesOptions, AreaSeriesOptions, BarSeriesOptions,
-    CandlestickSeriesOptions, HistogramSeriesOptions, BaselineSeriesOptions
+    CandlestickSeries, LineSeries, AreaSeries,
+    BarSeries, HistogramSeries, BaselineSeries,
+    CandlestickSeriesOptions, LineSeriesOptions, AreaSeriesOptions,
+    BarSeriesOptions, HistogramSeriesOptions, BaselineSeriesOptions
 )
+from .options import ChartOptions
 from ..data import (
-    SingleValueData, OhlcData, HistogramData, BaselineData, Marker
+    OhlcData, SingleValueData, HistogramData, BaselineData,
+    Marker, Trade, TradeVisualizationOptions
 )
 
 
 class CandlestickChart(Chart):
-    """Specialized chart for candlestick data with OHLC validation."""
+    """
+    Specialized chart for candlestick data.
+    
+    Validates that data is OHLC format and provides candlestick-specific methods.
+    """
     
     def __init__(
         self,
         data: List[OhlcData],
         options: Optional[ChartOptions] = None,
         series_options: Optional[CandlestickSeriesOptions] = None,
-        markers: Optional[List[Marker]] = None
+        markers: Optional[List[Marker]] = None,
+        trades: Optional[List[Trade]] = None,
+        trade_visualization_options: Optional[TradeVisualizationOptions] = None
     ):
         """
-        Initialize a candlestick chart.
+        Initialize candlestick chart.
         
         Args:
             data: List of OHLC data points
-            options: Chart configuration options
-            series_options: Candlestick series specific options
+            options: Chart options
+            series_options: Candlestick series options
             markers: Optional list of markers
-            
-        Raises:
-            TypeError: If data is not List[OhlcData]
-            ValueError: If data is empty
+            trades: Optional list of trades to visualize
+            trade_visualization_options: Options for trade visualization
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of OhlcData")
+        # Validate data type
+        if not all(isinstance(d, OhlcData) for d in data):
+            raise TypeError(
+                "CandlestickChart requires List[OhlcData]. "
+                "Use df_to_ohlc_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, OhlcData) for item in data):
-            raise TypeError("All data items must be OhlcData instances")
-        
-        # Create candlestick series
+        # Create candlestick series with trades if provided
         series = CandlestickSeries(
             data=data,
             options=series_options or CandlestickSeriesOptions(),
-            markers=markers
+            markers=markers,
+            trades=trades,
+            trade_visualization_options=trade_visualization_options
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series and trades
+        self.candlestick_series = series
+        self._trades = trades
+        self._trade_options = trade_visualization_options
     
-    def update_data(self, data: List[OhlcData]) -> 'CandlestickChart':
+    def add_trades(
+        self,
+        trades: List[Trade],
+        visualization_options: Optional[TradeVisualizationOptions] = None
+    ) -> 'CandlestickChart':
         """
-        Update chart data with validation.
+        Add trades to the chart.
         
         Args:
-            data: New OHLC data
+            trades: List of trades to add
+            visualization_options: Options for visualizing trades
             
         Returns:
             Self for method chaining
         """
-        if not all(isinstance(item, OhlcData) for item in data):
-            raise TypeError("All data items must be OhlcData instances")
+        if self._trades is None:
+            self._trades = []
+        self._trades.extend(trades)
         
-        self.series[0].data = data
+        # Update visualization options if provided
+        if visualization_options is not None:
+            self._trade_options = visualization_options
+        
+        # Update the series with new trades
+        self.candlestick_series.trades = self._trades
+        self.candlestick_series.trade_visualization_options = self._trade_options
+        
+        return self
+    
+    def add_trade(
+        self,
+        trade: Trade,
+        visualization_options: Optional[TradeVisualizationOptions] = None
+    ) -> 'CandlestickChart':
+        """
+        Add a single trade to the chart.
+        
+        Args:
+            trade: Trade to add
+            visualization_options: Options for visualizing trades
+            
+        Returns:
+            Self for method chaining
+        """
+        return self.add_trades([trade], visualization_options)
+    
+    def clear_trades(self) -> 'CandlestickChart':
+        """
+        Clear all trades from the chart.
+        
+        Returns:
+            Self for method chaining
+        """
+        self._trades = []
+        self.candlestick_series.trades = []
+        return self
+    
+    def set_trade_visualization(
+        self,
+        options: TradeVisualizationOptions
+    ) -> 'CandlestickChart':
+        """
+        Set trade visualization options.
+        
+        Args:
+            options: Trade visualization options
+            
+        Returns:
+            Self for method chaining
+        """
+        self._trade_options = options
+        self.candlestick_series.trade_visualization_options = options
+        return self
+    
+    def add_indicator(
+        self,
+        data: List[SingleValueData],
+        options: Optional[LineSeriesOptions] = None,
+        markers: Optional[List[Marker]] = None
+    ) -> 'CandlestickChart':
+        """
+        Add a technical indicator as a line series.
+        
+        Args:
+            data: Indicator data points
+            options: Line series options
+            markers: Optional markers for the indicator
+            
+        Returns:
+            Self for method chaining
+        """
+        series = LineSeries(
+            data=data,
+            options=options or LineSeriesOptions(),
+            markers=markers
+        )
+        self.add_series(series)
         return self
 
 
 class LineChart(Chart):
-    """Specialized chart for line data."""
+    """
+    Specialized chart for line data.
+    
+    Validates single value data and provides line-specific methods.
+    """
     
     def __init__(
         self,
@@ -85,37 +180,31 @@ class LineChart(Chart):
         markers: Optional[List[Marker]] = None
     ):
         """
-        Initialize a line chart.
+        Initialize line chart.
         
         Args:
             data: List of single value data points
-            options: Chart configuration options
-            series_options: Line series specific options
+            options: Chart options
+            series_options: Line series options
             markers: Optional list of markers
-            
-        Raises:
-            TypeError: If data is not List[SingleValueData]
-            ValueError: If data is empty
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of SingleValueData")
+        # Validate data type
+        if not all(isinstance(d, SingleValueData) for d in data):
+            raise TypeError(
+                "LineChart requires List[SingleValueData]. "
+                "Use df_to_line_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, SingleValueData) for item in data):
-            raise TypeError("All data items must be SingleValueData instances")
-        
-        # Create line series
         series = LineSeries(
             data=data,
             options=series_options or LineSeriesOptions(),
             markers=markers
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series
+        self.line_series = series
     
     def add_line(
         self,
@@ -124,19 +213,16 @@ class LineChart(Chart):
         markers: Optional[List[Marker]] = None
     ) -> 'LineChart':
         """
-        Add another line series to the chart.
+        Add another line to the chart.
         
         Args:
-            data: List of single value data points
-            options: Line series specific options
-            markers: Optional list of markers
+            data: Line data points
+            options: Line series options
+            markers: Optional markers
             
         Returns:
             Self for method chaining
         """
-        if not all(isinstance(item, SingleValueData) for item in data):
-            raise TypeError("All data items must be SingleValueData instances")
-        
         series = LineSeries(
             data=data,
             options=options or LineSeriesOptions(),
@@ -147,7 +233,11 @@ class LineChart(Chart):
 
 
 class AreaChart(Chart):
-    """Specialized chart for area data."""
+    """
+    Specialized chart for area data.
+    
+    Validates single value data and provides area-specific methods.
+    """
     
     def __init__(
         self,
@@ -157,41 +247,39 @@ class AreaChart(Chart):
         markers: Optional[List[Marker]] = None
     ):
         """
-        Initialize an area chart.
+        Initialize area chart.
         
         Args:
             data: List of single value data points
-            options: Chart configuration options
-            series_options: Area series specific options
+            options: Chart options
+            series_options: Area series options
             markers: Optional list of markers
-            
-        Raises:
-            TypeError: If data is not List[SingleValueData]
-            ValueError: If data is empty
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of SingleValueData")
+        # Validate data type
+        if not all(isinstance(d, SingleValueData) for d in data):
+            raise TypeError(
+                "AreaChart requires List[SingleValueData]. "
+                "Use df_to_line_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, SingleValueData) for item in data):
-            raise TypeError("All data items must be SingleValueData instances")
-        
-        # Create area series
         series = AreaSeries(
             data=data,
             options=series_options or AreaSeriesOptions(),
             markers=markers
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series
+        self.area_series = series
 
 
 class BarChart(Chart):
-    """Specialized chart for bar data (OHLC bars)."""
+    """
+    Specialized chart for bar data.
+    
+    Validates OHLC data and provides bar-specific methods.
+    """
     
     def __init__(
         self,
@@ -201,131 +289,109 @@ class BarChart(Chart):
         markers: Optional[List[Marker]] = None
     ):
         """
-        Initialize a bar chart.
+        Initialize bar chart.
         
         Args:
             data: List of OHLC data points
-            options: Chart configuration options
-            series_options: Bar series specific options
+            options: Chart options
+            series_options: Bar series options
             markers: Optional list of markers
-            
-        Raises:
-            TypeError: If data is not List[OhlcData]
-            ValueError: If data is empty
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of OhlcData")
+        # Validate data type
+        if not all(isinstance(d, OhlcData) for d in data):
+            raise TypeError(
+                "BarChart requires List[OhlcData]. "
+                "Use df_to_ohlc_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, OhlcData) for item in data):
-            raise TypeError("All data items must be OhlcData instances")
-        
-        # Create bar series
         series = BarSeries(
             data=data,
             options=series_options or BarSeriesOptions(),
             markers=markers
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series
+        self.bar_series = series
 
 
 class HistogramChart(Chart):
-    """Specialized chart for histogram data."""
+    """
+    Specialized chart for histogram data.
+    
+    Validates histogram data and provides histogram-specific methods.
+    """
     
     def __init__(
         self,
         data: List[HistogramData],
         options: Optional[ChartOptions] = None,
-        series_options: Optional[HistogramSeriesOptions] = None,
-        markers: Optional[List[Marker]] = None
+        series_options: Optional[HistogramSeriesOptions] = None
     ):
         """
-        Initialize a histogram chart.
+        Initialize histogram chart.
         
         Args:
             data: List of histogram data points
-            options: Chart configuration options
-            series_options: Histogram series specific options
-            markers: Optional list of markers
-            
-        Raises:
-            TypeError: If data is not List[HistogramData]
-            ValueError: If data is empty
+            options: Chart options
+            series_options: Histogram series options
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of HistogramData")
+        # Validate data type
+        if not all(isinstance(d, HistogramData) for d in data):
+            raise TypeError(
+                "HistogramChart requires List[HistogramData]. "
+                "Use df_to_histogram_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, HistogramData) for item in data):
-            raise TypeError("All data items must be HistogramData instances")
-        
-        # Create histogram series
         series = HistogramSeries(
             data=data,
-            options=series_options or HistogramSeriesOptions(),
-            markers=markers
+            options=series_options or HistogramSeriesOptions()
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series
+        self.histogram_series = series
 
 
 class BaselineChart(Chart):
-    """Specialized chart for baseline data."""
+    """
+    Specialized chart for baseline data.
+    
+    Validates baseline data and provides baseline-specific methods.
+    """
     
     def __init__(
         self,
         data: List[BaselineData],
         options: Optional[ChartOptions] = None,
         series_options: Optional[BaselineSeriesOptions] = None,
-        markers: Optional[List[Marker]] = None,
-        base_value: Optional[float] = None
+        markers: Optional[List[Marker]] = None
     ):
         """
-        Initialize a baseline chart.
+        Initialize baseline chart.
         
         Args:
             data: List of baseline data points
-            options: Chart configuration options
-            series_options: Baseline series specific options
+            options: Chart options
+            series_options: Baseline series options
             markers: Optional list of markers
-            base_value: Optional base value for the baseline
-            
-        Raises:
-            TypeError: If data is not List[BaselineData]
-            ValueError: If data is empty
         """
-        # Validate data
-        if not isinstance(data, list):
-            raise TypeError("Data must be a list of BaselineData")
+        # Validate data type
+        if not all(isinstance(d, BaselineData) for d in data):
+            raise TypeError(
+                "BaselineChart requires List[BaselineData]. "
+                "Use df_to_baseline_data() to convert from DataFrame."
+            )
         
-        if not data:
-            raise ValueError("Data list cannot be empty")
-        
-        if not all(isinstance(item, BaselineData) for item in data):
-            raise TypeError("All data items must be BaselineData instances")
-        
-        # Set base value if provided
-        if series_options is None:
-            series_options = BaselineSeriesOptions()
-        
-        if base_value is not None:
-            series_options.base_value = {'type': 'price', 'price': base_value}
-        
-        # Create baseline series
         series = BaselineSeries(
             data=data,
-            options=series_options,
+            options=series_options or BaselineSeriesOptions(),
             markers=markers
         )
         
-        # Initialize parent Chart
-        super().__init__(series=series, options=options)
+        super().__init__(series=[series], options=options)
+        
+        # Store reference to main series
+        self.baseline_series = series

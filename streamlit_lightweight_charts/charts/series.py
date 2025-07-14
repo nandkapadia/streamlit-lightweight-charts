@@ -370,14 +370,49 @@ class CandlestickSeries(Series):
         data: List[OhlcData],
         options: Optional[CandlestickSeriesOptions] = None,
         markers: Optional[List[Marker]] = None,
-        price_scale: Optional[Dict[str, Any]] = None
+        price_scale: Optional[Dict[str, Any]] = None,
+        trades: Optional[List['Trade']] = None,
+        trade_visualization_options: Optional['TradeVisualizationOptions'] = None
     ):
-        """Initialize a candlestick series."""
+        """
+        Initialize a candlestick series.
+        
+        Args:
+            data: List of OHLC data points
+            options: Candlestick series options
+            markers: Optional list of markers
+            price_scale: Optional price scale configuration
+            trades: Optional list of trades to visualize
+            trade_visualization_options: Options for trade visualization
+        """
         super().__init__(data, options, markers, price_scale)
+        self.trades = trades or []
+        self.trade_visualization_options = trade_visualization_options
     
     def _default_options(self) -> CandlestickSeriesOptions:
         """Get default options for candlestick series."""
         return CandlestickSeriesOptions()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert to dictionary representation.
+        
+        Includes trade visualizations if trades are present.
+        """
+        result = super().to_dict()
+        
+        # Add trade visualizations if trades are present
+        if self.trades:
+            from ..data import TradeVisualizationOptions
+            from ..utils.trade_visualization import add_trades_to_series
+            
+            # Use default options if not provided
+            trade_options = self.trade_visualization_options or TradeVisualizationOptions()
+            
+            # Add trade visualizations to the series
+            result = add_trades_to_series(result, self.trades, trade_options)
+        
+        return result
 
 
 class HistogramSeries(Series):

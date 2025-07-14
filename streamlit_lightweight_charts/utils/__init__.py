@@ -1,4 +1,4 @@
-"""Utility functions for streamlit-lightweight-charts."""
+"""Utilities for streamlit-lightweight-charts."""
 
 from .dataframe_converter import (
     df_to_line_data,
@@ -16,6 +16,11 @@ from .chart_builders import (
     histogram_chart_from_df,
     baseline_chart_from_df
 )
+from .trade_visualization import (
+    trades_to_visual_elements,
+    create_trade_shapes_series,
+    add_trades_to_series
+)
 
 __all__ = [
     # DataFrame converters
@@ -31,5 +36,9 @@ __all__ = [
     'area_chart_from_df',
     'bar_chart_from_df',
     'histogram_chart_from_df',
-    'baseline_chart_from_df'
+    'baseline_chart_from_df',
+    # Trade visualization
+    'trades_to_visual_elements',
+    'create_trade_shapes_series',
+    'add_trades_to_series'
 ]

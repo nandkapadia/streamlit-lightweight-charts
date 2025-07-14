@@ -69,6 +69,47 @@ chart.render(key='price_volume')
 - **ComparisonChart**: Compare multiple instruments with normalization
 - **BollingerBandsChart**: Price with Bollinger Bands
 
+### Trade Visualization - New Feature!
+
+Visualize trades directly on candlestick charts with multiple styles:
+
+```python
+from streamlit_lightweight_charts import (
+    CandlestickChart, Trade, TradeType, 
+    TradeVisualization, TradeVisualizationOptions
+)
+
+# Create trades
+trades = [
+    Trade(
+        entry_time=pd.Timestamp('2024-01-01'),
+        entry_price=100,
+        exit_time=pd.Timestamp('2024-01-05'),
+        exit_price=105,
+        quantity=100,
+        trade_type=TradeType.LONG,
+        id="T001"
+    )
+]
+
+# Create chart with trades
+chart = CandlestickChart(
+    data=ohlc_data,
+    trades=trades,
+    trade_visualization_options=TradeVisualizationOptions(
+        style=TradeVisualization.BOTH  # Shows markers and rectangles
+    )
+)
+```
+
+**Visualization Styles:**
+- `MARKERS` - Entry/exit arrows
+- `RECTANGLES` - Boxes from entry to exit
+- `BOTH` - Markers + rectangles
+- `LINES` - Simple connecting lines
+- `ARROWS` - Directional arrows
+- `ZONES` - Colored background zones
+
 ### Benefits of the OOP API
 - **Type Safety**: Full type hints and IDE autocompletion
 - **Cleaner Code**: No more nested dictionaries

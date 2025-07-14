@@ -1,14 +1,11 @@
 """Data models for streamlit-lightweight-charts."""
 
-from .models import (
-    SingleValueData,
-    OhlcData,
-    HistogramData,
-    BaselineData,
-    Marker,
-    MarkerShape,
-    MarkerPosition
-)
+from .single_value import SingleValueData
+from .ohlc import OhlcData
+from .histogram import HistogramData
+from .baseline import BaselineData
+from .marker import Marker, MarkerShape, MarkerPosition
+from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
 
 __all__ = [
     'SingleValueData',
@@ -17,5 +14,9 @@ __all__ = [
     'BaselineData',
     'Marker',
     'MarkerShape',
-    'MarkerPosition'
+    'MarkerPosition',
+    'Trade',
+    'TradeType',
+    'TradeVisualization',
+    'TradeVisualizationOptions'
 ]

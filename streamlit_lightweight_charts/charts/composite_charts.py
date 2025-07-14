@@ -282,6 +282,31 @@ class PriceVolumeChart(MultiPaneChart):
             self.price_chart.add_series(series)
         
         return self
+    
+    def add_trades(
+        self,
+        trades: List['Trade'],
+        visualization_options: Optional['TradeVisualizationOptions'] = None
+    ) -> 'PriceVolumeChart':
+        """
+        Add trades to the price chart (only works with CandlestickChart).
+        
+        Args:
+            trades: List of trades to add
+            visualization_options: Options for visualizing trades
+            
+        Returns:
+            Self for method chaining
+        """
+        if hasattr(self.price_chart, 'add_trades'):
+            self.price_chart.add_trades(trades, visualization_options)
+        else:
+            raise TypeError(
+                f"Trade visualization is only supported for CandlestickChart price type, "
+                f"not {type(self.price_chart).__name__}"
+            )
+        
+        return self
 
 
 class PriceWithMAChart(Chart):

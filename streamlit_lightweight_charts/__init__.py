@@ -14,7 +14,8 @@ from .charts import (
 )
 from .data import (
     SingleValueData, OhlcData, HistogramData, BaselineData,
-    Marker, MarkerShape, MarkerPosition
+    Marker, MarkerShape, MarkerPosition,
+    Trade, TradeType, TradeVisualization, TradeVisualizationOptions
 )
 from .types import (
     ChartType, ColorType, LineStyle, LineType,
@@ -76,6 +77,10 @@ __all__ = [
     'Marker',
     'MarkerShape',
     'MarkerPosition',
+    'Trade',
+    'TradeType',
+    'TradeVisualization',
+    'TradeVisualizationOptions',
     # Types
     'ChartType',
     'ColorType',
