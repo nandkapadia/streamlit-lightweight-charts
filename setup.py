@@ -1,17 +1,17 @@
 import setuptools
 
-with open("README_ENHANCED.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="streamlit-lightweight-charts-enhanced",
-    version="2.0.0",
-    author="Enhanced by AI Assistant",
-    author_email="",
+    name="streamlit-lightweight-charts",
+    version="0.8.0",
+    author="Nand Kapadia",
+    author_email="nand.kapadia@gmail.com",
     description="Enhanced Streamlit component for TradingView's lightweight-charts with full features",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/streamlit-lightweight-charts",
+    url="https://github.com/nandkapadia/streamlit-lightweight-charts",
     packages=setuptools.find_packages(),
     include_package_data=True,
     classifiers=[
@@ -25,7 +25,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Framework :: Streamlit",
         "Topic :: Scientific/Engineering :: Visualization",
-        "Topic :: Office/Business :: Financial :: Investment"
+        "Topic :: Office/Business :: Financial :: Investment",
     ],
     keywords=[
         "streamlit",
@@ -36,7 +36,7 @@ setuptools.setup(
         "trading",
         "candlestick",
         "technical-analysis",
-        "visualization"
+        "visualization",
     ],
     python_requires=">=3.7",
     install_requires=[
@@ -50,11 +50,11 @@ setuptools.setup(
         "examples": [
             "pandas>=1.0",
             "numpy>=1.19",
-        ]
+        ],
     },
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/streamlit-lightweight-charts/issues",
-        "Source": "https://github.com/yourusername/streamlit-lightweight-charts",
-        "Documentation": "https://github.com/yourusername/streamlit-lightweight-charts/blob/main/README_ENHANCED.md",
+        "Bug Reports": "https://github.com/nandkapadia/streamlit-lightweight-charts/issues",
+        "Source": "https://github.com/nandkapadia/streamlit-lightweight-charts",
+        "Documentation": "https://github.com/nandkapadia/streamlit-lightweight-charts/blob/main/README.md",
     },
 )

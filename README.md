@@ -11,13 +11,194 @@ The Lightweight Charts library is the best choice to display financial data as a
 ### Versions
 - Version 0.7.19 - FIX: React build was not been commited
 - Version 0.7.20 - Example loading from CSV
+- Version 0.8.0 - OOP API with composite charts, trade visualization, and annotation systems
 
 ## How to install:
 ```
 python -m pip install streamlit-lightweight-charts
 ```
 
-## How to use:
+## Development Setup
+
+For contributors and developers:
+
+### Install Development Dependencies
+```bash
+# Install the package in development mode with linting tools
+pip install -e ".[dev]"
+
+# Or install development dependencies separately
+make install-dev
+```
+
+### Code Quality Tools
+
+The project uses several tools to maintain code quality:
+
+- **Black**: Code formatting (line length: 100)
+- **isort**: Import sorting (compatible with Black)
+- **pylint**: Code quality checks
+- **pre-commit**: Automatic checks before commits
+
+### Running Linting Tools
+
+```bash
+# Run all linting tools and fix issues
+make lint
+
+# Check for issues without fixing
+make lint-check
+
+# Format code only
+make format
+
+# Run tests
+make test
+
+# Run tests with coverage
+make test-cov
+```
+
+### Pre-commit Hooks
+
+Install pre-commit hooks to automatically run linting on commits:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install the git hook scripts
+pre-commit install
+
+# Run against all files (optional)
+pre-commit run --all-files
+```
+
+### Manual Linting
+
+You can also run individual tools:
+
+```bash
+# Format code
+black streamlit_lightweight_charts examples tests
+
+# Sort imports
+isort streamlit_lightweight_charts examples tests
+
+# Check code quality
+pylint streamlit_lightweight_charts examples tests
+```
+
+## New in Version 0.8.0: Object-Oriented API
+
+The library now provides a clean, type-safe object-oriented API alongside the original dictionary-based approach.
+
+### Quick Start with OOP API
+
+```python
+from streamlit_lightweight_charts import Chart, CandlestickSeries
+from streamlit_lightweight_charts.data import OhlcData
+import pandas as pd
+
+# Create data
+data = [
+    OhlcData(time=pd.Timestamp('2024-01-01'), open=100, high=105, low=98, close=102),
+    OhlcData(time=pd.Timestamp('2024-01-02'), open=102, high=108, low=101, close=106),
+    # ... more data
+]
+
+# Create and render chart
+chart = Chart(series=CandlestickSeries(data=data))
+chart.render(key='candlestick_chart')
+```
+
+### Composite Charts - New Feature!
+
+Pre-built chart combinations for common financial visualizations:
+
+#### PriceVolumeChart
+The most common financial chart with price and volume:
+```python
+from streamlit_lightweight_charts import PriceVolumeChart
+import pandas as pd
+
+# Load your DataFrame with OHLC and volume data
+df = pd.read_csv('stock_data.csv', index_col='date', parse_dates=True)
+
+# Create price-volume chart with one line
+chart = PriceVolumeChart(
+    df=df,
+    price_type='candlestick',  # or 'line', 'area', 'bar'
+    price_height=400,
+    volume_height=100
+)
+chart.render(key='price_volume')
+```
+
+#### Other Composite Charts
+- **ComparisonChart**: Compare multiple instruments with normalization
+
+### Trade Visualization - New Feature!
+
+Visualize trades directly on candlestick charts with multiple styles:
+
+```python
+from streamlit_lightweight_charts import (
+    CandlestickChart, Trade, TradeType, 
+    TradeVisualization, TradeVisualizationOptions
+)
+
+# Create trades
+trades = [
+    Trade(
+        entry_time=pd.Timestamp('2024-01-01'),
+        entry_price=100,
+        exit_time=pd.Timestamp('2024-01-05'),
+        exit_price=105,
+        quantity=100,
+        trade_type=TradeType.LONG,
+        id="T001"
+    )
+]
+
+# Create chart with trades
+chart = CandlestickChart(
+    data=ohlc_data,
+    trades=trades,
+    trade_visualization_options=TradeVisualizationOptions(
+        style=TradeVisualization.BOTH  # Shows markers and rectangles
+    )
+)
+```
+
+**Visualization Styles:**
+- `MARKERS` - Entry/exit arrows
+- `RECTANGLES` - Boxes from entry to exit
+- `BOTH` - Markers + rectangles
+- `LINES` - Simple connecting lines
+- `ARROWS` - Directional arrows
+- `ZONES` - Colored background zones
+
+### Benefits of the OOP API
+- **Type Safety**: Full type hints and IDE autocompletion
+- **Cleaner Code**: No more nested dictionaries
+- **Data Validation**: Automatic validation of chart data
+- **Pandas Integration**: Seamless DataFrame support with timezone handling
+- **Extensible**: Easy to create custom chart types
+
+### Documentation
+- [TIME_HANDLING_GUIDE.md](TIME_HANDLING_GUIDE.md) - Advanced timezone and datetime handling
+- [SPECIALIZED_CHARTS_GUIDE.md](SPECIALIZED_CHARTS_GUIDE.md) - Using specialized chart classes
+- [COMPOSITE_CHARTS_GUIDE.md](COMPOSITE_CHARTS_GUIDE.md) - Pre-built chart combinations
+
+### Migration from Dictionary API
+The original dictionary-based API is still fully supported. The OOP API is an optional enhancement for better developer experience.
+
+---
+
+## Original Dictionary-Based API
+
+### How to use:
 ```
 from streamlit_lightweight_charts import renderLightweightCharts
 

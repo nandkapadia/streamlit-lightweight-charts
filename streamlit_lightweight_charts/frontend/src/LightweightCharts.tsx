@@ -1,591 +1,428 @@
-import React, { useRef, useEffect, useCallback, useState } from "react"
-import { useRenderData } from "streamlit-component-lib-react-hooks"
-import {
-  createChart,
-  IChartApi,
-  ISeriesApi,
-  SeriesType,
-  MouseEventParams,
-  TimeRange,
-  LogicalRange,
-  BusinessDay,
-  Time,
-  LineData,
-  HistogramData,
-  AreaData,
-  BarData,
-  CandlestickData,
-  BaselineData,
-  SeriesMarker,
-  CrosshairMode,
-  PriceScaleMode,
-  LineStyle,
-  ColorType,
-  UTCTimestamp
-} from "lightweight-charts"
+import React, { useEffect, useRef, useState } from 'react'
+import { 
+  createChart, 
+  IChartApi, 
+  ISeriesApi, 
+  ColorType, 
+  UTCTimestamp,
+  AreaSeries,
+  LineSeries,
+  BarSeries,
+  CandlestickSeries,
+  HistogramSeries,
+  BaselineSeries,
+  createSeriesMarkers
+} from 'lightweight-charts'
+import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualizationOptions, Annotation, AnnotationLayer } from './types'
+import { createTradeVisualElements } from './tradeVisualization'
+import { createAnnotationVisualElements } from './annotationSystem'
 
-// Type definitions for our component props
-interface RangeConfig {
-  label: string
-  seconds: number | null
+interface LightweightChartsProps {
+  config: ComponentConfig
+  height?: number
+  width?: number
 }
 
-interface RangeSwitcherConfig {
-  ranges: RangeConfig[]
-  position: string
-  visible: boolean
-  defaultRange?: string
-}
+const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = 800 }) => {
+  const chartRefs = useRef<{ [key: string]: IChartApi }>({})
+  const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
+  const [isInitialized, setIsInitialized] = useState(false)
 
-interface SeriesConfig {
-  type: 'Area' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
-  data: any[]
-  options?: any
-  name?: string
-  priceScale?: any
-  markers?: SeriesMarker<Time>[]
-}
+  useEffect(() => {
+    if (!config.charts || config.charts.length === 0) return
 
-interface TradeConfig {
-  type: string
-  entryTime: string
-  entryPrice: number
-  exitTime?: string
-  exitPrice?: number
-  quantity?: number
-  symbol?: string
-  showMarkers: boolean
-  showRectangle: boolean
-  markerColor: string
-  rectangleColor: string
-}
+    // Initialize charts with retry mechanism
+    const initializeCharts = () => {
+      config.charts.forEach((chartConfig, index) => {
+        const chartId = chartConfig.chartId || `chart-${index}`
+        const containerId = `chart-container-${chartId}`
+        
+        const container = document.getElementById(containerId)
+        if (!container) {
+          // Retry after a short delay
+          setTimeout(() => {
+            const retryContainer = document.getElementById(containerId)
+            if (retryContainer) {
+              createChartInContainer(retryContainer, chartConfig, chartId)
+            }
+          }, 100)
+          return
+        }
 
-interface ChartConfig {
-  chart: any
-  series: SeriesConfig[]
-  priceLines?: any[]
-  trades?: TradeConfig[]
-  chartId?: string
-  rangeSwitcher?: RangeSwitcherConfig
-}
+        createChartInContainer(container, chartConfig, chartId)
+      })
+    }
 
-interface SyncConfig {
-  enabled: boolean
-  crosshair: boolean
-  timeRange: boolean
-}
+    // Function to create chart in a specific container
+    const createChartInContainer = (container: HTMLElement, chartConfig: any, chartId: string) => {
+      try {
+        // Create chart
+        const chart = createChart(container, {
+          width: width,
+          height: height,
+          layout: {
+            background: { type: ColorType.Solid, color: 'white' },
+            textColor: 'black',
+          },
+          grid: {
+            vertLines: { color: '#f0f0f0' },
+            horzLines: { color: '#f0f0f0' },
+          },
+          crosshair: {
+            mode: 1,
+          },
+          rightPriceScale: {
+            borderColor: '#cccccc',
+          },
+          leftPriceScale: chartConfig.chart?.leftPriceScale || {
+            visible: false,
+            borderColor: '#cccccc',
+          },
+          timeScale: {
+            borderColor: '#cccccc',
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          ...chartConfig.chart
+        })
 
-interface ComponentConfig {
-  charts: ChartConfig[]
-  syncConfig: SyncConfig
-  callbacks?: string[]
-}
+        chartRefs.current[chartId] = chart
 
-// Chart instance manager
-class ChartManager {
-  private chart: IChartApi
-  private series: Map<string, ISeriesApi<SeriesType>> = new Map()
-  private chartId: string
-  private isUpdating: boolean = false
-  private rangeSwitcherElement: HTMLDivElement | null = null
+        // Initialize series
+        const seriesList: ISeriesApi<any>[] = []
+        
+        chartConfig.series.forEach((seriesConfig: SeriesConfig, seriesIndex: number) => {
+          const series = createSeries(chart, seriesConfig)
+          if (series) {
+            seriesList.push(series)
+            
+            // Add trade visualization if configured
+            if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions) {
+              addTradeVisualization(series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
+            }
+            
+            // Add series-level annotations
+            if (seriesConfig.annotations) {
+              addAnnotations(chart, seriesConfig.annotations)
+            }
+          }
+        })
 
-  constructor(chart: IChartApi, chartId: string) {
-    this.chart = chart
-    this.chartId = chartId
-  }
+        seriesRefs.current[chartId] = seriesList
 
-  getChart(): IChartApi {
-    return this.chart
-  }
+        // Add chart-level trades
+        if (chartConfig.trades && chartConfig.series.length > 0) {
+          const firstSeries = seriesRefs.current[chartId][0]
+          if (firstSeries) {
+            // Use default trade visualization options if not specified
+            const defaultOptions: TradeVisualizationOptions = {
+              style: 'markers',
+              entryMarkerColorLong: '#2196F3',
+              entryMarkerColorShort: '#FF9800',
+              exitMarkerColorProfit: '#4CAF50',
+              exitMarkerColorLoss: '#F44336'
+            }
+            addTradeVisualization(firstSeries, chartConfig.trades, defaultOptions, chartConfig.series[0]?.data)
+          }
+        }
 
-  getChartId(): string {
-    return this.chartId
-  }
+        // Add chart-level annotations
+        if (chartConfig.annotations) {
+          addAnnotations(chart, chartConfig.annotations)
+        }
 
-  addSeries(config: SeriesConfig): ISeriesApi<SeriesType> | null {
-    let series: ISeriesApi<SeriesType> | null = null
+        // Add annotation layers
+        if (chartConfig.annotationLayers) {
+          addAnnotationLayers(chart, chartConfig.annotationLayers)
+        }
+
+        // Add price lines
+        if (chartConfig.priceLines && seriesList.length > 0) {
+          chartConfig.priceLines.forEach((priceLine: any) => {
+            seriesList[0].createPriceLine(priceLine)
+          })
+        }
+
+        // Add range switcher if configured
+        if (chartConfig.rangeSwitcher && chartConfig.rangeSwitcher.visible) {
+          addRangeSwitcher(chart, chartConfig.rangeSwitcher)
+        }
+      } catch (error) {
+        // Error creating chart in container
+      }
+    }
+
+    // Start the initialization process
+    initializeCharts()
+
+    setIsInitialized(true)
+
+    // Setup synchronization if enabled
+    if (config.syncConfig.enabled) {
+      setupChartSync()
+    }
+
+    // Cleanup function
+    return () => {
+      Object.values(chartRefs.current).forEach(chart => {
+        chart.remove()
+      })
+      chartRefs.current = {}
+      seriesRefs.current = {}
+    }
+  }, [config, height, width])
+
+  const createSeries = (chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
+    const { type, data, options = {}, name, priceScale } = seriesConfig
+
+    let series: ISeriesApi<any>
     
-    switch(config.type) {
-      case 'Area':
-        series = this.chart.addAreaSeries(config.options || {})
+    // Normalize series type to handle case variations
+    const normalizedType = type?.toLowerCase()
+
+    switch (normalizedType) {
+      case 'area':
+        series = chart.addSeries(AreaSeries, {
+          lineColor: '#2196F3',
+          topColor: 'rgba(33, 150, 243, 0.4)',
+          bottomColor: 'rgba(33, 150, 243, 0.0)',
+          lineWidth: 2,
+          ...options
+        })
         break
-      case 'Bar':
-        series = this.chart.addBarSeries(config.options || {})
+      case 'baseline':
+        series = chart.addSeries(BaselineSeries, {
+          baseValue: { price: 0 },
+          topLineColor: 'rgba(76, 175, 80, 0.4)',
+          topFillColor1: 'rgba(76, 175, 80, 0.0)',
+          topFillColor2: 'rgba(76, 175, 80, 0.4)',
+          bottomLineColor: 'rgba(255, 82, 82, 0.4)',
+          bottomFillColor1: 'rgba(255, 82, 82, 0.4)',
+          bottomFillColor2: 'rgba(255, 82, 82, 0.0)',
+          lineWidth: 2,
+          ...options
+        })
         break
-      case 'Baseline':
-        series = this.chart.addBaselineSeries(config.options || {})
+      case 'histogram':
+        series = chart.addSeries(HistogramSeries, {
+          color: '#2196F3',
+          priceFormat: {
+            type: 'volume',
+          },
+          priceScaleId: options.priceScaleId || '',
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
+          ...options
+        })
         break
-      case 'Candlestick':
-        series = this.chart.addCandlestickSeries(config.options || {})
+      case 'line':
+        series = chart.addSeries(LineSeries, {
+          color: '#2196F3',
+          lineWidth: 2,
+          ...options
+        })
         break
-      case 'Histogram':
-        series = this.chart.addHistogramSeries(config.options || {})
+      case 'bar':
+        series = chart.addSeries(BarSeries, {
+          upColor: '#4CAF50',
+          downColor: '#F44336',
+          borderVisible: false,
+          wickUpColor: '#4CAF50',
+          wickDownColor: '#F44336',
+          ...options
+        })
         break
-      case 'Line':
-        series = this.chart.addLineSeries(config.options || {})
+      case 'candlestick':
+        series = chart.addSeries(CandlestickSeries, {
+          upColor: '#4CAF50',
+          downColor: '#F44336',
+          borderVisible: false,
+          wickUpColor: '#4CAF50',
+          wickDownColor: '#F44336',
+          ...options
+        })
         break
       default:
-        console.warn(`Unknown series type: ${config.type}`)
+        console.warn(`Unknown series type: ${type}`)
         return null
     }
 
-    if (series && config.name) {
-      this.series.set(config.name, series)
-    }
-
-    // Apply price scale options if specified
-    if (series && config.priceScale && config.options?.priceScaleId !== undefined) {
-      this.chart.priceScale(config.options.priceScaleId).applyOptions(config.priceScale)
+    // Set price scale if specified
+    if (priceScale) {
+      series.priceScale().applyOptions(priceScale)
     }
 
     // Set data
-    if (series && config.data) {
-      series.setData(config.data)
-    }
-
-    // Add markers if specified
-    if (series && config.markers) {
-      series.setMarkers(config.markers)
+    if (data && data.length > 0) {
+      series.setData(data)
     }
 
     return series
   }
 
-  setUpdating(updating: boolean) {
-    this.isUpdating = updating
+  const addTradeVisualization = (
+    series: ISeriesApi<any>,
+    trades: TradeConfig[],
+    options: TradeVisualizationOptions,
+    chartData?: any[]
+  ) => {
+    const visualElements = createTradeVisualElements(trades, options, chartData)
+
+    // Add markers using the markers plugin
+    if (visualElements.markers.length > 0) {
+      const seriesMarkers = createSeriesMarkers(series, visualElements.markers)
+      // The markers are now set through the plugin
+    }
+
+    // Add shapes (rectangles, lines, arrows, zones)
+    // REMOVED: if (visualElements.shapes.length > 0) {
+    //   visualElements.shapes.forEach(shape => {
+    //     series.setShapes([shape])
+    //   })
+    // }
+
+    // Add annotations
+    // REMOVED: if (visualElements.annotations.length > 0) {
+    //   visualElements.annotations.forEach(annotation => {
+    //     series.setShapes([annotation])
+    //   })
+    // }
   }
 
-  isCurrentlyUpdating(): boolean {
-    return this.isUpdating
+  const addAnnotations = (chart: IChartApi, annotations: Annotation[]) => {
+    const visualElements = createAnnotationVisualElements(annotations)
+
+    // Add markers using the markers plugin
+    if (visualElements.markers.length > 0) {
+      const seriesList = Object.values(seriesRefs.current).flat()
+      if (seriesList.length > 0) {
+        const seriesMarkers = createSeriesMarkers(seriesList[0], visualElements.markers)
+        // The markers are now set through the plugin
+      }
+    }
+
+    // Add shapes and texts
+    // REMOVED: if (visualElements.shapes.length > 0 || visualElements.texts.length > 0) {
+    //   const allElements = [...visualElements.shapes, ...visualElements.texts]
+    //   const seriesList = Object.values(seriesRefs.current).flat()
+    //   if (seriesList.length > 0) {
+    //     seriesList[0].setShapes(allElements)
+    //   }
+    // }
   }
 
-  updateSeries(name: string, data: any[]) {
-    const series = this.series.get(name)
-    if (series) {
-      series.setData(data)
+  const addAnnotationLayers = (chart: IChartApi, layers: AnnotationLayer[]) => {
+    const allAnnotations = layers
+      .filter(layer => layer.visible)
+      .flatMap(layer => layer.annotations)
+
+    if (allAnnotations.length > 0) {
+      addAnnotations(chart, allAnnotations)
     }
   }
 
-  addPriceLines(priceLines: any[]) {
-    priceLines.forEach(priceLine => {
-      // Get the first series to add price line to
-      const firstSeries = Array.from(this.series.values())[0]
-      if (firstSeries && 'createPriceLine' in firstSeries) {
-        firstSeries.createPriceLine(priceLine)
-      }
-    })
-  }
-
-  fitContent() {
-    this.chart.timeScale().fitContent()
-  }
-
-  addRangeSwitcher(config: RangeSwitcherConfig, onRangeChange?: (range: RangeConfig) => void) {
-    if (!config.visible) return
-    
-    // Create range switcher container
-    this.rangeSwitcherElement = document.createElement('div')
-    this.rangeSwitcherElement.className = 'range-switcher'
-    this.rangeSwitcherElement.style.cssText = `
+  const addRangeSwitcher = (chart: IChartApi, rangeConfig: any) => {
+    // Create range switcher UI
+    const container = chart.chartElement()
+    const switcher = document.createElement('div')
+    switcher.style.cssText = `
       position: absolute;
-      ${config.position.includes('top') ? 'top: 10px;' : 'bottom: 10px;'}
-      ${config.position.includes('right') ? 'right: 10px;' : 'left: 10px;'}
-      display: flex;
-      gap: 4px;
+      top: 10px;
+      right: 10px;
       z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
+      background: white;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      padding: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 5px;
     `
-    
-    // Add range buttons
-    config.ranges.forEach((range, index) => {
+
+    rangeConfig.ranges.forEach((range: any) => {
       const button = document.createElement('button')
       button.textContent = range.label
       button.style.cssText = `
-        border: none;
-        background: ${range.label === config.defaultRange ? '#2962FF' : 'transparent'};
-        color: ${range.label === config.defaultRange ? 'white' : '#333'};
+        margin: 0 2px;
         padding: 4px 8px;
+        border: 1px solid #ddd;
         border-radius: 3px;
+        background: white;
         cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: all 0.2s;
       `
-      
-      button.addEventListener('click', () => {
-        // Update button styles
-        this.rangeSwitcherElement?.querySelectorAll('button').forEach(btn => {
-          btn.style.background = 'transparent'
-          btn.style.color = '#333'
-        })
-        button.style.background = '#2962FF'
-        button.style.color = 'white'
-        
-        // Apply time range
-        if (range.seconds !== null) {
-          const now = Math.floor(Date.now() / 1000)
-          const from = now - range.seconds
-          this.chart.timeScale().setVisibleRange({
-            from: from as UTCTimestamp,
-            to: now as UTCTimestamp
+      button.onclick = () => {
+        if (range.seconds) {
+          chart.timeScale().setVisibleRange({
+            from: (Date.now() / 1000 - range.seconds) as UTCTimestamp,
+            to: (Date.now() / 1000) as UTCTimestamp
           })
-        } else {
-          // "ALL" range - fit content
-          this.chart.timeScale().fitContent()
         }
-        
-        // Call callback
-        if (onRangeChange) {
-          onRangeChange(range)
-        }
-      })
-      
-      this.rangeSwitcherElement.appendChild(button)
+      }
+      switcher.appendChild(button)
     })
+
+    container.appendChild(switcher)
+  }
+
+  const setupChartSync = () => {
+    const charts = Object.values(chartRefs.current)
     
-    // Add to chart container
-    const chartContainer = this.chart.chartElement()
-    if (chartContainer) {
-      chartContainer.style.position = 'relative'
-      chartContainer.appendChild(this.rangeSwitcherElement)
-    }
-  }
+    if (charts.length < 2) return
 
-  addTrades(trades: TradeConfig[], onTradeClick?: (trade: TradeConfig) => void) {
-    trades.forEach((trade, index) => {
-      // Add entry marker
-      if (trade.showMarkers) {
-        const entryMarker = {
-          time: trade.entryTime as Time,
-          position: trade.type === 'buy' || trade.type === 'long' ? 'belowBar' : 'aboveBar',
-          color: trade.markerColor,
-          shape: trade.type === 'buy' || trade.type === 'long' ? 'arrowUp' : 'arrowDown',
-          text: `${trade.type.toUpperCase()} ${trade.quantity || ''}`,
-          size: 2
-        }
-        
-        // Add to first series
-        const firstSeries = Array.from(this.series.values())[0]
-        if (firstSeries) {
-          const currentMarkers = firstSeries.markers() || []
-          firstSeries.setMarkers([...currentMarkers, entryMarker])
-        }
-        
-        // Add exit marker if trade is closed
-        if (trade.exitTime && trade.exitPrice) {
-          const exitMarker = {
-            time: trade.exitTime as Time,
-            position: trade.type === 'buy' || trade.type === 'long' ? 'aboveBar' : 'belowBar',
-            color: trade.markerColor,
-            shape: trade.type === 'buy' || trade.type === 'long' ? 'arrowDown' : 'arrowUp',
-            text: `EXIT ${trade.quantity || ''}`,
-            size: 2
-          }
-          
-          if (firstSeries) {
-            const currentMarkers = firstSeries.markers() || []
-            firstSeries.setMarkers([...currentMarkers, exitMarker])
-          }
-        }
-      }
-      
-      // Add rectangle overlay for trade duration
-      if (trade.showRectangle && trade.exitTime) {
-        // Create rectangle using price lines and time range
-        const startTime = trade.entryTime as Time
-        const endTime = trade.exitTime as Time
-        
-        // Add horizontal lines at entry and exit prices
-        const entryLine = firstSeries?.createPriceLine({
-          price: trade.entryPrice,
-          color: trade.rectangleColor,
-          lineWidth: 1,
-          lineStyle: 2, // Dashed
-          axisLabelVisible: true,
-          title: `Entry: ${trade.entryPrice}`
-        })
-        
-        if (trade.exitPrice) {
-          const exitLine = firstSeries?.createPriceLine({
-            price: trade.exitPrice,
-            color: trade.rectangleColor,
-            lineWidth: 1,
-            lineStyle: 2, // Dashed
-            axisLabelVisible: true,
-            title: `Exit: ${trade.exitPrice}`
-          })
-        }
-      }
-    })
-  }
-
-  destroy() {
-    if (this.rangeSwitcherElement) {
-      this.rangeSwitcherElement.remove()
-    }
-    this.chart.remove()
-  }
-}
-
-const LightweightChartsEnhanced: React.FC = () => {
-  const renderData = useRenderData()
-  const config = renderData.args["config"] as ComponentConfig
-  
-  const containerRef = useRef<HTMLDivElement>(null)
-  const chartManagersRef = useRef<ChartManager[]>([])
-  const [isInitialized, setIsInitialized] = useState(false)
-  
-  // Synchronization state
-  const syncStateRef = useRef({
-    isInternalUpdate: false,
-    lastCrosshairTime: null as Time | null,
-    lastVisibleRange: null as TimeRange | null
-  })
-
-  // Handle chart synchronization
-  const setupSynchronization = useCallback((managers: ChartManager[]) => {
-    if (!config.syncConfig.enabled || managers.length <= 1) return
-
-    managers.forEach((manager, index) => {
-      const chart = manager.getChart()
-      
-      // Sync time range
-      if (config.syncConfig.timeRange) {
-        chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: TimeRange | null) => {
-          if (syncStateRef.current.isInternalUpdate || !timeRange) return
-          
-          syncStateRef.current.isInternalUpdate = true
-          syncStateRef.current.lastVisibleRange = timeRange
-          
-          managers.forEach((otherManager, otherIndex) => {
-            if (index !== otherIndex && !otherManager.isCurrentlyUpdating()) {
-              otherManager.setUpdating(true)
-              const otherChart = otherManager.getChart()
-              otherChart.timeScale().setVisibleRange(timeRange)
-              otherManager.setUpdating(false)
-            }
-          })
-          
-          syncStateRef.current.isInternalUpdate = false
-
-          // Send callback to Python if registered
-          if (config.callbacks?.includes('onVisibleTimeRangeChange')) {
-            renderData.setComponentValue({
-              onVisibleTimeRangeChange: {
-                chartId: manager.getChartId(),
-                timeRange
-              }
-            })
-          }
-        })
-
-        chart.timeScale().subscribeVisibleLogicalRangeChange((range: LogicalRange | null) => {
-          if (syncStateRef.current.isInternalUpdate || !range) return
-          
-          syncStateRef.current.isInternalUpdate = true
-          
-          managers.forEach((otherManager, otherIndex) => {
-            if (index !== otherIndex && !otherManager.isCurrentlyUpdating()) {
-              otherManager.setUpdating(true)
-              const otherChart = otherManager.getChart()
-              otherChart.timeScale().setVisibleLogicalRange(range)
-              otherManager.setUpdating(false)
-            }
-          })
-          
-          syncStateRef.current.isInternalUpdate = false
-        })
-      }
-
+    charts.forEach((chart, index) => {
       // Sync crosshair
       if (config.syncConfig.crosshair) {
-        chart.subscribeCrosshairMove((param: MouseEventParams) => {
-          if (syncStateRef.current.isInternalUpdate) return
-          
-          syncStateRef.current.isInternalUpdate = true
-          
-          managers.forEach((otherManager, otherIndex) => {
-            if (index !== otherIndex) {
-              const otherChart = otherManager.getChart()
-              
-              if (param.time) {
-                // Use setCrossHairXY to sync crosshair position
-                const coordinate = otherChart.timeScale().timeToCoordinate(param.time)
-                if (coordinate !== null) {
-                  // We need to get the y-coordinate from the first series
-                  const point = param.point || { x: coordinate, y: 0 }
-                  otherChart.setCrossHairXY(coordinate, point.y, false)
-                }
-              } else {
-                // Clear crosshair
-                otherChart.clearCrossHair()
-              }
+        chart.subscribeCrosshairMove((param) => {
+          const seriesList = Object.values(seriesRefs.current)[index] || [];
+          const firstSeries = seriesList[0];
+          let price: number | undefined = undefined;
+          if (firstSeries && param.seriesData) {
+            const data = param.seriesData.get(firstSeries);
+            if (data) {
+              // Try to get price from value (line/area/histogram), or close (candlestick/bar)
+              price = (data as any).value ?? (data as any).close;
+            }
+          }
+          charts.forEach((otherChart, otherIndex) => {
+            if (otherIndex !== index && price !== undefined && param.time !== undefined && firstSeries) {
+              otherChart.setCrosshairPosition(price, param.time, firstSeries);
             }
           })
-          
-          syncStateRef.current.isInternalUpdate = false
+        })
+      }
 
-          // Send callback to Python if registered
-          if (config.callbacks?.includes('onCrosshairMove')) {
-            renderData.setComponentValue({
-              onCrosshairMove: {
-                chartId: manager.getChartId(),
-                time: param.time,
-                point: param.point,
-                seriesPrices: param.seriesPrices
+      // Sync time range
+      if (config.syncConfig.timeRange) {
+        chart.timeScale().subscribeVisibleTimeRangeChange((param) => {
+          if (param !== null) {
+            charts.forEach((otherChart, otherIndex) => {
+              if (otherIndex !== index) {
+                otherChart.timeScale().setVisibleRange(param)
               }
             })
           }
         })
       }
-
-      // Handle click events
-      if (config.callbacks?.includes('onClick')) {
-        chart.subscribeClick((param: MouseEventParams) => {
-          renderData.setComponentValue({
-            onClick: {
-              chartId: manager.getChartId(),
-              time: param.time,
-              point: param.point,
-              seriesPrices: param.seriesPrices
-            }
-          })
-        })
-      }
     })
-  }, [config, renderData])
+  }
 
-  // Initialize charts
-  useEffect(() => {
-    if (!containerRef.current || isInitialized) return
-
-    // Clear existing charts
-    chartManagersRef.current.forEach(manager => manager.destroy())
-    chartManagersRef.current = []
-
-    // Create container divs for each chart
-    containerRef.current.innerHTML = ''
-    
-    const managers: ChartManager[] = []
-    
-    config.charts.forEach((chartConfig, index) => {
-      const chartDiv = document.createElement('div')
-      chartDiv.id = `chart-${index}`
-      chartDiv.style.position = 'relative'
-      containerRef.current!.appendChild(chartDiv)
-      
-      // Create chart with options
-      const chartOptions = {
-        width: chartDiv.clientWidth,
-        height: 400,
-        ...chartConfig.chart,
-        layout: {
-          textColor: 'black',
-          background: { type: ColorType.Solid, color: 'white' },
-          ...chartConfig.chart?.layout
-        }
-      }
-      
-      const chart = createChart(chartDiv, chartOptions)
-      const manager = new ChartManager(chart, chartConfig.chartId || `chart_${index}`)
-      
-      // Add all series
-      chartConfig.series.forEach(seriesConfig => {
-        manager.addSeries(seriesConfig)
-      })
-      
-             // Add price lines if specified
-       if (chartConfig.priceLines) {
-         manager.addPriceLines(chartConfig.priceLines)
-       }
-       
-       // Add trades if specified
-       if (chartConfig.trades) {
-         manager.addTrades(chartConfig.trades, (trade) => {
-           // Send callback to Python if registered
-           if (config.callbacks?.includes('onTradeClick')) {
-             renderData.setComponentValue({
-               onTradeClick: {
-                 chartId: manager.getChartId(),
-                 trade: trade
-               }
-             })
-           }
-         })
-       }
-       
-       // Add range switcher if specified
-       if (chartConfig.rangeSwitcher) {
-         manager.addRangeSwitcher(chartConfig.rangeSwitcher, (range) => {
-           // Send callback to Python if registered
-           if (config.callbacks?.includes('onRangeSwitcherChange')) {
-             renderData.setComponentValue({
-               onRangeSwitcherChange: {
-                 chartId: manager.getChartId(),
-                 range: range
-               }
-             })
-           }
-         })
-       }
-       
-       // Fit content
-       manager.fitContent()
-      
-      managers.push(manager)
-    })
-    
-    chartManagersRef.current = managers
-    
-    // Setup synchronization
-    setupSynchronization(managers)
-    
-    setIsInitialized(true)
-
-    // Handle resize
-    const handleResize = () => {
-      managers.forEach((manager, index) => {
-        const chartDiv = document.getElementById(`chart-${index}`)
-        if (chartDiv) {
-          manager.getChart().applyOptions({ 
-            width: chartDiv.clientWidth 
-          })
-        }
-      })
-    }
-    
-    window.addEventListener('resize', handleResize)
-    
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      managers.forEach(manager => manager.destroy())
-    }
-  }, [config, setupSynchronization, isInitialized])
-
-  // Handle dynamic updates
-  useEffect(() => {
-    if (!isInitialized) return
-    
-    // Check for updates in session state or other mechanisms
-    // This is where we would handle dynamic data updates
-    // For now, we'll rely on key changes to trigger re-renders
-    
-  }, [renderData.args, isInitialized])
+  if (!config.charts || config.charts.length === 0) {
+    return <div>No charts configured</div>
+  }
 
   return (
-    <div 
-      ref={containerRef} 
-      style={{ 
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px'
-      }}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {config.charts.map((chartConfig, index) => {
+        const chartId = chartConfig.chartId || `chart-${index}`
+        const containerId = `chart-container-${chartId}`
+        
+        return (
+          <div key={chartId} style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '10px' }}>
+            <div id={containerId} style={{ width: width, height: height }} />
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
-export default LightweightChartsEnhanced
+export default LightweightCharts
