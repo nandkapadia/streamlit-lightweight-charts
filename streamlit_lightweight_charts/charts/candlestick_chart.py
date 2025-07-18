@@ -93,6 +93,7 @@ class CandlestickChart(Chart):
                 trades=trades,
                 trade_visualization_options=TradeVisualizationOptions()
             )
+
             ```
         """
         # Validate that all data points are OHLC format
@@ -118,6 +119,8 @@ class CandlestickChart(Chart):
         self.candlestick_series = series
         self._trades = trades
         self._trade_options = trade_visualization_options
+
+
 
     def add_trades(
         self,

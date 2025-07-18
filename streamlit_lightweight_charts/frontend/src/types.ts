@@ -98,6 +98,7 @@ export interface SeriesConfig {
   tradeVisualizationOptions?: TradeVisualizationOptions
   annotations?: Annotation[]  // Add annotations to series
   shapes?: any[]  // Add shapes support
+  tooltip?: TooltipConfig  // Add tooltip configuration
 }
 
 // Enhanced Chart Configuration
@@ -110,6 +111,15 @@ export interface ChartConfig {
   annotationLayers?: AnnotationLayer[]  // Add layer management
   chartId?: string
   rangeSwitcher?: RangeSwitcherConfig
+  legend?: LegendConfig
+  tooltip?: TooltipConfig  // Add chart-level tooltip configuration
+  autoSize?: boolean
+  autoWidth?: boolean
+  autoHeight?: boolean
+  minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
 }
 
 // Range Switcher Configuration
@@ -125,6 +135,30 @@ export interface RangeSwitcherConfig {
   defaultRange?: string
 }
 
+// Legend Configuration
+export interface LegendConfig {
+  visible: boolean
+  type: 'simple' | '3line'
+  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  symbolName?: string
+  fontSize?: number
+  fontFamily?: string
+  fontWeight?: string
+  color?: string
+  backgroundColor?: string
+  borderColor?: string
+  borderWidth?: number
+  borderRadius?: number
+  padding?: number
+  margin?: number
+  zIndex?: number
+  showLastValue?: boolean
+  showTime?: boolean
+  showSymbol?: boolean
+  priceFormat?: string
+  customTemplate?: string
+}
+
 // Sync Configuration
 export interface SyncConfig {
   enabled: boolean
@@ -137,4 +171,38 @@ export interface ComponentConfig {
   charts: ChartConfig[]
   syncConfig: SyncConfig
   callbacks?: string[]
+}
+
+// Modular Tooltip System
+export interface TooltipField {
+  label: string
+  valueKey: string
+  formatter?: (value: any) => string
+  color?: string
+  fontSize?: number
+  fontWeight?: string
+}
+
+export interface TooltipConfig {
+  enabled: boolean
+  type: 'ohlc' | 'single' | 'multi' | 'custom'
+  fields: TooltipField[]
+  position?: 'cursor' | 'fixed' | 'auto'
+  offset?: { x: number; y: number }
+  style?: {
+    backgroundColor?: string
+    borderColor?: string
+    borderWidth?: number
+    borderRadius?: number
+    padding?: number
+    fontSize?: number
+    fontFamily?: string
+    color?: string
+    boxShadow?: string
+    zIndex?: number
+  }
+  showDate?: boolean
+  dateFormat?: string
+  showTime?: boolean
+  timeFormat?: string
 } 

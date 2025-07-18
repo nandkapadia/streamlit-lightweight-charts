@@ -10,6 +10,8 @@ from .enums import (
     LineStyle,
     LineType,
     PriceScaleMode,
+    TrackingActivationMode,
+    TrackingExitMode,
     VertAlign,
 )
 from .protocols import (
@@ -42,6 +44,8 @@ __all__ = [
     "LastPriceAnimationMode",
     "HorzAlign",
     "VertAlign",
+    "TrackingExitMode",
+    "TrackingActivationMode",
     # Colors
     "Background",
     "SolidColor",

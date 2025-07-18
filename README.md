@@ -179,6 +179,99 @@ chart = CandlestickChart(
 - `ARROWS` - Directional arrows
 - `ZONES` - Colored background zones
 
+### Auto-Sizing Charts - New Feature!
+
+Automatically size charts to fit their container dimensions with responsive behavior:
+
+```python
+from streamlit_lightweight_charts import CandlestickChart
+
+# Full auto-sizing
+chart = CandlestickChart(
+    data=ohlc_data,
+    chart_options={
+        "autoSize": True,
+        "minWidth": 300,
+        "maxWidth": 1200,
+        "minHeight": 200,
+        "maxHeight": 800,
+    }
+)
+
+# Auto-width only (fixed height)
+chart = CandlestickChart(
+    data=ohlc_data,
+    chart_options={
+        "autoWidth": True,
+        "height": 400,  # Fixed height
+        "minWidth": 300,
+        "maxWidth": 1200,
+    }
+)
+
+# Auto-height only (fixed width)
+chart = CandlestickChart(
+    data=ohlc_data,
+    chart_options={
+        "autoHeight": True,
+        "width": 600,  # Fixed width
+        "minHeight": 200,
+        "maxHeight": 800,
+    }
+)
+```
+
+**Features:**
+- ✅ **Responsive Design**: Charts automatically resize when container changes
+- ✅ **Size Constraints**: Set minimum and maximum dimensions
+- ✅ **Flexible Options**: Auto-size width, height, or both
+- ✅ **Performance**: Uses ResizeObserver for efficient updates
+- ✅ **Streamlit Integration**: Works seamlessly with Streamlit's responsive layout
+
+### Range Switcher - New Feature!
+
+Add professional time range switching to any chart, similar to TradingView:
+
+```python
+from streamlit_lightweight_charts import CandlestickChart
+
+# Create chart with range switcher
+chart = CandlestickChart(
+    data=ohlc_data,
+    range_switcher={
+        "ranges": [
+            {"label": "1D", "seconds": 86400},
+            {"label": "1W", "seconds": 604800},
+            {"label": "1M", "seconds": 2592000},
+            {"label": "3M", "seconds": 7776000},
+            {"label": "6M", "seconds": 15552000},
+            {"label": "1Y", "seconds": 31536000},
+            {"label": "ALL", "seconds": None}
+        ],
+        "position": "top-right",
+        "visible": True,
+        "defaultRange": "1M"
+    }
+)
+```
+
+**Range Switcher Features:**
+- **Professional Styling**: Matches TradingView's design with proper fonts, colors, and spacing
+- **Active State Management**: Visual feedback for the currently selected range
+- **Hover Effects**: Smooth transitions and hover states for better UX
+- **Flexible Positioning**: Can be positioned in any corner of the chart
+- **Customizable Ranges**: Easy to add or modify time ranges
+- **Callback Support**: Ready for event handling and integration
+
+**Available Time Ranges:**
+- **1D**: Last 24 hours
+- **1W**: Last 7 days
+- **1M**: Last 30 days
+- **3M**: Last 90 days
+- **6M**: Last 180 days
+- **1Y**: Last 365 days
+- **ALL**: Show all available data
+
 ### Benefits of the OOP API
 - **Type Safety**: Full type hints and IDE autocompletion
 - **Cleaner Code**: No more nested dictionaries
@@ -222,6 +315,15 @@ renderLightweightCharts(charts: <List of Dicts> , key: <str>)
         - priceScale: `<Dict>` optional
 
         - markers: `<List of Dicts>` optional
+
+        - rangeSwitcher: `<Dict>` optional - Add time range switching functionality
+
+            - ranges: `<List of Dicts>` - List of time ranges
+                - label: `<str>` - Display text (e.g., "1D", "1W", "1M")
+                - seconds: `<int or None>` - Duration in seconds (None for "ALL")
+            - position: `<str>` - Position of switcher ("top-left", "top-right", "bottom-left", "bottom-right")
+            - visible: `<bool>` - Whether the range switcher is visible
+            - defaultRange: `<str>` - Default selected range label
 
 - key: `<str>` when creating multiple charts in one page
 
@@ -1184,3 +1286,137 @@ renderLightweightCharts([
     }
 ], 'baseline')
 ```
+---
+<br />
+
+## Range Switcher Example
+
+Add professional time range switching to any chart, similar to TradingView:
+
+```python
+import streamlit as st
+from streamlit_lightweight_charts import renderLightweightCharts
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+
+# Generate sample data
+def generate_data():
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=365*2)
+    date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+    
+    data = []
+    current_price = 100
+    
+    for date in date_range:
+        change = np.random.normal(0, 0.015)
+        current_price *= (1 + change)
+        
+        high = current_price * (1 + abs(np.random.normal(0, 0.008)))
+        low = current_price * (1 - abs(np.random.normal(0, 0.008)))
+        open_price = current_price * (1 + np.random.normal(0, 0.004))
+        close_price = current_price
+        
+        high = max(high, open_price, close_price)
+        low = min(low, open_price, close_price)
+        
+        data.append({
+            'time': date.strftime('%Y-%m-%d'),
+            'open': round(open_price, 2),
+            'high': round(high, 2),
+            'low': round(low, 2),
+            'close': round(close_price, 2),
+        })
+        
+        current_price = close_price
+    
+    return data
+
+# Generate data
+data = generate_data()
+
+# Chart configuration with range switcher
+chart_options = {
+    "width": 800,
+    "height": 400,
+    "layout": {
+        "background": {"type": "solid", "color": "white"},
+        "textColor": "black",
+    },
+    "grid": {
+        "vertLines": {"color": "rgba(197, 203, 206, 0.5)"},
+        "horzLines": {"color": "rgba(197, 203, 206, 0.5)"},
+    },
+    "crosshair": {"mode": 1},
+    "rightPriceScale": {
+        "borderColor": "rgba(197, 203, 206, 0.8)",
+        "scaleMargins": {"top": 0.1, "bottom": 0.2},
+    },
+    "timeScale": {
+        "borderColor": "rgba(197, 203, 206, 0.8)",
+        "timeVisible": True,
+        "secondsVisible": False,
+    },
+    # Range switcher configuration
+    "rangeSwitcher": {
+        "ranges": [
+            {"label": "1D", "seconds": 86400},
+            {"label": "1W", "seconds": 604800},
+            {"label": "1M", "seconds": 2592000},
+            {"label": "3M", "seconds": 7776000},
+            {"label": "6M", "seconds": 15552000},
+            {"label": "1Y", "seconds": 31536000},
+            {"label": "ALL", "seconds": None}
+        ],
+        "position": "top-right",
+        "visible": True,
+        "defaultRange": "1M"
+    }
+}
+
+# Series configuration
+candlestick_series = [
+    {
+        "type": "Candlestick",
+        "data": data,
+        "options": {
+            "upColor": "#26a69a",
+            "downColor": "#ef5350",
+            "borderVisible": False,
+            "wickUpColor": "#26a69a",
+            "wickDownColor": "#ef5350",
+        },
+    }
+]
+
+# Render the chart
+st.subheader("📈 Chart with Range Switcher")
+st.markdown("Use the buttons in the top-right corner to switch between different time ranges.")
+
+chart_config = [
+    {
+        "chart": chart_options,
+        "series": candlestick_series,
+    }
+]
+
+renderLightweightCharts(chart_config, key="range_switcher_example")
+```
+
+**Range Switcher Features:**
+- **Professional Styling**: Matches TradingView's design with proper fonts, colors, and spacing
+- **Active State Management**: Visual feedback for the currently selected range
+- **Hover Effects**: Smooth transitions and hover states for better UX
+- **Flexible Positioning**: Can be positioned in any corner of the chart
+- **Customizable Ranges**: Easy to add or modify time ranges
+- **Callback Support**: Ready for event handling and integration
+
+**Available Time Ranges:**
+- **1D**: Last 24 hours
+- **1W**: Last 7 days
+- **1M**: Last 30 days
+- **3M**: Last 90 days
+- **6M**: Last 180 days
+- **1Y**: Last 365 days
+- **ALL**: Show all available data

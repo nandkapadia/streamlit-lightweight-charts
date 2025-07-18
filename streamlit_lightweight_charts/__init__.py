@@ -87,6 +87,7 @@ from .charts import (
     HistogramSeries,
     HistogramSeriesOptions,
     LayoutOptions,
+    LegendOptions,
     LineChart,
     LineSeries,
     LineSeriesOptions,
@@ -94,6 +95,8 @@ from .charts import (
     PriceScaleMargins,
     PriceScaleOptions,
     PriceVolumeChart,
+    RangeConfig,
+    RangeSwitcherOptions,
     Series,
     TimeScaleOptions,
     WatermarkOptions,
@@ -112,6 +115,7 @@ from .data import (
     MarkerPosition,
     MarkerShape,
     OhlcData,
+    OhlcvData,
     SingleValueData,
     Trade,
     TradeType,
@@ -123,7 +127,7 @@ from .data import (
 )
 
 # Import rendering function
-from .rendering import render_chart
+from .rendering import render_chart, render_multi_pane_chart
 from .type_definitions.colors import (
     Background,
     SolidColor,
@@ -157,6 +161,7 @@ from .utils import (
     df_to_histogram_data,
     df_to_line_data,
     df_to_ohlc_data,
+    df_to_ohlcv_data,
     histogram_chart_from_df,
     line_chart_from_df,
     resample_df_for_charts,
@@ -235,6 +240,7 @@ __all__ = [
     "TimeScaleOptions",
     "PriceScaleMargins",
     "WatermarkOptions",
+    "LegendOptions",
     # Series classes
     "Series",
     "AreaSeries",
@@ -252,6 +258,7 @@ __all__ = [
     # Data models
     "SingleValueData",
     "OhlcData",
+    "OhlcvData",
     "HistogramData",
     "BaselineData",
     "Marker",
@@ -274,6 +281,7 @@ __all__ = [
     # Utilities
     "df_to_line_data",
     "df_to_ohlc_data",
+    "df_to_ohlcv_data",
     "df_to_histogram_data",
     "df_to_baseline_data",
     "df_to_data",
@@ -305,6 +313,7 @@ __all__ = [
     "ChartData",
     # Rendering
     "render_chart",
+    "render_multi_pane_chart",
     "renderLightweightCharts",
     # Data samples
     "series_single_value_data",

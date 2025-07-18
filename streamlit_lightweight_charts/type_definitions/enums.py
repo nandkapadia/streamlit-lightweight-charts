@@ -175,3 +175,35 @@ class VertAlign(str, Enum):
     TOP = "top"
     CENTER = "center"
     BOTTOM = "bottom"
+
+
+class TrackingExitMode(str, Enum):
+    """
+    Tracking exit mode enumeration.
+
+    Defines when the tracking mode should exit.
+
+    Attributes:
+        EXIT_ON_MOVE: Exit tracking mode when mouse moves.
+        EXIT_ON_CROSS: Exit tracking mode when crosshair crosses series.
+        NEVER_EXIT: Never exit tracking mode automatically.
+    """
+
+    EXIT_ON_MOVE = "EXIT_ON_MOVE"
+    EXIT_ON_CROSS = "EXIT_ON_CROSS"
+    NEVER_EXIT = "NEVER_EXIT"
+
+
+class TrackingActivationMode(str, Enum):
+    """
+    Tracking activation mode enumeration.
+
+    Defines when the tracking mode should be activated.
+
+    Attributes:
+        ON_MOUSE_ENTER: Activate tracking mode when mouse enters chart.
+        ON_TOUCH_START: Activate tracking mode when touch starts.
+    """
+
+    ON_MOUSE_ENTER = "ON_MOUSE_ENTER"
+    ON_TOUCH_START = "ON_TOUCH_START"

@@ -1,5 +1,12 @@
 {
   "dependencies": {
-    "streamlit-component-lib": "^1.4.0"
+    "lightweight-charts": "^5.0.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "streamlit-lightweight-charts-pro": "0.8.0"
+  },
+  "scripts": {
+    "security": "npm audit --audit-level moderate",
+    "security-fix": "npm audit fix"
   }
 }

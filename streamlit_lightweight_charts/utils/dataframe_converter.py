@@ -1,20 +1,22 @@
 """
-Utility functions for converting pandas DataFrames to chart data.
+DataFrame conversion utilities for streamlit-lightweight-charts.
 
-This module provides a comprehensive set of utility functions for converting
-pandas DataFrames into the various data formats required by the charting library.
-It supports conversion to line data, OHLC data, histogram data, and baseline data,
-with flexible column mapping and automatic time handling.
-
-The functions handle common financial data formats and provide sensible defaults
-for typical use cases while allowing customization for specific requirements.
+This module provides utility functions for converting pandas DataFrames
+to the internal data structures used by the chart library.
 """
 
 from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from ..data import BaselineData, HistogramData, OhlcData, SingleValueData
+from streamlit_lightweight_charts.data.models import (
+    BaselineData,
+    HistogramData,
+    OhlcData,
+    OhlcvData,
+    SingleValueData,
+)
+from streamlit_lightweight_charts.data.base import to_utc_timestamp
 
 
 def df_to_line_data(
@@ -59,98 +61,137 @@ def df_to_line_data(
     if time_column is None:
         # Use DataFrame index as time values
         for timestamp, row in df.iterrows():
-            data.append(SingleValueData(time=timestamp, value=row[value_column]))
+            data.append(SingleValueData(time=str(timestamp), value=float(row[value_column])))
     else:
         # Use specified column as time values
         for _, row in df.iterrows():
-            data.append(SingleValueData(time=row[time_column], value=row[value_column]))
+            data.append(SingleValueData(time=str(row[time_column]), value=float(row[value_column])))
 
     return data
 
 
 def df_to_ohlc_data(
     df: pd.DataFrame,
+    time_column: Optional[str] = None,
     open_column: str = "open",
     high_column: str = "high",
     low_column: str = "low",
     close_column: str = "close",
-    time_column: Optional[str] = None,
 ) -> List[OhlcData]:
     """
-    Convert a pandas DataFrame to OHLC chart data.
-
-    This function converts a DataFrame with OHLC (Open, High, Low, Close) data
-    into a list of OhlcData objects suitable for candlestick charts and bar charts.
-    It supports flexible column naming and automatic time handling.
+    Convert DataFrame to list of OhlcData objects.
 
     Args:
-        df: DataFrame containing OHLC data. Should have columns for open, high,
-            low, and close prices.
-        open_column: Name of the column containing opening prices.
-            Defaults to "open".
-        high_column: Name of the column containing highest prices.
-            Defaults to "high".
-        low_column: Name of the column containing lowest prices.
-            Defaults to "low".
-        close_column: Name of the column containing closing prices.
-            Defaults to "close".
-        time_column: Name of the column containing time values. If None,
-            uses the DataFrame index as time values.
+        df: DataFrame containing OHLC data
+        time_column: Column name for time data (if None, uses index)
+        open_column: Column name for open prices
+        high_column: Column name for high prices
+        low_column: Column name for low prices
+        close_column: Column name for close prices
 
     Returns:
-        List of OhlcData objects ready for use in candlestick or bar charts.
+        List of OhlcData objects
 
     Example:
         ```python
-        # Using DataFrame index as time
         df = pd.DataFrame({
-            'open': [100, 101, 102],
-            'high': [105, 106, 107],
-            'low': [98, 99, 100],
-            'close': [102, 103, 104]
-        }, index=pd.date_range('2024-01-01', periods=3))
-        ohlc_data = df_to_ohlc_data(df)
-
-        # Using custom column names
-        df = pd.DataFrame({
-            'date': ['2024-01-01', '2024-01-02'],
-            'o': [100, 101], 'h': [105, 106],
-            'l': [98, 99], 'c': [102, 103]
+            'time': ['2024-01-01', '2024-01-02'],
+            'open': [100, 102],
+            'high': [105, 107],
+            'low': [98, 100],
+            'close': [102, 104]
         })
-        ohlc_data = df_to_ohlc_data(
-            df, open_column='o', high_column='h',
-            low_column='l', close_column='c', time_column='date'
-        )
+        ohlc_data = df_to_ohlc_data(df, time_column='time')
         ```
     """
-    data = []
+    ohlc_data = []
 
-    if time_column is None:
-        # Use DataFrame index as time values
-        for timestamp, row in df.iterrows():
-            data.append(
-                OhlcData(
-                    time=timestamp,
-                    open_=row[open_column],
-                    high=row[high_column],
-                    low=row[low_column],
-                    close=row[close_column],
-                )
-            )
-    else:
-        # Use specified column as time values
-        for _, row in df.iterrows():
-            data.append(
-                OhlcData(
-                    time=row[time_column],
-                    open_=row[open_column],
-                    high=row[high_column],
-                    low=row[low_column],
-                    close=row[close_column],
-                )
-            )
+    for idx, row in df.iterrows():
+        # Get time value
+        if time_column and time_column in row:
+            time_value = row[time_column]
+        else:
+            time_value = idx
 
-    return data
+        # Convert time to proper format
+        time_value = to_utc_timestamp(str(time_value))
+
+        # Create OHLC data point
+        ohlc_data.append(
+            OhlcData(
+                time=time_value,
+                open_=float(row[open_column]),
+                high=float(row[high_column]),
+                low=float(row[low_column]),
+                close=float(row[close_column]),
+            )
+        )
+
+    return ohlc_data
+
+
+def df_to_ohlcv_data(
+    df: pd.DataFrame,
+    time_column: Optional[str] = None,
+    open_column: str = "open",
+    high_column: str = "high",
+    low_column: str = "low",
+    close_column: str = "close",
+    volume_column: str = "volume",
+) -> List[OhlcvData]:
+    """
+    Convert DataFrame to list of OhlcvData objects.
+
+    Args:
+        df: DataFrame containing OHLCV data
+        time_column: Column name for time data (if None, uses index)
+        open_column: Column name for open prices
+        high_column: Column name for high prices
+        low_column: Column name for low prices
+        close_column: Column name for close prices
+        volume_column: Column name for volume data
+
+    Returns:
+        List of OhlcvData objects
+
+    Example:
+        ```python
+        df = pd.DataFrame({
+            'time': ['2024-01-01', '2024-01-02'],
+            'open': [100, 102],
+            'high': [105, 107],
+            'low': [98, 100],
+            'close': [102, 104],
+            'volume': [1000000, 1200000]
+        })
+        ohlcv_data = df_to_ohlcv_data(df, time_column='time')
+        ```
+    """
+    ohlcv_data = []
+
+    for idx, row in df.iterrows():
+        # Get time value
+        if time_column and time_column in row:
+            time_value = row[time_column]
+        else:
+            time_value = idx
+
+        # Convert time to proper format
+        time_value = to_utc_timestamp(str(time_value))
+
+        # Create OHLCV data point
+        ohlcv_data.append(
+            OhlcvData(
+                time=time_value,
+                open_=float(row[open_column]),
+                high=float(row[high_column]),
+                low=float(row[low_column]),
+                close=float(row[close_column]),
+                volume=float(row[volume_column]),
+            )
+        )
+
+    return ohlcv_data
 
 
 def df_to_histogram_data(
@@ -217,7 +258,7 @@ def df_to_histogram_data(
                 # Use sign-based color assignment
                 color = positive_color if value >= 0 else negative_color
 
-            data.append(HistogramData(time=timestamp, value=value, color=color))
+            data.append(HistogramData(time=str(timestamp), value=float(value), color=str(color)))
     else:
         # Use specified column as time values
         for _, row in df.iterrows():
@@ -230,7 +271,13 @@ def df_to_histogram_data(
                 # Use sign-based color assignment
                 color = positive_color if value >= 0 else negative_color
 
-            data.append(HistogramData(time=row[time_column], value=value, color=color))
+            data.append(
+                HistogramData(
+                    time=str(row[time_column]), 
+                    value=float(value), 
+                    color=str(color)
+                )
+            )
 
     return data
 
@@ -269,11 +316,11 @@ def df_to_baseline_data(
     if time_column is None:
         # Use DataFrame index as time values
         for timestamp, row in df.iterrows():
-            data.append(BaselineData(time=timestamp, value=row[value_column]))
+            data.append(BaselineData(time=str(timestamp), value=float(row[value_column])))
     else:
         # Use specified column as time values
         for _, row in df.iterrows():
-            data.append(BaselineData(time=row[time_column], value=row[value_column]))
+            data.append(BaselineData(time=str(row[time_column]), value=float(row[value_column])))
 
     return data
 
@@ -348,7 +395,8 @@ def resample_df_for_charts(
             if col not in agg_dict:
                 agg_dict[col] = "mean"
 
-    return df.resample(freq).agg(agg_dict)
+    result = df.resample(freq).agg(agg_dict)
+    return result.to_frame() if isinstance(result, pd.Series) else result
 
 
 def df_to_data(

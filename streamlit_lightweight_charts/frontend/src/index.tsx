@@ -8,8 +8,8 @@ import { ComponentConfig } from './types'
 const App: React.FC = () => {
   const renderData = useRenderData()
   const config = renderData.args["config"] as ComponentConfig
-  const height = renderData.args["height"] as number || 400
-  const width = renderData.args["width"] as number || 800
+  const height = renderData.args["height"] as number | null || 400
+  const width = renderData.args["width"] as number | null || null  // Default to null for 100% width
 
   if (!config) {
     return <div>No configuration provided</div>

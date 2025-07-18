@@ -17,6 +17,7 @@ from .models import (
     MarkerPosition,
     MarkerShape,
     OhlcData,
+    OhlcvData,
     SingleValueData,
 )
 from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
@@ -24,6 +25,7 @@ from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptio
 __all__ = [
     "SingleValueData",
     "OhlcData",
+    "OhlcvData",
     "HistogramData",
     "BaselineData",
     "Marker",

@@ -48,7 +48,7 @@ def render_chart(
     charts: Union[List[Union[Chart, Dict[str, Any]]], Chart, Dict[str, Any], MultiPaneChart],
     key: Optional[str] = None,
     height: int = 400,
-    width: int = 800,
+    width: Optional[int] = None,
     sync_config: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """
@@ -110,22 +110,31 @@ def render_chart(
             else:
                 chart_configs.append(chart)
 
+    # Check if any chart has auto-sizing enabled
+    has_auto_sizing = False
+    for chart_config in chart_configs:
+        chart_options = chart_config.get("chart", {})
+        if (chart_options.get("autoSize") or 
+            chart_options.get("autoWidth") or 
+            chart_options.get("autoHeight")):
+            has_auto_sizing = True
+            break
+
     # Create component configuration with default synchronization settings
     component_config = {
         "charts": chart_configs,
         "syncConfig": sync_config or {"enabled": False, "crosshair": True, "timeRange": True},
-        "height": height,
-        "width": width,
+        "height": height,  # Always pass the height to the frontend
+        "width": width,    # Pass width (can be None for 100% width)
     }
-
     return _get_component_func()(config=component_config, key=key)
 
 
 def render_multi_pane_chart(
     chart: MultiPaneChart,
     key: Optional[str] = None,
-    height: int = 400,
-    width: int = 800,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
 ) -> Any:
     """
     Render a multi-pane chart specifically with synchronization enabled.
@@ -159,7 +168,7 @@ def render_multi_pane_chart(
     return render_chart(
         charts=chart,
         key=key,
-        height=height,
-        width=width,
+        height=height or 400,  # Use provided height or default to 400
+        width=width,  # Pass through the width parameter (can be None for 100%)
         sync_config={"enabled": True, "crosshair": True, "timeRange": True},
     )
