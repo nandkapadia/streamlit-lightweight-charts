@@ -1,16 +1,16 @@
-from streamlit_lightweight_charts.charts.options import (
+from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
     CrosshairLineOptions,
     CrosshairOptions,
     GridLineOptions,
     GridOptions,
     LayoutOptions,
-    PriceScaleOptions,
     TimeScaleOptions,
     WatermarkOptions,
+    RightPriceScale,
 )
-from streamlit_lightweight_charts.type_definitions.colors import Background
-from streamlit_lightweight_charts.type_definitions.enums import (
+from streamlit_lightweight_charts_pro.type_definitions.colors import Background
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
     CrosshairMode,
     HorzAlign,
     LineStyle,
@@ -77,7 +77,7 @@ def test_crosshair_options():
 
 
 def test_price_scale_options():
-    options = PriceScaleOptions(
+    options = RightPriceScale(
         border_visible=False, border_color="#cccccc", mode=PriceScaleMode.LOGARITHMIC
     )
     assert options.border_visible is False
@@ -127,7 +127,7 @@ def test_chart_options():
     layout = LayoutOptions()
     grid = GridOptions()
     crosshair = CrosshairOptions()
-    right_price_scale = PriceScaleOptions()
+    right_price_scale = RightPriceScale()
     time_scale = TimeScaleOptions()
 
     options = ChartOptions(

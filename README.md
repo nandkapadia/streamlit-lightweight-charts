@@ -1,5 +1,5 @@
-# streamlit-lightweight-charts
-Streamlit wrapper for performant Tradingview's Financial: `lightweight-charts`
+# streamlit-lightweight-charts-pro
+Enhanced Streamlit wrapper for performant Tradingview's Financial: `lightweight-charts` with ultra-simplified API and performance optimizations
 
 The Lightweight Charts library is the best choice to display financial data as an interactive chart on a web page without affecting loading speed and performance.
 
@@ -15,7 +15,7 @@ The Lightweight Charts library is the best choice to display financial data as a
 
 ## How to install:
 ```
-python -m pip install streamlit-lightweight-charts
+python -m pip install streamlit-lightweight-charts-pro
 ```
 
 ## Development Setup
@@ -96,7 +96,7 @@ The library now provides a clean, type-safe object-oriented API alongside the or
 ### Quick Start with OOP API
 
 ```python
-from streamlit_lightweight_charts import Chart, CandlestickSeries
+from streamlit_lightweight_charts_pro import SinglePaneChart, CandlestickSeries
 from streamlit_lightweight_charts.data import OhlcData
 import pandas as pd
 
@@ -108,7 +108,7 @@ data = [
 ]
 
 # Create and render chart
-chart = Chart(series=CandlestickSeries(data=data))
+chart = SinglePaneChart(series=[CandlestickSeries(data=data)])
 chart.render(key='candlestick_chart')
 ```
 
@@ -228,6 +228,37 @@ chart = CandlestickChart(
 - ✅ **Performance**: Uses ResizeObserver for efficient updates
 - ✅ **Streamlit Integration**: Works seamlessly with Streamlit's responsive layout
 
+### Fit Content on Load - New Feature!
+
+Automatically fit charts to their content when first displayed, ensuring all data is visible:
+
+```python
+from streamlit_lightweight_charts import CandlestickChart
+
+# Default behavior - chart fits to content automatically
+chart = CandlestickChart(
+    data=ohlc_data,
+    chart_options={
+        "fit_content_on_load": True  # This is the default
+    }
+)
+
+# Disable fit content behavior
+chart = CandlestickChart(
+    data=ohlc_data,
+    chart_options={
+        "fit_content_on_load": False
+    }
+)
+```
+
+**Features:**
+- ✅ **Automatic Fitting**: Charts automatically show all data when first displayed
+- ✅ **Configurable**: Can be enabled/disabled per chart
+- ✅ **Smart Timing**: Fits content after chart is fully initialized
+- ✅ **Error Handling**: Gracefully handles cases where fitting fails
+- ✅ **Default Behavior**: Enabled by default for better user experience
+
 ### Range Switcher - New Feature!
 
 Add professional time range switching to any chart, similar to TradingView:
@@ -293,9 +324,9 @@ The original dictionary-based API is still fully supported. The OOP API is an op
 
 ### How to use:
 ```
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts import render_chart
 
-renderLightweightCharts(charts: <List of Dicts> , key: <str>)
+render_chart(charts: <List of Dicts> , key: <str>)
 ```
 
 ### API
@@ -341,7 +372,7 @@ renderLightweightCharts(charts: <List of Dicts> , key: <str>)
 
 ```python
 import streamlit as st
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts import render_chart
 import streamlit_lightweight_charts.dataSamples as data
 
 priceVolumeChartOptions = {
@@ -407,7 +438,7 @@ priceVolumeSeries = [
 ]
 st.subheader("Price and Volume Series Chart")
 
-renderLightweightCharts([
+render_chart([
     {
         "chart": priceVolumeChartOptions,
         "series": priceVolumeSeries
@@ -424,7 +455,7 @@ renderLightweightCharts([
 
 ```python
 import streamlit as st
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts import render_chart
 import streamlit_lightweight_charts.dataSamples as data
 
 overlaidAreaSeriesOptions = {
@@ -512,7 +543,7 @@ seriesOverlaidChart = [
 ]
 st.subheader("Overlaid Series with Markers")
 
-renderLightweightCharts([
+render_chart([
     {
         "chart": overlaidAreaSeriesOptions,
         "series": seriesOverlaidChart

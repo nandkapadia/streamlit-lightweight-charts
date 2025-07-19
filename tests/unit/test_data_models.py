@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pandas as pd
 
-from streamlit_lightweight_charts.data.base import from_utc_timestamp, to_utc_timestamp
-from streamlit_lightweight_charts.data.models import (
+from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.data.models import (
     BaselineData,
     HistogramData,
     Marker,

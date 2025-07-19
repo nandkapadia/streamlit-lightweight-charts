@@ -5,8 +5,8 @@ from playwright.sync_api import sync_playwright
 
 STREAMLIT_APP_CODE = """\
 import streamlit as st
-from streamlit_lightweight_charts.charts import LineChart
-from streamlit_lightweight_charts.data.models import SingleValueData
+from streamlit_lightweight_charts_pro.charts import LineChart
+from streamlit_lightweight_charts_pro.data.models import SingleValueData
 chart = LineChart([SingleValueData('2023-01-01', 1.0), SingleValueData('2023-01-02', 2.0)])
 st.write('Test Chart')
 chart.render()

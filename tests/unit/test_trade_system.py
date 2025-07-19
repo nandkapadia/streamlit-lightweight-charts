@@ -1,10 +1,10 @@
-from streamlit_lightweight_charts.data.trade import (
+from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
     TradeVisualization,
     TradeVisualizationOptions,
 )
-from streamlit_lightweight_charts.utils.trade_visualization import (
+from streamlit_lightweight_charts_pro.utils.trade_visualization import (
     trades_to_visual_elements,
 )
 

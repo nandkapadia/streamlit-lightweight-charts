@@ -1,20 +1,18 @@
-# Byte-compiled / optimized / DLL files
+# ===========================
+# Python
+# ===========================
 __pycache__/
 *.py[cod]
 *$py.class
 
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# Build artifacts
+/build/
+/dist/
+/*.egg-info
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
+# Unit test / coverage
 htmlcov/
 .tox/
 .nox/
@@ -28,32 +26,50 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
 # pyenv
 .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+# PEP 582
 __pypackages__/
 
+# pipenv / poetry
+# Pipfile.lock — optional; include only if cross-platform compatibility is guaranteed
+#Pipfile.lock
+
+# ===========================
+# Jupyter / IPython
+# ===========================
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# ===========================
+# Environment variables
+# ===========================
+.env
+.env.local
+.env.*.local
+
+# Include example for sharing
+!.env.example
+
+# ===========================
+# Node / JavaScript
+# ===========================
+node_modules/
+.prettiercache
+
+# Project-specific node_modules
+streamlit_lightweight_charts/frontend/node_modules/
+streamlit_lightweight_charts_pro/frontend/node_modules/
+
+# ===========================
+# macOS / System
+# ===========================
+.DS_Store
+
+# ===========================
+# VSCode / Editor
+# ===========================
+.vscode/
 .pypirc
-
-## Python build
-/build/
-/*.egg-info
-
-.DS_STORE
-streamlit_lightweight_charts/frontend/node_modules
-.vscode

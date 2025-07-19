@@ -1,6 +1,6 @@
 import pandas as pd
 
-from streamlit_lightweight_charts.utils.dataframe_converter import (
+from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
     df_to_baseline_data,
     df_to_histogram_data,
     df_to_line_data,

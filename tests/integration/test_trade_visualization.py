@@ -1,6 +1,7 @@
-from streamlit_lightweight_charts.charts import CandlestickChart
-from streamlit_lightweight_charts.data.models import OhlcData
-from streamlit_lightweight_charts.data.trade import (
+from streamlit_lightweight_charts_pro.charts import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
+from streamlit_lightweight_charts_pro.data.models import OhlcData
+from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
     TradeVisualizationOptions,
@@ -8,19 +9,33 @@ from streamlit_lightweight_charts.data.trade import (
 
 
 def test_candlestick_chart_with_trades():
+    """Test candlestick chart with trade visualization using ultra-simplified API."""
     ohlc = [
         OhlcData("2023-01-01", 1, 2, 0, 1.5),
         OhlcData("2023-01-02", 1.5, 2.5, 1, 2),
     ]
     trades = [Trade("2023-01-01", 1.1, "2023-01-02", 1.9, 10, TradeType.LONG)]
-    chart = CandlestickChart(
-        ohlc, trades=trades, trade_visualization_options=TradeVisualizationOptions()
+
+    from streamlit_lightweight_charts_pro.data.trade import TradeVisualization
+
+    # Create candlestick series with trades
+    candlestick_series = CandlestickSeries(
+        data=ohlc,
+        trades=trades,
+        trade_visualization_options=TradeVisualizationOptions(style=TradeVisualization.MARKERS),
+        up_color="#26a69a",
+        down_color="#ef5350",
     )
+
+    # Create single pane chart
+    chart = SinglePaneChart([candlestick_series])
+
     config = chart.to_frontend_config()
     assert "series" in config
     found_trade = False
     for s in config["series"]:
-        # Check for trade-related keys that add_trades_to_series adds
-        if any(key in s for key in ["markers", "shapes", "annotations"]):
+        # Check for trade-related keys that are actually stored in the series
+        if any(key in s for key in ["trades", "tradeVisualizationOptions"]):
             found_trade = True
+            break
     assert found_trade

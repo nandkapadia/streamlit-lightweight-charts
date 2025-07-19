@@ -6,34 +6,27 @@ from playwright.sync_api import sync_playwright
 
 STREAMLIT_INTERACTIVE_APP = """\
 import streamlit as st
-import streamlit_lightweight_charts as stlc
+import pandas as pd
+from streamlit_lightweight_charts_pro import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
+from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 
-# Create sample data as plain dictionaries
+# Create sample data as DataFrame
 data = [
-    {"time": "2023-01-01", "open": 100, "high": 110, "low": 95, "close": 105},
-    {"time": "2023-01-02", "open": 105, "high": 115, "low": 100, "close": 110},
-    {"time": "2023-01-03", "open": 110, "high": 120, "low": 105, "close": 115},
-    {"time": "2023-01-04", "open": 115, "high": 125, "low": 110, "close": 120},
-    {"time": "2023-01-05", "open": 120, "high": 130, "low": 115, "close": 125}
+    {"datetime": "2023-01-01", "open": 100, "high": 110, "low": 95, "close": 105},
+    {"datetime": "2023-01-02", "open": 105, "high": 115, "low": 100, "close": 110},
+    {"datetime": "2023-01-03", "open": 110, "high": 120, "low": 105, "close": 115},
+    {"datetime": "2023-01-04", "open": 115, "high": 125, "low": 110, "close": 120},
+    {"datetime": "2023-01-05", "open": 120, "high": 130, "low": 115, "close": 125}
 ]
 
+df = pd.DataFrame(data)
+
 st.write('Interactive Candlestick Chart')
-stlc.renderLightweightCharts([{
-    "width": 600,
-    "height": 400,
-    "layout": {
-        "background": {"type": "solid", "color": "white"},
-        "textColor": "black"
-    },
-    "grid": {
-        "vertLines": {"color": "#e6e6e6"},
-        "horzLines": {"color": "#e6e6e6"}
-    },
-    "series": [{
-        "type": "candlestick",
-        "data": data
-    }]
-}])
+series = CandlestickSeries(data=df)
+chart_options = ChartOptions(height=400, width=600)
+chart = SinglePaneChart(series=[series], options=chart_options)
+chart.render()
 """
 
 

@@ -1,8 +1,8 @@
-from streamlit_lightweight_charts.type_definitions.colors import (
+from streamlit_lightweight_charts_pro.type_definitions.colors import (
     Background,
     VerticalGradientColor,
 )
-from streamlit_lightweight_charts.type_definitions.enums import (
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
     ChartType,
     ColorType,
     HorzAlign,
