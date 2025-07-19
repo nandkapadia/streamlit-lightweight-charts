@@ -3,7 +3,12 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from streamlit_lightweight_charts_pro.type_definitions import CrosshairMode, LineStyle, TrackingActivationMode, TrackingExitMode
+from streamlit_lightweight_charts_pro.type_definitions import (
+    CrosshairMode,
+    LineStyle,
+    TrackingActivationMode,
+    TrackingExitMode,
+)
 
 
 @dataclass
@@ -96,4 +101,4 @@ class TrackingModeOptions:
         return {
             "exitMode": self.exit_mode.value,
             "activationMode": self.activation_mode.value,
-        } 
+        }

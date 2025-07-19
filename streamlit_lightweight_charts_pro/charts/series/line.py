@@ -13,14 +13,14 @@ Example:
     ```python
     from streamlit_lightweight_charts_pro.charts.series import LineSeries
     from streamlit_lightweight_charts_pro.data import SingleValueData
-    
+
     # Create line data
     data = [
         SingleValueData("2024-01-01", 100),
         SingleValueData("2024-01-02", 105),
         SingleValueData("2024-01-03", 102)
     ]
-    
+
     # Create line series with styling
     series = LineSeries(
         data=data,
@@ -43,15 +43,15 @@ from .base import Series, _get_enum_value
 class LineSeries(Series):
     """
     Line series for lightweight charts.
-    
+
     This class represents a line series that displays continuous data points
     connected by lines. It's commonly used for price charts, technical
     indicators, and trend analysis.
-    
+
     The LineSeries supports various styling options including line color,
     width, style, and animation effects. It also supports markers and
     price line configurations.
-    
+
     Attributes:
         color: Color of the line
         line_style: Style of the line (solid, dashed, dotted)
@@ -84,11 +84,11 @@ class LineSeries(Series):
         crosshair_marker_background_color: str = "",
         crosshair_marker_border_width: int = 2,
         last_price_animation: Union[LastPriceAnimationMode, str] = LastPriceAnimationMode.DISABLED,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize line series with data and styling options.
-        
+
         Args:
             data: Series data as a list of SingleValueData objects or pandas DataFrame.
             color: Color of the line. Defaults to "#2196F3".
@@ -105,12 +105,12 @@ class LineSeries(Series):
             crosshair_marker_border_width: Border width of crosshair markers. Defaults to 2.
             last_price_animation: Animation mode for the last price. Defaults to DISABLED.
             **kwargs: Additional series configuration options.
-            
+
         Example:
             ```python
             # Basic line series
             series = LineSeries(data=line_data)
-            
+
             # With custom styling
             series = LineSeries(
                 data=line_data,
@@ -122,7 +122,7 @@ class LineSeries(Series):
         """
         # Initialize base class
         super().__init__(data=data, **kwargs)
-        
+
         # Line-specific styling options
         self.color = color
         self.line_style = line_style
@@ -141,19 +141,19 @@ class LineSeries(Series):
     def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
         """
         Process pandas DataFrame into SingleValueData format.
-        
+
         Converts a pandas DataFrame with time and value columns into
         a list of SingleValueData objects for the line series.
-        
+
         Args:
             df: Pandas DataFrame with time and value columns.
-                
+
         Returns:
             List[SingleValueData]: List of processed data objects.
-            
+
         Raises:
             ValueError: If required columns are missing from the DataFrame.
-            
+
         Example:
             ```python
             # DataFrame with 'datetime' and 'close' columns
@@ -165,37 +165,31 @@ class LineSeries(Series):
             ```
         """
         # Default column mapping
-        column_mapping = {
-            'time': 'datetime',
-            'value': 'close'
-        }
-        
-        time_col = column_mapping.get('time', 'datetime')
-        value_col = column_mapping.get('value', 'close')
-        
+        column_mapping = {"time": "datetime", "value": "close"}
+
+        time_col = column_mapping.get("time", "datetime")
+        value_col = column_mapping.get("value", "close")
+
         if time_col not in df.columns or value_col not in df.columns:
             raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")
-        
+
         # Use vectorized operations for better performance
         times = df[time_col].astype(str).tolist()
         values = df[value_col].astype(float).tolist()
-        
-        return [
-            SingleValueData(time=time, value=value)
-            for time, value in zip(times, values)
-        ]
+
+        return [SingleValueData(time=time, value=value) for time, value in zip(times, values)]
 
     def to_frontend_config(self) -> Dict[str, Any]:
         """
         Convert line series to frontend-compatible configuration.
-        
+
         Creates a dictionary representation of the line series suitable
         for consumption by the frontend React component.
-        
+
         Returns:
             Dict[str, Any]: Frontend-compatible configuration dictionary
                 containing series type, data, and styling options.
-                
+
         Example:
             ```python
             config = series.to_frontend_config()
@@ -234,18 +228,20 @@ class LineSeries(Series):
                 "crosshairMarkerBorderColor": self.crosshair_marker_border_color,
                 "crosshairMarkerBackgroundColor": self.crosshair_marker_background_color,
                 "crosshairMarkerBorderWidth": self.crosshair_marker_border_width,
-                "lastPriceAnimation": _get_enum_value(self.last_price_animation, LastPriceAnimationMode),
-            }
+                "lastPriceAnimation": _get_enum_value(
+                    self.last_price_animation, LastPriceAnimationMode
+                ),
+            },
         }
-        
+
         # Add optional fields only if they are set
         if self.point_markers_radius is not None:
             config["options"]["pointMarkersRadius"] = self.point_markers_radius
-            
+
         if self.markers:
             config["markers"] = [marker.to_dict() for marker in self.markers]
-            
+
         if self.price_scale_config:
             config["priceScale"] = self.price_scale_config
-            
-        return config 
+
+        return config

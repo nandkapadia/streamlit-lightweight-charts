@@ -3,7 +3,12 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
-from streamlit_lightweight_charts_pro.type_definitions import Background, HorzAlign, LineStyle, VertAlign
+from streamlit_lightweight_charts_pro.type_definitions import (
+    Background,
+    HorzAlign,
+    LineStyle,
+    VertAlign,
+)
 
 
 @dataclass
@@ -75,4 +80,4 @@ class WatermarkOptions:
             "horzAlign": self.horz_align.value,
             "vertAlign": self.vert_align.value,
             "color": self.color,
-        } 
+        }

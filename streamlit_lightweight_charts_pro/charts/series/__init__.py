@@ -1,12 +1,12 @@
 """Series module for streamlit-lightweight-charts."""
 
-from .base import Series
 from .area import AreaSeries
-from .line import LineSeries
-from .candlestick import CandlestickSeries
 from .bar import BarSeries
-from .histogram import HistogramSeries
+from .base import Series
 from .baseline import BaselineSeries
+from .candlestick import CandlestickSeries
+from .histogram import HistogramSeries
+from .line import LineSeries
 
 __all__ = [
     "Series",
@@ -16,4 +16,4 @@ __all__ = [
     "BarSeries",
     "HistogramSeries",
     "BaselineSeries",
-] 
+]

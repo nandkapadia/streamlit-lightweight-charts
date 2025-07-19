@@ -28,4 +28,4 @@ class LocalizationOptions:
         if self.percentage_formatter is not None:
             result["percentageFormatter"] = self.percentage_formatter
 
-        return result 
+        return result

@@ -1,16 +1,7 @@
 """Scale option classes for streamlit-lightweight-charts."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
-
-from streamlit_lightweight_charts_pro.type_definitions import PriceScaleMode
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-    PriceScaleOptions,
-    RightPriceScaleOptions,
-    LeftPriceScaleOptions,
-    OverlayPriceScaleOptions,
-    PriceScaleMargins,
-)
 
 
 @dataclass
@@ -57,4 +48,4 @@ class TimeScaleOptions:
         if self.tick_mark_formatter is not None:
             result["tickMarkFormatter"] = self.tick_mark_formatter
 
-        return result 
+        return result

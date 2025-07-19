@@ -18,29 +18,37 @@ from streamlit_lightweight_charts_pro.charts.options.interaction_options import 
     KineticScrollOptions,
     TrackingModeOptions,
 )
-from streamlit_lightweight_charts_pro.charts.options.layout_options import GridLineOptions, GridOptions, LayoutOptions, WatermarkOptions
+from streamlit_lightweight_charts_pro.charts.options.layout_options import (
+    GridLineOptions,
+    GridOptions,
+    LayoutOptions,
+    WatermarkOptions,
+)
 from streamlit_lightweight_charts_pro.charts.options.localization_options import LocalizationOptions
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-    PriceScaleOptions,
-    RightPriceScaleOptions,
-    LeftPriceScaleOptions,
-    OverlayPriceScaleOptions,
-    PriceScaleMargins,
-    # Backward compatibility aliases
-    PriceScale,
-    RightPriceScale,
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (  # Backward compatibility aliases
     LeftPriceScale,
+    LeftPriceScaleOptions,
     OverlayPriceScale,
+    OverlayPriceScaleOptions,
+    PriceScale,
+    PriceScaleMargins,
+    PriceScaleOptions,
+    RightPriceScale,
+    RightPriceScaleOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.scale_options import TimeScaleOptions
-from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions, RangeConfig, RangeSwitcherOptions
+from streamlit_lightweight_charts_pro.charts.options.ui_options import (
+    LegendOptions,
+    RangeConfig,
+    RangeSwitcherOptions,
+)
 
 __all__ = [
     # Main chart options
     "ChartOptions",
     # Layout options
     "GridLineOptions",
-    "GridOptions", 
+    "GridOptions",
     "LayoutOptions",
     "WatermarkOptions",
     # Interaction options
@@ -52,7 +60,7 @@ __all__ = [
     # Scale options
     "TimeScaleOptions",
     "PriceScaleOptions",
-    "RightPriceScaleOptions", 
+    "RightPriceScaleOptions",
     "LeftPriceScaleOptions",
     "OverlayPriceScaleOptions",
     "PriceScaleMargins",
@@ -67,4 +75,4 @@ __all__ = [
     "RangeSwitcherOptions",
     # Localization options
     "LocalizationOptions",
-] 
+]

@@ -75,8 +75,6 @@ class MultiPaneChart(BaseChart):
         """
         self.charts.append(chart)
 
-
-
     def to_frontend_config(self) -> Dict[str, Any]:
         """
         Convert multi-pane chart to frontend-compatible configuration.
@@ -93,12 +91,8 @@ class MultiPaneChart(BaseChart):
         chart_configs = []
         for chart in self.charts:
             chart_configs.append(chart.to_frontend_config())
-        
+
         return {
             "charts": chart_configs,
-            "syncConfig": {
-                "enabled": True,
-                "crosshair": True,
-                "timeRange": True
-            }
-        } 
+            "syncConfig": {"enabled": True, "crosshair": True, "timeRange": True},
+        }

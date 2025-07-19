@@ -1,7 +1,7 @@
 """Price scale option classes for streamlit-lightweight-charts."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from streamlit_lightweight_charts_pro.type_definitions import PriceScaleMode
 
@@ -27,29 +27,29 @@ class PriceScaleOptions:
     auto_scale: bool = True
     mode: PriceScaleMode = PriceScaleMode.NORMAL
     invert_scale: bool = False
-    
+
     # Visual appearance
     border_visible: bool = True
     border_color: str = "rgba(197, 203, 206, 0.8)"
     text_color: str = "#333333"
     font_size: int = 11
     font_weight: str = "400"
-    
+
     # Tick and label configuration
     ticks_visible: bool = True
     draw_ticks: bool = True
     ensure_edge_tick_marks_visible: bool = False
     align_labels: bool = True
     entire_text_only: bool = False
-    
+
     # Size and positioning
     minimum_width: int = 72
     scale_margins: PriceScaleMargins = field(default_factory=PriceScaleMargins)
-    
+
     # Interaction
     handle_scale: bool = False
     handle_size: int = 20
-    
+
     # Identification
     price_scale_id: str = ""
 
@@ -57,7 +57,7 @@ class PriceScaleOptions:
         """Convert to dictionary representation for lightweight-charts v5.x."""
         # Ensure minimumWidth is never 0 to prevent invisible Y-axis labels
         safe_minimum_width = max(self.minimum_width, 72) if self.visible else 0
-        
+
         result = {
             "visible": self.visible,
             "autoScale": self.auto_scale,
@@ -88,7 +88,7 @@ class PriceScaleOptions:
 @dataclass
 class RightPriceScaleOptions(PriceScaleOptions):
     """Right price scale configuration."""
-    
+
     def __post_init__(self):
         """Set default values specific to right price scale."""
         if not self.price_scale_id:
@@ -98,7 +98,7 @@ class RightPriceScaleOptions(PriceScaleOptions):
 @dataclass
 class LeftPriceScaleOptions(PriceScaleOptions):
     """Left price scale configuration."""
-    
+
     def __post_init__(self):
         """Set default values specific to left price scale."""
         if not self.price_scale_id:
@@ -108,7 +108,7 @@ class LeftPriceScaleOptions(PriceScaleOptions):
 @dataclass
 class OverlayPriceScaleOptions(PriceScaleOptions):
     """Overlay price scale configuration."""
-    
+
     def __post_init__(self):
         """Ensure overlay price scale has a unique ID."""
         if not self.price_scale_id:
@@ -119,4 +119,4 @@ class OverlayPriceScaleOptions(PriceScaleOptions):
 PriceScale = PriceScaleOptions
 RightPriceScale = RightPriceScaleOptions
 LeftPriceScale = LeftPriceScaleOptions
-OverlayPriceScale = OverlayPriceScaleOptions 
+OverlayPriceScale = OverlayPriceScaleOptions

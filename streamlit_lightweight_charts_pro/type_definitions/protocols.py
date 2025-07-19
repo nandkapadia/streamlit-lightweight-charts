@@ -26,9 +26,6 @@ class TimeSeriesDataProtocol(Protocol):
         ...
 
 
-
-
-
 @runtime_checkable
 class ChartOptionsProtocol(Protocol):
     """Protocol for chart options objects."""

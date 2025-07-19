@@ -96,4 +96,4 @@ class LegendOptions:
             "showSymbol": self.show_symbol,
             "priceFormat": self.price_format,
             "customTemplate": self.custom_template,
-        } 
+        }

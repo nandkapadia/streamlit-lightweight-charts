@@ -12,7 +12,7 @@ rendering. It supports method chaining for fluent API usage.
 Example:
     ```python
     from streamlit_lightweight_charts_pro.charts.series.base import Series
-    
+
     class MyCustomSeries(Series):
         def to_frontend_config(self):
             return {"type": "custom", "data": self.data}
@@ -31,22 +31,22 @@ from ...data.models import BaseData
 def _get_enum_value(value, enum_class):
     """
     Helper function to get enum value, handling both enum objects and strings.
-    
+
     This function safely converts enum values to their string representations,
     handling cases where the value might already be a string or an enum object.
-    
+
     Args:
         value: The value to convert (can be enum object or string)
         enum_class: The enum class to use for conversion
-        
+
     Returns:
         str: The string value of the enum
-        
+
     Example:
         ```python
         # With enum object
         _get_enum_value(LineStyle.SOLID, LineStyle)  # Returns "solid"
-        
+
         # With string
         _get_enum_value("solid", LineStyle)  # Returns "solid"
         ```
@@ -67,15 +67,15 @@ def _get_enum_value(value, enum_class):
 class Series(ABC):
     """
     Abstract base class for all series types.
-    
+
     This class defines the common interface and functionality that all series
     classes must implement. It provides core data handling, configuration
     methods, and frontend integration capabilities.
-    
+
     All series classes should inherit from this base class and implement
     the required abstract methods. The class supports method chaining for
     fluent API usage.
-    
+
     Attributes:
         data: List of data points for this series
         visible: Whether the series is currently visible
@@ -112,7 +112,7 @@ class Series(ABC):
     ):
         """
         Initialize a series with data and configuration.
-        
+
         Args:
             data: Series data as a list of data objects or pandas DataFrame.
             visible: Whether the series is visible. Defaults to True.
@@ -128,12 +128,12 @@ class Series(ABC):
             price_format: Price formatting configuration. Defaults to None.
             markers: List of markers to display. Defaults to None.
             price_scale_config: Price scale configuration. Defaults to None.
-            
+
         Example:
             ```python
             # Basic series
             series = LineSeries(data=line_data)
-            
+
             # With configuration
             series = LineSeries(
                 data=line_data,
@@ -178,16 +178,16 @@ class Series(ABC):
     def _process_dataframe(self, df: pd.DataFrame) -> List[BaseData]:
         """
         Process pandas DataFrame into series data format.
-        
+
         This method must be implemented by subclasses to convert pandas
         DataFrames into the appropriate data format for the series type.
-        
+
         Args:
             df: Pandas DataFrame to process.
-                
+
         Returns:
             List[BaseData]: List of processed data objects.
-            
+
         Raises:
             NotImplementedError: If the subclass doesn't implement this method.
         """
@@ -196,15 +196,15 @@ class Series(ABC):
     def set_visible(self, visible: bool) -> "Series":
         """
         Set series visibility.
-        
+
         Shows or hides the series. Returns self for method chaining.
-        
+
         Args:
             visible: Whether the series should be visible.
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_visible(False)
@@ -216,16 +216,16 @@ class Series(ABC):
     def set_price_scale(self, price_scale_id: str) -> "Series":
         """
         Set the price scale for this series.
-        
+
         Specifies which price scale (left or right) this series should
         be attached to. Returns self for method chaining.
-        
+
         Args:
             price_scale_id: ID of the price scale ("left" or "right").
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_price_scale("left")
@@ -243,19 +243,19 @@ class Series(ABC):
     ) -> "Series":
         """
         Configure the price line for this series.
-        
+
         Sets the price line configuration including visibility, width,
         color, and style. Returns self for method chaining.
-        
+
         Args:
             visible: Whether the price line should be visible.
             width: Width of the price line in pixels.
             color: Color of the price line.
             style: Style of the price line ("solid", "dashed", "dotted").
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_price_line(visible=True, color="#ff0000", width=2)
@@ -279,19 +279,19 @@ class Series(ABC):
     ) -> "Series":
         """
         Configure the base line for this series.
-        
+
         Sets the base line configuration including visibility, width,
         color, and style. Returns self for method chaining.
-        
+
         Args:
             visible: Whether the base line should be visible.
             width: Width of the base line in pixels.
             color: Color of the base line.
             style: Style of the base line ("solid", "dashed", "dotted").
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_base_line(visible=True, color="#00ff00", width=1)
@@ -314,18 +314,18 @@ class Series(ABC):
     ) -> "Series":
         """
         Set price formatting for this series.
-        
+
         Configures how prices are formatted and displayed. Returns self
         for method chaining.
-        
+
         Args:
             format_type: Type of price format ("price", "volume", "percent").
             precision: Number of decimal places to display.
             min_move: Minimum price movement for formatting.
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_price_format(format_type="price", precision=4)
@@ -349,10 +349,10 @@ class Series(ABC):
     ) -> "Series":
         """
         Add a marker to this series.
-        
+
         Creates and adds a marker to the series. Returns self for
         method chaining.
-        
+
         Args:
             time: Time for the marker in various formats.
             position: Position of the marker relative to the data point.
@@ -360,10 +360,10 @@ class Series(ABC):
             shape: Shape of the marker.
             text: Optional text to display with the marker.
             size: Optional size of the marker in pixels.
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.add_marker(
@@ -389,16 +389,16 @@ class Series(ABC):
     def add_markers(self, markers: List[Marker]) -> "Series":
         """
         Add multiple markers to this series.
-        
+
         Adds a list of markers to the series. Returns self for
         method chaining.
-        
+
         Args:
             markers: List of marker objects to add.
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             markers = [marker1, marker2, marker3]
@@ -411,13 +411,13 @@ class Series(ABC):
     def clear_markers(self) -> "Series":
         """
         Clear all markers from this series.
-        
+
         Removes all markers from the series. Returns self for
         method chaining.
-        
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.clear_markers()
@@ -429,16 +429,16 @@ class Series(ABC):
     def set_price_scale_config(self, **kwargs) -> "Series":
         """
         Set price scale configuration for this series.
-        
+
         Updates the price scale configuration options. Returns self
         for method chaining.
-        
+
         Args:
             **kwargs: Price scale configuration options to update.
-                
+
         Returns:
             Series: Self for method chaining.
-            
+
         Example:
             ```python
             series.set_price_scale_config(
@@ -454,14 +454,14 @@ class Series(ABC):
     def to_frontend_config(self) -> Dict[str, Any]:
         """
         Convert series to frontend-compatible configuration.
-        
+
         This method must be implemented by subclasses to convert the
         series object into a format that can be consumed by the frontend
         React component.
-        
+
         Returns:
             Dict[str, Any]: Frontend-compatible configuration dictionary.
-            
+
         Raises:
             NotImplementedError: If the subclass doesn't implement this method.
         """
@@ -470,14 +470,14 @@ class Series(ABC):
     def get_data_range(self) -> Optional[Dict[str, Union[float, str]]]:
         """
         Get the data range for this series.
-        
+
         Returns the minimum and maximum values and times for the series data.
         Useful for determining chart bounds and scaling.
-        
+
         Returns:
             Optional[Dict[str, Union[float, str]]]: Dictionary containing
                 min_value, max_value, min_time, max_time, or None if no data.
-                
+
         Example:
             ```python
             range_info = series.get_data_range()
@@ -491,15 +491,15 @@ class Series(ABC):
         # Extract values and times
         values = []
         times = []
-        
+
         for item in self.data:
-            if hasattr(item, 'value'):
+            if hasattr(item, "value"):
                 values.append(item.value)
-            elif hasattr(item, 'close'):
+            elif hasattr(item, "close"):
                 values.append(item.close)
-            elif hasattr(item, 'high'):
+            elif hasattr(item, "high"):
                 values.extend([item.high, item.low])
-            
+
             times.append(item.timestamp)
 
         if not values:
@@ -510,4 +510,4 @@ class Series(ABC):
             "max_value": max(values),
             "min_time": min(times),
             "max_time": max(times),
-        } 
+        }

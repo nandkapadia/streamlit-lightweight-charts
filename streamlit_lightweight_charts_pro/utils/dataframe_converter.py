@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
+from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 from streamlit_lightweight_charts_pro.data.models import (
     BaselineData,
     HistogramData,
@@ -16,7 +17,6 @@ from streamlit_lightweight_charts_pro.data.models import (
     OhlcvData,
     SingleValueData,
 )
-from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 
 
 def df_to_line_data(
@@ -272,11 +272,7 @@ def df_to_histogram_data(
                 color = positive_color if value >= 0 else negative_color
 
             data.append(
-                HistogramData(
-                    time=str(row[time_column]), 
-                    value=float(value), 
-                    color=str(color)
-                )
+                HistogramData(time=str(row[time_column]), value=float(value), color=str(color))
             )
 
     return data
