@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { 
   createChart, 
   IChartApi, 
   ISeriesApi, 
-  ColorType, 
   UTCTimestamp,
   AreaSeries,
   LineSeries,
@@ -14,9 +13,9 @@ import {
   createSeriesMarkers
 } from 'lightweight-charts'
 import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualizationOptions, Annotation, AnnotationLayer, LegendConfig, TooltipConfig } from './types'
-import { createTradeVisualElements } from './tradeVisualization'
+import { createTradeVisualElements, TradeRectanglePlugin } from './tradeVisualization'
 import { createAnnotationVisualElements } from './annotationSystem'
-import { registerRectanglePlugin, RectangleOverlayPlugin } from './rectanglePlugin'
+import { createBandSeries, BandData } from './bandSeriesPlugin'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -27,8 +26,7 @@ interface LightweightChartsProps {
 const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = null }) => {
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
-  const rectanglePluginRefs = useRef<{ [key: string]: RectangleOverlayPlugin }>({})
-  const [isInitialized, setIsInitialized] = useState(false)
+  const rectanglePluginRefs = useRef<{ [key: string]: TradeRectanglePlugin }>({})
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
   // Function to get container dimensions
@@ -129,7 +127,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Function to create chart in a specific container
     const createChartInContainer = (container: HTMLElement, chartConfig: any, chartId: string) => {
       try {
-
+        // Check if container is still valid
+        if (!container || !container.isConnected) {
+          return
+        }
 
         // Create chart with proper width/height handling for auto-sizing
         const chartOptions = {
@@ -138,9 +139,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...chartConfig.chart
         }
 
-
-
         const chart = createChart(container, chartOptions)
+
+        // Check if chart was created successfully
+        if (!chart) {
+          return
+        }
 
         chartRefs.current[chartId] = chart
 
@@ -208,15 +212,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (chartConfig.trades && chartConfig.series.length > 0) {
           const firstSeries = seriesRefs.current[chartId][0]
           if (firstSeries) {
-            // Use default trade visualization options if not specified
-            const defaultOptions: TradeVisualizationOptions = {
+            // Use trade visualization options from chart config or default
+            const tradeOptions = chartConfig.tradeVisualizationOptions || {
               style: 'markers',
               entryMarkerColorLong: '#2196F3',
               entryMarkerColorShort: '#FF9800',
               exitMarkerColorProfit: '#4CAF50',
               exitMarkerColorLoss: '#F44336'
             }
-            addTradeVisualization(chart, firstSeries, chartConfig.trades, defaultOptions, chartConfig.series[0]?.data)
+            addTradeVisualization(chart, firstSeries, chartConfig.trades, tradeOptions, chartConfig.series[0]?.data)
           }
         }
 
@@ -286,34 +290,42 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Start the initialization process
     initializeCharts()
 
-    setIsInitialized(true)
-
-    // Setup synchronization if enabled
-    if (config.syncConfig.enabled) {
-      setupChartSync()
-    }
-
     // Cleanup function
     return () => {
       Object.values(chartRefs.current).forEach(chart => {
-        chart.remove()
+        try {
+          // Try to remove the chart - if it's already disposed, this will throw an error
+          if (chart) {
+            chart.remove()
+          }
+        } catch (error) {
+          // Chart is already disposed or invalid - ignore error
+        }
       })
-          Object.values(rectanglePluginRefs.current).forEach(plugin => {
-      plugin.destroy()
-    })
+      
+      Object.values(rectanglePluginRefs.current).forEach(plugin => {
+        try {
+          if (plugin && typeof plugin.destroy === 'function') {
+            plugin.destroy()
+          }
+        } catch (error) {
+          // Plugin is already destroyed or invalid - ignore error
+        }
+      })
+      
       chartRefs.current = {}
       seriesRefs.current = {}
       rectanglePluginRefs.current = {}
+      
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect()
+        resizeObserverRef.current = null
       }
     }
   }, [config, height, width])
 
   const createSeries = (chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
-    const { type, data, options = {}, name, priceScale } = seriesConfig
-
-
+    const { type, data, options = {}, priceScale } = seriesConfig
 
     let series: ISeriesApi<any>
     
@@ -340,6 +352,69 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         series = chart.addSeries(AreaSeries, areaOptions)
         break
+      case 'band':
+        try {
+          // Create band series using the custom plugin
+          const bandSeries = createBandSeries(chart, {
+            upperLineColor: otherOptions.upperLineColor || '#4CAF50',
+            middleLineColor: otherOptions.middleLineColor || '#2196F3',
+            lowerLineColor: otherOptions.lowerLineColor || '#F44336',
+            upperLineWidth: otherOptions.upperLineWidth || 2,
+            middleLineWidth: otherOptions.middleLineWidth || 2,
+            lowerLineWidth: otherOptions.lowerLineWidth || 2,
+            upperFillColor: otherOptions.upperFillColor || 'rgba(76, 175, 80, 0.1)',
+            lowerFillColor: otherOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
+            priceScaleId: otherOptions.priceScaleId || 'right',
+            visible: otherOptions.visible !== false,
+          })
+          
+          // Set data for band series
+          if (data && data.length > 0) {
+            bandSeries.setData(data as BandData[])
+          }
+          
+          // Return a proxy object that mimics ISeriesApi interface
+          return {
+            setData: (newData: any[]) => {
+              try {
+                bandSeries.setData(newData as BandData[])
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            update: (newData: any) => {
+              try {
+                bandSeries.update(newData as BandData)
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            applyOptions: (options: any) => {
+              try {
+                bandSeries.setOptions(options)
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            priceScale: () => {
+              try {
+                return chart.priceScale(otherOptions.priceScaleId || 'right')
+              } catch (error) {
+                return null
+              }
+            },
+            remove: () => {
+              try {
+                bandSeries.remove()
+              } catch (error) {
+                // Series is already removed - ignore error
+              }
+            },
+          } as unknown as ISeriesApi<any>
+        } catch (error) {
+          // Failed to create band series - return null
+          return null
+        }
       case 'baseline':
         const baselineOptions = {
           baseValue: { price: 0 },
@@ -447,7 +522,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       // Add markers to the series
       if (visualElements.markers.length > 0) {
         try {
-          const seriesMarkers = createSeriesMarkers(series, visualElements.markers);
+          createSeriesMarkers(series, visualElements.markers);
         } catch (error) {
           // Silent error handling
         }
@@ -457,7 +532,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       const chartId = chart.chartElement().id || 'default';
       
       if (!rectanglePluginRefs.current[chartId]) {
-        const rectanglePlugin = registerRectanglePlugin(chart, series, visualElements.rectangles);
+        const rectanglePlugin = new TradeRectanglePlugin(chart, series);
         rectanglePluginRefs.current[chartId] = rectanglePlugin;
       }
       
@@ -496,7 +571,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     if (visualElements.markers.length > 0) {
       const seriesList = Object.values(seriesRefs.current).flat()
       if (seriesList.length > 0) {
-        const seriesMarkers = createSeriesMarkers(seriesList[0], visualElements.markers)
+        createSeriesMarkers(seriesList[0], visualElements.markers)
         // The markers are now set through the plugin
       }
     }
@@ -1194,48 +1269,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     container.appendChild(legend)
-  }
-
-  const setupChartSync = () => {
-    const charts = Object.values(chartRefs.current)
-    
-    if (charts.length < 2) return
-
-    charts.forEach((chart, index) => {
-      // Sync crosshair
-      if (config.syncConfig.crosshair) {
-        chart.subscribeCrosshairMove((param) => {
-          const seriesList = Object.values(seriesRefs.current)[index] || [];
-          const firstSeries = seriesList[0];
-          let price: number | undefined = undefined;
-          if (firstSeries && param.seriesData) {
-            const data = param.seriesData.get(firstSeries);
-            if (data) {
-              // Try to get price from value (line/area/histogram), or close (candlestick/bar)
-              price = (data as any).value ?? (data as any).close;
-            }
-          }
-          charts.forEach((otherChart, otherIndex) => {
-            if (otherIndex !== index && price !== undefined && param.time !== undefined && firstSeries) {
-              otherChart.setCrosshairPosition(price, param.time, firstSeries);
-            }
-          })
-        })
-      }
-
-      // Sync time range
-      if (config.syncConfig.timeRange) {
-        chart.timeScale().subscribeVisibleTimeRangeChange((param) => {
-          if (param !== null) {
-            charts.forEach((otherChart, otherIndex) => {
-              if (otherIndex !== index) {
-                otherChart.timeScale().setVisibleRange(param)
-              }
-            })
-          }
-        })
-      }
-    })
   }
 
   if (!config.charts || config.charts.length === 0) {

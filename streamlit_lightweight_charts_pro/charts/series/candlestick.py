@@ -199,10 +199,8 @@ class CandlestickSeries(Series):
         if self.price_scale_config:
             config["priceScale"] = self.price_scale_config
 
-        # Add trade visualization if configured
-        if self.trades and self.trade_visualization_options:
-            config["trades"] = [trade.to_dict() for trade in self.trades]
-            config["tradeVisualizationOptions"] = self.trade_visualization_options.to_dict()
+        # Note: Trades are now handled at the chart level, not series level
+        # This prevents duplication and ensures proper trade visualization
 
         return config
 

@@ -2,9 +2,9 @@ import { Time, SeriesMarker } from "lightweight-charts"
 
 // Enhanced Trade Configuration
 export interface TradeConfig {
-  entryTime: string
+  entryTime: string | number
   entryPrice: number
-  exitTime: string
+  exitTime: string | number
   exitPrice: number
   quantity: number
   tradeType: 'long' | 'short'
@@ -55,6 +55,7 @@ export interface TradeVisualizationOptions {
   showTradeId?: boolean
   showQuantity?: boolean
   showTradeType?: boolean
+  showAnnotations?: boolean
   annotationFontSize?: number
   annotationBackground?: string
 }
@@ -88,7 +89,7 @@ export interface AnnotationLayer {
 
 // Enhanced Series Configuration
 export interface SeriesConfig {
-  type: 'Area' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
+  type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
   data: any[]
   options?: any
   name?: string

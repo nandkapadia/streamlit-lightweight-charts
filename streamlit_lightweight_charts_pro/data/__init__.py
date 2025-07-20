@@ -11,6 +11,7 @@ from streamlit_lightweight_charts_pro.data.annotation import (
     create_text_annotation,
 )
 from streamlit_lightweight_charts_pro.data.models import (
+    BandData,
     BaselineData,
     HistogramData,
     Marker,
@@ -23,6 +24,7 @@ from streamlit_lightweight_charts_pro.data.models import (
 from streamlit_lightweight_charts_pro.data.trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
 
 __all__ = [
+    "BandData",
     "SingleValueData",
     "OhlcData",
     "OhlcvData",

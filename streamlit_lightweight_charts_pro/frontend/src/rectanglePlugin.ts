@@ -222,7 +222,6 @@ export class RectangleOverlayPlugin {
 
           // Calculate rectangle dimensions with proper bounds checking
           const x = Math.min(time1Pixel, time2Pixel);
-          const y = Math.min(price1Pixel, price2Pixel);
           const width = Math.abs(time2Pixel - time1Pixel);
           const height = Math.abs(price2Pixel - price1Pixel);
 

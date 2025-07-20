@@ -103,7 +103,27 @@ class SinglePaneChart(BaseChart):
             self.series = series
 
         # Use provided options or create default ones
-        self.options = options or ChartOptions()
+        if options is None:
+            self.options = ChartOptions()
+        elif isinstance(options, dict):
+            # Convert dictionary to ChartOptions object
+            self.options = ChartOptions()
+            # Update with dictionary values
+            for key, value in options.items():
+                if hasattr(self.options, key):
+                    setattr(self.options, key, value)
+                elif key in ['layout', 'grid', 'crosshair', 'rightPriceScale', 'leftPriceScale', 'timeScale']:
+                    # Handle nested dictionaries
+                    if key == 'rightPriceScale':
+                        self.options.right_price_scale.update(value)
+                    elif key == 'leftPriceScale':
+                        self.options.left_price_scale.update(value)
+                    elif key == 'timeScale':
+                        self.options.time_scale.update(value)
+                    else:
+                        getattr(self.options, key).update(value)
+        else:
+            self.options = options
 
         # Initialize annotation manager
         self.annotation_manager = AnnotationManager()
@@ -343,8 +363,7 @@ class SinglePaneChart(BaseChart):
             #     }],
             #     "syncConfig": {"enabled": False, "crosshair": False, "timeRange": False}
             # }
-            ```
-        """
+            """
         # Convert annotation layers to frontend format
         annotation_layers = []
         for layer_name, layer in self.annotation_manager.layers.items():
@@ -357,6 +376,16 @@ class SinglePaneChart(BaseChart):
                 }
             )
 
+        # Extract trades and trade visualization options from series
+        all_trades = []
+        trade_visualization_options = None
+        
+        for series in self.series:
+            if hasattr(series, 'trades') and series.trades:
+                all_trades.extend(series.trades)
+                if hasattr(series, 'trade_visualization_options') and series.trade_visualization_options:
+                    trade_visualization_options = series.trade_visualization_options
+
         # Create the chart configuration
         chart_config = {
             "chartId": f"chart-{id(self)}",  # Unique chart identifier
@@ -364,6 +393,12 @@ class SinglePaneChart(BaseChart):
             "series": [s.to_frontend_config() for s in self.series],
             "annotations": annotation_layers,
         }
+
+        # Add trades at chart level if any exist
+        if all_trades:
+            chart_config["trades"] = [trade.to_dict() for trade in all_trades]
+            if trade_visualization_options:
+                chart_config["tradeVisualizationOptions"] = trade_visualization_options.to_dict()
 
         # Return the component configuration structure expected by the frontend
         return {

@@ -20,6 +20,7 @@ class ChartType(str, Enum):
 
     Attributes:
         AREA: Area chart - filled area below a line.
+        BAND: Band chart - multiple lines with fill areas (e.g., Bollinger Bands).
         BASELINE: Baseline chart - values relative to a baseline.
         HISTOGRAM: Histogram chart - bar chart for volume or distribution.
         LINE: Line chart - simple line connecting data points.
@@ -28,6 +29,7 @@ class ChartType(str, Enum):
     """
 
     AREA = "Area"
+    BAND = "Band"
     BASELINE = "Baseline"
     HISTOGRAM = "Histogram"
     LINE = "Line"
