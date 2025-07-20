@@ -127,8 +127,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Function to create chart in a specific container
     const createChartInContainer = (container: HTMLElement, chartConfig: any, chartId: string) => {
       try {
-        console.log('🔍 [DEBUG] Creating chart in container:', { chartId, containerId: container.id })
-        console.log('🔍 [DEBUG] Full chart config:', JSON.stringify(chartConfig, null, 2))
+
 
         // Create chart with proper width/height handling for auto-sizing
         const chartOptions = {
@@ -137,7 +136,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...chartConfig.chart
         }
 
-        console.log('🔍 [DEBUG] Chart options:', JSON.stringify(chartOptions, null, 2))
+
 
         const chart = createChart(container, chartOptions)
 
@@ -147,7 +146,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         const seriesList: ISeriesApi<any>[] = []
         
         chartConfig.series.forEach((seriesConfig: SeriesConfig, seriesIndex: number) => {
-          console.log(`🔍 [DEBUG] Creating series ${seriesIndex}:`, JSON.stringify(seriesConfig, null, 2))
+  
           const series = createSeries(chart, seriesConfig)
           if (series) {
             seriesList.push(series)
@@ -228,9 +227,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             setTimeout(() => {
               try {
                 chart.timeScale().fitContent()
-                console.log(`✅ [DEBUG] Chart fitted to content (attempt ${attempt}):`, chartId)
               } catch (error) {
-                console.warn(`⚠️ [DEBUG] Could not fit chart to content (attempt ${attempt}):`, error)
                 // Retry up to 3 times with increasing delays
                 if (attempt < 3) {
                   tryFitContent(attempt + 1)
@@ -242,7 +239,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           tryFitContent()
         }
 
-        console.log('✅ [DEBUG] Chart created successfully:', chartId)
+
 
       } catch (error) {
         console.error('❌ [DEBUG] Error creating chart in container:', error)
@@ -276,13 +273,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const createSeries = (chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
     const { type, data, options = {}, name, priceScale } = seriesConfig
 
-    console.log('🔍 [DEBUG] createSeries called with:', {
-      type,
-      dataLength: data?.length,
-      options: JSON.stringify(options, null, 2),
-      name,
-      priceScale: JSON.stringify(priceScale, null, 2)
-    })
+
 
     let series: ISeriesApi<any>
     
@@ -292,8 +283,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Extract priceFormat from options
     const { priceFormat, ...otherOptions } = options
 
-    console.log('🔍 [DEBUG] Extracted priceFormat:', JSON.stringify(priceFormat, null, 2))
-    console.log('🔍 [DEBUG] Other options:', JSON.stringify(otherOptions, null, 2))
+
 
     switch (normalizedType) {
       case 'area':
@@ -307,7 +297,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (priceFormat) {
           areaOptions.priceFormat = priceFormat
         }
-        console.log('🔍 [DEBUG] Area series options:', JSON.stringify(areaOptions, null, 2))
+
         series = chart.addSeries(AreaSeries, areaOptions)
         break
       case 'baseline':
@@ -325,7 +315,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (priceFormat) {
           baselineOptions.priceFormat = priceFormat
         }
-        console.log('🔍 [DEBUG] Baseline series options:', JSON.stringify(baselineOptions, null, 2))
+
         series = chart.addSeries(BaselineSeries, baselineOptions)
         break
       case 'histogram':
@@ -341,7 +331,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           },
           ...otherOptions
         }
-        console.log('🔍 [DEBUG] Histogram series options:', JSON.stringify(histogramOptions, null, 2))
+
         series = chart.addSeries(HistogramSeries, histogramOptions)
         break
       case 'line':
@@ -353,7 +343,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (priceFormat) {
           lineOptions.priceFormat = priceFormat
         }
-        console.log('🔍 [DEBUG] Line series options:', JSON.stringify(lineOptions, null, 2))
+
         series = chart.addSeries(LineSeries, lineOptions)
         break
       case 'bar':
@@ -368,7 +358,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (priceFormat) {
           barOptions.priceFormat = priceFormat
         }
-        console.log('🔍 [DEBUG] Bar series options:', JSON.stringify(barOptions, null, 2))
+
         series = chart.addSeries(BarSeries, barOptions)
         break
       case 'candlestick':
@@ -383,29 +373,25 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (priceFormat) {
           candlestickOptions.priceFormat = priceFormat
         }
-        console.log('🔍 [DEBUG] Candlestick series options:', JSON.stringify(candlestickOptions, null, 2))
+
         series = chart.addSeries(CandlestickSeries, candlestickOptions)
         break
       default:
-        console.error('❌ [DEBUG] Unknown series type:', type)
+
         // Unknown series type - handled silently in production
         return null
     }
 
-    console.log('🔍 [DEBUG] Series created:', series)
-    console.log('🔍 [DEBUG] Series options after creation:', series.options())
-    console.log('🔍 [DEBUG] Series price scale options:', series.priceScale().options())
+
 
     // Set price scale if specified
     if (priceScale) {
-      console.log('🔍 [DEBUG] Applying price scale options:', JSON.stringify(priceScale, null, 2))
       series.priceScale().applyOptions(priceScale)
-      console.log('🔍 [DEBUG] Price scale options after apply:', series.priceScale().options())
     }
 
     // Set data
     if (data && data.length > 0) {
-      console.log('🔍 [DEBUG] Setting series data, length:', data.length)
+
       series.setData(data)
     }
 
