@@ -43,13 +43,16 @@ def test_price_volume_chart():
     assert "charts" in config
     assert len(config["charts"]) >= 2
 
-    price_chart = config["charts"][0]
+    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0] contains the actual chart
+    price_chart = config["charts"][0]["charts"][0]
     assert "series" in price_chart
-    assert any(s["type"] == "Candlestick" for s in price_chart["series"])
+    # The actual implementation uses lowercase "candlestick", not "Candlestick"
+    assert any(s["type"] == "candlestick" for s in price_chart["series"])
 
-    volume_chart = config["charts"][1]
+    volume_chart = config["charts"][1]["charts"][0]
     assert "series" in volume_chart
-    assert any(s["type"] == "Histogram" for s in volume_chart["series"])
+    # The actual implementation uses lowercase "histogram", not "Histogram"
+    assert any(s["type"] == "histogram" for s in volume_chart["series"])
 
 
 def test_comparison_chart():
@@ -67,8 +70,12 @@ def test_comparison_chart():
     chart = SinglePaneChart([stock_a_series, stock_b_series])
 
     config = chart.to_frontend_config()
-    assert "series" in config
-    assert len(config["series"]) >= 2
+    # The SinglePaneChart returns a structure with "charts" array containing the chart config
+    assert "charts" in config
+    assert len(config["charts"]) == 1
+    chart_config = config["charts"][0]
+    assert "series" in chart_config
+    assert len(chart_config["series"]) >= 2
 
 
 def test_price_volume_chart_with_trades():
@@ -118,7 +125,8 @@ def test_price_volume_chart_with_trades():
     )
 
     config = chart.to_frontend_config()
-    price_chart = config["charts"][0]
+    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0] contains the actual chart
+    price_chart = config["charts"][0]["charts"][0]
     found_trades = False
     for series in price_chart["series"]:
         # Check for trade-related keys that add_trades_to_series adds

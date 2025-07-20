@@ -8,9 +8,9 @@ import numpy as np
 import streamlit as st
 import yfinance as yf
 
-from streamlit_lightweight_charts import MultiPaneChart, render_chart
-from streamlit_lightweight_charts.charts import CandlestickChart, HistogramChart, LineChart
-from streamlit_lightweight_charts.data import HistogramData, OhlcData, SingleValueData
+from streamlit_lightweight_charts_pro import MultiPaneChart
+from streamlit_lightweight_charts_pro.charts import SinglePaneChart, LineSeries, CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData, SingleValueData
 
 COLOR_BULL = "rgba(38,166,154,0.9)"  # #26a69a
 COLOR_BEAR = "rgba(239,83,80,0.9)"  # #ef5350
@@ -54,11 +54,20 @@ macd_hist_data = [
 ]
 
 # Create charts
-candlestick_chart = CandlestickChart(data=candlestick_data)
-volume_chart = HistogramChart(data=volume_data)
-macd_fast_chart = LineChart(data=macd_fast_data)
-macd_slow_chart = LineChart(data=macd_slow_data)
-macd_hist_chart = HistogramChart(data=macd_hist_data)
+candlestick_series = CandlestickSeries(data=candlestick_data)
+candlestick_chart = SinglePaneChart(series=candlestick_series)
+
+volume_series = HistogramSeries(data=volume_data)
+volume_chart = SinglePaneChart(series=volume_series)
+
+macd_fast_series = LineSeries(data=macd_fast_data)
+macd_fast_chart = SinglePaneChart(series=macd_fast_series)
+
+macd_slow_series = LineSeries(data=macd_slow_data)
+macd_slow_chart = SinglePaneChart(series=macd_slow_series)
+
+macd_hist_series = HistogramSeries(data=macd_hist_data)
+macd_hist_chart = SinglePaneChart(series=macd_hist_series)
 
 # Create multi-pane chart
 chart = MultiPaneChart()
@@ -71,4 +80,4 @@ chart.add_pane(macd_hist_chart)
 st.subheader("Multipane Chart with Pandas")
 
 # Render the chart
-render_chart(chart, key="multipane")
+chart.render(key="multipane")

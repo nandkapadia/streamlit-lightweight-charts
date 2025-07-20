@@ -522,27 +522,30 @@ class AnnotationManager:
         """
         return self.layers.get(name)
 
-    def remove_layer(self, name: str) -> "AnnotationManager":
+    def remove_layer(self, name: str) -> bool:
         """
         Remove an annotation layer by name.
 
         Removes the specified layer and all its annotations. Returns
-        self for method chaining.
+        True if the layer was found and removed, False otherwise.
 
         Args:
             name: Name of the layer to remove.
 
         Returns:
-            AnnotationManager: Self for method chaining.
+            bool: True if layer was removed, False if layer didn't exist.
 
         Example:
             ```python
-            manager.remove_layer("old_layer")
+            success = manager.remove_layer("old_layer")
+            if success:
+                print("Layer removed successfully")
             ```
         """
         if name in self.layers:
             del self.layers[name]
-        return self
+            return True
+        return False
 
     def clear_all_layers(self) -> "AnnotationManager":
         """
@@ -628,9 +631,15 @@ class AnnotationManager:
         annotations suitable for serialization.
 
         Returns:
-            Dict[str, Any]: Dictionary representation of all layers.
+            Dict[str, Any]: Dictionary representation of all layers with
+                layer names as keys.
         """
-        return {"layers": [layer.to_dict() for layer in self.layers.values()]}
+        return {
+            "layers": {
+                layer_name: layer.to_dict() 
+                for layer_name, layer in self.layers.items()
+            }
+        }
 
 
 def create_text_annotation(

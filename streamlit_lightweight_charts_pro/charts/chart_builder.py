@@ -316,6 +316,47 @@ class ChartBuilder:
         self.options.auto_size = auto_size
         return self
 
+    def set_watermark(self, watermark: str) -> "ChartBuilder":
+        """
+        Set chart watermark.
+
+        Sets the watermark text to display on the chart. Returns self
+        for method chaining.
+
+        Args:
+            watermark: Watermark text to display.
+
+        Returns:
+            ChartBuilder: Self for method chaining.
+
+        Example:
+            ```python
+            builder.set_watermark("My Financial Chart")
+            ```
+        """
+        self.options.watermark = watermark
+        return self
+
+    def set_legend(self, show_legend: bool = True) -> "ChartBuilder":
+        """
+        Set legend visibility.
+
+        Shows or hides the chart legend. Returns self for method chaining.
+
+        Args:
+            show_legend: Whether to show the legend. Defaults to True.
+
+        Returns:
+            ChartBuilder: Self for method chaining.
+
+        Example:
+            ```python
+            builder.set_legend(True)
+            ```
+        """
+        self.options.legend = show_legend
+        return self
+
     def add_annotation(self, annotation: Annotation) -> "ChartBuilder":
         """
         Add an annotation to the chart.

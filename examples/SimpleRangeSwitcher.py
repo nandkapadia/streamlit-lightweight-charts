@@ -11,62 +11,68 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts_pro import render_chart
 
 st.title("📊 Simple Range Switcher Example")
-st.markdown("""
+st.markdown(
+    """
 This example demonstrates the enhanced range switcher functionality with a single dataset.
 The range switcher allows users to quickly switch between different time ranges (1D, 1W, 1M, 1Y, ALL).
-""")
+"""
+)
+
 
 # Generate sample data
 @st.cache_data
 def generate_data():
     """Generate sample OHLCV data."""
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=365*2)  # 2 years of data
-    
-    date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-    
+    start_date = end_date - timedelta(days=365 * 2)  # 2 years of data
+
+    date_range = pd.date_range(start=start_date, end=end_date, freq="D")
+
     data = []
     current_price = 100
-    
+
     for date in date_range:
         # Generate realistic price movements
         change = np.random.normal(0, 0.015)  # 1.5% daily volatility
-        current_price *= (1 + change)
-        
+        current_price *= 1 + change
+
         # Generate OHLC from current price
         high = current_price * (1 + abs(np.random.normal(0, 0.008)))
         low = current_price * (1 - abs(np.random.normal(0, 0.008)))
         open_price = current_price * (1 + np.random.normal(0, 0.004))
         close_price = current_price
-        
+
         # Ensure OHLC relationships
         high = max(high, open_price, close_price)
         low = min(low, open_price, close_price)
-        
+
         # Generate volume
         volume = np.random.randint(1000000, 10000000)
-        
-        data.append({
-            'time': date.strftime('%Y-%m-%d'),
-            'open': round(open_price, 2),
-            'high': round(high, 2),
-            'low': round(low, 2),
-            'close': round(close_price, 2),
-            'volume': volume
-        })
-        
+
+        data.append(
+            {
+                "time": date.strftime("%Y-%m-%d"),
+                "open": round(open_price, 2),
+                "high": round(high, 2),
+                "low": round(low, 2),
+                "close": round(close_price, 2),
+                "volume": volume,
+            }
+        )
+
         current_price = close_price
-    
+
     return data
+
 
 # Generate the data
 data = generate_data()
 
 # Create volume data
-volume_data = [{'time': item['time'], 'value': item['volume']} for item in data]
+volume_data = [{"time": item["time"], "value": item["volume"]} for item in data]
 
 # Chart configuration with range switcher
 chart_options = {
@@ -110,12 +116,12 @@ chart_options = {
             {"label": "3M", "seconds": 7776000},
             {"label": "6M", "seconds": 15552000},
             {"label": "1Y", "seconds": 31536000},
-            {"label": "ALL", "seconds": None}
+            {"label": "ALL", "seconds": None},
         ],
         "position": "top-right",
         "visible": True,
-        "defaultRange": "1M"  # Start with 1M view
-    }
+        "defaultRange": "1M",  # Start with 1M view
+    },
 }
 
 # Series configurations
@@ -164,7 +170,7 @@ chart_config = [
     }
 ]
 
-renderLightweightCharts(chart_config, key="simple_range_switcher")
+render_chart(chart_config, key="simple_range_switcher")
 
 # Display data info
 st.subheader("📋 Data Information")
@@ -175,17 +181,13 @@ with col1:
 with col2:
     st.metric("Date Range", f"{data[0]['time']} to {data[-1]['time']}")
 with col3:
-    latest_price = data[-1]['close']
-    prev_price = data[-2]['close']
+    latest_price = data[-1]["close"]
+    prev_price = data[-2]["close"]
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100
-    st.metric(
-        "Latest Price", 
-        f"${latest_price:.2f}", 
-        f"{change:+.2f} ({change_pct:+.2f}%)"
-    )
+    st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")
 with col4:
-    total_volume = sum(d['volume'] for d in data)
+    total_volume = sum(d["volume"] for d in data)
     st.metric("Total Volume", f"{total_volume:,}")
 
 # Show sample data
@@ -202,12 +204,13 @@ st.dataframe(
         "low": st.column_config.NumberColumn("Low", format="$%.2f"),
         "close": st.column_config.NumberColumn("Close", format="$%.2f"),
         "volume": st.column_config.NumberColumn("Volume", format="%d"),
-    }
+    },
 )
 
 # Usage instructions
 st.subheader("💡 How to Use the Range Switcher")
-st.markdown("""
+st.markdown(
+    """
 1. **Range Switcher Buttons**: Click the buttons in the top-right corner of the chart
 2. **Available Ranges**:
    - **1D**: Last 24 hours
@@ -225,11 +228,13 @@ st.markdown("""
    - Double-click to reset view
 
 The range switcher provides quick access to common time ranges for financial analysis.
-""")
+"""
+)
 
 # Code example
 with st.expander("🔧 Code Example"):
-    st.code("""
+    st.code(
+        """
 # Chart configuration with range switcher
 chart_options = {
     "width": 800,
@@ -265,5 +270,7 @@ chart_config = [
     }
 ]
 
-renderLightweightCharts(chart_config, key="my_chart")
-""", language="python") 
+render_chart(chart_config, key="my_chart")
+""",
+        language="python",
+    )

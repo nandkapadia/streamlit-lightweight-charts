@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts import MultiPaneChart, render_chart
-from streamlit_lightweight_charts.charts import CandlestickChart, HistogramChart
-from streamlit_lightweight_charts.data import HistogramData, OhlcData
+from streamlit_lightweight_charts_pro import MultiPaneChart, render_chart
+from streamlit_lightweight_charts_pro.charts import CandlestickChart, HistogramChart
+from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData
 
 st.set_page_config(page_title="Multi-Pane Chart Demo", layout="wide")
 

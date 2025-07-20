@@ -8,8 +8,14 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts import CandlestickChart, render_chart
-from streamlit_lightweight_charts.data import Marker, MarkerPosition, MarkerShape, OhlcData, Trade
+from streamlit_lightweight_charts_pro import CandlestickChart, render_chart
+from streamlit_lightweight_charts_pro.data import (
+    Marker,
+    MarkerPosition,
+    MarkerShape,
+    OhlcData,
+    Trade,
+)
 
 st.set_page_config(page_title="Trade Drawing Demo", layout="wide")
 

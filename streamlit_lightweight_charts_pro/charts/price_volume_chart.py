@@ -130,9 +130,6 @@ class PriceVolumeChart(SinglePaneChart):
                 ensure_edge_tick_marks_visible=True,
                 align_labels=True,
             ),
-            overlay_price_scales={
-                "volume": volume_price_scale.to_dict() if volume_data is not None else None
-            },
             **kwargs,
         )
 

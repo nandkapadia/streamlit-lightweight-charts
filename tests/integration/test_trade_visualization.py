@@ -31,9 +31,14 @@ def test_candlestick_chart_with_trades():
     chart = SinglePaneChart([candlestick_series])
 
     config = chart.to_frontend_config()
-    assert "series" in config
+    # The SinglePaneChart returns a structure with "charts" array containing the chart config
+    assert "charts" in config
+    assert len(config["charts"]) == 1
+    
+    chart_config = config["charts"][0]
+    assert "series" in chart_config
     found_trade = False
-    for s in config["series"]:
+    for s in chart_config["series"]:
         # Check for trade-related keys that are actually stored in the series
         if any(key in s for key in ["trades", "tradeVisualizationOptions"]):
             found_trade = True

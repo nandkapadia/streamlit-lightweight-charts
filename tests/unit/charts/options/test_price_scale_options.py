@@ -6,6 +6,14 @@ import pytest
 from unittest.mock import Mock, patch
 
 from streamlit_lightweight_charts_pro.charts import (
+    PriceVolumeChart,
+    SinglePaneChart,
+    MultiPaneChart,
+    LineSeries,
+    CandlestickSeries,
+)
+from streamlit_lightweight_charts_pro.charts.options import (
+    ChartOptions,
     PriceScaleOptions,
     PriceScale,
     RightPriceScale,
@@ -266,12 +274,12 @@ class TestPriceScaleOptions:
 
     def test_price_scale_integration_with_chart_options(self):
         """Test PriceScale integration with ChartOptions."""
-        from streamlit_lightweight_charts_pro.charts import ChartOptions
+        from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 
         right_scale = RightPriceScale(visible=True, text_color="#333333")
         left_scale = LeftPriceScale(visible=False)
 
-        options = ChartOptions(right_price_scale=right_scale, left_price_scale=left_scale)
+        options = ChartOptions(right_price_scale=right_scale.to_dict(), left_price_scale=left_scale.to_dict())
 
         result = options.to_dict()
 
@@ -284,18 +292,13 @@ class TestPriceScaleOptions:
 
     def test_price_scale_overlay_integration(self):
         """Test PriceScale overlay integration."""
-        from streamlit_lightweight_charts_pro.charts import ChartOptions
-
         overlay_scale = OverlayPriceScale(
             price_scale_id="volume", visible=True, ticks_visible=False, border_visible=False
         )
 
-        options = ChartOptions(overlay_price_scales={"volume": overlay_scale.to_dict()})
+        result = overlay_scale.to_dict()
 
-        result = options.to_dict()
-
-        assert "overlayPriceScales" in result
-        assert "volume" in result["overlayPriceScales"]
-        assert result["overlayPriceScales"]["volume"]["visible"] is True
-        assert result["overlayPriceScales"]["volume"]["ticksVisible"] is False
-        assert result["overlayPriceScales"]["volume"]["borderVisible"] is False
+        assert result["priceScaleId"] == "volume"
+        assert result["visible"] is True
+        assert result["ticksVisible"] is False
+        assert result["borderVisible"] is False

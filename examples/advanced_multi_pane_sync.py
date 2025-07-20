@@ -14,9 +14,9 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from streamlit_lightweight_charts import MultiPaneChart, render_chart
-from streamlit_lightweight_charts.charts import CandlestickChart, HistogramChart, LineChart
-from streamlit_lightweight_charts.data import HistogramData, OhlcData, SingleValueData
+from streamlit_lightweight_charts_pro import MultiPaneChart
+from streamlit_lightweight_charts_pro.charts import SinglePaneChart, LineSeries, CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData, SingleValueData
 
 
 # Generate sample data
@@ -124,43 +124,50 @@ candlestick_data = [
 volume_data = [HistogramData(row["time"], row["volume"]) for row in df_dict]
 
 # Create charts
-candlestick_chart = CandlestickChart(data=candlestick_data)
+candlestick_series = CandlestickSeries(data=candlestick_data)
+candlestick_chart = SinglePaneChart(series=candlestick_series)
 chart = MultiPaneChart()
 chart.add_pane(candlestick_chart)
 
 if show_volume:
-    volume_chart = HistogramChart(data=volume_data)
+    volume_series = HistogramSeries(data=volume_data)
+    volume_chart = SinglePaneChart(series=volume_series)
     chart.add_pane(volume_chart)
 
 if show_sma:
     sma_20_data = [
         SingleValueData(row["time"], row["sma_20"]) for row in df_dict if pd.notna(row["sma_20"])
     ]
-    sma_20_chart = LineChart(data=sma_20_data)
+    sma_20_series = LineSeries(data=sma_20_data)
+    sma_20_chart = SinglePaneChart(series=sma_20_series)
     chart.add_pane(sma_20_chart)
 
     sma_50_data = [
         SingleValueData(row["time"], row["sma_50"]) for row in df_dict if pd.notna(row["sma_50"])
     ]
-    sma_50_chart = LineChart(data=sma_50_data)
+    sma_50_series = LineSeries(data=sma_50_data)
+    sma_50_chart = SinglePaneChart(series=sma_50_series)
     chart.add_pane(sma_50_chart)
 
 if show_rsi:
     rsi_data = [SingleValueData(row["time"], row["rsi"]) for row in df_dict if pd.notna(row["rsi"])]
-    rsi_chart = LineChart(data=rsi_data)
+    rsi_series = LineSeries(data=rsi_data)
+    rsi_chart = SinglePaneChart(series=rsi_series)
     chart.add_pane(rsi_chart)
 
 if show_macd:
     macd_data = [
         SingleValueData(row["time"], row["macd"]) for row in df_dict if pd.notna(row["macd"])
     ]
-    macd_chart = LineChart(data=macd_data)
+    macd_series = LineSeries(data=macd_data)
+    macd_chart = SinglePaneChart(series=macd_series)
     chart.add_pane(macd_chart)
 
     signal_data = [
         SingleValueData(row["time"], row["signal"]) for row in df_dict if pd.notna(row["signal"])
     ]
-    signal_chart = LineChart(data=signal_data)
+    signal_series = LineSeries(data=signal_data)
+    signal_chart = SinglePaneChart(series=signal_series)
     chart.add_pane(signal_chart)
 
     hist_data = [
@@ -168,8 +175,9 @@ if show_macd:
         for row in df_dict
         if pd.notna(row["histogram"])
     ]
-    hist_chart = LineChart(data=hist_data)
+    hist_series = LineSeries(data=hist_data)
+    hist_chart = SinglePaneChart(series=hist_series)
     chart.add_pane(hist_chart)
 
 # Render the chart
-render_chart(chart, key="advanced_multipane")
+chart.render(key="advanced_multipane")

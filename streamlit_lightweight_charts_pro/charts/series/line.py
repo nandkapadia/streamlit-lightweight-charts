@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, Union
 import pandas as pd
 
 from ...data import SingleValueData
-from ...type_definitions import LastPriceAnimationMode, LineStyle, LineType
+from ...type_definitions import ChartType, LastPriceAnimationMode, LineStyle, LineType
 from .base import Series, _get_enum_value
 
 
@@ -71,6 +71,7 @@ class LineSeries(Series):
     def __init__(
         self,
         data: Union[List[SingleValueData], pd.DataFrame],
+        column_mapping: Optional[Dict[str, str]] = None,
         color: str = "#2196F3",
         line_style: Union[LineStyle, str] = LineStyle.SOLID,
         line_width: int = 3,
@@ -91,6 +92,7 @@ class LineSeries(Series):
 
         Args:
             data: Series data as a list of SingleValueData objects or pandas DataFrame.
+            column_mapping: Optional mapping for DataFrame column names.
             color: Color of the line. Defaults to "#2196F3".
             line_style: Style of the line. Defaults to LineStyle.SOLID.
             line_width: Width of the line in pixels. Defaults to 3.
@@ -120,9 +122,9 @@ class LineSeries(Series):
             )
             ```
         """
-        # Initialize base class
-        super().__init__(data=data, **kwargs)
-
+        # Store column mapping first
+        self.column_mapping = column_mapping
+        
         # Line-specific styling options
         self.color = color
         self.line_style = line_style
@@ -137,6 +139,14 @@ class LineSeries(Series):
         self.crosshair_marker_background_color = crosshair_marker_background_color
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
+        
+        # Initialize base class
+        super().__init__(data=data, **kwargs)
+
+    @property
+    def chart_type(self) -> ChartType:
+        """Get the chart type for this series."""
+        return ChartType.LINE
 
     def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
         """
@@ -164,11 +174,11 @@ class LineSeries(Series):
             series = LineSeries(data=df)
             ```
         """
-        # Default column mapping
-        column_mapping = {"time": "datetime", "value": "close"}
+        # Use the stored column_mapping if available, otherwise default
+        mapping = self.column_mapping if self.column_mapping else {"time": "datetime", "value": "close"}
 
-        time_col = column_mapping.get("time", "datetime")
-        value_col = column_mapping.get("value", "close")
+        time_col = mapping.get("time", "datetime")
+        value_col = mapping.get("value", "close")
 
         if time_col not in df.columns or value_col not in df.columns:
             raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")
@@ -178,6 +188,66 @@ class LineSeries(Series):
         values = df[value_col].astype(float).tolist()
 
         return [SingleValueData(time=time, value=value) for time, value in zip(times, values)]
+
+    def _get_options_dict(self) -> Dict[str, Any]:
+        """Get options dictionary for line series."""
+        options = {
+            "visible": self.visible,
+            "priceScaleId": self.price_scale_id,
+            "priceLineVisible": self.price_line_visible,
+            "priceLineWidth": self.price_line_width,
+            "priceLineColor": self.price_line_color,
+            "priceLineStyle": self.price_line_style,
+            "baseLineVisible": self.base_line_visible,
+            "baseLineWidth": self.base_line_width,
+            "baseLineColor": self.base_line_color,
+            "baseLineStyle": self.base_line_style,
+            "priceFormat": self.price_format,
+        }
+
+        # Add line-specific options
+        options.update(
+            {
+                "color": self.color,
+                "lineStyle": _get_enum_value(self.line_style, LineStyle),
+                "lineWidth": self.line_width,
+                "lineType": _get_enum_value(self.line_type, LineType),
+                "lineVisible": self.line_visible,
+                "pointMarkersVisible": self.point_markers_visible,
+                "crosshairMarkerVisible": self.crosshair_marker_visible,
+                "crosshairMarkerRadius": self.crosshair_marker_radius,
+                "crosshairMarkerBorderColor": self.crosshair_marker_border_color,
+                "crosshairMarkerBackgroundColor": self.crosshair_marker_background_color,
+                "crosshairMarkerBorderWidth": self.crosshair_marker_border_width,
+                "lastPriceAnimation": _get_enum_value(
+                    self.last_price_animation, LastPriceAnimationMode
+                ),
+            }
+        )
+
+        if self.point_markers_radius is not None:
+            options["pointMarkersRadius"] = self.point_markers_radius
+
+        return options
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert line series to dictionary representation.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of the line series.
+        """
+        result = {
+            "type": "line",
+            "data": [item.to_dict() for item in self.data],
+            "options": self._get_options_dict(),
+        }
+
+        # Add markers if present
+        if self.markers:
+            result["markers"] = [marker.to_dict() for marker in self.markers]
+
+        return result
 
     def to_frontend_config(self) -> Dict[str, Any]:
         """

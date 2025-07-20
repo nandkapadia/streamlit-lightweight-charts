@@ -494,16 +494,24 @@ class Series(ABC):
 
         for item in self.data:
             if hasattr(item, "value"):
-                values.append(item.value)
+                if item.value is not None:
+                    values.append(item.value)
             elif hasattr(item, "close"):
-                values.append(item.close)
+                if item.close is not None:
+                    values.append(item.close)
             elif hasattr(item, "high"):
-                values.extend([item.high, item.low])
+                if item.high is not None and item.low is not None:
+                    values.extend([item.high, item.low])
 
-            times.append(item.timestamp)
+            times.append(item._time)
 
         if not values:
-            return None
+            return {
+                "min_value": None,
+                "max_value": None,
+                "min_time": min(times),
+                "max_time": max(times),
+            }
 
         return {
             "min_value": min(values),

@@ -20,10 +20,21 @@ class AreaSeries(Series):
     def __init__(
         self,
         data: Union[Sequence[SingleValueData], pd.DataFrame],
-        column_mapping: Optional[Dict[str, str]] = None,
+        visible: bool = True,
+        price_scale_id: str = "right",
+        price_line_visible: bool = False,
+        base_line_visible: bool = False,
+        price_line_width: int = 1,
+        price_line_color: str = "#2196F3",
+        price_line_style: str = "solid",
+        base_line_width: int = 1,
+        base_line_color: str = "#FF9800",
+        base_line_style: str = "solid",
+        price_format: Optional[Dict[str, Any]] = None,
         markers: Optional[List[Any]] = None,
-        price_scale: Optional[Dict[str, Any]] = None,
+        price_scale_config: Optional[Dict[str, Any]] = None,
         # Area-specific options
+        column_mapping: Optional[Dict[str, str]] = None,
         top_color: str = "rgba(46, 220, 135, 0.4)",
         bottom_color: str = "rgba(40, 221, 100, 0)",
         line_color: str = "#33D778",
@@ -39,17 +50,11 @@ class AreaSeries(Series):
         crosshair_marker_background_color: str = "",
         crosshair_marker_border_width: int = 2,
         last_price_animation: LastPriceAnimationMode = LastPriceAnimationMode.DISABLED,
-        **kwargs,
     ):
         """Initialize area series."""
-        super().__init__(
-            data=data,
-            column_mapping=column_mapping,
-            markers=markers,
-            price_scale=price_scale,
-            **kwargs,
-        )
-
+        # Store column mapping first
+        self.column_mapping = column_mapping
+        
         # Area-specific styling options
         self.top_color = top_color
         self.bottom_color = bottom_color
@@ -66,18 +71,48 @@ class AreaSeries(Series):
         self.crosshair_marker_background_color = crosshair_marker_background_color
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
+        
+        # Call parent constructor after setting column_mapping
+        super().__init__(
+            data=data,
+            visible=visible,
+            price_scale_id=price_scale_id,
+            price_line_visible=price_line_visible,
+            base_line_visible=base_line_visible,
+            price_line_width=price_line_width,
+            price_line_color=price_line_color,
+            price_line_style=price_line_style,
+            base_line_width=base_line_width,
+            base_line_color=base_line_color,
+            base_line_style=base_line_style,
+            price_format=price_format,
+            markers=markers,
+            price_scale_config=price_scale_config,
+        )
 
     @property
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.AREA
 
-    def _convert_dataframe(
-        self, df: pd.DataFrame, column_mapping: Optional[Dict[str, str]] = None
-    ) -> List[SingleValueData]:
-        """Convert DataFrame to SingleValueData format."""
-        if column_mapping is None:
-            column_mapping = {"time": "datetime", "value": "close"}
+    def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
+        """
+        Process pandas DataFrame into SingleValueData format.
+
+        This method converts a pandas DataFrame into a list of SingleValueData
+        objects for area chart visualization.
+
+        Args:
+            df: Pandas DataFrame to process.
+
+        Returns:
+            List[SingleValueData]: List of processed data objects.
+
+        Raises:
+            ValueError: If required columns are missing from the DataFrame.
+        """
+        # Use default column mapping if none provided
+        column_mapping = self.column_mapping or {"time": "datetime", "value": "close"}
 
         time_col = column_mapping.get("time", "datetime")
         value_col = column_mapping.get("value", "close")
@@ -91,9 +126,44 @@ class AreaSeries(Series):
 
         return [SingleValueData(time=time, value=value) for time, value in zip(times, values)]
 
+    def to_frontend_config(self) -> Dict[str, Any]:
+        """
+        Convert series to frontend-compatible configuration.
+
+        This method creates a dictionary representation of the area series
+        that can be consumed by the frontend React component.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing series configuration for the frontend.
+        """
+        # Get base configuration
+        config = {
+            "type": "area",
+            "data": [item.to_dict() for item in self.data],
+            "options": self._get_options_dict(),
+        }
+
+        # Add markers if present
+        if self.markers:
+            config["markers"] = [marker.to_dict() for marker in self.markers]
+
+        return config
+
     def _get_options_dict(self) -> Dict[str, Any]:
         """Get options dictionary for area series."""
-        options = self._base_dict()
+        options = {
+            "visible": self.visible,
+            "priceScaleId": self.price_scale_id,
+            "priceLineVisible": self.price_line_visible,
+            "priceLineWidth": self.price_line_width,
+            "priceLineColor": self.price_line_color,
+            "priceLineStyle": self.price_line_style,
+            "baseLineVisible": self.base_line_visible,
+            "baseLineWidth": self.base_line_width,
+            "baseLineColor": self.base_line_color,
+            "baseLineStyle": self.base_line_style,
+            "priceFormat": self.price_format,
+        }
 
         # Add area-specific options
         options.update(

@@ -335,10 +335,13 @@ class SinglePaneChart(BaseChart):
             ```python
             config = chart.to_frontend_config()
             # Returns: {
-            #     "chartId": "chart-123",
-            #     "chart": {...},
-            #     "series": [...],
-            #     "annotations": [...]
+            #     "charts": [{
+            #         "chartId": "chart-123",
+            #         "chart": {...},
+            #         "series": [...],
+            #         "annotations": [...]
+            #     }],
+            #     "syncConfig": {"enabled": False, "crosshair": False, "timeRange": False}
             # }
             ```
         """
@@ -354,9 +357,20 @@ class SinglePaneChart(BaseChart):
                 }
             )
 
-        return {
+        # Create the chart configuration
+        chart_config = {
             "chartId": f"chart-{id(self)}",  # Unique chart identifier
             "chart": self.options.to_dict(),
             "series": [s.to_frontend_config() for s in self.series],
             "annotations": annotation_layers,
+        }
+
+        # Return the component configuration structure expected by the frontend
+        return {
+            "charts": [chart_config],
+            "syncConfig": {
+                "enabled": False,
+                "crosshair": False,
+                "timeRange": False
+            }
         }

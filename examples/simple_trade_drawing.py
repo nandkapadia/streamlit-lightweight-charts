@@ -6,8 +6,8 @@ This example demonstrates how to draw trades on a chart using the new OOP archit
 
 import streamlit as st
 
-from streamlit_lightweight_charts import CandlestickChart, render_chart
-from streamlit_lightweight_charts.data import OhlcData, Trade
+from streamlit_lightweight_charts_pro import CandlestickChart, render_chart
+from streamlit_lightweight_charts_pro.data import OhlcData, Trade
 
 # Create sample OHLC data
 data = [

@@ -13,7 +13,7 @@ def test_large_line_chart_performance():
     n_points = 10000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="H"),
+            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
             "close": range(n_points),
         }
     )
@@ -43,7 +43,7 @@ def test_large_candlestick_chart_performance():
     n_points = 5000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="H"),
+            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
             "open": range(n_points),
             "high": [x + 1 for x in range(n_points)],
             "low": [x - 1 for x in range(n_points)],
@@ -114,7 +114,8 @@ def test_many_series_performance():
 
     assert chart_time < 1.0
     assert serialization_time < 1.0
-    assert len(config["series"]) == n_series
+    # Fixed: Access correct nested structure
+    assert len(config["charts"][0]["series"]) == n_series
 
 
 def test_dataframe_conversion_performance():
@@ -123,7 +124,7 @@ def test_dataframe_conversion_performance():
     n_points = 10000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="H"),
+            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
             "close": range(n_points),
         }
     )

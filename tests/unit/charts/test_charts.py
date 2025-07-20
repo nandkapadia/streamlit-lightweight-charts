@@ -25,9 +25,11 @@ def test_single_pane_chart_to_frontend_config():
     series = LineSeries([SingleValueData("2023-01-01", 1.0)])
     chart = SinglePaneChart(series)
     config = chart.to_frontend_config()
-    assert "chart" in config
-    assert "series" in config
-    assert isinstance(config["series"], list)
+    assert "charts" in config
+    assert len(config["charts"]) == 1
+    assert "chart" in config["charts"][0]
+    assert "series" in config["charts"][0]
+    assert isinstance(config["charts"][0]["series"], list)
 
 
 def test_multipane_chart():
@@ -67,8 +69,10 @@ def test_ultra_simplified_series_charts():
     # Test that all charts generate valid frontend config
     for chart in [line_chart, area_chart, bar_chart, candle_chart, hist_chart, base_chart]:
         config = chart.to_frontend_config()
-        assert "chart" in config
-        assert "series" in config
+        assert "charts" in config
+        assert len(config["charts"]) == 1
+        assert "chart" in config["charts"][0]
+        assert "series" in config["charts"][0]
 
 
 def test_series_with_styling():
@@ -86,7 +90,7 @@ def test_series_with_styling():
     config = line_chart.to_frontend_config()
 
     # Test that styling is included in the config
-    series_config = config["series"][0]
+    series_config = config["charts"][0]["series"][0]
     assert series_config["options"]["color"] == "#ff0000"
     assert series_config["options"]["lineWidth"] == 3
 
@@ -100,9 +104,9 @@ def test_multiple_series_in_chart():
     config = chart.to_frontend_config()
 
     # Test that both series are included
-    assert len(config["series"]) == 2
-    assert config["series"][0]["options"]["color"] == "#ff0000"
-    assert config["series"][1]["options"]["topColor"] == "rgba(0,255,0,0.5)"
+    assert len(config["charts"][0]["series"]) == 2
+    assert config["charts"][0]["series"][0]["options"]["color"] == "#ff0000"
+    assert config["charts"][0]["series"][1]["options"]["topColor"] == "rgba(0,255,0,0.5)"
 
 
 def test_chart_with_dataframe():
@@ -118,6 +122,6 @@ def test_chart_with_dataframe():
     config = chart.to_frontend_config()
 
     # Test that data was converted correctly
-    assert len(config["series"][0]["data"]) == 2
-    assert config["series"][0]["data"][0]["value"] == 100.0
-    assert config["series"][0]["data"][1]["value"] == 105.0
+    assert len(config["charts"][0]["series"][0]["data"]) == 2
+    assert config["charts"][0]["series"][0]["data"][0]["value"] == 100.0
+    assert config["charts"][0]["series"][0]["data"][1]["value"] == 105.0

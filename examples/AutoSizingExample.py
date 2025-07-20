@@ -10,57 +10,59 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts_pro import render_chart
 
 # Page configuration
-st.set_page_config(
-    page_title="Auto-Sizing Charts Example",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="Auto-Sizing Charts Example", page_icon="📊", layout="wide")
 
 st.title("📊 Auto-Sizing Charts Example")
-st.markdown("""
+st.markdown(
+    """
 This example demonstrates the new auto-sizing functionality. Try resizing your browser window 
 to see the charts adapt to their container dimensions!
-""")
+"""
+)
+
 
 # Generate sample data
 def generate_sample_data(days=50, base_price=100):
     """Generate sample OHLCV data."""
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days)
-    date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-    
+    date_range = pd.date_range(start=start_date, end=end_date, freq="D")
+
     data = []
     current_price = base_price
-    
+
     for date in date_range:
         # Generate realistic price movements
         change = np.random.normal(0, 0.02)
-        current_price *= (1 + change)
-        
+        current_price *= 1 + change
+
         # Generate OHLC from current price
         high = current_price * (1 + abs(np.random.normal(0, 0.01)))
         low = current_price * (1 - abs(np.random.normal(0, 0.01)))
         open_price = current_price * (1 + np.random.normal(0, 0.005))
         close_price = current_price
-        
+
         # Ensure OHLC relationships
         high = max(high, open_price, close_price)
         low = min(low, open_price, close_price)
-        
-        data.append({
-            'time': date.strftime('%Y-%m-%d'),
-            'open': round(open_price, 2),
-            'high': round(high, 2),
-            'low': round(low, 2),
-            'close': round(close_price, 2),
-        })
-        
+
+        data.append(
+            {
+                "time": date.strftime("%Y-%m-%d"),
+                "open": round(open_price, 2),
+                "high": round(high, 2),
+                "low": round(low, 2),
+                "close": round(close_price, 2),
+            }
+        )
+
         current_price = close_price
-    
+
     return data
+
 
 # Generate data
 data = generate_sample_data(50, 100)
@@ -92,7 +94,7 @@ chart_options_1 = {
         "position": "top-left",
         "symbolName": "AAPL",
         "showLastValue": True,
-    }
+    },
 }
 
 candlestick_series_1 = [
@@ -116,7 +118,7 @@ chart_1 = [
     }
 ]
 
-renderLightweightCharts(chart_1, key="auto_size_chart_1")
+render_chart(chart_1, key="auto_size_chart_1")
 
 # Example 2: Responsive Columns
 st.header("2️⃣ Responsive Column Layout")
@@ -150,13 +152,13 @@ with col1:
             "symbolName": "AAPL",
             "showLastValue": True,
             "showTime": True,
-        }
+        },
     }
 
     line_series_2 = [
         {
             "type": "Line",
-            "data": [{'time': item['time'], 'value': item['close']} for item in data],
+            "data": [{"time": item["time"], "value": item["close"]} for item in data],
             "options": {
                 "color": "#2962ff",
                 "lineWidth": 2,
@@ -171,7 +173,7 @@ with col1:
         }
     ]
 
-    renderLightweightCharts(chart_2, key="auto_size_chart_2")
+    render_chart(chart_2, key="auto_size_chart_2")
 
 with col2:
     st.markdown("**Narrow Column (1/3 width):**")
@@ -198,13 +200,13 @@ with col2:
             "position": "bottom-left",
             "symbolName": "Price",
             "showLastValue": True,
-        }
+        },
     }
 
     area_series_3 = [
         {
             "type": "Area",
-            "data": [{'time': item['time'], 'value': item['close']} for item in data],
+            "data": [{"time": item["time"], "value": item["close"]} for item in data],
             "options": {
                 "topColor": "rgba(76, 175, 80, 0.4)",
                 "bottomColor": "rgba(76, 175, 80, 0.0)",
@@ -221,7 +223,7 @@ with col2:
         }
     ]
 
-    renderLightweightCharts(chart_3, key="auto_size_chart_3")
+    render_chart(chart_3, key="auto_size_chart_3")
 
 # Example 3: Auto-Width vs Auto-Height
 st.header("3️⃣ Auto-Width vs Auto-Height")
@@ -252,7 +254,7 @@ with col3:
     bar_series_width = [
         {
             "type": "Bar",
-            "data": [{'time': item['time'], 'value': item['close']} for item in data],
+            "data": [{"time": item["time"], "value": item["close"]} for item in data],
             "options": {
                 "upColor": "#26a69a",
                 "downColor": "#ef5350",
@@ -267,7 +269,7 @@ with col3:
         }
     ]
 
-    renderLightweightCharts(chart_width, key="auto_width_chart")
+    render_chart(chart_width, key="auto_width_chart")
 
 with col4:
     st.markdown("**Auto-Height Only (Fixed Width):**")
@@ -292,7 +294,7 @@ with col4:
     line_series_height = [
         {
             "type": "Line",
-            "data": [{'time': item['time'], 'value': item['close']} for item in data],
+            "data": [{"time": item["time"], "value": item["close"]} for item in data],
             "options": {
                 "color": "#ff9800",
                 "lineWidth": 3,
@@ -307,12 +309,13 @@ with col4:
         }
     ]
 
-    renderLightweightCharts(chart_height, key="auto_height_chart")
+    render_chart(chart_height, key="auto_height_chart")
 
 # Usage Instructions
 st.header("📖 How to Use Auto-Sizing")
 
-st.markdown("""
+st.markdown(
+    """
 ### Basic Usage
 
 ```python
@@ -355,7 +358,8 @@ chart_options = {
 1. **Resize your browser window** to see the charts adapt
 2. **Test different column layouts** to see responsive behavior
 3. **Compare fixed vs auto-sizing** charts in the examples above
-""")
+"""
+)
 
 # Data info
 st.header("📊 Data Information")
@@ -366,16 +370,12 @@ with col_info1:
     st.metric("Date Range", f"{data[0]['time']} to {data[-1]['time']}")
 
 with col_info2:
-    latest_price = data[-1]['close']
-    prev_price = data[-2]['close'] if len(data) > 1 else latest_price
+    latest_price = data[-1]["close"]
+    prev_price = data[-2]["close"] if len(data) > 1 else latest_price
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100 if prev_price > 0 else 0
-    st.metric(
-        "Latest Price", 
-        f"${latest_price:.2f}", 
-        f"{change:+.2f} ({change_pct:+.2f}%)"
-    )
+    st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")
 
 with col_info3:
     st.metric("Auto-Size Mode", "Full Auto-Size")
-    st.metric("Container Size", "Responsive") 
+    st.metric("Container Size", "Responsive")

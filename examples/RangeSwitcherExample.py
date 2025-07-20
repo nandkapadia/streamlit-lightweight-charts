@@ -17,7 +17,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts import renderLightweightCharts
+from streamlit_lightweight_charts_pro import render_chart
 
 # Page configuration
 st.set_page_config(
@@ -246,7 +246,7 @@ main_chart = [
     }
 ]
 
-renderLightweightCharts(main_chart, key=f"range_switcher_{timeframe}")
+    render_chart(main_chart, key=f"range_switcher_{timeframe}")
 
 # Display data table
 st.subheader("📋 Data Table")

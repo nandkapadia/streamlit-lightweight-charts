@@ -7,8 +7,8 @@ This example demonstrates how to create a price-volume chart using line charts f
 import pandas as pd
 import streamlit as st
 
-import streamlit_lightweight_charts.dataSamples as data
-from streamlit_lightweight_charts import PriceVolumeChart, render_chart
+import streamlit_lightweight_charts_pro.dataSamples as data
+from streamlit_lightweight_charts_pro import PriceVolumeChart, render_chart
 
 # Create a DataFrame with price and volume data
 price_data = pd.DataFrame(data.price_volume_series_area)

@@ -6,10 +6,10 @@ This example demonstrates how to create overlaid area charts with markers using 
 
 import streamlit as st
 
-import streamlit_lightweight_charts.dataSamples as data
-from streamlit_lightweight_charts import MultiPaneChart, render_chart
-from streamlit_lightweight_charts.charts import AreaSeries, Chart
-from streamlit_lightweight_charts.charts.options import (
+import streamlit_lightweight_charts_pro.dataSamples as data
+from streamlit_lightweight_charts_pro import MultiPaneChart, render_chart
+from streamlit_lightweight_charts_pro.charts import AreaSeries, Chart
+from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
     GridLineOptions,
     GridOptions,
@@ -18,9 +18,9 @@ from streamlit_lightweight_charts.charts.options import (
     PriceScaleOptions,
     TimeScaleOptions,
 )
-from streamlit_lightweight_charts.data import Marker, MarkerPosition, MarkerShape
-from streamlit_lightweight_charts.type_definitions.colors import Background
-from streamlit_lightweight_charts.type_definitions.enums import LineStyle, PriceScaleMode
+from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
+from streamlit_lightweight_charts_pro.type_definitions.colors import Background
+from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle, PriceScaleMode
 
 # Create chart options
 chart_options = ChartOptions(
