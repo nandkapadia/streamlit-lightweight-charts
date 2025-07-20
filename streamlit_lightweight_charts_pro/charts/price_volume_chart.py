@@ -8,7 +8,6 @@ from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
     OverlayPriceScale,
     PriceScaleMargins,
-    RightPriceScale,
 )
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
 from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
@@ -119,17 +118,17 @@ class PriceVolumeChart(SinglePaneChart):
         # Create chart options
         chart_options = ChartOptions(
             height=height,
-            right_price_scale=RightPriceScale(
-                visible=True,
-                ticks_visible=True,
-                border_visible=True,
-                text_color="#333333",
-                font_size=12,
-                minimum_width=80,
-                draw_ticks=True,
-                ensure_edge_tick_marks_visible=True,
-                align_labels=True,
-            ),
+            right_price_scale={
+                "visible": True,
+                "ticksVisible": True,
+                "borderVisible": True,
+                "textColor": "#333333",
+                "fontSize": 12,
+                "minimumWidth": 80,
+                "drawTicks": True,
+                "ensureEdgeTickMarksVisible": True,
+                "alignLabels": True,
+            },
             **kwargs,
         )
 

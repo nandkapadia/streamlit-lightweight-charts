@@ -78,6 +78,7 @@ class ChartOptions:
     range_switcher: bool = False
     kinetic_scroll: bool = True
     tracking_mode: str = "normal"
+    fit_content_on_load: bool = True
 
     # Localization
     localization: Dict[str, Any] = field(default_factory=dict)
@@ -151,8 +152,6 @@ class ChartOptions:
             "lockVisibleTimeRangeOnResize": False,
             "rightBarStaysOnScroll": False,
             "borderVisible": False,
-            "visibleLogicalRange": None,
-            "autoscaleInfo": None,
         }
     )
 
@@ -400,6 +399,27 @@ class ChartOptions:
         self.tracking_mode = mode
         return self
 
+    def set_fit_content_on_load(self, fit_content: bool = True) -> "ChartOptions":
+        """
+        Set whether to fit content on load.
+
+        Controls whether the chart automatically fits to its content when
+        first displayed. Returns self for method chaining.
+
+        Args:
+            fit_content: Whether to fit content on load. Defaults to True.
+
+        Returns:
+            ChartOptions: Self for method chaining.
+
+        Example:
+            ```python
+            options.set_fit_content_on_load(True)
+            ```
+        """
+        self.fit_content_on_load = fit_content
+        return self
+
     def set_localization(self, locale: str, date_format: str = "yyyy-MM-dd") -> "ChartOptions":
         """
         Set localization settings.
@@ -590,6 +610,7 @@ class ChartOptions:
             "rangeSwitcher": self.range_switcher,
             "kineticScroll": self.kinetic_scroll,
             "trackingMode": self.tracking_mode,
+            "fitContentOnLoad": self.fit_content_on_load,
             "localization": self.localization,
             "layout": self.layout,
             "grid": self.grid,

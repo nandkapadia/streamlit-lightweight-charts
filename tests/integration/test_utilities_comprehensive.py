@@ -5,26 +5,36 @@ This module tests the integration between different utility functions
 and their interaction with the chart library components.
 """
 
-import pytest
 import pandas as pd
-from datetime import datetime, timedelta
+import pytest
 
+from streamlit_lightweight_charts_pro.data import (
+    BaselineData,
+    HistogramData,
+    OhlcData,
+    OhlcvData,
+    SingleValueData,
+)
+from streamlit_lightweight_charts_pro.data.trade import (
+    Trade,
+    TradeType,
+    TradeVisualization,
+    TradeVisualizationOptions,
+)
 from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
+    df_to_baseline_data,
+    df_to_data,
+    df_to_histogram_data,
     df_to_line_data,
     df_to_ohlc_data,
     df_to_ohlcv_data,
-    df_to_histogram_data,
-    df_to_baseline_data,
-    df_to_data,
     resample_df_for_charts,
 )
 from streamlit_lightweight_charts_pro.utils.trade_visualization import (
-    trades_to_visual_elements,
-    create_trade_shapes_series,
     add_trades_to_series,
+    create_trade_shapes_series,
+    trades_to_visual_elements,
 )
-from streamlit_lightweight_charts_pro.data.trade import Trade, TradeType, TradeVisualizationOptions, TradeVisualization
-from streamlit_lightweight_charts_pro.data import SingleValueData, OhlcData, OhlcvData, HistogramData, BaselineData
 
 
 class TestDataConversionUtilities:
@@ -49,7 +59,7 @@ class TestDataConversionUtilities:
         """Test DataFrame to line data conversion."""
         # Test with value column and time column
         result = df_to_line_data(self.df, value_column="value", time_column="datetime")
-        
+
         assert len(result) == 10
         assert all(isinstance(item, SingleValueData) for item in result)
         assert result[0].value == 100.0
@@ -65,7 +75,7 @@ class TestDataConversionUtilities:
             low_column="low",
             close_column="close",
         )
-        
+
         assert len(result) == 10
         assert all(isinstance(item, OhlcData) for item in result)
         assert result[0].open == 100.0
@@ -84,7 +94,7 @@ class TestDataConversionUtilities:
             close_column="close",
             volume_column="volume",
         )
-        
+
         assert len(result) == 10
         assert all(isinstance(item, OhlcvData) for item in result)
         assert result[0].open == 100.0
@@ -97,7 +107,7 @@ class TestDataConversionUtilities:
             value_column="volume",
             time_column="datetime",
         )
-        
+
         assert len(result) == 10
         assert all(isinstance(item, HistogramData) for item in result)
         assert result[0].value == 1000.0
@@ -109,7 +119,7 @@ class TestDataConversionUtilities:
             value_column="value",
             time_column="datetime",
         )
-        
+
         assert len(result) == 10
         assert all(isinstance(item, BaselineData) for item in result)
         assert result[0].value == 100.0
@@ -134,7 +144,7 @@ class TestDataConversionUtilities:
                 "price": [100, 102, 98, 105, 103],
             }
         )
-        
+
         result = df_to_line_data(custom_df, value_column="price", time_column="date")
         assert len(result) == 5
         assert result[0].value == 100.0
@@ -162,7 +172,7 @@ class TestDataConversionUtilities:
         # Test with string dates
         string_df = self.df.copy()
         string_df["datetime"] = string_df["datetime"].astype(str)
-        
+
         result = df_to_line_data(string_df, value_column="value", time_column="datetime")
         assert len(result) == 10
 
@@ -197,7 +207,7 @@ class TestResamplingUtilities:
     def test_resample_to_daily(self):
         """Test resampling to daily frequency."""
         result = resample_df_for_charts(self.high_freq_df, "1D")
-        
+
         assert len(result) > 0
         assert "open" in result.columns
         assert "high" in result.columns
@@ -208,7 +218,7 @@ class TestResamplingUtilities:
     def test_resample_to_weekly(self):
         """Test resampling to weekly frequency."""
         result = resample_df_for_charts(self.high_freq_df, "1W")
-        
+
         assert len(result) > 0
         assert "open" in result.columns
         assert "high" in result.columns
@@ -221,7 +231,7 @@ class TestResamplingUtilities:
         # Note: Current implementation doesn't support custom agg_rules parameter
         # This test is updated to use the default aggregation
         result = resample_df_for_charts(self.high_freq_df, "1D")
-        
+
         assert len(result) > 0
         assert "open" in result.columns
 
@@ -233,7 +243,7 @@ class TestResamplingUtilities:
             },
             index=self.high_freq_df.index,
         )
-        
+
         result = resample_df_for_charts(line_df, "1D")
         assert len(result) > 0
         assert "value" in result.columns
@@ -242,14 +252,14 @@ class TestResamplingUtilities:
         """Test resampling empty DataFrame."""
         # Create empty DataFrame with datetime index
         empty_df = pd.DataFrame(columns=["value"])
-        
+
         # Empty DataFrame without datetime index should raise TypeError
         with pytest.raises(TypeError):
             resample_df_for_charts(empty_df, "1D")
-        
+
         # Create empty DataFrame with datetime index
         empty_df_with_index = pd.DataFrame(columns=["value"], index=pd.DatetimeIndex([]))
-        
+
         # Empty DataFrame with datetime index should raise ValueError
         with pytest.raises(ValueError):
             resample_df_for_charts(empty_df_with_index, "1D")
@@ -258,7 +268,7 @@ class TestResamplingUtilities:
         """Test resampling with invalid frequency."""
         dates = pd.date_range("2022-01-01", periods=100, freq="h")
         df = pd.DataFrame({"value": range(100)}, index=dates)
-        
+
         # Should handle invalid frequency gracefully
         with pytest.raises(ValueError):
             resample_df_for_charts(df, "invalid_freq")
@@ -287,7 +297,7 @@ class TestTradeUtilities:
                 trade_type=TradeType.SHORT,
             ),
         ]
-        
+
         self.options = TradeVisualizationOptions(
             style=TradeVisualization.BOTH,
             show_pnl_in_markers=True,
@@ -297,7 +307,7 @@ class TestTradeUtilities:
     def test_trades_to_visual_elements(self):
         """Test converting trades to visual elements."""
         result = trades_to_visual_elements(self.trades, self.options)
-        
+
         assert "markers" in result
         assert "shapes" in result
         assert "annotations" in result
@@ -307,7 +317,7 @@ class TestTradeUtilities:
     def test_create_trade_shapes_series(self):
         """Test creating trade shapes series."""
         result = create_trade_shapes_series(self.trades, self.options)
-        
+
         assert "shapes" in result
         assert len(result["shapes"]) > 0
 
@@ -315,17 +325,21 @@ class TestTradeUtilities:
         """Test adding trades to series."""
         series_config = {"type": "candlestick", "data": []}
         result = add_trades_to_series(series_config, self.trades, self.options)
-        
+
         assert "shapes" in result
         assert len(result["shapes"]) > 0
 
     def test_trade_visualization_options(self):
         """Test trade visualization options."""
         # Test different visualization styles
-        for style in [TradeVisualization.MARKERS, TradeVisualization.RECTANGLES, TradeVisualization.LINES]:
+        for style in [
+            TradeVisualization.MARKERS,
+            TradeVisualization.RECTANGLES,
+            TradeVisualization.LINES,
+        ]:
             options = TradeVisualizationOptions(style=style)
             result = trades_to_visual_elements(self.trades, options)
-            
+
             assert "markers" in result
             assert "shapes" in result
             assert "annotations" in result
@@ -333,7 +347,7 @@ class TestTradeUtilities:
     def test_empty_trades(self):
         """Test handling empty trades list."""
         result = trades_to_visual_elements([], self.options)
-        
+
         assert "markers" in result
         assert "shapes" in result
         assert "annotations" in result
@@ -348,9 +362,9 @@ class TestTradeUtilities:
             {"time": "2022-01-02", "open": 102, "high": 107, "low": 100, "close": 104},
             {"time": "2022-01-03", "open": 104, "high": 109, "low": 102, "close": 106},
         ]
-        
+
         result = trades_to_visual_elements(self.trades, self.options, chart_data)
-        
+
         assert "markers" in result
         assert "shapes" in result
         assert "annotations" in result
@@ -397,7 +411,7 @@ class TestUtilityIntegration:
         # Create visualization
         options = TradeVisualizationOptions(style=TradeVisualization.BOTH)
         visual_elements = trades_to_visual_elements(trades, options)
-        
+
         assert "markers" in visual_elements
         assert "shapes" in visual_elements
         assert "annotations" in visual_elements

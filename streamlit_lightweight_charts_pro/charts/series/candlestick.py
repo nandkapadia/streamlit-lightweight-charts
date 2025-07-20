@@ -39,7 +39,7 @@ class CandlestickSeries(Series):
         """Initialize candlestick series."""
         # Store column mapping first
         self.column_mapping = column_mapping
-        
+
         # Candlestick-specific styling options
         self.up_color = up_color
         self.down_color = down_color
@@ -55,7 +55,7 @@ class CandlestickSeries(Series):
         # Trade visualization
         self.trades = trades or []
         self.trade_visualization_options = trade_visualization_options
-        
+
         # Call parent constructor after setting column_mapping
         super().__init__(
             data=data,
@@ -92,7 +92,7 @@ class CandlestickSeries(Series):
             "high": "high",
             "low": "low",
             "close": "close",
-            "volume": "volume"
+            "volume": "volume",
         }
 
         time_col = column_mapping.get("time", "datetime")
@@ -122,27 +122,23 @@ class CandlestickSeries(Series):
             volumes = df[volume_col].astype(float).tolist()
             return [
                 OhlcvData(
-                    time=time, 
-                    open_=open_val, 
-                    high=high_val, 
-                    low=low_val, 
-                    close=close_val, 
-                    volume=volume_val
-                ) 
-                for time, open_val, high_val, low_val, close_val, volume_val 
-                in zip(times, opens, highs, lows, closes, volumes)
+                    time=time,
+                    open_=open_val,
+                    high=high_val,
+                    low=low_val,
+                    close=close_val,
+                    volume=volume_val,
+                )
+                for time, open_val, high_val, low_val, close_val, volume_val in zip(
+                    times, opens, highs, lows, closes, volumes
+                )
             ]
         else:
             return [
-                OhlcData(
-                    time=time, 
-                    open_=open_val, 
-                    high=high_val, 
-                    low=low_val, 
-                    close=close_val
-                ) 
-                for time, open_val, high_val, low_val, close_val 
-                in zip(times, opens, highs, lows, closes)
+                OhlcData(time=time, open_=open_val, high=high_val, low=low_val, close=close_val)
+                for time, open_val, high_val, low_val, close_val in zip(
+                    times, opens, highs, lows, closes
+                )
             ]
 
     def to_frontend_config(self) -> Dict[str, Any]:

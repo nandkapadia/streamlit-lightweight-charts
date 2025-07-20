@@ -368,9 +368,5 @@ class SinglePaneChart(BaseChart):
         # Return the component configuration structure expected by the frontend
         return {
             "charts": [chart_config],
-            "syncConfig": {
-                "enabled": False,
-                "crosshair": False,
-                "timeRange": False
-            }
+            "syncConfig": {"enabled": False, "crosshair": False, "timeRange": False},
         }

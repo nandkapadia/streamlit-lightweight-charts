@@ -34,7 +34,7 @@ def test_candlestick_chart_with_trades():
     # The SinglePaneChart returns a structure with "charts" array containing the chart config
     assert "charts" in config
     assert len(config["charts"]) == 1
-    
+
     chart_config = config["charts"][0]
     assert "series" in chart_config
     found_trade = False

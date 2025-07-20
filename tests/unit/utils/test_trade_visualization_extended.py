@@ -1,22 +1,21 @@
 """Extended tests for trade visualization utilities to improve coverage."""
 
-import pytest
-from unittest.mock import Mock, patch
-from datetime import datetime, timedelta
-
-from streamlit_lightweight_charts_pro.utils.trade_visualization import (
-    trades_to_visual_elements,
-    create_trade_rectangle,
-    create_trade_line,
-    create_trade_arrow,
-    create_trade_zone,
-    create_trade_annotation,
-    get_line_style_value,
-    create_trade_shapes_series,
-    add_trades_to_series
-)
 from streamlit_lightweight_charts_pro.data import (
-    Trade, TradeVisualization, TradeVisualizationOptions, TradeType
+    Trade,
+    TradeType,
+    TradeVisualization,
+    TradeVisualizationOptions,
+)
+from streamlit_lightweight_charts_pro.utils.trade_visualization import (
+    add_trades_to_series,
+    create_trade_annotation,
+    create_trade_arrow,
+    create_trade_line,
+    create_trade_rectangle,
+    create_trade_shapes_series,
+    create_trade_zone,
+    get_line_style_value,
+    trades_to_visual_elements,
 )
 
 
@@ -32,7 +31,7 @@ class TestTradeVisualizationExtended:
                 trade_type=TradeType.LONG,
                 exit_time="2024-01-01T14:00:00",
                 exit_price=105.0,
-                quantity=100
+                quantity=100,
             ),
             Trade(
                 entry_time="2024-01-02T09:00:00",
@@ -40,8 +39,8 @@ class TestTradeVisualizationExtended:
                 trade_type=TradeType.SHORT,
                 exit_time="2024-01-02T15:00:00",
                 exit_price=98.0,
-                quantity=50
-            )
+                quantity=50,
+            ),
         ]
         
         self.options = TradeVisualizationOptions(
@@ -49,7 +48,7 @@ class TestTradeVisualizationExtended:
             show_pnl_in_markers=True,
             show_trade_id=True,
             show_quantity=True,
-            show_trade_type=True
+            show_trade_type=True,
         )
 
     def test_trades_to_visual_elements_markers_only(self):
@@ -110,7 +109,7 @@ class TestTradeVisualizationExtended:
             style=TradeVisualization.MARKERS,
             show_trade_id=True,
             show_quantity=True,
-            show_trade_type=True
+            show_trade_type=True,
         )
         
         result = trades_to_visual_elements(self.sample_trades, options)
@@ -127,7 +126,7 @@ class TestTradeVisualizationExtended:
             rectangle_color_profit="#26a69a",
             rectangle_color_loss="#ef5350",
             rectangle_fill_opacity=0.3,
-            rectangle_border_width=2
+            rectangle_border_width=2,
         )
         
         result = create_trade_rectangle(trade, options)
@@ -137,7 +136,8 @@ class TestTradeVisualizationExtended:
         assert result["time2"] == trade.exit_timestamp
         assert result["price1"] == trade.entry_price
         assert result["price2"] == trade.exit_price
-        # The actual implementation uses int() for opacity conversion, so 0.3 * 255 = 76.5 -> 76 -> 4c
+        # The actual implementation uses int() for opacity conversion, 
+        # so 0.3 * 255 = 76.5 -> 76 -> 4c
         assert result["fillColor"] == "#26a69a4c"  # Color with opacity
         assert result["borderColor"] == "#26a69a"
         assert result["borderWidth"] == 2
@@ -149,14 +149,15 @@ class TestTradeVisualizationExtended:
             rectangle_color_profit="#26a69a",
             rectangle_color_loss="#ef5350",
             rectangle_fill_opacity=0.5,
-            rectangle_border_width=1
+            rectangle_border_width=1,
         )
         
         result = create_trade_rectangle(trade, options)
         
         # Short trade is profitable, so it uses profit color
         assert result["borderColor"] == "#26a69a"
-        # The actual implementation uses int() for opacity conversion, so 0.5 * 255 = 127.5 -> 127 -> 7f
+        # The actual implementation uses int() for opacity conversion, 
+        # so 0.5 * 255 = 127.5 -> 127 -> 7f
         assert result["fillColor"] == "#26a69a7f"  # Color with opacity
 
     def test_create_trade_line_profitable_trade(self):
@@ -166,7 +167,7 @@ class TestTradeVisualizationExtended:
             line_color_profit="#26a69a",
             line_color_loss="#ef5350",
             line_width=3,
-            line_style="dashed"
+            line_style="dashed",
         )
         
         result = create_trade_line(trade, options)
@@ -185,10 +186,7 @@ class TestTradeVisualizationExtended:
         """Test create_trade_arrow with PnL text."""
         trade = self.sample_trades[0]
         options = TradeVisualizationOptions(
-            arrow_color_profit="#26a69a",
-            arrow_color_loss="#ef5350",
-            arrow_size=10,
-            line_width=2
+            arrow_color_profit="#26a69a", arrow_color_loss="#ef5350", arrow_size=10, line_width=2
         )
         
         result = create_trade_arrow(trade, options)
@@ -203,9 +201,7 @@ class TestTradeVisualizationExtended:
         """Test create_trade_zone with chart data for extension."""
         trade = self.sample_trades[0]
         options = TradeVisualizationOptions(
-            zone_color_long="#26a69a",
-            zone_color_short="#ef5350",
-            zone_extend_bars=5
+            zone_color_long="#26a69a", zone_color_short="#ef5350", zone_extend_bars=5
         )
         chart_data = [
             {"time": "2024-01-01T09:00:00", "value": 99},
@@ -214,7 +210,7 @@ class TestTradeVisualizationExtended:
             {"time": "2024-01-01T12:00:00", "value": 102},
             {"time": "2024-01-01T13:00:00", "value": 103},
             {"time": "2024-01-01T14:00:00", "value": 105},
-            {"time": "2024-01-01T15:00:00", "value": 106}
+            {"time": "2024-01-01T15:00:00", "value": 106},
         ]
         
         result = create_trade_zone(trade, options, chart_data)
@@ -229,10 +225,7 @@ class TestTradeVisualizationExtended:
     def test_create_trade_zone_without_chart_data(self):
         """Test create_trade_zone without chart data."""
         trade = self.sample_trades[0]
-        options = TradeVisualizationOptions(
-            zone_color_long="#26a69a",
-            zone_color_short="#ef5350"
-        )
+        options = TradeVisualizationOptions(zone_color_long="#26a69a", zone_color_short="#ef5350")
         
         result = create_trade_zone(trade, options)
         
@@ -245,10 +238,7 @@ class TestTradeVisualizationExtended:
         """Test create_trade_annotation with all annotation options enabled."""
         trade = self.sample_trades[0]
         options = TradeVisualizationOptions(
-            show_trade_id=True,
-            show_quantity=True,
-            show_trade_type=True,
-            annotation_font_size=12
+            show_trade_id=True, show_quantity=True, show_trade_type=True, annotation_font_size=12
         )
         
         result = create_trade_annotation(trade, options)
@@ -266,9 +256,7 @@ class TestTradeVisualizationExtended:
         """Test create_trade_annotation with partial annotation options."""
         trade = self.sample_trades[0]
         options = TradeVisualizationOptions(
-            show_trade_id=False,
-            show_quantity=True,
-            show_trade_type=False
+            show_trade_id=False, show_quantity=True, show_trade_type=False
         )
         
         result = create_trade_annotation(trade, options)
@@ -357,13 +345,11 @@ class TestTradeVisualizationExtended:
         """Test create_trade_annotation with no annotation options enabled."""
         trade = self.sample_trades[0]
         options = TradeVisualizationOptions(
-            show_trade_id=False,
-            show_quantity=False,
-            show_trade_type=False
+            show_trade_id=False, show_quantity=False, show_trade_type=False
         )
         
         result = create_trade_annotation(trade, options)
         
         assert result["type"] == "text"
         # The actual implementation always includes P&L, even when no other options are enabled
-        assert "P&L: +5.0%" in result["text"] 
+        assert "P&L: +5.0%" in result["text"]

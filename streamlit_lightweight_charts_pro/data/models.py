@@ -84,7 +84,7 @@ def to_utc_timestamp(
     Example:
         ```python
         # String date
-        to_utc_timestamp("2024-01-01")  # Returns "2024-01-01"
+        to_utc_timestamp("2024-01-01")  # Returns 1545436800
 
         # Unix timestamp
         to_utc_timestamp(1704067200)  # Returns 1704067200
@@ -94,11 +94,11 @@ def to_utc_timestamp(
         ```
     """
     if isinstance(time_value, str):
-        # Try to parse as date string
+        # Try to parse as date string and convert to timestamp
         try:
-            # Check if it's already a date string in YYYY-MM-DD format
-            pd.to_datetime(time_value)
-            return time_value
+            # Parse the date string and convert to timestamp
+            dt = pd.to_datetime(time_value)
+            return int(dt.timestamp())
         except (ValueError, TypeError):
             # If not parseable, return as is
             return time_value

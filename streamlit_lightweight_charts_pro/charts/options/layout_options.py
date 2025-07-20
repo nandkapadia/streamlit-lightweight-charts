@@ -47,7 +47,8 @@ class LayoutOptions:
     text_color: str = "#191919"
     font_size: int = 12
     font_family: str = (
-        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif'
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, '
+        'Cantarell, "Helvetica Neue", sans-serif'
     )
 
     def to_dict(self) -> Dict[str, Any]:

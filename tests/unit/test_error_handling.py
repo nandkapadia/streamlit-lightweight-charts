@@ -2,36 +2,29 @@
 Comprehensive error handling and edge case tests.
 """
 
-import pytest
-import pandas as pd
-import numpy as np
 import threading
-import time
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from streamlit_lightweight_charts_pro.charts import (
-    PriceVolumeChart,
-    SinglePaneChart,
-    MultiPaneChart,
-    LineSeries,
     CandlestickSeries,
+    PriceVolumeChart,
 )
 from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
-    PriceScaleOptions,
 )
 from streamlit_lightweight_charts_pro.data import (
+    Marker,
+    MarkerShape,
     OhlcvData,
     SingleValueData,
     Trade,
     TradeType,
-    Marker,
-    MarkerShape,
-    MarkerPosition,
 )
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
-from streamlit_lightweight_charts_pro.type_definitions import PriceScaleMode
 from streamlit_lightweight_charts_pro.type_definitions.colors import SolidColor
 from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType
 
@@ -48,7 +41,6 @@ def test_invalid_time_format():
 def test_empty_series_data():
     """Test handling of empty series data."""
     # Not all models raise ValueError for None time, so skip for now
-    pass
     # with pytest.raises(ValueError):
     #     SingleValueData(None, 100.0)
     # with pytest.raises(ValueError):
@@ -58,7 +50,6 @@ def test_empty_series_data():
 def test_invalid_ohlc_data():
     """Test handling of invalid OHLC data."""
     # Not all models raise ValueError for high < low, so skip for now
-    pass
     # with pytest.raises(ValueError):
     #     OhlcData('2023-01-01', 1, 0, 2, 1.5)  # high < low
 
@@ -66,7 +57,6 @@ def test_invalid_ohlc_data():
 def test_chart_with_empty_series():
     """Test handling of chart with empty series."""
     # Not all models raise ValueError for empty series, so skip for now
-    pass
     # with pytest.raises(ValueError):
     #     Chart([])  # Empty series list
 
@@ -74,7 +64,6 @@ def test_chart_with_empty_series():
 def test_series_with_empty_data():
     """Test handling of series with empty data."""
     # Not all models raise ValueError for empty data, so skip for now
-    pass
     # with pytest.raises(ValueError):
     #     LineSeries([])  # Empty data list
 
@@ -116,7 +105,6 @@ def test_negative_quantity():
 def test_invalid_marker_position():
     """Test handling of invalid marker position."""
     # Not all models raise ValueError for invalid marker position, so skip for now
-    pass
     # from streamlit_lightweight_charts_pro.data.models import Marker, MarkerShape, MarkerPosition
     # with pytest.raises(ValueError):
     #     Marker('2023-01-01', 'invalid_position', '#000', MarkerShape.CIRCLE)
@@ -194,7 +182,7 @@ class TestPriceVolumeChartErrorHandling:
 
         # Invalid column mapping - this will fail when series tries to access columns
         with pytest.raises(KeyError):
-            PriceVolumeChart(data=df, column_mapping={'time': 'nonexistent_column'})
+            PriceVolumeChart(data=df, column_mapping={"time": "nonexistent_column"})
 
     def test_invalid_data_values(self):
         """Test handling of invalid data values."""
@@ -453,13 +441,15 @@ class TestSeriesErrorHandling:
 
     def test_invalid_series_options(self):
         """Test handling of invalid series options."""
-        df = pd.DataFrame({
-            "datetime": ["2022-01-01", "2022-01-02"],
-            "open": [100, 101],
-            "high": [105, 106],
-            "low": [95, 96],
-            "close": [102, 103],
-        })
+        df = pd.DataFrame(
+            {
+                "datetime": ["2022-01-01", "2022-01-02"],
+                "open": [100, 101],
+                "high": [105, 106],
+                "low": [95, 96],
+                "close": [102, 103],
+            }
+        )
 
         # Invalid series options should be handled gracefully
         series = CandlestickSeries(data=df, up_color="invalid_color")
@@ -468,11 +458,13 @@ class TestSeriesErrorHandling:
     def test_invalid_candlestick_data(self):
         """Test handling of invalid candlestick data."""
         # Missing required columns
-        df_missing_columns = pd.DataFrame({
-            "datetime": ["2022-01-01", "2022-01-02"],
-            "open": [100, 101],
-            # Missing high, low, close
-        })
+        df_missing_columns = pd.DataFrame(
+            {
+                "datetime": ["2022-01-01", "2022-01-02"],
+                "open": [100, 101],
+                # Missing high, low, close
+            }
+        )
 
         # This will fail when trying to convert data
         with pytest.raises(ValueError):

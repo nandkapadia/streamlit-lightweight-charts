@@ -6,11 +6,13 @@ This example demonstrates the new auto-sizing functionality that allows charts
 to automatically resize based on their container dimensions.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts_pro import render_chart
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+
 
 # Page configuration
 st.set_page_config(page_title="Auto-Sizing Charts Example", page_icon="📊", layout="wide")
@@ -118,7 +120,7 @@ chart_1 = [
     }
 ]
 
-render_chart(chart_1, key="auto_size_chart_1")
+chart_1.render(key="auto_size_chart_1")
 
 # Example 2: Responsive Columns
 st.header("2️⃣ Responsive Column Layout")
@@ -173,7 +175,7 @@ with col1:
         }
     ]
 
-    render_chart(chart_2, key="auto_size_chart_2")
+    chart_2.render(key="auto_size_chart_2")
 
 with col2:
     st.markdown("**Narrow Column (1/3 width):**")
@@ -223,7 +225,7 @@ with col2:
         }
     ]
 
-    render_chart(chart_3, key="auto_size_chart_3")
+    chart_3.render(key="auto_size_chart_3")
 
 # Example 3: Auto-Width vs Auto-Height
 st.header("3️⃣ Auto-Width vs Auto-Height")
@@ -269,7 +271,7 @@ with col3:
         }
     ]
 
-    render_chart(chart_width, key="auto_width_chart")
+    chart_width.render(key="auto_width_chart")
 
 with col4:
     st.markdown("**Auto-Height Only (Fixed Width):**")
@@ -309,7 +311,7 @@ with col4:
         }
     ]
 
-    render_chart(chart_height, key="auto_height_chart")
+    chart_height.render(key="auto_height_chart")
 
 # Usage Instructions
 st.header("📖 How to Use Auto-Sizing")

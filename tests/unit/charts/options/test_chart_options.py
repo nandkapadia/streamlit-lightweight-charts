@@ -1,13 +1,13 @@
 """Comprehensive tests for ChartOptions and related option classes."""
 
-import time
-import gc
-import pickle
 import copy
+import gc
 import json
-import pytest
+import pickle
+import time
+
 import psutil
-from unittest.mock import Mock
+import pytest
 
 from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
@@ -16,12 +16,9 @@ from streamlit_lightweight_charts_pro.charts.options import (
     GridLineOptions,
     GridOptions,
     LayoutOptions,
+    RightPriceScale,
     TimeScaleOptions,
     WatermarkOptions,
-    RightPriceScale,
-)
-from streamlit_lightweight_charts_pro.charts.options.chart_options import (
-    ChartOptions as ChartOptionsImpl
 )
 from streamlit_lightweight_charts_pro.type_definitions.colors import Background
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
@@ -78,7 +75,9 @@ class TestChartOptions:
 
     def test_crosshair_line_options(self):
         """Test CrosshairLineOptions functionality."""
-        options = CrosshairLineOptions(visible=True, width=2, color="#ff0000", style=LineStyle.SOLID)
+        options = CrosshairLineOptions(
+            visible=True, width=2, color="#ff0000", style=LineStyle.SOLID
+        )
         assert options.visible is True
         assert options.width == 2
 
@@ -91,7 +90,9 @@ class TestChartOptions:
         """Test CrosshairOptions functionality."""
         vert_line = CrosshairLineOptions(color="#ff0000")
         horz_line = CrosshairLineOptions(color="#00ff00")
-        options = CrosshairOptions(mode=CrosshairMode.MAGNET, vert_line=vert_line, horz_line=horz_line)
+        options = CrosshairOptions(
+            mode=CrosshairMode.MAGNET, vert_line=vert_line, horz_line=horz_line
+        )
         assert options.mode == CrosshairMode.MAGNET
 
         d = options.to_dict()
@@ -333,12 +334,9 @@ class TestChartOptions:
         """Test set_layout method."""
         options = ChartOptions()
         result = options.set_layout(
-            background_color="#ffffff",
-            text_color="#000000",
-            font_size=12,
-            font_family="Arial"
+            background_color="#ffffff", text_color="#000000", font_size=12, font_family="Arial"
         )
-        
+
         assert options.layout["background_color"] == "#ffffff"
         assert options.layout["text_color"] == "#000000"
         assert options.layout["font_size"] == 12
@@ -350,9 +348,9 @@ class TestChartOptions:
         options = ChartOptions()
         result = options.set_grid(
             vert_lines={"visible": True, "color": "#cccccc"},
-            horz_lines={"visible": False, "color": "#dddddd"}
+            horz_lines={"visible": False, "color": "#dddddd"},
         )
-        
+
         assert options.grid["vert_lines"]["visible"] is True
         assert options.grid["vert_lines"]["color"] == "#cccccc"
         assert options.grid["horz_lines"]["visible"] is False
@@ -365,9 +363,9 @@ class TestChartOptions:
         result = options.set_crosshair(
             mode=1,
             vert_line={"visible": True, "color": "#ff0000"},
-            horz_line={"visible": True, "color": "#00ff00"}
+            horz_line={"visible": True, "color": "#00ff00"},
         )
-        
+
         assert options.crosshair["mode"] == 1
         # The update method replaces the entire nested dict
         assert options.crosshair["vert_line"]["visible"] is True
@@ -380,7 +378,7 @@ class TestChartOptions:
         """Test set_watermark method."""
         options = ChartOptions()
         result = options.set_watermark("Test Watermark")
-        
+
         assert options.watermark == "Test Watermark"
         assert result is options
 
@@ -388,7 +386,7 @@ class TestChartOptions:
         """Test set_localization method."""
         options = ChartOptions()
         result = options.set_localization("en-US", "yyyy-MM-dd")
-        
+
         assert options.localization["locale"] == "en-US"
         assert options.localization["dateFormat"] == "yyyy-MM-dd"
         assert result is options
@@ -397,7 +395,7 @@ class TestChartOptions:
         """Test set_size method."""
         options = ChartOptions()
         result = options.set_size(width=800, height=600)
-        
+
         assert options.width == 800
         assert options.height == 600
         assert result is options
@@ -406,7 +404,7 @@ class TestChartOptions:
         """Test set_width method."""
         options = ChartOptions()
         result = options.set_width(800)
-        
+
         assert options.width == 800
         assert result is options
 
@@ -414,7 +412,7 @@ class TestChartOptions:
         """Test set_height method."""
         options = ChartOptions()
         result = options.set_height(600)
-        
+
         assert options.height == 600
         assert result is options
 
@@ -422,7 +420,7 @@ class TestChartOptions:
         """Test set_auto_size method."""
         options = ChartOptions()
         result = options.set_auto_size(False)
-        
+
         assert options.auto_size is False
         assert result is options
 
@@ -430,7 +428,7 @@ class TestChartOptions:
         """Test set_min_size method."""
         options = ChartOptions()
         result = options.set_min_size(min_width=400, min_height=300)
-        
+
         assert options.min_width == 400
         assert options.min_height == 300
         assert result is options
@@ -439,7 +437,7 @@ class TestChartOptions:
         """Test set_max_size method."""
         options = ChartOptions()
         result = options.set_max_size(max_width=1200, max_height=800)
-        
+
         assert options.max_width == 1200
         assert options.max_height == 800
         assert result is options
@@ -448,7 +446,7 @@ class TestChartOptions:
         """Test set_legend method."""
         options = ChartOptions()
         result = options.set_legend(True)
-        
+
         assert options.legend is True
         assert result is options
 
@@ -456,7 +454,7 @@ class TestChartOptions:
         """Test set_range_switcher method."""
         options = ChartOptions()
         result = options.set_range_switcher(True)
-        
+
         assert options.range_switcher is True
         assert result is options
 
@@ -464,7 +462,7 @@ class TestChartOptions:
         """Test set_kinetic_scroll method."""
         options = ChartOptions()
         result = options.set_kinetic_scroll(False)
-        
+
         assert options.kinetic_scroll is False
         assert result is options
 
@@ -472,7 +470,7 @@ class TestChartOptions:
         """Test set_tracking_mode method."""
         options = ChartOptions()
         result = options.set_tracking_mode("magnetic")
-        
+
         assert options.tracking_mode == "magnetic"
         assert result is options
 
@@ -480,11 +478,9 @@ class TestChartOptions:
         """Test set_right_price_scale method."""
         options = ChartOptions()
         result = options.set_right_price_scale(
-            visible=True,
-            auto_scale=True,
-            scale_margins={"top": 0.1, "bottom": 0.1}
+            visible=True, auto_scale=True, scale_margins={"top": 0.1, "bottom": 0.1}
         )
-        
+
         assert options.right_price_scale["visible"] is True
         assert options.right_price_scale["auto_scale"] is True
         assert options.right_price_scale["scale_margins"]["top"] == 0.1
@@ -495,11 +491,9 @@ class TestChartOptions:
         """Test set_left_price_scale method."""
         options = ChartOptions()
         result = options.set_left_price_scale(
-            visible=True,
-            auto_scale=False,
-            scale_margins={"top": 0.2, "bottom": 0.2}
+            visible=True, auto_scale=False, scale_margins={"top": 0.2, "bottom": 0.2}
         )
-        
+
         assert options.left_price_scale["visible"] is True
         assert options.left_price_scale["auto_scale"] is False
         assert options.left_price_scale["scale_margins"]["top"] == 0.2
@@ -509,12 +503,8 @@ class TestChartOptions:
     def test_chart_options_set_time_scale(self):
         """Test set_time_scale method."""
         options = ChartOptions()
-        result = options.set_time_scale(
-            visible=True,
-            time_visible=True,
-            seconds_visible=False
-        )
-        
+        result = options.set_time_scale(visible=True, time_visible=True, seconds_visible=False)
+
         assert options.time_scale["visible"] is True
         assert options.time_scale["timeVisible"] is True
         assert options.time_scale["secondsVisible"] is False
@@ -554,24 +544,26 @@ class TestChartOptions:
 
     def test_chart_options_to_dict_comprehensive(self):
         """Test to_dict method with comprehensive configuration."""
-        options = (ChartOptions()
-                  .set_size(800, 600)
-                  .set_auto_size(False)
-                  .set_watermark("Test Chart")
-                  .set_legend(True)
-                  .set_range_switcher(True)
-                  .set_kinetic_scroll(False)
-                  .set_tracking_mode("magnetic")
-                  .set_localization("en-US", "yyyy-MM-dd")
-                  .set_layout(background_color="#ffffff", text_color="#000000")
-                  .set_grid(vert_lines={"visible": True}, horz_lines={"visible": False})
-                  .set_crosshair(mode=1, vert_line={"visible": True})
-                  .set_right_price_scale(visible=True, auto_scale=True)
-                  .set_left_price_scale(visible=False, auto_scale=False)
-                  .set_time_scale(visible=True, time_visible=True))
-        
+        options = (
+            ChartOptions()
+            .set_size(800, 600)
+            .set_auto_size(False)
+            .set_watermark("Test Chart")
+            .set_legend(True)
+            .set_range_switcher(True)
+            .set_kinetic_scroll(False)
+            .set_tracking_mode("magnetic")
+            .set_localization("en-US", "yyyy-MM-dd")
+            .set_layout(background_color="#ffffff", text_color="#000000")
+            .set_grid(vert_lines={"visible": True}, horz_lines={"visible": False})
+            .set_crosshair(mode=1, vert_line={"visible": True})
+            .set_right_price_scale(visible=True, auto_scale=True)
+            .set_left_price_scale(visible=False, auto_scale=False)
+            .set_time_scale(visible=True, time_visible=True)
+        )
+
         result = options.to_dict()
-        
+
         # Check basic properties
         assert result["width"] == 800
         assert result["height"] == 600
@@ -581,7 +573,7 @@ class TestChartOptions:
         assert result["rangeSwitcher"] is True
         assert result["kineticScroll"] is False
         assert result["trackingMode"] == "magnetic"
-        
+
         # Check nested configurations
         assert result["localization"]["locale"] == "en-US"
         assert result["localization"]["dateFormat"] == "yyyy-MM-dd"
@@ -598,12 +590,14 @@ class TestChartOptions:
 
     def test_chart_options_to_dict_with_size_constraints(self):
         """Test to_dict method with size constraints."""
-        options = (ChartOptions()
-                  .set_min_size(min_width=400, min_height=300)
-                  .set_max_size(max_width=1200, max_height=800))
-        
+        options = (
+            ChartOptions()
+            .set_min_size(min_width=400, min_height=300)
+            .set_max_size(max_width=1200, max_height=800)
+        )
+
         result = options.to_dict()
-        
+
         assert result["minWidth"] == 400
         assert result["minHeight"] == 300
         assert result["maxWidth"] == 1200
@@ -614,9 +608,9 @@ class TestChartOptions:
         options = ChartOptions()
         options.width = None
         options.watermark = None
-        
+
         result = options.to_dict()
-        
+
         assert "width" not in result
         assert "watermark" not in result
         assert "height" in result  # Should be included as it has a default value
@@ -669,7 +663,7 @@ class TestChartOptions:
     def test_chart_options_immutability(self):
         """Test ChartOptions immutability."""
         options = ChartOptions(height=600, width=800)
-        original_height = options.height
+        options.height
 
         # ChartOptions is mutable - values can be changed
         options.height = 700
@@ -714,23 +708,24 @@ class TestChartOptions:
     def test_chart_options_method_chaining(self):
         """Test method chaining functionality."""
         options = ChartOptions()
-        
-        result = (options
-                 .set_size(800, 600)
-                 .set_auto_size(False)
-                 .set_watermark("Test Chart")
-                 .set_legend(True)
-                 .set_range_switcher(True)
-                 .set_kinetic_scroll(False)
-                 .set_tracking_mode("magnetic")
-                 .set_localization("en-US", "yyyy-MM-dd")
-                 .set_layout(background_color="#ffffff")
-                 .set_grid(vert_lines={"visible": True})
-                 .set_crosshair(mode=1)
-                 .set_right_price_scale(visible=True)
-                 .set_left_price_scale(visible=True)
-                 .set_time_scale(visible=True))
-        
+
+        result = (
+            options.set_size(800, 600)
+            .set_auto_size(False)
+            .set_watermark("Test Chart")
+            .set_legend(True)
+            .set_range_switcher(True)
+            .set_kinetic_scroll(False)
+            .set_tracking_mode("magnetic")
+            .set_localization("en-US", "yyyy-MM-dd")
+            .set_layout(background_color="#ffffff")
+            .set_grid(vert_lines={"visible": True})
+            .set_crosshair(mode=1)
+            .set_right_price_scale(visible=True)
+            .set_left_price_scale(visible=True)
+            .set_time_scale(visible=True)
+        )
+
         assert result is options
         assert options.width == 800
         assert options.height == 600
@@ -753,7 +748,7 @@ class TestChartOptions:
     def test_chart_options_default_values(self):
         """Test ChartOptions default values."""
         options = ChartOptions()
-        
+
         assert options.height == 400
         assert options.auto_size is True
         assert options.legend is False
@@ -766,24 +761,24 @@ class TestChartOptions:
         assert options.max_width is None
         assert options.min_height is None
         assert options.max_height is None
-        
+
         # Check default nested configurations
         assert options.layout["background"]["type"] == "solid"
         assert options.layout["background"]["color"] == "white"
         assert options.layout["textColor"] == "black"
         assert options.layout["fontSize"] == 12
         assert options.layout["fontFamily"] == "Roboto, sans-serif"
-        
+
         assert options.grid["vertLines"]["visible"] is True
         assert options.grid["horzLines"]["visible"] is True
-        
+
         assert options.crosshair["mode"] == 1
         assert options.crosshair["vertLine"]["visible"] is True
         assert options.crosshair["horzLine"]["visible"] is True
-        
+
         assert options.right_price_scale["visible"] is True
         assert options.left_price_scale["visible"] is False
-        
+
         assert options.time_scale["visible"] is True
         assert options.time_scale["timeVisible"] is True
         assert options.time_scale["secondsVisible"] is False

@@ -357,6 +357,27 @@ class ChartBuilder:
         self.options.legend = show_legend
         return self
 
+    def set_fit_content_on_load(self, fit_content: bool = True) -> "ChartBuilder":
+        """
+        Set whether to fit content on load.
+
+        Controls whether the chart automatically fits to its content when
+        first displayed. Returns self for method chaining.
+
+        Args:
+            fit_content: Whether to fit content on load. Defaults to True.
+
+        Returns:
+            ChartBuilder: Self for method chaining.
+
+        Example:
+            ```python
+            builder.set_fit_content_on_load(True)
+            ```
+        """
+        self.options.fit_content_on_load = fit_content
+        return self
+
     def add_annotation(self, annotation: Annotation) -> "ChartBuilder":
         """
         Add an annotation to the chart.
@@ -447,4 +468,4 @@ def create_chart() -> ChartBuilder:
                 .build())
         ```
     """
-    return ChartBuilder() 
+    return ChartBuilder()

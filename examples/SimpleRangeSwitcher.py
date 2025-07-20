@@ -7,11 +7,13 @@ with a single dataset, similar to the TradingView range switcher demo.
 This example shows how to add a range switcher to any chart with minimal configuration.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts_pro import render_chart
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+
 
 st.title("📊 Simple Range Switcher Example")
 st.markdown(
@@ -170,7 +172,7 @@ chart_config = [
     }
 ]
 
-render_chart(chart_config, key="simple_range_switcher")
+chart_config.render(key="simple_range_switcher")
 
 # Display data info
 st.subheader("📋 Data Information")
@@ -270,7 +272,7 @@ chart_config = [
     }
 ]
 
-render_chart(chart_config, key="my_chart")
+chart_config.render(key="my_chart")
 """,
         language="python",
     )

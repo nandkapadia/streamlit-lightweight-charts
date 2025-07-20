@@ -6,28 +6,22 @@ This example demonstrates how to create a multi-pane chart with candlestick, his
 
 import streamlit as st
 
-import streamlit_lightweight_charts_pro.dataSamples as data
-from streamlit_lightweight_charts_pro import MultiPaneChart, SinglePaneChart, render_chart
+from dataSamples import (
+    get_baseline_data,
+    get_candlestick_data,
+    get_volume_data,
+)
+from streamlit_lightweight_charts_pro import MultiPaneChart, SinglePaneChart
 from streamlit_lightweight_charts_pro.charts.series import (
+    BaselineSeries,
     CandlestickSeries,
     HistogramSeries,
-    BaselineSeries,
 )
-from streamlit_lightweight_charts_pro.data import BaselineData, HistogramData, OhlcData
 
-# Convert dictionary data to proper data objects
-candlestick_data = [
-    OhlcData(item["time"], item["open"], item["high"], item["low"], item["close"])
-    for item in data.price_candlestick_multipane
-]
-
-baseline_data = [
-    BaselineData(item["time"], item["value"]) for item in data.price_baseline_multipane
-]
-
-histogram_data = [
-    HistogramData(item["time"], item["value"]) for item in data.price_volume_multipane
-]
+# Get sample data
+candlestick_data = get_candlestick_data()
+baseline_data = get_baseline_data()
+histogram_data = get_volume_data()
 
 # Create series with ultra-simplified API
 candlestick_series = CandlestickSeries(
@@ -53,4 +47,4 @@ chart = MultiPaneChart([candlestick_chart, histogram_chart, baseline_chart])
 st.subheader("Multipane Chart with Ultra-Simplified API")
 
 # Render the chart
-render_chart(chart, key="multipane")
+chart.render(key="multipane")

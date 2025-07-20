@@ -635,10 +635,7 @@ class AnnotationManager:
                 layer names as keys.
         """
         return {
-            "layers": {
-                layer_name: layer.to_dict() 
-                for layer_name, layer in self.layers.items()
-            }
+            "layers": {layer_name: layer.to_dict() for layer_name, layer in self.layers.items()}
         }
 
 

@@ -2,13 +2,14 @@
 
 import pandas as pd
 import streamlit as st
+
 from streamlit_lightweight_charts_pro import (
     AreaSeries,
     BarSeries,
     CandlestickSeries,
     LineSeries,
-    SinglePaneChart,
     MultiPaneChart,
+    SinglePaneChart,
 )
 
 # Sample data

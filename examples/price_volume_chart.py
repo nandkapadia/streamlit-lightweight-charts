@@ -3,8 +3,9 @@
 Price Volume Chart example with candlestick and volume.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
+from streamlit_lightweight_charts_pro import PriceVolumeChart
 
 st.title("📊 Price Volume Chart Example")
 
@@ -25,7 +26,6 @@ st.dataframe(df)
 
 # Test PriceVolumeChart
 st.write("### Test: PriceVolumeChart")
-from streamlit_lightweight_charts_pro import PriceVolumeChart, render_chart
 
 # Create PriceVolumeChart with default settings
 price_volume_chart = PriceVolumeChart(
@@ -44,7 +44,7 @@ price_volume_chart = PriceVolumeChart(
 )
 
 # Render the chart
-render_chart(price_volume_chart, key="price_volume_chart_example")
+price_volume_chart.render(key="price_volume_chart_example")
 
 st.write("### Features:")
 st.write("- ✅ Candlestick chart in main area (75% of height)")
@@ -61,7 +61,7 @@ price_volume_chart_no_vol = PriceVolumeChart(
     data=df_no_volume, up_color="#4CAF50", down_color="#F44336", border_visible=False, height=400
 )
 
-render_chart(price_volume_chart_no_vol, key="price_volume_chart_no_volume")
+price_volume_chart_no_vol.render(key="price_volume_chart_no_volume")
 
 st.write("### Features (No Volume):")
 st.write("- ✅ Candlestick chart only")
@@ -85,7 +85,7 @@ price_volume_chart_custom = PriceVolumeChart(
     height=500,
 )
 
-render_chart(price_volume_chart_custom, key="price_volume_chart_custom")
+price_volume_chart_custom.render(key="price_volume_chart_custom")
 
 st.write("### Custom Features:")
 st.write("- ✅ Custom candlestick colors")
@@ -96,7 +96,7 @@ st.write("- ✅ Larger chart height")
 st.write("### Usage:")
 st.code(
     """
-from streamlit_lightweight_charts_pro import PriceVolumeChart, render_chart
+from streamlit_lightweight_charts_pro import PriceVolumeChart
 
 # Create PriceVolumeChart
 chart = PriceVolumeChart(
@@ -106,6 +106,6 @@ chart = PriceVolumeChart(
 )
 
 # Render the chart
-render_chart(chart, key="my_chart")
+chart.render(key="my_chart")
 """
 )

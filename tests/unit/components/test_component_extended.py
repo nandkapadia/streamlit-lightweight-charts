@@ -5,10 +5,9 @@ This module provides additional tests for the component module,
 covering initialization, error handling, and edge cases.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import os
-from pathlib import Path
 
 from streamlit_lightweight_charts_pro.component import get_component_func
 
@@ -43,9 +42,9 @@ class TestComponentExtended:
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
             key = "test_chart"
-            
+
             result = get_component_func()(config=config, key=key)
-            
+
             mock_component.assert_called_once_with(config=config, key=key)
 
     def test_component_rendering_without_key(self):
@@ -53,9 +52,9 @@ class TestComponentExtended:
         mock_component = Mock()
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
-            
+
             result = get_component_func()(config=config)
-            
+
             mock_component.assert_called_once_with(config=config)
 
     def test_component_rendering_error_handling(self):
@@ -64,7 +63,7 @@ class TestComponentExtended:
         mock_component.side_effect = Exception("Rendering error")
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
-            
+
             with pytest.raises(Exception, match="Rendering error"):
                 get_component_func()(config=config)
 
@@ -76,7 +75,7 @@ class TestComponentExtended:
             result1 = get_component_func()
             result2 = get_component_func()
             result3 = get_component_func()
-            
+
             assert result1 == mock_component
             assert result2 == mock_component
             assert result3 == mock_component
@@ -92,7 +91,7 @@ class TestComponentExtended:
                 {"charts": None, "syncConfig": None},
                 {},
             ]
-            
+
             for config in configs:
                 get_component_func()(config=config)
                 mock_component.assert_called_with(config=config)
@@ -103,7 +102,7 @@ class TestComponentExtended:
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
             keys = ["chart1", "chart2", "", None]
-            
+
             for key in keys:
                 get_component_func()(config=config, key=key)
                 mock_component.assert_called_with(config=config, key=key)
@@ -114,9 +113,9 @@ class TestComponentExtended:
         mock_component.return_value = "rendered_chart"
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
-            
+
             result = get_component_func()(config=config)
-            
+
             assert result == "rendered_chart"
 
     def test_component_function_with_complex_config(self):
@@ -128,19 +127,22 @@ class TestComponentExtended:
                     {
                         "type": "candlestick",
                         "data": [
-                            {"time": "2023-01-01", "open": 100, "high": 110, "low": 90, "close": 105}
+                            {
+                                "time": "2023-01-01",
+                                "open": 100,
+                                "high": 110,
+                                "low": 90,
+                                "close": 105,
+                            }
                         ],
-                        "options": {"upColor": "#26a69a", "downColor": "#ef5350"}
+                        "options": {"upColor": "#26a69a", "downColor": "#ef5350"},
                     }
                 ],
-                "syncConfig": {
-                    "sync": True,
-                    "group": "charts"
-                }
+                "syncConfig": {"sync": True, "group": "charts"},
             }
-            
+
             get_component_func()(config=complex_config, key="complex_chart")
-            
+
             mock_component.assert_called_once_with(config=complex_config, key="complex_chart")
 
     def test_component_function_none_config(self):
@@ -164,10 +166,10 @@ class TestComponentExtended:
         mock_component = Mock()
         with patch("streamlit_lightweight_charts_pro.component._component_func", mock_component):
             config = {"charts": [], "syncConfig": {}}
-            
+
             # Test with extra parameters
             get_component_func()(config=config, key="test", extra_param="value")
-            
+
             mock_component.assert_called_once_with(config=config, key="test", extra_param="value")
 
     def test_component_initialization_production_mode(self):
@@ -177,12 +179,14 @@ class TestComponentExtended:
                 mock_exists.return_value = True
                 with patch("streamlit.components.v1.declare_component") as mock_declare:
                     mock_declare.return_value = Mock()
-                    
+
                     # Re-import to trigger initialization
                     import importlib
+
                     import streamlit_lightweight_charts_pro.component
+
                     importlib.reload(streamlit_lightweight_charts_pro.component)
-                    
+
                     result = get_component_func()
                     assert result is not None
 
@@ -191,12 +195,14 @@ class TestComponentExtended:
         with patch("streamlit_lightweight_charts_pro.component._RELEASE", False):
             with patch("streamlit.components.v1.declare_component") as mock_declare:
                 mock_declare.return_value = Mock()
-                
+
                 # Re-import to trigger initialization
                 import importlib
+
                 import streamlit_lightweight_charts_pro.component
+
                 importlib.reload(streamlit_lightweight_charts_pro.component)
-                
+
                 result = get_component_func()
                 assert result is not None
 
@@ -207,11 +213,13 @@ class TestComponentExtended:
                 mock_exists.return_value = True
                 with patch("streamlit.components.v1.declare_component") as mock_declare:
                     mock_declare.side_effect = Exception("Component error")
-                    
+
                     # Re-import to trigger initialization
                     import importlib
+
                     import streamlit_lightweight_charts_pro.component
+
                     importlib.reload(streamlit_lightweight_charts_pro.component)
-                    
+
                     result = get_component_func()
-                    assert result is None 
+                    assert result is None

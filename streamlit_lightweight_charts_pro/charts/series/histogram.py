@@ -36,11 +36,11 @@ class HistogramSeries(Series):
         """Initialize histogram series."""
         # Store column mapping first
         self.column_mapping = column_mapping
-        
+
         # Histogram-specific styling options
         self.color = color
         self.base = base
-        
+
         # Call parent constructor after setting column_mapping
         super().__init__(
             data=data,

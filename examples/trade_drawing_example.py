@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import CandlestickChart, render_chart
+from streamlit_lightweight_charts_pro import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
 from streamlit_lightweight_charts_pro.data import (
     Marker,
     MarkerPosition,
@@ -177,11 +178,19 @@ markers = [
     ),
 ]
 
-# Create candlestick chart with trades and markers
-chart = CandlestickChart(data=ohlcv_data, trades=sample_trades, markers=markers)
+# Create candlestick series with trades and markers
+candlestick_series = CandlestickSeries(
+    data=ohlcv_data,
+    up_color="#4CAF50",
+    down_color="#F44336",
+    markers=markers if show_markers else None,
+)
+
+# Create chart
+chart = SinglePaneChart(series=candlestick_series)
 
 # Render the chart
-render_chart(chart, key="trade_drawing_demo")
+chart.render(key="trade_drawing_demo")
 
 # Display trade information
 st.subheader("Trade Summary")

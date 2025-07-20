@@ -16,23 +16,26 @@ Example:
     from examples.dataSamples import (
         get_line_data, get_candlestick_data, get_volume_data
     )
-    
+
     # Get data as data model objects
     line_data = get_line_data()
     candlestick_data = get_candlestick_data()
-    
+
     # Use with new API
     chart = SinglePaneChart(series=LineSeries(data=line_data))
     ```
 """
 
+from typing import Dict, List, Union
+
 import pandas as pd
-from typing import List, Dict, Any, Union
 
 from streamlit_lightweight_charts_pro.data import (
-    SingleValueData, OhlcData, HistogramData, BaselineData
+    BaselineData,
+    HistogramData,
+    OhlcData,
+    SingleValueData,
 )
-
 
 # =============================================================================
 # RAW DATA DICTIONARIES (for backward compatibility)
@@ -256,17 +259,18 @@ series_volume_chart = [
 # DATA MODEL CONVERSION FUNCTIONS
 # =============================================================================
 
+
 def get_line_data() -> List[SingleValueData]:
     """
     Get sample line chart data as SingleValueData objects.
-    
+
     Returns:
         List[SingleValueData]: List of single value data points for line charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_line_data
-        
+
         line_data = get_line_data()
         chart = SinglePaneChart(series=LineSeries(data=line_data))
         ```
@@ -280,14 +284,14 @@ def get_line_data() -> List[SingleValueData]:
 def get_candlestick_data() -> List[OhlcData]:
     """
     Get sample candlestick chart data as OhlcData objects.
-    
+
     Returns:
         List[OhlcData]: List of OHLC data points for candlestick charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_candlestick_data
-        
+
         ohlc_data = get_candlestick_data()
         chart = SinglePaneChart(series=CandlestickSeries(data=ohlc_data))
         ```
@@ -298,7 +302,7 @@ def get_candlestick_data() -> List[OhlcData]:
             open_=item["open"],
             high=item["high"],
             low=item["low"],
-            close=item["close"]
+            close=item["close"],
         )
         for item in series_candlestick_chart
     ]
@@ -307,24 +311,20 @@ def get_candlestick_data() -> List[OhlcData]:
 def get_volume_data() -> List[HistogramData]:
     """
     Get sample volume chart data as HistogramData objects.
-    
+
     Returns:
         List[HistogramData]: List of histogram data points for volume charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_volume_data
-        
+
         volume_data = get_volume_data()
         chart = SinglePaneChart(series=HistogramSeries(data=volume_data))
         ```
     """
     return [
-        HistogramData(
-            time=item["datetime"],
-            value=item["value"],
-            color=item.get("color")
-        )
+        HistogramData(time=item["datetime"], value=item["value"], color=item.get("color"))
         for item in series_histogram_chart
     ]
 
@@ -332,35 +332,34 @@ def get_volume_data() -> List[HistogramData]:
 def get_baseline_data() -> List[BaselineData]:
     """
     Get sample baseline chart data as BaselineData objects.
-    
+
     Returns:
         List[BaselineData]: List of baseline data points for baseline charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_baseline_data
-        
+
         baseline_data = get_baseline_data()
         chart = SinglePaneChart(series=BaselineSeries(data=baseline_data))
         ```
     """
     return [
-        BaselineData(time=item["datetime"], value=item["value"])
-        for item in series_baseline_chart
+        BaselineData(time=item["datetime"], value=item["value"]) for item in series_baseline_chart
     ]
 
 
 def get_multi_area_data_1() -> List[SingleValueData]:
     """
     Get first multi-area chart data as SingleValueData objects.
-    
+
     Returns:
         List[SingleValueData]: List of single value data points for area charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_multi_area_data_1
-        
+
         area_data = get_multi_area_data_1()
         chart = SinglePaneChart(series=AreaSeries(data=area_data))
         ```
@@ -374,14 +373,14 @@ def get_multi_area_data_1() -> List[SingleValueData]:
 def get_multi_area_data_2() -> List[SingleValueData]:
     """
     Get second multi-area chart data as SingleValueData objects.
-    
+
     Returns:
         List[SingleValueData]: List of single value data points for area charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_multi_area_data_2
-        
+
         area_data = get_multi_area_data_2()
         chart = SinglePaneChart(series=AreaSeries(data=area_data))
         ```
@@ -395,38 +394,34 @@ def get_multi_area_data_2() -> List[SingleValueData]:
 def get_volume_histogram_data() -> List[HistogramData]:
     """
     Get sample volume histogram data as HistogramData objects.
-    
+
     Returns:
         List[HistogramData]: List of histogram data points for volume charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_volume_histogram_data
-        
+
         volume_data = get_volume_histogram_data()
         chart = SinglePaneChart(series=HistogramSeries(data=volume_data))
         ```
     """
     return [
-        HistogramData(
-            time=item["datetime"],
-            value=item["value"]
-        )
-        for item in series_volume_chart
+        HistogramData(time=item["datetime"], value=item["value"]) for item in series_volume_chart
     ]
 
 
 def get_dataframe_line_data() -> pd.DataFrame:
     """
     Get sample line chart data as a pandas DataFrame.
-    
+
     Returns:
         pd.DataFrame: DataFrame with datetime and close columns for line charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_dataframe_line_data
-        
+
         df = get_dataframe_line_data()
         chart = SinglePaneChart(series=LineSeries(data=df))
         ```
@@ -437,14 +432,14 @@ def get_dataframe_line_data() -> pd.DataFrame:
 def get_dataframe_candlestick_data() -> pd.DataFrame:
     """
     Get sample candlestick chart data as a pandas DataFrame.
-    
+
     Returns:
         pd.DataFrame: DataFrame with OHLC columns for candlestick charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_dataframe_candlestick_data
-        
+
         df = get_dataframe_candlestick_data()
         chart = SinglePaneChart(series=CandlestickSeries(data=df))
         ```
@@ -455,14 +450,14 @@ def get_dataframe_candlestick_data() -> pd.DataFrame:
 def get_dataframe_volume_data() -> pd.DataFrame:
     """
     Get sample volume chart data as a pandas DataFrame.
-    
+
     Returns:
         pd.DataFrame: DataFrame with datetime and value columns for volume charts.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_dataframe_volume_data
-        
+
         df = get_dataframe_volume_data()
         chart = SinglePaneChart(series=HistogramSeries(data=df))
         ```
@@ -474,30 +469,31 @@ def get_dataframe_volume_data() -> pd.DataFrame:
 # CONVENIENCE FUNCTIONS FOR COMMON USE CASES
 # =============================================================================
 
+
 def get_sample_data_for_chart_type(chart_type: str) -> Union[List, pd.DataFrame]:
     """
     Get sample data for a specific chart type.
-    
+
     Args:
         chart_type: Type of chart ("line", "candlestick", "volume", "baseline", "area").
-            
+
     Returns:
         Union[List, pd.DataFrame]: Sample data appropriate for the chart type.
-        
+
     Raises:
         ValueError: If chart_type is not supported.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_sample_data_for_chart_type
-        
+
         # Get data for different chart types
         line_data = get_sample_data_for_chart_type("line")
         candlestick_data = get_sample_data_for_chart_type("candlestick")
         ```
     """
     chart_type = chart_type.lower()
-    
+
     if chart_type == "line":
         return get_line_data()
     elif chart_type == "candlestick":
@@ -517,14 +513,14 @@ def get_sample_data_for_chart_type(chart_type: str) -> Union[List, pd.DataFrame]
 def get_all_sample_datasets() -> Dict[str, Union[List, pd.DataFrame]]:
     """
     Get all available sample datasets.
-    
+
     Returns:
         Dict[str, Union[List, pd.DataFrame]]: Dictionary mapping chart types to sample data.
-        
+
     Example:
         ```python
         from examples.dataSamples import get_all_sample_datasets
-        
+
         datasets = get_all_sample_datasets()
         for chart_type, data in datasets.items():
             print(f"{chart_type}: {len(data)} data points")

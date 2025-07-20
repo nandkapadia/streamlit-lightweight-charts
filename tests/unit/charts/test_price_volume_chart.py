@@ -2,13 +2,13 @@
 Unit tests for PriceVolumeChart class.
 """
 
-import pytest
-import pandas as pd
 from unittest.mock import Mock, patch
 
+import pandas as pd
+
 from streamlit_lightweight_charts_pro.charts.price_volume_chart import PriceVolumeChart
-from streamlit_lightweight_charts_pro.data import OhlcData, OhlcvData
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.data import OhlcvData
 
 
 class TestPriceVolumeChart:
@@ -220,9 +220,9 @@ class TestPriceVolumeChart:
 
         # Test right price scale configuration
         right_scale = chart.options.right_price_scale
-        assert right_scale.visible is True
-        assert right_scale.ticks_visible is True
-        assert right_scale.border_visible is True
+        assert right_scale["visible"] is True
+        assert right_scale["ticksVisible"] is True
+        assert right_scale["borderVisible"] is True
 
         # Note: overlay_price_scales is no longer supported in ChartOptions
         # Volume series uses its own price_scale_id instead
@@ -293,14 +293,16 @@ class TestPriceVolumeChart:
         """Test error handling with invalid column mapping."""
         # Note: Current implementation handles invalid column mapping gracefully
         # It will fail when trying to access columns, but not during initialization
-        df = pd.DataFrame({
-            "datetime": ["2022-01-01"],
-            "open": [100],
-            "high": [105],
-            "low": [95],
-            "close": [102],
-        })
-        
+        df = pd.DataFrame(
+            {
+                "datetime": ["2022-01-01"],
+                "open": [100],
+                "high": [105],
+                "low": [95],
+                "close": [102],
+            }
+        )
+
         # This should work fine with valid data
         chart = PriceVolumeChart(data=df)
         assert chart is not None

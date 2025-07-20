@@ -1,33 +1,32 @@
 """Comprehensive tests for data models."""
 
-import pytest
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data import (
-    SingleValueData,
-    OhlcData,
-    OhlcvData,
-    HistogramData,
     BaselineData,
+    HistogramData,
     Marker,
     MarkerPosition,
     MarkerShape,
+    OhlcData,
+    OhlcvData,
+    SingleValueData,
+)
+from streamlit_lightweight_charts_pro.data.annotation import (
+    Annotation,
+    AnnotationLayer,
+    AnnotationManager,
+    AnnotationPosition,
+    AnnotationType,
+    create_arrow_annotation,
+    create_shape_annotation,
+    create_text_annotation,
 )
 from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
     TradeVisualization,
     TradeVisualizationOptions,
-)
-from streamlit_lightweight_charts_pro.data.annotation import (
-    Annotation,
-    AnnotationType,
-    AnnotationPosition,
-    AnnotationLayer,
-    AnnotationManager,
-    create_text_annotation,
-    create_arrow_annotation,
-    create_shape_annotation,
 )
 
 
@@ -622,7 +621,7 @@ class TestDataModelIntegration:
             position=AnnotationPosition.ABOVE,
         )
 
-        layer = AnnotationLayer("test_layer", [annotation])
+        AnnotationLayer("test_layer", [annotation])
         manager = AnnotationManager()
         # Use create_layer instead of add_layer
         created_layer = manager.create_layer("test_layer")

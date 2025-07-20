@@ -42,7 +42,9 @@ class TimeScaleOptions:
             "lockVisibleTimeRangeOnResize": self.lock_visible_time_range_on_resize,
             "rightBarStaysOnScroll": self.right_bar_stays_on_scroll,
             "shiftVisibleRangeOnNewBar": self.shift_visible_range_on_new_bar,
-            "allowShiftVisibleRangeOnWhitespaceAccess": self.allow_shift_visible_range_on_whitespace_access,
+            "allowShiftVisibleRangeOnWhitespaceAccess": (
+                self.allow_shift_visible_range_on_whitespace_access
+            ),
         }
 
         if self.tick_mark_formatter is not None:

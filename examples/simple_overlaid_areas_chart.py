@@ -6,9 +6,9 @@ This example demonstrates how to create overlaid area charts with markers using 
 
 import streamlit as st
 
-import streamlit_lightweight_charts_pro.dataSamples as data
-from streamlit_lightweight_charts_pro import render_chart
-from streamlit_lightweight_charts_pro.charts import AreaSeries, Chart
+from dataSamples import get_multi_area_data_1, get_multi_area_data_2
+
+from streamlit_lightweight_charts_pro.charts.series import AreaSeries
 from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
     GridLineOptions,
@@ -71,31 +71,29 @@ markers2 = [
 
 # Create area series
 series1 = AreaSeries(
-    data=data.series_multiple_chart_area_01,
-    options={
-        "topColor": "rgba(255, 192, 0, 0.7)",
-        "bottomColor": "rgba(255, 192, 0, 0.3)",
-        "lineColor": "rgba(255, 192, 0, 1)",
-        "lineWidth": 2,
-    },
+    data=get_multi_area_data_1(),
+    top_color="rgba(255, 192, 0, 0.7)",
+    bottom_color="rgba(255, 192, 0, 0.3)",
+    line_color="rgba(255, 192, 0, 1)",
+    line_width=2,
     markers=markers1,
 )
 
 series2 = AreaSeries(
-    data=data.series_multiple_chart_area_02,
-    options={
-        "topColor": "rgba(67, 83, 254, 0.7)",
-        "bottomColor": "rgba(67, 83, 254, 0.3)",
-        "lineColor": "rgba(67, 83, 254, 1)",
-        "lineWidth": 2,
-    },
+    data=get_multi_area_data_2(),
+    top_color="rgba(67, 83, 254, 0.7)",
+    bottom_color="rgba(67, 83, 254, 0.3)",
+    line_color="rgba(67, 83, 254, 1)",
+    line_width=2,
     markers=markers2,
 )
 
 # Create a single chart with both series
-chart = Chart([series1, series2], options=chart_options)
+from streamlit_lightweight_charts_pro import SinglePaneChart
+
+chart = SinglePaneChart(series=[series1, series2], options=chart_options)
 
 st.subheader("Overlaid Series with Markers (Single Chart)")
 
 # Render the chart
-render_chart(chart, key="simple_overlaid")
+chart.render(key="simple_overlaid")

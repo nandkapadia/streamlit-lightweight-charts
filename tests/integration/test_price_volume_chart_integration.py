@@ -2,14 +2,15 @@
 Integration tests for PriceVolumeChart class.
 """
 
-import pytest
-import pandas as pd
+from unittest.mock import patch
+
 import numpy as np
-from unittest.mock import patch, MagicMock
+import pandas as pd
+import pytest
 
 from streamlit_lightweight_charts_pro.charts.price_volume_chart import PriceVolumeChart
-from streamlit_lightweight_charts_pro.data import OhlcData, OhlcvData
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.data import OhlcvData
 
 
 class TestPriceVolumeChartIntegration:
@@ -115,12 +116,12 @@ class TestPriceVolumeChartIntegration:
 
         # Test right price scale (candlestick)
         right_scale = chart.options.right_price_scale
-        assert right_scale.visible is True
-        assert right_scale.ticks_visible is True
-        assert right_scale.border_visible is True
-        assert right_scale.text_color == "#333333"
-        assert right_scale.font_size == 12
-        assert right_scale.minimum_width == 80
+        assert right_scale["visible"] is True
+        assert right_scale["ticksVisible"] is True
+        assert right_scale["borderVisible"] is True
+        assert right_scale["textColor"] == "#333333"
+        assert right_scale["fontSize"] == 12
+        assert right_scale["minimumWidth"] == 80
 
         # Test overlay price scale (volume) via frontend config
         config = chart.to_frontend_config()
@@ -373,7 +374,7 @@ class TestPriceVolumeChartIntegration:
 
         # Test configuration generation performance
         start_time = time.time()
-        config = chart.to_frontend_config()
+        chart.to_frontend_config()
         config_time = time.time() - start_time
 
         # Configuration generation should be fast
@@ -401,8 +402,9 @@ class TestPriceVolumeChartIntegration:
 
     def test_memory_usage_integration(self):
         """Test memory usage integration."""
-        import psutil
         import os
+
+        import psutil
 
         # Get initial memory usage
         process = psutil.Process(os.getpid())
@@ -424,7 +426,6 @@ class TestPriceVolumeChartIntegration:
     def test_thread_safety_integration(self):
         """Test thread safety integration."""
         import threading
-        import time
 
         results = []
         errors = []

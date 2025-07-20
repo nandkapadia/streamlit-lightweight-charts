@@ -42,7 +42,7 @@ class BaselineSeries(Series):
         """Initialize baseline series."""
         # Store column mapping first
         self.column_mapping = column_mapping
-        
+
         # Baseline-specific styling options
         self.base_value = base_value or {"price": 0}
         self.top_line_color = top_line_color
@@ -62,7 +62,7 @@ class BaselineSeries(Series):
         self.crosshair_marker_background_color = crosshair_marker_background_color
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
-        
+
         # Call parent constructor after setting column_mapping
         super().__init__(
             data=data,

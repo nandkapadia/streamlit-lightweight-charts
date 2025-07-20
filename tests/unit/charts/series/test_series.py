@@ -1,32 +1,38 @@
 """Comprehensive tests for Series classes and related functionality."""
 
-import time
-import gc
 import copy
-import pytest
+import gc
+import json
+import pickle
+import time
+
 import pandas as pd
 import psutil
-from datetime import datetime
-import pickle
-import json
-from unittest.mock import Mock, patch
+import pytest
 
-from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
-from streamlit_lightweight_charts_pro.charts.series import (
-    LineSeries, AreaSeries, BarSeries, BaselineSeries, 
-    CandlestickSeries, HistogramSeries
-)
-from streamlit_lightweight_charts_pro.data import (
-    SingleValueData, OhlcData, HistogramData, BaselineData
-)
-from streamlit_lightweight_charts_pro.charts.options import ChartOptions
-from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
-from streamlit_lightweight_charts_pro.type_definitions import LineStyle
-from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle as LineStyleEnum, LineType
-from streamlit_lightweight_charts_pro import (
-    SinglePaneChart, create_chart
-)
+from streamlit_lightweight_charts_pro import SinglePaneChart, create_chart
 from streamlit_lightweight_charts_pro.charts.chart_builder import ChartBuilder
+from streamlit_lightweight_charts_pro.charts.series import (
+    AreaSeries,
+    BarSeries,
+    BaselineSeries,
+    CandlestickSeries,
+    HistogramSeries,
+    LineSeries,
+)
+from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
+from streamlit_lightweight_charts_pro.data import (
+    BaselineData,
+    HistogramData,
+    MarkerPosition,
+    MarkerShape,
+    OhlcData,
+    SingleValueData,
+)
+from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle as LineStyleEnum
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    LineType,
+)
 
 
 class TestSeries:
@@ -46,10 +52,9 @@ class TestSeries:
             OhlcData("2024-01-03", 106, 112, 104, 110),
         ]
 
-        self.sample_df = pd.DataFrame({
-            "datetime": ["2024-01-01", "2024-01-02", "2024-01-03"],
-            "close": [100, 105, 110]
-        })
+        self.sample_df = pd.DataFrame(
+            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "close": [100, 105, 110]}
+        )
 
     # ===== SERIES BASE CLASS TESTS =====
 
@@ -182,11 +187,13 @@ class TestSeries:
         """Test that AreaSeries has column_mapping attribute set correctly."""
         # Test with default column mapping
         series = AreaSeries(data=self.sample_data)
-        assert hasattr(series, 'column_mapping')
+        assert hasattr(series, "column_mapping")
         assert series.column_mapping is None  # Default is None
-        
+
         # Test with custom column mapping
-        series = AreaSeries(data=self.sample_data, column_mapping={"time": "datetime", "value": "close"})
+        series = AreaSeries(
+            data=self.sample_data, column_mapping={"time": "datetime", "value": "close"}
+        )
         assert series.column_mapping == {"time": "datetime", "value": "close"}
 
     # ===== BAR SERIES TESTS =====
@@ -208,8 +215,10 @@ class TestSeries:
 
     def test_bar_series_column_mapping_attribute(self):
         """Test that BarSeries has column_mapping attribute set correctly."""
-        series = BarSeries(data=self.sample_data, column_mapping={"time": "datetime", "value": "value"})
-        assert hasattr(series, 'column_mapping')
+        series = BarSeries(
+            data=self.sample_data, column_mapping={"time": "datetime", "value": "value"}
+        )
+        assert hasattr(series, "column_mapping")
         assert series.column_mapping == {"time": "datetime", "value": "value"}
 
     # ===== CANDLESTICK SERIES TESTS =====
@@ -254,8 +263,10 @@ class TestSeries:
 
     def test_histogram_series_column_mapping_attribute(self):
         """Test that HistogramSeries has column_mapping attribute set correctly."""
-        series = HistogramSeries(data=self.sample_data, column_mapping={"time": "datetime", "value": "value"})
-        assert hasattr(series, 'column_mapping')
+        series = HistogramSeries(
+            data=self.sample_data, column_mapping={"time": "datetime", "value": "value"}
+        )
+        assert hasattr(series, "column_mapping")
         assert series.column_mapping == {"time": "datetime", "value": "value"}
 
     # ===== BASELINE SERIES TESTS =====
@@ -310,49 +321,35 @@ class TestSeries:
     def test_dataframe_column_mapping_issue(self):
         """Test the DataFrame column mapping issue we encountered."""
         # Create DataFrame with "datetime" and "value" columns (not "close")
-        df = pd.DataFrame({
-            "datetime": ["2024-01-01", "2024-01-02", "2024-01-03"],
-            "value": [100, 105, 103]
-        })
-        
-        # This should work with correct column mapping
-        series = AreaSeries(
-            data=df, 
-            column_mapping={"time": "datetime", "value": "value"}
+        df = pd.DataFrame(
+            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "value": [100, 105, 103]}
         )
+
+        # This should work with correct column mapping
+        series = AreaSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
         assert len(series.data) == 3
-        
+
         # This should fail without column mapping (expecting "close" column)
         with pytest.raises(ValueError, match="DataFrame must contain columns: datetime and close"):
             AreaSeries(data=df)
 
     def test_dataframe_processing_with_column_mapping(self):
         """Test DataFrame processing with various column mappings."""
-        df = pd.DataFrame({
-            "datetime": ["2024-01-01", "2024-01-02"],
-            "value": [100, 105]
-        })
-        
+        df = pd.DataFrame({"datetime": ["2024-01-01", "2024-01-02"], "value": [100, 105]})
+
         # Test AreaSeries
-        area_series = AreaSeries(
-            data=df, 
-            column_mapping={"time": "datetime", "value": "value"}
-        )
+        area_series = AreaSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
         assert len(area_series.data) == 2
         assert str(area_series.data[0].time) == "2024-01-01 00:00:00"
         assert area_series.data[0].value == 100
-        
+
         # Test BarSeries
-        bar_series = BarSeries(
-            data=df, 
-            column_mapping={"time": "datetime", "value": "value"}
-        )
+        bar_series = BarSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
         assert len(bar_series.data) == 2
-        
+
         # Test HistogramSeries
         hist_series = HistogramSeries(
-            data=df, 
-            column_mapping={"time": "datetime", "value": "value"}
+            data=df, column_mapping={"time": "datetime", "value": "value"}
         )
         assert len(hist_series.data) == 2
 
@@ -377,7 +374,9 @@ class TestSeries:
         df = pd.DataFrame({"date": ["2024-01-01", "2024-01-02"], "price": [100.0, 105.0]})
 
         # Test LineSeries with custom column mapping
-        series = LineSeries(data=df, column_mapping={"time": "date", "value": "price"}, color="#ff0000")
+        series = LineSeries(
+            data=df, column_mapping={"time": "date", "value": "price"}, color="#ff0000"
+        )
 
         # Test that data was converted correctly
         assert len(series.data) == 2
@@ -462,7 +461,7 @@ class TestSeries:
     def test_series_data_immutability(self):
         """Test series data immutability."""
         series = LineSeries(self.sample_data)
-        original_value = series.data[0].value
+        series.data[0].value
 
         # Attempt to modify data - LineSeries data is mutable
         series.data[0] = SingleValueData("2024-01-01", 999)
@@ -473,7 +472,7 @@ class TestSeries:
     def test_series_options_immutability(self):
         """Test series options immutability."""
         series = LineSeries(self.sample_data, color="#ff0000")
-        original_color = series.color
+        series.color
 
         # Attempt to modify options - LineSeries options are mutable
         series.color = "#00ff00"
@@ -567,11 +566,12 @@ class TestSeries:
         series = LineSeries(self.sample_data)
 
         # Test method chaining
-        result = (series
-                 .set_visible(True)
-                 .set_price_scale("right")
-                 .set_price_line(visible=True, color="#ff0000")
-                 .set_base_line(visible=True, color="#00ff00"))
+        result = (
+            series.set_visible(True)
+            .set_price_scale("right")
+            .set_price_line(visible=True, color="#ff0000")
+            .set_base_line(visible=True, color="#00ff00")
+        )
 
         assert result is series
         assert series.visible is True
@@ -581,20 +581,21 @@ class TestSeries:
         """Test comprehensive series method chaining."""
         series = LineSeries(self.sample_data)
 
-        result = (series
-                 .set_visible(True)
-                 .set_price_scale("right")
-                 .set_price_line(visible=True, color="#ff0000", width=2)
-                 .set_base_line(visible=True, color="#00ff00", width=1)
-                 .set_price_format(min_move=0.01, precision=2)
-                 .add_marker(
-                     time="2024-01-02",
-                     position=MarkerPosition.ABOVE_BAR,
-                     color="#ff0000",
-                     shape=MarkerShape.CIRCLE,
-                     text="Test Marker"
-                 )
-                 .set_price_scale_config(visible=True, auto_scale=True))
+        result = (
+            series.set_visible(True)
+            .set_price_scale("right")
+            .set_price_line(visible=True, color="#ff0000", width=2)
+            .set_base_line(visible=True, color="#00ff00", width=1)
+            .set_price_format(min_move=0.01, precision=2)
+            .add_marker(
+                time="2024-01-02",
+                position=MarkerPosition.ABOVE_BAR,
+                color="#ff0000",
+                shape=MarkerShape.CIRCLE,
+                text="Test Marker",
+            )
+            .set_price_scale_config(visible=True, auto_scale=True)
+        )
 
         assert result is series
         assert series.visible is True
@@ -605,32 +606,29 @@ class TestSeries:
     def test_series_set_visible(self):
         """Test series set_visible method."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_visible(False)
-        
+
         assert result is series
         assert series.visible is False
 
     def test_series_set_price_scale(self):
         """Test series set_price_scale method."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_scale("left")
-        
+
         assert result is series
         assert series.price_scale_id == "left"
 
     def test_series_set_price_line_all_parameters(self):
         """Test series set_price_line method with all parameters."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_line(
-            visible=True,
-            color="#ff0000",
-            width=2,
-            style=LineStyleEnum.DASHED
+            visible=True, color="#ff0000", width=2, style=LineStyleEnum.DASHED
         )
-        
+
         assert result is series
         # Note: LineSeries doesn't store price_line as an attribute
         # The method sets internal configuration
@@ -638,9 +636,9 @@ class TestSeries:
     def test_series_set_price_line_partial_parameters(self):
         """Test series set_price_line method with partial parameters."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_line(visible=True)
-        
+
         assert result is series
         # Note: LineSeries doesn't store price_line as an attribute
         # The method sets internal configuration
@@ -648,14 +646,11 @@ class TestSeries:
     def test_series_set_base_line_all_parameters(self):
         """Test series set_base_line method with all parameters."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_base_line(
-            visible=True,
-            color="#00ff00",
-            width=1,
-            style=LineStyleEnum.SOLID
+            visible=True, color="#00ff00", width=1, style=LineStyleEnum.SOLID
         )
-        
+
         assert result is series
         # Note: LineSeries doesn't store base_line as an attribute
         # The method sets internal configuration
@@ -663,9 +658,9 @@ class TestSeries:
     def test_series_set_base_line_partial_parameters(self):
         """Test series set_base_line method with partial parameters."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_base_line(visible=True)
-        
+
         assert result is series
         # Note: LineSeries doesn't store base_line as an attribute
         # The method sets internal configuration
@@ -673,9 +668,9 @@ class TestSeries:
     def test_series_set_price_format(self):
         """Test series set_price_format method."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_format(min_move=0.01, precision=2)
-        
+
         assert result is series
         assert series.price_format["minMove"] == 0.01
         assert series.price_format["precision"] == 2
@@ -683,9 +678,9 @@ class TestSeries:
     def test_series_set_price_format_defaults(self):
         """Test series set_price_format method with defaults."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_format()
-        
+
         assert result is series
         assert "minMove" in series.price_format
         assert "precision" in series.price_format
@@ -693,13 +688,11 @@ class TestSeries:
     def test_series_set_price_scale_config(self):
         """Test series set_price_scale_config method."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.set_price_scale_config(
-            visible=True,
-            auto_scale=True,
-            scale_margins={"top": 0.1, "bottom": 0.1}
+            visible=True, auto_scale=True, scale_margins={"top": 0.1, "bottom": 0.1}
         )
-        
+
         assert result is series
         # Note: The actual attribute name may be different
         # The method sets internal configuration
@@ -709,15 +702,15 @@ class TestSeries:
     def test_series_add_marker(self):
         """Test series add_marker method."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.add_marker(
             time="2024-01-02",
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
-            text="Test Marker"
+            text="Test Marker",
         )
-        
+
         assert result is series
         assert len(series.markers) == 1
         marker = series.markers[0]
@@ -729,16 +722,16 @@ class TestSeries:
     def test_series_add_marker_with_enum_strings(self):
         """Test series add_marker method with enum strings."""
         series = LineSeries(self.sample_data)
-        
+
         result = series.add_marker(
             time="2024-01-02",
             position=MarkerPosition.BELOW_BAR,
             color="#ff0000",
             shape=MarkerShape.ARROW_DOWN,
             text="Test Marker",
-            size=2
+            size=2,
         )
-        
+
         assert result is series
         assert len(series.markers) == 1
         marker = series.markers[0]
@@ -750,14 +743,14 @@ class TestSeries:
     def test_series_add_markers(self):
         """Test series add_markers method."""
         series = LineSeries(self.sample_data)
-        
+
         markers = [
             {"time": "2024-01-01", "position": "aboveBar", "shape": "circle", "text": "Start"},
-            {"time": "2024-01-03", "position": "belowBar", "shape": "arrowDown", "text": "End"}
+            {"time": "2024-01-03", "position": "belowBar", "shape": "arrowDown", "text": "End"},
         ]
-        
+
         result = series.add_markers(markers)
-        
+
         assert result is series
         assert len(series.markers) == 2
 
@@ -769,11 +762,11 @@ class TestSeries:
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
-            text="Test Marker"
+            text="Test Marker",
         )
-        
+
         result = series.clear_markers()
-        
+
         assert result is series
         assert len(series.markers) == 0
 
@@ -782,9 +775,9 @@ class TestSeries:
     def test_series_get_data_range_with_data(self):
         """Test series get_data_range with data."""
         series = LineSeries(self.sample_data)
-        
+
         data_range = series.get_data_range()
-        
+
         assert data_range is not None
         assert "min_value" in data_range
         assert "max_value" in data_range
@@ -794,17 +787,17 @@ class TestSeries:
     def test_series_get_data_range_empty_data(self):
         """Test series get_data_range with empty data."""
         series = LineSeries([])
-        
+
         data_range = series.get_data_range()
-        
+
         assert data_range is None
 
     def test_series_get_data_range_single_data_point(self):
         """Test series get_data_range with single data point."""
         series = LineSeries([SingleValueData("2024-01-01", 100)])
-        
+
         data_range = series.get_data_range()
-        
+
         assert data_range is not None
         assert data_range["min_value"] == 100
         assert data_range["max_value"] == 100
@@ -814,12 +807,12 @@ class TestSeries:
         data_with_none = [
             SingleValueData("2024-01-01", 100),
             SingleValueData("2024-01-02", None),
-            SingleValueData("2024-01-03", 110)
+            SingleValueData("2024-01-03", 110),
         ]
         series = LineSeries(data_with_none)
-        
+
         data_range = series.get_data_range()
-        
+
         assert data_range is not None
         assert data_range["min_value"] == 100
         assert data_range["max_value"] == 110
@@ -829,12 +822,12 @@ class TestSeries:
         data_all_none = [
             SingleValueData("2024-01-01", None),
             SingleValueData("2024-01-02", None),
-            SingleValueData("2024-01-03", None)
+            SingleValueData("2024-01-03", None),
         ]
         series = LineSeries(data_all_none)
-        
+
         data_range = series.get_data_range()
-        
+
         # When all values are None, the range still exists but with None values
         assert data_range is not None
         assert data_range["min_value"] is None
@@ -846,7 +839,7 @@ class TestSeries:
         """Test that series to_frontend_config returns correct structure."""
         series = LineSeries(self.sample_data)
         config = series.to_frontend_config()
-        
+
         assert "type" in config
         assert "data" in config
         assert "options" in config
@@ -855,41 +848,43 @@ class TestSeries:
         """Test that to_frontend_config returns the correct structure."""
         chart = SinglePaneChart(series=LineSeries(self.sample_data))
         config = chart.to_frontend_config()
-        
+
         # Test the structure we fixed
         assert "charts" in config
         assert isinstance(config["charts"], list)
         assert len(config["charts"]) == 1
-        
+
         chart_config = config["charts"][0]
         assert "chartId" in chart_config
         assert "chart" in chart_config
         assert "series" in chart_config
         assert "annotations" in chart_config
-        
+
         assert "syncConfig" in config
         assert config["syncConfig"]["enabled"] is False
 
     def test_chart_builder_method_chaining(self):
         """Test ChartBuilder method chaining with the methods we needed."""
         # This should work without errors
-        chart = (create_chart()
-                .add_area_series(self.sample_data)
-                .set_height(400)
-                .set_width(600)
-                .set_watermark("Test Chart")
-                .set_legend(True)
-                .build())
-        
+        chart = (
+            create_chart()
+            .add_area_series(self.sample_data)
+            .set_height(400)
+            .set_width(600)
+            .set_watermark("Test Chart")
+            .set_legend(True)
+            .build()
+        )
+
         assert chart is not None
         assert len(chart.series) == 1
 
     def test_chart_builder_has_set_watermark_method(self):
         """Test that ChartBuilder has set_watermark method."""
         builder = ChartBuilder()
-        assert hasattr(builder, 'set_watermark')
+        assert hasattr(builder, "set_watermark")
         assert callable(builder.set_watermark)
-        
+
         # Test that it returns self for chaining
         result = builder.set_watermark("Test Watermark")
         assert result is builder
@@ -898,9 +893,9 @@ class TestSeries:
     def test_chart_builder_has_set_legend_method(self):
         """Test that ChartBuilder has set_legend method."""
         builder = ChartBuilder()
-        assert hasattr(builder, 'set_legend')
+        assert hasattr(builder, "set_legend")
         assert callable(builder.set_legend)
-        
+
         # Test that it returns self for chaining
         result = builder.set_legend(True)
         assert result is builder
@@ -911,20 +906,22 @@ class TestSeries:
     def test_series_complex_workflow(self):
         """Test series complex workflow."""
         # Create series with various configurations
-        series = (LineSeries(self.sample_data)
-                 .set_visible(True)
-                 .set_price_scale("right")
-                 .set_price_line(visible=True, color="#ff0000")
-                 .set_base_line(visible=True, color="#00ff00")
-                 .set_price_format(min_move=0.01, precision=2)
-                 .add_marker(
-                     time="2024-01-02",
-                     position=MarkerPosition.ABOVE_BAR,
-                     color="#ff0000",
-                     shape=MarkerShape.CIRCLE,
-                     text="Test Marker"
-                 )
-                 .set_price_scale_config(visible=True, auto_scale=True))
+        series = (
+            LineSeries(self.sample_data)
+            .set_visible(True)
+            .set_price_scale("right")
+            .set_price_line(visible=True, color="#ff0000")
+            .set_base_line(visible=True, color="#00ff00")
+            .set_price_format(min_move=0.01, precision=2)
+            .add_marker(
+                time="2024-01-02",
+                position=MarkerPosition.ABOVE_BAR,
+                color="#ff0000",
+                shape=MarkerShape.CIRCLE,
+                text="Test Marker",
+            )
+            .set_price_scale_config(visible=True, auto_scale=True)
+        )
 
         # Test serialization
         result = series.to_dict()
@@ -978,4 +975,4 @@ class TestSeries:
 
         # Test that modifications work correctly
         series.color = "#00ff00"
-        assert series.color == "#00ff00" 
+        assert series.color == "#00ff00"

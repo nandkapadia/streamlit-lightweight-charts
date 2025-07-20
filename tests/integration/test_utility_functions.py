@@ -1,5 +1,3 @@
-import pandas as pd
-
 from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,

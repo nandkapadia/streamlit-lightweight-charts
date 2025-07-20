@@ -9,7 +9,12 @@ import streamlit as st
 import yfinance as yf
 
 from streamlit_lightweight_charts_pro import MultiPaneChart
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart, LineSeries, CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.charts import (
+    CandlestickSeries,
+    HistogramSeries,
+    LineSeries,
+    SinglePaneChart,
+)
 from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData, SingleValueData
 
 COLOR_BULL = "rgba(38,166,154,0.9)"  # #26a69a
@@ -23,7 +28,10 @@ df = df.reset_index()
 df.columns = ["time", "open", "high", "low", "close", "volume"]  # rename columns
 df["time"] = df["time"].dt.strftime("%Y-%m-%d")  # Date to string
 df["color"] = np.where(df["open"] > df["close"], COLOR_BEAR, COLOR_BULL)  # bull or bear
-df.ta.macd(close="close", fast=6, slow=12, signal=5, append=True)  # calculate macd
+
+# Calculate simple moving averages instead of MACD
+df["sma_20"] = df["close"].rolling(window=20).mean()
+df["sma_50"] = df["close"].rolling(window=50).mean()
 
 # Convert DataFrame to list of dictionaries
 df_dict = df.to_dict("records")
@@ -35,22 +43,16 @@ candlestick_data = [
 
 volume_data = [HistogramData(row["time"], row["volume"]) for row in df_dict]
 
-macd_fast_data = [
-    SingleValueData(row["time"], row["MACDh_6_12_5"])
+sma_20_data = [
+    SingleValueData(row["time"], row["sma_20"])
     for row in df_dict
-    if not np.isnan(row["MACDh_6_12_5"])
+    if not np.isnan(row["sma_20"])
 ]
 
-macd_slow_data = [
-    SingleValueData(row["time"], row["MACDs_6_12_5"])
+sma_50_data = [
+    SingleValueData(row["time"], row["sma_50"])
     for row in df_dict
-    if not np.isnan(row["MACDs_6_12_5"])
-]
-
-macd_hist_data = [
-    HistogramData(row["time"], row["MACD_6_12_5"])
-    for row in df_dict
-    if not np.isnan(row["MACD_6_12_5"])
+    if not np.isnan(row["sma_50"])
 ]
 
 # Create charts
@@ -60,22 +62,14 @@ candlestick_chart = SinglePaneChart(series=candlestick_series)
 volume_series = HistogramSeries(data=volume_data)
 volume_chart = SinglePaneChart(series=volume_series)
 
-macd_fast_series = LineSeries(data=macd_fast_data)
-macd_fast_chart = SinglePaneChart(series=macd_fast_series)
+sma_20_series = LineSeries(data=sma_20_data, color="#FF6B6B")
+sma_20_chart = SinglePaneChart(series=sma_20_series)
 
-macd_slow_series = LineSeries(data=macd_slow_data)
-macd_slow_chart = SinglePaneChart(series=macd_slow_series)
-
-macd_hist_series = HistogramSeries(data=macd_hist_data)
-macd_hist_chart = SinglePaneChart(series=macd_hist_series)
+sma_50_series = LineSeries(data=sma_50_data, color="#4ECDC4")
+sma_50_chart = SinglePaneChart(series=sma_50_series)
 
 # Create multi-pane chart
-chart = MultiPaneChart()
-chart.add_pane(candlestick_chart)
-chart.add_pane(volume_chart)
-chart.add_pane(macd_fast_chart)
-chart.add_pane(macd_slow_chart)
-chart.add_pane(macd_hist_chart)
+chart = MultiPaneChart([candlestick_chart, volume_chart, sma_20_chart, sma_50_chart])
 
 st.subheader("Multipane Chart with Pandas")
 

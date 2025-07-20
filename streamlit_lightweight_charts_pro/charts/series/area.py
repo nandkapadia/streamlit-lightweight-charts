@@ -54,7 +54,7 @@ class AreaSeries(Series):
         """Initialize area series."""
         # Store column mapping first
         self.column_mapping = column_mapping
-        
+
         # Area-specific styling options
         self.top_color = top_color
         self.bottom_color = bottom_color
@@ -71,7 +71,7 @@ class AreaSeries(Series):
         self.crosshair_marker_background_color = crosshair_marker_background_color
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
-        
+
         # Call parent constructor after setting column_mapping
         super().__init__(
             data=data,

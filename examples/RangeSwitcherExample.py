@@ -13,28 +13,29 @@ Features:
 - Proper time range calculations
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
-from streamlit_lightweight_charts_pro import render_chart
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+
 
 # Page configuration
-st.set_page_config(
-    page_title="Range Switcher Example",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="Range Switcher Example", page_icon="📊", layout="wide")
 
 st.title("📊 Enhanced Range Switcher Example")
-st.markdown("""
+st.markdown(
+    """
 This example demonstrates the enhanced range switcher functionality that allows users to switch 
 between different timeframes with proper data switching and visual feedback, similar to the 
 TradingView range switcher demo.
-""")
+"""
+)
+
 
 # Generate sample data for different timeframes
-def generate_sample_data(start_date, end_date, freq='D', base_price=100):
+def generate_sample_data(start_date, end_date, freq="D", base_price=100):
     """Generate sample OHLCV data for different timeframes."""
     date_range = pd.date_range(start=start_date, end=end_date, freq=freq)
     
@@ -44,7 +45,7 @@ def generate_sample_data(start_date, end_date, freq='D', base_price=100):
     for date in date_range:
         # Generate realistic price movements
         change = np.random.normal(0, 0.02)  # 2% daily volatility
-        current_price *= (1 + change)
+        current_price *= 1 + change
         
         # Generate OHLC from current price
         high = current_price * (1 + abs(np.random.normal(0, 0.01)))
@@ -59,36 +60,41 @@ def generate_sample_data(start_date, end_date, freq='D', base_price=100):
         # Generate volume
         volume = np.random.randint(1000000, 10000000)
         
-        data.append({
-            'time': date.strftime('%Y-%m-%d'),
-            'open': round(open_price, 2),
-            'high': round(high, 2),
-            'low': round(low, 2),
-            'close': round(close_price, 2),
-            'volume': volume
-        })
+        data.append(
+            {
+                "time": date.strftime("%Y-%m-%d"),
+                "open": round(open_price, 2),
+                "high": round(high, 2),
+                "low": round(low, 2),
+                "close": round(close_price, 2),
+                "volume": volume,
+            }
+        )
         
         current_price = close_price
     
     return data
 
+
 # Generate data for different timeframes
 end_date = datetime.now()
 start_date_daily = end_date - timedelta(days=365)
-start_date_weekly = end_date - timedelta(days=365*2)
-start_date_monthly = end_date - timedelta(days=365*5)
-start_date_yearly = end_date - timedelta(days=365*20)
+start_date_weekly = end_date - timedelta(days=365 * 2)
+start_date_monthly = end_date - timedelta(days=365 * 5)
+start_date_yearly = end_date - timedelta(days=365 * 20)
 
 # Create data sets for different timeframes
-daily_data = generate_sample_data(start_date_daily, end_date, 'D', 100)
-weekly_data = generate_sample_data(start_date_weekly, end_date, 'W', 100)
-monthly_data = generate_sample_data(start_date_monthly, end_date, 'M', 100)
-yearly_data = generate_sample_data(start_date_yearly, end_date, 'Y', 100)
+daily_data = generate_sample_data(start_date_daily, end_date, "D", 100)
+weekly_data = generate_sample_data(start_date_weekly, end_date, "W", 100)
+monthly_data = generate_sample_data(start_date_monthly, end_date, "M", 100)
+yearly_data = generate_sample_data(start_date_yearly, end_date, "Y", 100)
+
 
 # Create volume data for each timeframe
 def create_volume_data(ohlc_data):
     """Create volume data from OHLC data."""
-    return [{'time': item['time'], 'value': item['volume']} for item in ohlc_data]
+    return [{"time": item["time"], "value": item["volume"]} for item in ohlc_data]
+
 
 daily_volume = create_volume_data(daily_data)
 weekly_volume = create_volume_data(weekly_data)
@@ -96,34 +102,29 @@ monthly_volume = create_volume_data(monthly_data)
 yearly_volume = create_volume_data(yearly_data)
 
 # Store data in session state for switching
-if 'current_timeframe' not in st.session_state:
-    st.session_state.current_timeframe = '1D'
+if "current_timeframe" not in st.session_state:
+    st.session_state.current_timeframe = "1D"
 
 # Timeframe selection
 st.subheader("🎯 Timeframe Selection")
 timeframe = st.selectbox(
     "Select Timeframe:",
-    ['1D', '1W', '1M', '1Y'],
-    index=['1D', '1W', '1M', '1Y'].index(st.session_state.current_timeframe),
-    help="Choose the timeframe for the chart data"
+    ["1D", "1W", "1M", "1Y"],
+    index=["1D", "1W", "1M", "1Y"].index(st.session_state.current_timeframe),
+    help="Choose the timeframe for the chart data",
 )
 
 # Update session state
 st.session_state.current_timeframe = timeframe
 
 # Get current data based on selected timeframe
-timeframe_data = {
-    '1D': daily_data,
-    '1W': weekly_data,
-    '1M': monthly_data,
-    '1Y': yearly_data
-}
+timeframe_data = {"1D": daily_data, "1W": weekly_data, "1M": monthly_data, "1Y": yearly_data}
 
 timeframe_volume = {
-    '1D': daily_volume,
-    '1W': weekly_volume,
-    '1M': monthly_volume,
-    '1Y': yearly_volume
+    "1D": daily_volume,
+    "1W": weekly_volume,
+    "1M": monthly_volume,
+    "1Y": yearly_volume,
 }
 
 current_data = timeframe_data[timeframe]
@@ -138,15 +139,11 @@ with col2:
 with col3:
     st.metric("Date Range", f"{current_data[0]['time']} to {current_data[-1]['time']}")
 with col4:
-    latest_price = current_data[-1]['close']
-    prev_price = current_data[-2]['close'] if len(current_data) > 1 else latest_price
+    latest_price = current_data[-1]["close"]
+    prev_price = current_data[-2]["close"] if len(current_data) > 1 else latest_price
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100 if prev_price > 0 else 0
-    st.metric(
-        "Latest Price", 
-        f"${latest_price:.2f}", 
-        f"{change:+.2f} ({change_pct:+.2f}%)"
-    )
+    st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")
 
 # Create the chart configuration
 chart_options = {
@@ -192,12 +189,12 @@ chart_options = {
             {"label": "3M", "seconds": 7776000},
             {"label": "6M", "seconds": 15552000},
             {"label": "1Y", "seconds": 31536000},
-            {"label": "ALL", "seconds": None}
+            {"label": "ALL", "seconds": None},
         ],
         "position": "top-right",
         "visible": True,
-        "defaultRange": timeframe
-    }
+        "defaultRange": timeframe,
+    },
 }
 
 # Create series configurations
@@ -246,7 +243,7 @@ main_chart = [
     }
 ]
 
-    render_chart(main_chart, key=f"range_switcher_{timeframe}")
+main_chart.render(key=f"range_switcher_{timeframe}")
 
 # Display data table
 st.subheader("📋 Data Table")
@@ -262,7 +259,7 @@ st.dataframe(
         "low": st.column_config.NumberColumn("Low", format="$%.2f"),
         "close": st.column_config.NumberColumn("Close", format="$%.2f"),
         "volume": st.column_config.NumberColumn("Volume", format="%d"),
-    }
+    },
 )
 
 # Show statistics
@@ -271,7 +268,7 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.write("**Price Statistics**")
-    prices = [d['close'] for d in current_data]
+    prices = [d["close"] for d in current_data]
     st.write(f"Min: ${min(prices):.2f}")
     st.write(f"Max: ${max(prices):.2f}")
     st.write(f"Mean: ${np.mean(prices):.2f}")
@@ -279,7 +276,7 @@ with col1:
 
 with col2:
     st.write("**Volume Statistics**")
-    volumes = [d['volume'] for d in current_data]
+    volumes = [d["volume"] for d in current_data]
     st.write(f"Min: {min(volumes):,}")
     st.write(f"Max: {max(volumes):,}")
     st.write(f"Mean: {np.mean(volumes):,.0f}")
@@ -289,17 +286,22 @@ with col3:
     st.write("**Returns**")
     returns = []
     for i in range(1, len(current_data)):
-        ret = (current_data[i]['close'] - current_data[i-1]['close']) / current_data[i-1]['close']
+        ret = (current_data[i]["close"] - current_data[i - 1]["close"]) / current_data[i - 1][
+            "close"
+        ]
         returns.append(ret)
     
     if returns:
         st.write(f"Avg Daily Return: {np.mean(returns)*100:.2f}%")
         st.write(f"Volatility: {np.std(returns)*100:.2f}%")
-        st.write(f"Total Return: {((current_data[-1]['close'] / current_data[0]['close']) - 1)*100:.2f}%")
+        st.write(
+            f"Total Return: {((current_data[-1]['close'] / current_data[0]['close']) - 1)*100:.2f}%"
+        )
 
 # Usage instructions
 st.subheader("💡 How to Use")
-st.markdown("""
+st.markdown(
+    """
 1. **Range Switcher**: Use the buttons in the top-right corner of the chart to switch between different time ranges
 2. **Timeframe Selection**: Use the dropdown above to switch between different data timeframes (1D, 1W, 1M, 1Y)
 3. **Interactive Features**: 
@@ -309,11 +311,13 @@ st.markdown("""
    - Double-click to reset view
 
 The range switcher provides quick access to common time ranges while the timeframe selector changes the underlying data resolution.
-""")
+"""
+)
 
 # Technical details
 with st.expander("🔧 Technical Details"):
-    st.markdown("""
+    st.markdown(
+        """
     **Enhanced Range Switcher Features:**
     
     - **Professional Styling**: Matches TradingView's design with proper fonts, colors, and spacing
@@ -337,4 +341,5 @@ with st.expander("🔧 Technical Details"):
     
     The range switcher works with the chart's time scale to provide smooth transitions
     and proper data visualization across different time ranges.
-    """) 
+    """
+    )

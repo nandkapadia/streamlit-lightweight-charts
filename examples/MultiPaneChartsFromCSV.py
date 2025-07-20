@@ -9,7 +9,12 @@ import pandas as pd
 import streamlit as st
 
 from streamlit_lightweight_charts_pro import MultiPaneChart
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart, LineSeries, CandlestickSeries, HistogramSeries
+from streamlit_lightweight_charts_pro.charts import (
+    CandlestickSeries,
+    HistogramSeries,
+    LineSeries,
+    SinglePaneChart,
+)
 from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData, SingleValueData
 
 COLOR_BULL = "rgba(38,166,154,0.9)"  # #26a69a

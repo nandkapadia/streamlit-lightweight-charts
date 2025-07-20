@@ -103,7 +103,8 @@ class LineSeries(Series):
             crosshair_marker_visible: Whether to show crosshair markers. Defaults to True.
             crosshair_marker_radius: Radius of crosshair markers. Defaults to 4.
             crosshair_marker_border_color: Border color of crosshair markers. Defaults to "".
-            crosshair_marker_background_color: Background color of crosshair markers. Defaults to "".
+            crosshair_marker_background_color: Background color of crosshair markers. 
+                Defaults to "".
             crosshair_marker_border_width: Border width of crosshair markers. Defaults to 2.
             last_price_animation: Animation mode for the last price. Defaults to DISABLED.
             **kwargs: Additional series configuration options.
@@ -124,7 +125,7 @@ class LineSeries(Series):
         """
         # Store column mapping first
         self.column_mapping = column_mapping
-        
+
         # Line-specific styling options
         self.color = color
         self.line_style = line_style
@@ -139,7 +140,7 @@ class LineSeries(Series):
         self.crosshair_marker_background_color = crosshair_marker_background_color
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
-        
+
         # Initialize base class
         super().__init__(data=data, **kwargs)
 
@@ -175,7 +176,9 @@ class LineSeries(Series):
             ```
         """
         # Use the stored column_mapping if available, otherwise default
-        mapping = self.column_mapping if self.column_mapping else {"time": "datetime", "value": "close"}
+        mapping = (
+            self.column_mapping if self.column_mapping else {"time": "datetime", "value": "close"}
+        )
 
         time_col = mapping.get("time", "datetime")
         value_col = mapping.get("value", "close")

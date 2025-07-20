@@ -6,7 +6,7 @@ This example demonstrates how to create a simple baseline chart using the ultra-
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import SinglePaneChart, render_chart
+from streamlit_lightweight_charts_pro import SinglePaneChart
 from streamlit_lightweight_charts_pro.charts.series import BaselineSeries
 from streamlit_lightweight_charts_pro.data import BaselineData
 
@@ -38,4 +38,4 @@ chart = SinglePaneChart([baseline_series])
 st.subheader("Baseline Chart with Ultra-Simplified API")
 
 # Render the chart
-render_chart(chart, key="baseline")
+chart.render(key="baseline")

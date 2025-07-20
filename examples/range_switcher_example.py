@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import MultiPaneChart, render_chart
-from streamlit_lightweight_charts_pro.charts import CandlestickChart, HistogramChart
+from streamlit_lightweight_charts_pro import MultiPaneChart
+from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
 from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData
 
 st.set_page_config(page_title="Multi-Pane Chart Demo", layout="wide")
@@ -70,16 +70,19 @@ with st.sidebar:
     theme = st.selectbox("Theme", ["Light", "Dark", "Trading View"], index=2)
 
 # Create charts
-candlestick_chart = CandlestickChart(data=candlestick_data)
-histogram_chart = HistogramChart(data=volume_data)
+from streamlit_lightweight_charts_pro import SinglePaneChart
+
+candlestick_series = CandlestickSeries(data=candlestick_data)
+candlestick_chart = SinglePaneChart(series=candlestick_series)
+
+histogram_series = HistogramSeries(data=volume_data)
+histogram_chart = SinglePaneChart(series=histogram_series)
 
 # Create multi-pane chart
-chart = MultiPaneChart()
-chart.add_pane(candlestick_chart)
-chart.add_pane(histogram_chart)
+chart = MultiPaneChart([candlestick_chart, histogram_chart])
 
 # Render the chart
-render_chart(chart, key="multi_pane_demo")
+chart.render(key="multi_pane_demo")
 
 # Display data information
 col1, col2 = st.columns(2)
@@ -106,16 +109,17 @@ with st.expander("How to Use Multi-Pane Charts"):
     ### Code Example
     ```python
     # Create charts
-    candlestick_chart = CandlestickChart(data=candlestick_data)
-    histogram_chart = HistogramChart(data=volume_data)
+    candlestick_series = CandlestickSeries(data=candlestick_data)
+    candlestick_chart = SinglePaneChart(series=candlestick_series)
+    
+    histogram_series = HistogramSeries(data=volume_data)
+    histogram_chart = SinglePaneChart(series=histogram_series)
     
     # Create multi-pane chart
-    chart = MultiPaneChart()
-    chart.add_pane(candlestick_chart)
-    chart.add_pane(histogram_chart)
+    chart = MultiPaneChart([candlestick_chart, histogram_chart])
     
     # Render the chart
-    render_chart(chart, key="charts")
+    chart.render(key="charts")
     ```
     """
     )

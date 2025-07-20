@@ -29,8 +29,9 @@ Example:
     ```
 """
 
-
 from .chart_builder import ChartBuilder, create_chart
+from .multi_pane_chart import MultiPaneChart
+from .price_volume_chart import PriceVolumeChart
 from .series import (
     AreaSeries,
     BarSeries,
@@ -40,12 +41,10 @@ from .series import (
     LineSeries,
 )
 from .single_pane_chart import SinglePaneChart
-from .multi_pane_chart import MultiPaneChart
-from .price_volume_chart import PriceVolumeChart
 
 __all__ = [
     "SinglePaneChart",
-    "MultiPaneChart", 
+    "MultiPaneChart",
     "PriceVolumeChart",
     "ChartBuilder",
     "create_chart",

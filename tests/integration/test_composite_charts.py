@@ -1,10 +1,16 @@
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart, MultiPaneChart
+from streamlit_lightweight_charts_pro.charts import MultiPaneChart, SinglePaneChart
 from streamlit_lightweight_charts_pro.charts.series import (
     CandlestickSeries,
     HistogramSeries,
     LineSeries,
+)
+from streamlit_lightweight_charts_pro.data.trade import (
+    Trade,
+    TradeType,
+    TradeVisualization,
+    TradeVisualizationOptions,
 )
 
 
@@ -28,9 +34,9 @@ def test_price_volume_chart():
     volume_df = df[["datetime", "volume"]].copy()
     volume_df = volume_df.rename(columns={"volume": "value"})
     histogram_series = HistogramSeries(
-        data=volume_df, 
+        data=volume_df,
         color="#2196F3",
-        column_mapping={'time': 'datetime', 'value': 'value'}  # Explicit mapping
+        column_mapping={"time": "datetime", "value": "value"},  # Explicit mapping
     )
 
     # Create multi-pane chart
@@ -43,7 +49,8 @@ def test_price_volume_chart():
     assert "charts" in config
     assert len(config["charts"]) >= 2
 
-    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0] contains the actual chart
+    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0]
+    # contains the actual chart
     price_chart = config["charts"][0]["charts"][0]
     assert "series" in price_chart
     # The actual implementation uses lowercase "candlestick", not "Candlestick"
@@ -91,13 +98,6 @@ def test_price_volume_chart_with_trades():
         }
     )
 
-    from streamlit_lightweight_charts_pro.data.trade import (
-        Trade,
-        TradeType,
-        TradeVisualizationOptions,
-        TradeVisualization,
-    )
-
     trades = [Trade("2023-01-01", 100.0, "2023-01-02", 105.0, 10, TradeType.LONG)]
     trade_options = TradeVisualizationOptions(style=TradeVisualization.MARKERS)
 
@@ -114,9 +114,9 @@ def test_price_volume_chart_with_trades():
     volume_df = df[["datetime", "volume"]].copy()
     volume_df = volume_df.rename(columns={"volume": "value"})
     histogram_series = HistogramSeries(
-        data=volume_df, 
+        data=volume_df,
         color="#2196F3",
-        column_mapping={'time': 'datetime', 'value': 'value'}  # Explicit mapping
+        column_mapping={"time": "datetime", "value": "value"},  # Explicit mapping
     )
 
     # Create multi-pane chart
@@ -125,7 +125,8 @@ def test_price_volume_chart_with_trades():
     )
 
     config = chart.to_frontend_config()
-    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0] contains the actual chart
+    # MultiPaneChart returns nested structure: config["charts"][0]["charts"][0]
+    # contains the actual chart
     price_chart = config["charts"][0]["charts"][0]
     found_trades = False
     for series in price_chart["series"]:

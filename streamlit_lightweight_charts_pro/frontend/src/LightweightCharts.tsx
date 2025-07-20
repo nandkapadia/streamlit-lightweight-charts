@@ -223,14 +223,23 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         // Fit chart to content when first displayed (if enabled)
         if (chartConfig.chart?.fitContentOnLoad !== false) {
-          setTimeout(() => {
-            try {
-              chart.timeScale().fitContent()
-              console.log('✅ [DEBUG] Chart fitted to content:', chartId)
-            } catch (error) {
-              console.warn('⚠️ [DEBUG] Could not fit chart to content:', error)
-            }
-          }, 50) // Small delay to ensure chart is fully initialized
+          // Try multiple times with increasing delays to ensure fitContent works
+          const tryFitContent = (attempt: number = 1) => {
+            setTimeout(() => {
+              try {
+                chart.timeScale().fitContent()
+                console.log(`✅ [DEBUG] Chart fitted to content (attempt ${attempt}):`, chartId)
+              } catch (error) {
+                console.warn(`⚠️ [DEBUG] Could not fit chart to content (attempt ${attempt}):`, error)
+                // Retry up to 3 times with increasing delays
+                if (attempt < 3) {
+                  tryFitContent(attempt + 1)
+                }
+              }
+            }, attempt * 200) // 200ms, 400ms, 600ms delays
+          }
+          
+          tryFitContent()
         }
 
         console.log('✅ [DEBUG] Chart created successfully:', chartId)

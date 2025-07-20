@@ -3,23 +3,14 @@ Unit tests for PriceScaleOptions and price scale functionality.
 """
 
 import pytest
-from unittest.mock import Mock, patch
 
-from streamlit_lightweight_charts_pro.charts import (
-    PriceVolumeChart,
-    SinglePaneChart,
-    MultiPaneChart,
-    LineSeries,
-    CandlestickSeries,
-)
 from streamlit_lightweight_charts_pro.charts.options import (
-    ChartOptions,
-    PriceScaleOptions,
-    PriceScale,
-    RightPriceScale,
     LeftPriceScale,
     OverlayPriceScale,
+    PriceScale,
     PriceScaleMargins,
+    PriceScaleOptions,
+    RightPriceScale,
 )
 from streamlit_lightweight_charts_pro.type_definitions import PriceScaleMode
 
@@ -279,7 +270,9 @@ class TestPriceScaleOptions:
         right_scale = RightPriceScale(visible=True, text_color="#333333")
         left_scale = LeftPriceScale(visible=False)
 
-        options = ChartOptions(right_price_scale=right_scale.to_dict(), left_price_scale=left_scale.to_dict())
+        options = ChartOptions(
+            right_price_scale=right_scale.to_dict(), left_price_scale=left_scale.to_dict()
+        )
 
         result = options.to_dict()
 

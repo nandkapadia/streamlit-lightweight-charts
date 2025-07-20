@@ -25,7 +25,8 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     WatermarkOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.localization_options import LocalizationOptions
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (  # Backward compatibility aliases
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+    # Backward compatibility aliases
     LeftPriceScale,
     LeftPriceScaleOptions,
     OverlayPriceScale,
