@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 
 import pandas as pd
 
-from ...data import BaselineData
-from ...type_definitions import ChartType, LastPriceAnimationMode, LineStyle
-from .base import Series, _get_enum_value
+from streamlit_lightweight_charts_pro.data import BaselineData
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, LastPriceAnimationMode, LineStyle
+from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
 
 
 class BaselineSeries(Series):

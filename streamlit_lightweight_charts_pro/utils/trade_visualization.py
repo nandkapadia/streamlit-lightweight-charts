@@ -12,7 +12,7 @@ visual representations that can be rendered by the charting library.
 
 from typing import Any, Dict, List, Optional
 
-from ..data import Trade, TradeVisualization, TradeVisualizationOptions
+from streamlit_lightweight_charts_pro.data import Trade, TradeVisualization, TradeVisualizationOptions
 
 
 def trades_to_visual_elements(

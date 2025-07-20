@@ -41,7 +41,7 @@ Example Usage:
     chart.render(key="my_chart")
     ```
 
-Version: 1.0.0
+Version: 0.1.0
 Author: Streamlit Lightweight Charts Contributors
 License: MIT
 """
@@ -51,15 +51,15 @@ License: MIT
 # TODO: Need to implement legend for the chart
 
 # Import core components
-from .charts import (
+from streamlit_lightweight_charts_pro.charts import (
     ChartBuilder,
     MultiPaneChart,
     PriceVolumeChart,
     SinglePaneChart,
     create_chart,
 )
-from .charts.options import ChartOptions
-from .charts.series import (
+from streamlit_lightweight_charts_pro.charts.options import ChartOptions
+from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
     BaselineSeries,
@@ -68,7 +68,7 @@ from .charts.series import (
     LineSeries,
     Series,
 )
-from .data import (
+from streamlit_lightweight_charts_pro.data import (
     Annotation,
     BaselineData,
     HistogramData,
@@ -79,26 +79,32 @@ from .data import (
     OhlcvData,
     SingleValueData,
 )
-from .data.annotation import (
+from streamlit_lightweight_charts_pro.data.annotation import (
     AnnotationLayer,
     AnnotationManager,
     create_arrow_annotation,
     create_shape_annotation,
     create_text_annotation,
 )
-from .data.trade import (
+from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
     TradeVisualization,
     TradeVisualizationOptions,
 )
-from .type_definitions import ChartType, LineStyle
+
+# Import logging configuration
+from streamlit_lightweight_charts_pro.logging_config import get_logger, setup_logging
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, LineStyle
 
 # Version information
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 
 # Export all public components
 __all__ = [
+    # Logging
+    "get_logger",
+    "setup_logging",
     # Core chart classes
     "SinglePaneChart",
     "MultiPaneChart",

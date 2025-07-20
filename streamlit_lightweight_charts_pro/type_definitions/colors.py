@@ -9,7 +9,7 @@ and complex gradient configurations for enhanced visual appeal.
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from .enums import ColorType
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColorType
 
 
 @dataclass

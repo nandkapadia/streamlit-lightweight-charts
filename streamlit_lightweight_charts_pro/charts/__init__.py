@@ -29,10 +29,10 @@ Example:
     ```
 """
 
-from .chart_builder import ChartBuilder, create_chart
-from .multi_pane_chart import MultiPaneChart
-from .price_volume_chart import PriceVolumeChart
-from .series import (
+from streamlit_lightweight_charts_pro.charts.chart_builder import ChartBuilder, create_chart
+from streamlit_lightweight_charts_pro.charts.multi_pane_chart import MultiPaneChart
+from streamlit_lightweight_charts_pro.charts.price_volume_chart import PriceVolumeChart
+from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
     BaselineSeries,
@@ -40,7 +40,7 @@ from .series import (
     HistogramSeries,
     LineSeries,
 )
-from .single_pane_chart import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
 
 __all__ = [
     "SinglePaneChart",

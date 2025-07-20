@@ -11,6 +11,7 @@ __pycache__/
 /*.egg-info
 *.manifest
 *.spec
+frontend/build/*
 
 # Unit test / coverage
 htmlcov/
@@ -73,3 +74,9 @@ streamlit_lightweight_charts_pro/frontend/node_modules/
 # ===========================
 .vscode/
 .pypirc
+streamlit_lightweight_charts_pro/frontend/build/asset-manifest.json
+streamlit_lightweight_charts_pro/frontend/build/index.html
+streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js
+streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js.LICENSE.txt
+streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js.map
+bandit_report.json

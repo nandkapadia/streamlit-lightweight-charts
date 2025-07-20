@@ -4,14 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "streamlit-lightweight-charts-pro"
-version = "0.8.0"
+version = "0.1.0"
 description = "Enhanced Streamlit wrapper for TradingView's lightweight-charts with ultra-simplified API and performance optimizations"
 authors = [{ name = "Nand Kapadia", email = "nand.kapadia@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = [
-    "streamlit>=1.0"
+    "streamlit>=1.0",
+    "pandas>=1.0"
 ]
 
 [project.optional-dependencies]

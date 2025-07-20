@@ -1,6 +1,6 @@
 """Data models for streamlit-lightweight-charts."""
 
-from .annotation import (
+from streamlit_lightweight_charts_pro.data.annotation import (
     Annotation,
     AnnotationLayer,
     AnnotationManager,
@@ -10,7 +10,7 @@ from .annotation import (
     create_shape_annotation,
     create_text_annotation,
 )
-from .models import (
+from streamlit_lightweight_charts_pro.data.models import (
     BaselineData,
     HistogramData,
     Marker,
@@ -20,7 +20,7 @@ from .models import (
     OhlcvData,
     SingleValueData,
 )
-from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
+from streamlit_lightweight_charts_pro.data.trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
 
 __all__ = [
     "SingleValueData",

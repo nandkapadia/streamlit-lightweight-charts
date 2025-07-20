@@ -26,7 +26,7 @@ Example:
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from ...type_definitions import LineStyle
+from streamlit_lightweight_charts_pro.type_definitions import LineStyle
 
 
 @dataclass

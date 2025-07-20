@@ -17,6 +17,11 @@ from typing import Any, Dict, Optional, Union
 
 import pandas as pd
 
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+
+# Initialize logger
+logger = get_logger("data.models")
+
 
 class MarkerShape(str, Enum):
     """
@@ -302,7 +307,7 @@ class OhlcData(BaseData):
             ohlc = OhlcData("2024-01-01", 100.0, 105.0, 98.0, 102.0)
 
             # Access OHLC values
-            print(f"Open: {ohlc.open}, High: {ohlc.high}")
+            logger.info(f"Open: {ohlc.open}, High: {ohlc.high}")
             ```
         """
         self.time = time
@@ -360,7 +365,7 @@ class OhlcvData(BaseData):
             ohlcv = OhlcvData("2024-01-01", 100.0, 105.0, 98.0, 102.0, 1000000)
 
             # Access OHLCV values
-            print(f"Open: {ohlcv.open}, Volume: {ohlcv.volume}")
+            logger.info(f"Open: {ohlcv.open}, Volume: {ohlcv.volume}")
             ```
         """
         self.time = time

@@ -9,8 +9,8 @@ are automatically synchronized for crosshair movement and time range changes.
 
 from typing import Any, Dict, List, Optional
 
-from .base_chart import BaseChart
-from .single_pane_chart import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.base_chart import BaseChart
+from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
 
 
 class MultiPaneChart(BaseChart):

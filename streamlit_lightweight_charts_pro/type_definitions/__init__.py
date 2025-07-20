@@ -1,7 +1,7 @@
 """Types module for streamlit-lightweight-charts."""
 
-from .colors import Background, SolidColor, VerticalGradientColor
-from .enums import (
+from streamlit_lightweight_charts_pro.type_definitions.colors import Background, SolidColor, VerticalGradientColor
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
     ChartType,
     ColorType,
     CrosshairMode,
@@ -14,7 +14,7 @@ from .enums import (
     TrackingExitMode,
     VertAlign,
 )
-from .protocols import (
+from streamlit_lightweight_charts_pro.type_definitions.protocols import (
     AnnotationProtocol,
     ChartData,
     ChartDataProtocol,

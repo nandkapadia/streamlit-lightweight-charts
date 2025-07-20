@@ -1,6 +1,6 @@
 """Utilities for streamlit-lightweight-charts."""
 
-from .dataframe_converter import (
+from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
     df_to_baseline_data,
     df_to_data,
     df_to_histogram_data,
@@ -9,7 +9,7 @@ from .dataframe_converter import (
     df_to_ohlcv_data,
     resample_df_for_charts,
 )
-from .trade_visualization import (
+from streamlit_lightweight_charts_pro.utils.trade_visualization import (
     add_trades_to_series,
     create_trade_shapes_series,
     trades_to_visual_elements,

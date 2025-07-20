@@ -7,7 +7,7 @@ from typing import Optional, Union
 
 import pandas as pd
 
-from .base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
 
 
 class TradeType(str, Enum):
@@ -155,7 +155,7 @@ class Trade:
         Returns:
             List of marker dictionaries
         """
-        from ..data import Marker, MarkerPosition, MarkerShape
+        from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
 
         # Default colors based on trade type and profit
         if entry_color is None:

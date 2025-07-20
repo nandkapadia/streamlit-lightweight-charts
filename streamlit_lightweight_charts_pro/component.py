@@ -29,8 +29,13 @@ Raises:
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+
 # Component function for Streamlit integration - initialized once
 _component_func: Optional[Callable[..., Any]] = None
+
+# Initialize logger
+logger = get_logger("component")
 
 # Determine if we're in a release build or development
 # Set to True for production builds, False for development
@@ -63,7 +68,7 @@ def get_component_func() -> Optional[Callable[..., Any]]:
         if component_func:
             result = component_func(config=chart_config, key="my_chart")
         else:
-            print("Component function not available")
+            logger.warning("Component function not available")
         ```
     """
     return _component_func
@@ -84,11 +89,11 @@ if _RELEASE:
             )
         except Exception as e:
             # Log warning if component initialization fails
-            print(f"Warning: Could not load frontend component: {e}")
+            logger.warning(f"Could not load frontend component: {e}")
             _component_func = None
     else:
         # Log warning if build directory is missing
-        print(f"Warning: Frontend build directory not found at {frontend_dir}")
+        logger.warning(f"Frontend build directory not found at {frontend_dir}")
         _component_func = None
 else:
     # Development mode: Use local development server for hot reloading
@@ -103,5 +108,5 @@ else:
         )
     except Exception as e:
         # Log warning if development component initialization fails
-        print(f"Warning: Could not load development component: {e}")
+        logger.warning(f"Could not load development component: {e}")
         _component_func = None

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="streamlit-lightweight-charts-pro",
-    version="0.8.0",
+    version="0.1.0",
     author="Nand Kapadia",
     author_email="nand.kapadia@gmail.com",
     description="Enhanced Streamlit component for TradingView's lightweight-charts with ultra-simplified API and performance optimizations",
@@ -43,6 +43,7 @@ setuptools.setup(
     python_requires=">=3.7",
     install_requires=[
         "streamlit>=1.0",
+        "pandas>=1.0",
     ],
     extras_require={
         "dev": [

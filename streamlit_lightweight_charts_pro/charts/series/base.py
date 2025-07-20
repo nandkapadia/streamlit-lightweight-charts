@@ -24,8 +24,12 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from ...data import Marker, MarkerPosition, MarkerShape
-from ...data.models import BaseData
+from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
+from streamlit_lightweight_charts_pro.data.models import BaseData
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+
+# Initialize logger
+logger = get_logger("charts.series.base")
 
 
 def _get_enum_value(value, enum_class):
@@ -482,7 +486,7 @@ class Series(ABC):
             ```python
             range_info = series.get_data_range()
             if range_info:
-                print(f"Value range: {range_info['min_value']} - {range_info['max_value']}")
+                logger.info(f"Value range: {range_info['min_value']} - {range_info['max_value']}")
             ```
         """
         if not self.data:

@@ -38,7 +38,11 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from .base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+
+# Initialize logger
+logger = get_logger("data.annotation")
 
 
 class AnnotationType(str, Enum):
@@ -539,7 +543,7 @@ class AnnotationManager:
             ```python
             success = manager.remove_layer("old_layer")
             if success:
-                print("Layer removed successfully")
+                logger.info("Layer removed successfully")
             ```
         """
         if name in self.layers:

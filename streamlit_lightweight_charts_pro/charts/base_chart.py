@@ -22,7 +22,7 @@ Example:
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from ..component import get_component_func
+from streamlit_lightweight_charts_pro.component import get_component_func
 
 
 class BaseChart(ABC):

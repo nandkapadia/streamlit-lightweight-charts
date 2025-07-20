@@ -29,10 +29,10 @@ Example:
 
 from typing import Any, Dict, List, Optional, Union
 
-from ..data.annotation import Annotation, AnnotationManager
-from .base_chart import BaseChart
-from .options import ChartOptions
-from .series import Series
+from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
+from streamlit_lightweight_charts_pro.charts.base_chart import BaseChart
+from streamlit_lightweight_charts_pro.charts.options import ChartOptions
+from streamlit_lightweight_charts_pro.charts.series import Series
 
 
 class SinglePaneChart(BaseChart):

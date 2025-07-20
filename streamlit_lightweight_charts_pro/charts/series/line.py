@@ -35,9 +35,9 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from ...data import SingleValueData
-from ...type_definitions import ChartType, LastPriceAnimationMode, LineStyle, LineType
-from .base import Series, _get_enum_value
+from streamlit_lightweight_charts_pro.data import SingleValueData
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, LastPriceAnimationMode, LineStyle, LineType
+from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
 
 
 class LineSeries(Series):
@@ -103,7 +103,7 @@ class LineSeries(Series):
             crosshair_marker_visible: Whether to show crosshair markers. Defaults to True.
             crosshair_marker_radius: Radius of crosshair markers. Defaults to 4.
             crosshair_marker_border_color: Border color of crosshair markers. Defaults to "".
-            crosshair_marker_background_color: Background color of crosshair markers. 
+            crosshair_marker_background_color: Background color of crosshair markers.
                 Defaults to "".
             crosshair_marker_border_width: Border width of crosshair markers. Defaults to 2.
             last_price_animation: Animation mode for the last price. Defaults to DISABLED.

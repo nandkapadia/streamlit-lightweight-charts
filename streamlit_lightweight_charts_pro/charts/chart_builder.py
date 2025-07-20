@@ -25,9 +25,9 @@ Example:
 
 from typing import Any, List, Optional
 
-from ..data.annotation import Annotation
-from .options import ChartOptions
-from .series import (
+from streamlit_lightweight_charts_pro.data.annotation import Annotation
+from streamlit_lightweight_charts_pro.charts.options import ChartOptions
+from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
     BaselineSeries,
@@ -35,7 +35,7 @@ from .series import (
     HistogramSeries,
     LineSeries,
 )
-from .single_pane_chart import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
 
 
 class ChartBuilder:
