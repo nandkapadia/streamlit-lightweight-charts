@@ -133,7 +133,13 @@ def method_chaining_example():
                 line_width=3,
             )
         )
-        .update_options(height=400, width=600, watermark="Sample Area Data", legend=True, fit_content_on_load=True)
+        .update_options(
+            height=400, 
+            width=600, 
+            watermark="Sample Area Data", 
+            legend=True, 
+            fit_content_on_load=True
+        )
         .add_annotation(
             create_text_annotation(
                 "2018-12-25",
