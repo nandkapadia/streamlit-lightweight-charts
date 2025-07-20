@@ -364,7 +364,8 @@ class TestDataFrameConverter:
 
         result = df_to_line_data(tz_df, value_column="close", time_column="datetime")
         assert len(result) == 5
-        assert result[0].time == tz_dates[0]
+        # The time property returns timezone-naive timestamp
+        assert result[0].time == tz_dates[0].tz_localize(None)
 
     def test_dataframe_conversion_performance(self):
         """Test conversion performance with large dataset."""

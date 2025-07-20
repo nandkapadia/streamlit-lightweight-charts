@@ -35,9 +35,9 @@ class AreaSeries(Series):
         price_scale_config: Optional[Dict[str, Any]] = None,
         # Area-specific options
         column_mapping: Optional[Dict[str, str]] = None,
-        top_color: str = "rgba(46, 220, 135, 0.4)",
-        bottom_color: str = "rgba(40, 221, 100, 0)",
-        line_color: str = "#33D778",
+        top_color: str = "rgba(33, 150, 243, 0.4)",  # TradingView blue with transparency
+        bottom_color: str = "rgba(33, 150, 243, 0.0)",  # TradingView blue transparent
+        line_color: str = "#2196F3",  # TradingView blue
         line_style: LineStyle = LineStyle.SOLID,
         line_width: int = 3,
         line_type: LineType = LineType.SIMPLE,

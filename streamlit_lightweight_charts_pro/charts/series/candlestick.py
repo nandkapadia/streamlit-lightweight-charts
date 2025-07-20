@@ -24,16 +24,16 @@ class CandlestickSeries(Series):
         trades: Optional[List["Trade"]] = None,
         trade_visualization_options: Optional["TradeVisualizationOptions"] = None,
         # Candlestick-specific options
-        up_color: str = "#26a69a",
-        down_color: str = "#ef5350",
+        up_color: str = "#4CAF50",  # TradingView vibrant green
+        down_color: str = "#F44336",  # TradingView vibrant red
         wick_visible: bool = True,
         border_visible: bool = True,
         border_color: str = "#378658",
-        border_up_color: str = "#26a69a",
-        border_down_color: str = "#ef5350",
+        border_up_color: str = "#4CAF50",  # TradingView vibrant green
+        border_down_color: str = "#F44336",  # TradingView vibrant red
         wick_color: str = "#737375",
-        wick_up_color: str = "#26a69a",
-        wick_down_color: str = "#ef5350",
+        wick_up_color: str = "#4CAF50",  # TradingView vibrant green
+        wick_down_color: str = "#F44336",  # TradingView vibrant red
         **kwargs,
     ):
         """Initialize candlestick series."""

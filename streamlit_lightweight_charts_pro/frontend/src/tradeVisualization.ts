@@ -1,61 +1,116 @@
 import { TradeConfig, TradeVisualizationOptions } from './types'
 import { SeriesMarker, Time, UTCTimestamp } from 'lightweight-charts'
+import { RectangleConfig } from './rectanglePlugin'
 
 export interface TradeVisualElements {
   markers: SeriesMarker<Time>[]
-  shapes: any[]
+  rectangles: RectangleConfig[]
   annotations: any[]
 }
 
-export function createTradeVisualElements(
+export const createTradeVisualElements = (
   trades: TradeConfig[],
-  options: TradeVisualizationOptions,
-  chartData?: any[]
-): TradeVisualElements {
-  const result: TradeVisualElements = {
-    markers: [],
-    shapes: [],
-    annotations: []
-  }
+  options: TradeVisualizationOptions = { style: 'both' },
+  chartData?: any[],
+  priceScaleId: string = 'right'
+): TradeVisualElements => {
+  const markers: SeriesMarker<Time>[] = []
+  const rectangles: RectangleConfig[] = []
+  const annotations: any[] = []
 
-  for (const trade of trades) {
-    if (options.style === 'markers' || options.style === 'both') {
-      const markers = createTradeMarkers(trade, options)
-      result.markers.push(...markers)
+  trades.forEach((trade, index) => {
+    try {
+      const entryTimeParsed = parseTime(trade.entryTime);
+      const exitTimeParsed = trade.exitTime ? parseTime(trade.exitTime) : null;
+      if (!entryTimeParsed) return;
+
+      // Create entry marker if style includes markers
+      if (options.style === 'markers' || options.style === 'both') {
+        const entryMarker: SeriesMarker<Time> = {
+          time: entryTimeParsed,
+          position: trade.tradeType === 'long' ? 'belowBar' : 'aboveBar',
+          color: trade.tradeType === 'long' ? 
+            (options.entryMarkerColorLong || '#4CAF50') : 
+            (options.entryMarkerColorShort || '#FF9800'),
+          shape: 'arrowUp',
+          text: `Entry ${trade.tradeType.toUpperCase()}`,
+          size: options.markerSize || 1
+        }
+        markers.push(entryMarker)
+      }
+
+      // Create exit marker if style includes markers and exit time exists
+      if ((options.style === 'markers' || options.style === 'both') && exitTimeParsed) {
+        const isProfit = trade.isProfitable || false;
+        const exitMarker: SeriesMarker<Time> = {
+          time: exitTimeParsed,
+          position: trade.tradeType === 'long' ? 'aboveBar' : 'belowBar',
+          color: isProfit ? 
+            (options.exitMarkerColorProfit || '#4CAF50') : 
+            (options.exitMarkerColorLoss || '#F44336'),
+          shape: 'arrowDown',
+          text: `Exit ${isProfit ? 'PROFIT' : 'LOSS'}`,
+          size: options.markerSize || 1
+        }
+        markers.push(exitMarker)
+      }
+
+      // Create rectangle for trade period if style includes rectangles
+      if ((options.style === 'rectangles' || options.style === 'both') && exitTimeParsed) {
+        const rectangle: RectangleConfig = {
+          time1: entryTimeParsed,
+          time2: exitTimeParsed,
+          price1: trade.entryPrice,
+          price2: trade.exitPrice,
+          fillColor: trade.isProfitable ? 
+            (options.rectangleColorProfit || '#4CAF50') : 
+            (options.rectangleColorLoss || '#F44336'),
+          borderColor: trade.isProfitable ? 
+            (options.rectangleColorProfit || '#4CAF50') : 
+            (options.rectangleColorLoss || '#F44336'),
+          borderWidth: options.rectangleBorderWidth || 1,
+          borderStyle: 'solid',
+          opacity: options.rectangleFillOpacity || 0.2,
+          priceScaleId: priceScaleId
+        }
+        rectangles.push(rectangle)
+      }
+
+      // Create annotation for trade details
+      const annotation = {
+        time: entryTimeParsed,
+        price: trade.entryPrice,
+        text: `Trade ${index + 1}: ${trade.tradeType.toUpperCase()}\nEntry: ${trade.entryPrice}\nExit: ${trade.exitPrice || 'Open'}`,
+        color: '#131722',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        fontSize: options.annotationFontSize || 12,
+        fontFamily: 'Arial'
+      }
+      annotations.push(annotation)
+    } catch (error) {
+      // Silent error handling
     }
+  })
 
-    if (options.style === 'rectangles' || options.style === 'both') {
-      const rectangle = createTradeRectangle(trade, options)
-      result.shapes.push(rectangle)
-    }
-
-    if (options.style === 'lines') {
-      const line = createTradeLine(trade, options)
-      result.shapes.push(line)
-    }
-
-    if (options.style === 'arrows') {
-      const arrow = createTradeArrow(trade, options)
-      result.shapes.push(arrow)
-    }
-
-    if (options.style === 'zones') {
-      const zone = createTradeZone(trade, options, chartData)
-      result.shapes.push(zone)
-    }
-
-    // Add trade annotation if enabled
-    if (options.showTradeId || options.showQuantity || options.showTradeType) {
-      const annotation = createTradeAnnotation(trade, options)
-      result.annotations.push(annotation)
-    }
-  }
-
-  return result
+  return { markers, rectangles, annotations }
 }
 
 function createTradeMarkers(trade: TradeConfig, options: TradeVisualizationOptions): SeriesMarker<Time>[] {
   const markers: SeriesMarker<Time>[] = []
+
+  // Validate trade data
+  if (!trade.entryTime || !trade.exitTime || 
+      typeof trade.entryPrice !== 'number' || typeof trade.exitPrice !== 'number') {
+    return markers
+  }
+
+  // Parse times and validate
+  const entryTime = parseTime(trade.entryTime)
+  const exitTime = parseTime(trade.exitTime)
+  
+  if (entryTime === null || exitTime === null) {
+    return markers
+  }
 
   // Entry marker
   const entryColor = trade.tradeType === 'long' 
@@ -63,7 +118,7 @@ function createTradeMarkers(trade: TradeConfig, options: TradeVisualizationOptio
     : (options.entryMarkerColorShort || '#FF9800')
 
   const entryMarker: SeriesMarker<Time> = {
-    time: parseTime(trade.entryTime),
+    time: entryTime,
     position: trade.tradeType === 'long' ? 'belowBar' : 'aboveBar',
     color: entryColor,
     shape: trade.tradeType === 'long' ? 'arrowUp' : 'arrowDown',
@@ -77,7 +132,7 @@ function createTradeMarkers(trade: TradeConfig, options: TradeVisualizationOptio
     : (options.exitMarkerColorLoss || '#F44336')
 
   const exitMarker: SeriesMarker<Time> = {
-    time: parseTime(trade.exitTime),
+    time: exitTime,
     position: trade.tradeType === 'long' ? 'aboveBar' : 'belowBar',
     color: exitColor,
     shape: trade.tradeType === 'long' ? 'arrowDown' : 'arrowUp',
@@ -88,99 +143,43 @@ function createTradeMarkers(trade: TradeConfig, options: TradeVisualizationOptio
   return markers
 }
 
-function createTradeRectangle(trade: TradeConfig, options: TradeVisualizationOptions): any {
+function createTradeRectangle(trade: TradeConfig, options: TradeVisualizationOptions, priceScaleId?: string): RectangleConfig | null {
+  // Validate trade data
+  if (!trade.entryTime || !trade.exitTime || 
+      typeof trade.entryPrice !== 'number' || typeof trade.exitPrice !== 'number') {
+    return null
+  }
+
+  // Parse times and validate
+  const time1 = parseTime(trade.entryTime)
+  const time2 = parseTime(trade.exitTime)
+  
+  if (time1 === null || time2 === null || time1 === time2) {
+    return null
+  }
+
+  // Validate prices
+  if (trade.entryPrice <= 0 || trade.exitPrice <= 0) {
+    return null
+  }
+
   const color = trade.isProfitable 
     ? (options.rectangleColorProfit || '#4CAF50')
     : (options.rectangleColorLoss || '#F44336')
 
   const opacity = options.rectangleFillOpacity || 0.2
-  const fillColor = `${color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`
 
   return {
-    type: 'rectangle',
-    time1: parseTime(trade.entryTime),
-    price1: trade.entryPrice,
-    time2: parseTime(trade.exitTime),
-    price2: trade.exitPrice,
-    fillColor: fillColor,
+    time1: Math.min(time1, time2) as UTCTimestamp,
+    price1: Math.min(trade.entryPrice, trade.exitPrice),
+    time2: Math.max(time1, time2) as UTCTimestamp,
+    price2: Math.max(trade.entryPrice, trade.exitPrice),
+    fillColor: color,
     borderColor: color,
     borderWidth: options.rectangleBorderWidth || 1,
-    borderStyle: 'solid'
-  }
-}
-
-function createTradeLine(trade: TradeConfig, options: TradeVisualizationOptions): any {
-  const color = trade.isProfitable 
-    ? (options.lineColorProfit || '#4CAF50')
-    : (options.lineColorLoss || '#F44336')
-
-  return {
-    type: 'trendLine',
-    time1: parseTime(trade.entryTime),
-    price1: trade.entryPrice,
-    time2: parseTime(trade.exitTime),
-    price2: trade.exitPrice,
-    lineColor: color,
-    lineWidth: options.lineWidth || 2,
-    lineStyle: getLineStyleValue(options.lineStyle || 'dashed')
-  }
-}
-
-function createTradeArrow(trade: TradeConfig, options: TradeVisualizationOptions): any {
-  const color = trade.isProfitable 
-    ? (options.arrowColorProfit || '#4CAF50')
-    : (options.arrowColorLoss || '#F44336')
-
-  return {
-    type: 'arrow',
-    time1: parseTime(trade.entryTime),
-    price1: trade.entryPrice,
-    time2: parseTime(trade.exitTime),
-    price2: trade.exitPrice,
-    lineColor: color,
-    lineWidth: options.lineWidth || 2,
-    arrowSize: options.arrowSize || 10,
-    text: trade.pnlPercentage ? `${trade.pnlPercentage.toFixed(1)}%` : ''
-  }
-}
-
-function createTradeZone(trade: TradeConfig, options: TradeVisualizationOptions, chartData?: any[]): any {
-  const color = trade.tradeType === 'long' 
-    ? (options.zoneColorLong || '#2196F3')
-    : (options.zoneColorShort || '#FF9800')
-
-  const opacity = options.zoneOpacity || 0.1
-  const fillColor = `${color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`
-
-  let time1 = parseTime(trade.entryTime)
-  let time2 = parseTime(trade.exitTime)
-
-  // Extend zone if chart data is available
-  if (chartData && options.zoneExtendBars && options.zoneExtendBars > 0) {
-    const entryIndex = chartData.findIndex(bar => bar.time >= trade.entryTime)
-    const exitIndex = chartData.findIndex(bar => bar.time >= trade.exitTime)
-
-    if (entryIndex >= options.zoneExtendBars) {
-      time1 = chartData[entryIndex - options.zoneExtendBars].time
-    }
-    if (exitIndex + options.zoneExtendBars < chartData.length) {
-      time2 = chartData[exitIndex + options.zoneExtendBars].time
-    }
-  }
-
-  // Calculate zone height
-  const topPrice = Math.max(trade.entryPrice, trade.exitPrice) * 1.01
-  const bottomPrice = Math.min(trade.entryPrice, trade.exitPrice) * 0.99
-
-  return {
-    type: 'rectangle',
-    time1: time1,
-    price1: bottomPrice,
-    time2: time2,
-    price2: topPrice,
-    fillColor: fillColor,
-    borderColor: 'transparent',
-    borderWidth: 0
+    borderStyle: 'solid',
+    opacity: opacity,
+    priceScaleId: priceScaleId
   }
 }
 
@@ -204,7 +203,14 @@ function createTradeAnnotation(trade: TradeConfig, options: TradeVisualizationOp
   }
 
   // Calculate midpoint for annotation position
-  const midTime = (parseTime(trade.entryTime) + parseTime(trade.exitTime)) / 2
+  const entryTime = parseTime(trade.entryTime)
+  const exitTime = parseTime(trade.exitTime)
+  
+  if (entryTime === null || exitTime === null) {
+    return null
+  }
+  
+  const midTime = (entryTime + exitTime) / 2
   const midPrice = (trade.entryPrice + trade.exitPrice) / 2
 
   return {
@@ -219,10 +225,17 @@ function createTradeAnnotation(trade: TradeConfig, options: TradeVisualizationOp
   }
 }
 
-function parseTime(timeStr: string): UTCTimestamp {
-  // Convert string time to UTC timestamp
-  const date = new Date(timeStr)
-  return Math.floor(date.getTime() / 1000) as UTCTimestamp
+function parseTime(timeStr: string): UTCTimestamp | null {
+  try {
+    // Convert string time to UTC timestamp
+    const date = new Date(timeStr)
+    if (isNaN(date.getTime())) {
+      return null
+    }
+    return Math.floor(date.getTime() / 1000) as UTCTimestamp
+  } catch (error) {
+    return null
+  }
 }
 
 function getLineStyleValue(style: string): number {

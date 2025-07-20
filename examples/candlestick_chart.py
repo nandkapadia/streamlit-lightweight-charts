@@ -23,7 +23,7 @@ Example:
 import streamlit as st
 
 from examples.dataSamples import get_candlestick_data, get_dataframe_candlestick_data
-from streamlit_lightweight_charts_pro import CandlestickSeries, SinglePaneChart
+from streamlit_lightweight_charts_pro import CandlestickSeries, SinglePaneChart, create_chart
 from streamlit_lightweight_charts_pro.data import create_arrow_annotation, create_text_annotation
 
 
@@ -126,17 +126,17 @@ def method_chaining_example():
 
     # Create chart with method chaining
     chart = (
-        SinglePaneChart(
-            series=CandlestickSeries(
-                data=candlestick_data,
-                up_color="#4CAF50",
-                down_color="#F44336",
-                border_visible=False,
-                wick_up_color="#4CAF50",
-                wick_down_color="#F44336",
-            )
+        create_chart()
+        .add_candlestick_series(
+            candlestick_data,
+            up_color="#4CAF50",
+            down_color="#F44336",
+            border_visible=False,
+            wick_up_color="#4CAF50",
+            wick_down_color="#F44336",
         )
-        .update_options(height=500, width=800, fit_content_on_load=True)
+        .set_height(500)
+        .set_width(800)
         .set_watermark("OHLC Candlestick Data")
         .set_legend(True)
         .add_annotation(
@@ -160,6 +160,7 @@ def method_chaining_example():
             )
         )
         .add_annotation(create_arrow_annotation("2022-01-20", 9.51, "Breakout", color="#FF9800"))
+        .build()
     )
 
     # Render chart
@@ -246,17 +247,17 @@ def dataframe_example():
 
     # Create chart from DataFrame
     chart = (
-        SinglePaneChart(
-            series=CandlestickSeries(
-                data=df,
-                up_color="#4CAF50",
-                down_color="#F44336",
-                border_visible=False,
-                wick_up_color="#4CAF50",
-                wick_down_color="#F44336",
-            )
+        create_chart()
+        .add_candlestick_series(
+            df,
+            up_color="#4CAF50",
+            down_color="#F44336",
+            border_visible=False,
+            wick_up_color="#4CAF50",
+            wick_down_color="#F44336",
         )
-        .update_options(height=500, width=800)
+        .set_height(500)
+        .set_width(800)
         .set_watermark("DataFrame OHLC Chart")
         .set_legend(True)
         .add_annotation(
@@ -268,6 +269,7 @@ def dataframe_example():
                 background_color="rgba(156, 39, 176, 0.1)",
             )
         )
+        .build()
     )
 
     # Render chart

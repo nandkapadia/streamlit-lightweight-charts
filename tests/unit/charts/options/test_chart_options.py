@@ -765,11 +765,11 @@ class TestChartOptions:
         # Check default nested configurations
         assert options.layout["background"]["type"] == "solid"
         assert options.layout["background"]["color"] == "white"
-        assert options.layout["textColor"] == "black"
-        assert options.layout["fontSize"] == 12
-        assert options.layout["fontFamily"] == "Roboto, sans-serif"
+        assert options.layout["textColor"] == "#131722"
+        assert options.layout["fontSize"] == 11
+        assert options.layout["fontFamily"] == "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 
-        assert options.grid["vertLines"]["visible"] is True
+        assert options.grid["vertLines"]["visible"] is False
         assert options.grid["horzLines"]["visible"] is True
 
         assert options.crosshair["mode"] == 1

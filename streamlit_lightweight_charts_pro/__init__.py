@@ -46,9 +46,12 @@ Author: Streamlit Lightweight Charts Contributors
 License: MIT
 """
 
-# TODO: Need to implement the Y Axis Scaling when cursor is on the Y Axis
 # TODO: Need to implement tooltips for the chart
 # TODO: Need to implement legend for the chart
+# TODO: Need to implement line chart with color change
+# TODO: Need to fix the display of trade rectangles Y positions
+# TODO: Need to implement background shadding
+# TODO: Need to implement bands as a series type so we can implmenent Bollinger Bands etc
 
 # Import core components
 from streamlit_lightweight_charts_pro.charts import (

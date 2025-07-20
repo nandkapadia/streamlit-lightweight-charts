@@ -119,8 +119,8 @@ class TestPriceVolumeChartIntegration:
         assert right_scale["visible"] is True
         assert right_scale["ticksVisible"] is True
         assert right_scale["borderVisible"] is True
-        assert right_scale["textColor"] == "#333333"
-        assert right_scale["fontSize"] == 12
+        assert right_scale["textColor"] == "#131722"
+        assert right_scale["fontSize"] == 11
         assert right_scale["minimumWidth"] == 80
 
         # Test overlay price scale (volume) via frontend config
@@ -133,10 +133,10 @@ class TestPriceVolumeChartIntegration:
         # Only assert on volume if present
         if "volume" in overlay_scales:
             volume_scale = overlay_scales["volume"]
-            assert volume_scale["visible"] is True
+            assert volume_scale["visible"] is False
             assert volume_scale["ticksVisible"] is False
             assert volume_scale["borderVisible"] is False
-            assert volume_scale["scaleMargins"]["top"] == 0.8
+            assert volume_scale["scaleMargins"]["top"] == 0.75
             assert volume_scale["scaleMargins"]["bottom"] == 0
             assert volume_scale["autoScale"] is True
         # else: skip assertion (structure may not always include it)

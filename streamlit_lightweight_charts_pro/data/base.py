@@ -50,10 +50,11 @@ def to_utc_timestamp(
         ```
     """
     if isinstance(time_value, str):
-        # Try to parse as date string
+        # Try to parse as date string and convert to timestamp
         try:
-            pd.to_datetime(time_value)
-            return time_value
+            # Parse the date string and convert to timestamp
+            dt = pd.to_datetime(time_value)
+            return int(dt.timestamp())
         except (ValueError, TypeError):
             # If not parseable, return as is
             return time_value

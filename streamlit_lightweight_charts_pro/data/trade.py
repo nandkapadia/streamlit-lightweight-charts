@@ -274,6 +274,12 @@ class TradeVisualizationOptions:
     annotation_font_size: int = 12
     annotation_background: str = "rgba(255, 255, 255, 0.8)"
 
+    def __post_init__(self):
+        """Post-initialization processing."""
+        # Convert style to enum if it's a string
+        if isinstance(self.style, str):
+            self.style = TradeVisualization(self.style.lower())
+
     def to_dict(self) -> dict:
         """Convert options to dictionary."""
         return {

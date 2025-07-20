@@ -1,5 +1,5 @@
 import { Annotation, AnnotationLayer } from './types'
-import { UTCTimestamp } from 'lightweight-charts'
+import { UTCTimestamp, SeriesMarker, Time } from 'lightweight-charts'
 
 export interface AnnotationVisualElements {
   markers: any[]
@@ -7,39 +7,62 @@ export interface AnnotationVisualElements {
   texts: any[]
 }
 
-export function createAnnotationVisualElements(
-  annotations: Annotation[],
-  layers?: AnnotationLayer[]
-): AnnotationVisualElements {
-  const result: AnnotationVisualElements = {
-    markers: [],
-    shapes: [],
-    texts: []
-  }
+export const createAnnotationVisualElements = (annotations: Annotation[]): AnnotationVisualElements => {
+  const markers: SeriesMarker<Time>[] = []
+  const shapes: any[] = []
+  const texts: any[] = []
 
-  // Process direct annotations
-  for (const annotation of annotations) {
-    const elements = createSingleAnnotation(annotation)
-    result.markers.push(...elements.markers)
-    result.shapes.push(...elements.shapes)
-    result.texts.push(...elements.texts)
-  }
-
-  // Process layer annotations
-  if (layers) {
-    for (const layer of layers) {
-      if (layer.visible) {
-        for (const annotation of layer.annotations) {
-          const elements = createSingleAnnotation(annotation, layer.opacity)
-          result.markers.push(...elements.markers)
-          result.shapes.push(...elements.shapes)
-          result.texts.push(...elements.texts)
+  annotations.forEach((annotation, index) => {
+    try {
+      // Create marker based on annotation type
+      if (annotation.type === 'arrow' || annotation.type === 'shape' || annotation.type === 'circle') {
+        const marker: SeriesMarker<Time> = {
+          time: parseTime(annotation.time),
+          position: annotation.position === 'above' ? 'aboveBar' : 'belowBar',
+          color: annotation.color || '#2196F3',
+          shape: annotation.type === 'arrow' ? 'arrowUp' : 'circle',
+          text: annotation.text || '',
+          size: annotation.fontSize || 1
         }
+        markers.push(marker)
       }
-    }
-  }
 
-  return result
+      // Create shape if specified
+      if (annotation.type === 'rectangle' || annotation.type === 'line') {
+        const shape = {
+          time: parseTime(annotation.time),
+          price: annotation.price,
+          type: annotation.type,
+          color: annotation.color || '#2196F3',
+          borderColor: annotation.borderColor || '#2196F3',
+          borderWidth: annotation.borderWidth || 1,
+          borderStyle: annotation.lineStyle || 'solid',
+          size: annotation.fontSize || 1,
+          text: annotation.text || ''
+        }
+        shapes.push(shape)
+      }
+
+      // Create text annotation if specified
+      if (annotation.type === 'text') {
+        const text = {
+          time: parseTime(annotation.time),
+          price: annotation.price,
+          text: annotation.text,
+          color: annotation.textColor || '#131722',
+          backgroundColor: annotation.backgroundColor || 'rgba(255, 255, 255, 0.9)',
+          fontSize: annotation.fontSize || 12,
+          fontFamily: 'Arial',
+          position: annotation.position === 'above' ? 'aboveBar' : 'belowBar'
+        }
+        texts.push(text)
+      }
+    } catch (error) {
+      // Silent error handling
+    }
+  })
+
+  return { markers, shapes, texts }
 }
 
 function createSingleAnnotation(annotation: Annotation, layerOpacity?: number): AnnotationVisualElements {

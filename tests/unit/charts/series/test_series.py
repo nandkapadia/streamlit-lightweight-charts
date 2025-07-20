@@ -714,7 +714,7 @@ class TestSeries:
         assert result is series
         assert len(series.markers) == 1
         marker = series.markers[0]
-        assert marker._time == "2024-01-02"
+        assert marker._time == 1704153600  # Unix timestamp for 2024-01-02
         assert marker.position == MarkerPosition.ABOVE_BAR
         assert marker.shape == MarkerShape.CIRCLE
         assert marker.text == "Test Marker"

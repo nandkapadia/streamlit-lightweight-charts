@@ -30,7 +30,7 @@ class HistogramSeries(Series):
         price_scale_config: Optional[Dict[str, Any]] = None,
         # Histogram-specific options
         column_mapping: Optional[Dict[str, str]] = None,
-        color: str = "#26a69a",
+        color: str = "#2196F3",  # TradingView light blue/teal for volume
         base: float = 0,
     ):
         """Initialize histogram series."""
@@ -141,5 +141,9 @@ class HistogramSeries(Series):
                 "base": self.base,
             }
         )
+
+        # Add price scale configuration if present
+        if self.price_scale_config:
+            options["priceScale"] = self.price_scale_config
 
         return options

@@ -11,8 +11,8 @@ from streamlit_lightweight_charts_pro.utils.trade_visualization import (
 
 def test_trade_creation():
     trade = Trade("2023-01-01", 100.0, "2023-01-02", 110.0, 10, TradeType.LONG)
-    assert trade.entry_time == "2023-01-01"
-    assert trade.exit_time == "2023-01-02"
+    assert trade.entry_timestamp == 1672531200  # Unix timestamp for 2023-01-01
+    assert trade.exit_timestamp == 1672617600  # Unix timestamp for 2023-01-02
     assert trade.entry_price == 100.0
     assert trade.exit_price == 110.0
     assert trade.quantity == 10
@@ -40,8 +40,8 @@ def test_trade_pnl_calculation():
 def test_trade_serialization():
     trade = Trade("2023-01-01", 100.0, "2023-01-02", 110.0, 10, TradeType.LONG, notes="Test trade")
     trade_dict = trade.to_dict()
-    assert trade_dict["entryTime"] == "2023-01-01"
-    assert trade_dict["exitTime"] == "2023-01-02"
+    assert trade_dict["entryTime"] == 1672531200  # Unix timestamp for 2023-01-01
+    assert trade_dict["exitTime"] == 1672617600  # Unix timestamp for 2023-01-02
     assert trade_dict["entryPrice"] == 100.0
     assert trade_dict["exitPrice"] == 110.0
     assert trade_dict["quantity"] == 10

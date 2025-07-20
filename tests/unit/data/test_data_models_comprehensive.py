@@ -62,7 +62,7 @@ class TestSingleValueData:
         data = SingleValueData("2022-01-01", 100.0)
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["value"] == 100.0
 
     def test_to_dict_with_marker(self):
@@ -79,7 +79,7 @@ class TestSingleValueData:
         data = SingleValueData("2022-01-01", 100.0)
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["value"] == 100.0
         # Marker would be handled separately in series
 
@@ -102,7 +102,7 @@ class TestOhlcData:
         data = OhlcData("2022-01-01", 100.0, 105.0, 98.0, 102.0)
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["open"] == 100.0
         assert result["high"] == 105.0
         assert result["low"] == 98.0
@@ -137,7 +137,7 @@ class TestOhlcvData:
         data = OhlcvData("2022-01-01", 100.0, 105.0, 98.0, 102.0, 1000)
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["open"] == 100.0
         assert result["high"] == 105.0
         assert result["low"] == 98.0
@@ -175,7 +175,7 @@ class TestHistogramData:
         data = HistogramData("2022-01-01", 1000, color="#FF0000")
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["value"] == 1000
         assert result["color"] == "#FF0000"
 
@@ -196,7 +196,7 @@ class TestBaselineData:
         data = BaselineData("2022-01-01", 100.0)
         result = data.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["value"] == 100.0
 
 
@@ -231,7 +231,7 @@ class TestMarker:
 
         result = marker.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["position"] == MarkerPosition.ABOVE_BAR.value
         assert result["shape"] == MarkerShape.CIRCLE.value
         assert result["color"] == "#FF0000"
@@ -373,7 +373,7 @@ class TestAnnotation:
 
         result = annotation.to_dict()
 
-        assert result["time"] == "2022-01-01"
+        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["price"] == 100.0
         assert result["text"] == "Test annotation"
         assert result["type"] == AnnotationType.TEXT.value

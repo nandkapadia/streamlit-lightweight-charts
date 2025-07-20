@@ -26,6 +26,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+*.log
 
 # pyenv
 .python-version
@@ -74,9 +75,5 @@ streamlit_lightweight_charts_pro/frontend/node_modules/
 # ===========================
 .vscode/
 .pypirc
-streamlit_lightweight_charts_pro/frontend/build/asset-manifest.json
-streamlit_lightweight_charts_pro/frontend/build/index.html
-streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js
-streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js.LICENSE.txt
-streamlit_lightweight_charts_pro/frontend/build/static/js/main.e1f43020.js.map
+streamlit_lightweight_charts_pro/frontend/build/*
 bandit_report.json

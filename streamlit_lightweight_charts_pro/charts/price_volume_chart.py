@@ -27,13 +27,13 @@ class PriceVolumeChart(SinglePaneChart):
         data: Union[pd.DataFrame, List[Union[OhlcData, OhlcvData]]],
         column_mapping: Optional[Dict[str, str]] = None,
         # Candlestick options
-        up_color: str = "#4CAF50",
-        down_color: str = "#F44336",
-        border_visible: bool = False,
-        wick_up_color: str = "#4CAF50",
-        wick_down_color: str = "#F44336",
+        up_color: str = "#4CAF50",  # TradingView vibrant green
+        down_color: str = "#F44336",  # TradingView vibrant red
+        border_visible: bool = True,  # TradingView shows borders
+        wick_up_color: str = "#4CAF50",  # TradingView vibrant green
+        wick_down_color: str = "#F44336",  # TradingView vibrant red
         # Volume options
-        volume_color: str = "#26a69a",
+        volume_color: str = "#2196F3",  # TradingView light blue/teal
         volume_alpha: float = 0.8,
         # Chart options
         height: int = 400,
@@ -92,38 +92,48 @@ class PriceVolumeChart(SinglePaneChart):
 
         # Add volume series if volume data is available
         if volume_data is not None:
-            # Create overlay price scale for volume
-            volume_price_scale = OverlayPriceScale(
-                price_scale_id="volume",
-                visible=True,
-                ticks_visible=False,  # Hide volume ticks
-                border_visible=False,
-                scale_margins=PriceScaleMargins(top=0.8, bottom=0),  # Occupy bottom 20%
-                auto_scale=True,
-                align_labels=False,
-            )
-
-            # Create volume series
+            # Create volume series with volume-specific price scale configuration
             volume_series = HistogramSeries(
                 data=volume_data,
                 column_mapping={"time": "datetime", "value": "volume"},
                 color=f"{volume_color}{int(volume_alpha * 255):02x}",  # Add alpha to color
                 base=0,
-                price_scale_id="volume",
+                price_scale_id="volume",  # Use volume-specific price scale
                 price_format={"type": "volume", "precision": 0},
+                price_scale_config={
+                    "visible": False,  # Hide volume price scale - we don't want volume values on right side
+                    "autoScale": True,
+                    "mode": 0,  # Normal mode
+                    "invertScale": False,
+                    "borderVisible": False,
+                    "textColor": "#131722",
+                    "fontSize": 11,
+                    "fontWeight": "400",
+                    "ticksVisible": False,  # Hide volume ticks
+                    "drawTicks": True,
+                    "ensureEdgeTickMarksVisible": False,
+                    "alignLabels": False,
+                    "entireTextOnly": False,
+                    "minimumWidth": 72,
+                    "scaleMargins": {"top": 0.75, "bottom": 0},  # Occupy bottom 25%
+                    "handleScale": False,
+                    "handleSize": 20,
+                    "priceScaleId": "volume",
+                    "overlay": True  # Mark as overlay price scale
+                },
             )
 
             series_list.append(volume_series)
 
-        # Create chart options
+        # Create chart options with overlay price scale for volume
         chart_options = ChartOptions(
             height=height,
             right_price_scale={
                 "visible": True,
                 "ticksVisible": True,
                 "borderVisible": True,
-                "textColor": "#333333",
-                "fontSize": 12,
+                "textColor": "#131722",  # TradingView dark gray
+                "fontSize": 11,
                 "minimumWidth": 80,
                 "drawTicks": True,
                 "ensureEdgeTickMarksVisible": True,
@@ -131,6 +141,31 @@ class PriceVolumeChart(SinglePaneChart):
             },
             **kwargs,
         )
+        
+        # Add volume-specific price scale configuration if volume data exists
+        if volume_data is not None:
+            chart_options.overlay_price_scales = {
+                "volume": {
+                    "visible": False,  # Hide volume price scale - we don't want volume values on right side
+                    "autoScale": True,
+                    "mode": 0,
+                    "invertScale": False,
+                    "borderVisible": False,
+                    "textColor": "#131722",
+                    "fontSize": 11,
+                    "fontWeight": "400",
+                    "ticksVisible": False,
+                    "drawTicks": True,
+                    "ensureEdgeTickMarksVisible": False,
+                    "alignLabels": False,
+                    "entireTextOnly": False,
+                    "minimumWidth": 72,
+                    "scaleMargins": {"top": 0.75, "bottom": 0},
+                    "handleScale": False,
+                    "handleSize": 20,
+                    "priceScaleId": "volume"
+                }
+            }
 
         # Initialize parent class
         super().__init__(series=series_list, options=chart_options)

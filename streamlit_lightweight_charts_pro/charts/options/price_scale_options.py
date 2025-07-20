@@ -31,7 +31,7 @@ class PriceScaleOptions:
     # Visual appearance
     border_visible: bool = True
     border_color: str = "rgba(197, 203, 206, 0.8)"
-    text_color: str = "#333333"
+    text_color: str = "#131722"  # TradingView dark gray text
     font_size: int = 11
     font_weight: str = "400"
 

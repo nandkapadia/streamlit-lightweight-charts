@@ -87,17 +87,17 @@ class ChartOptions:
     layout: Dict[str, Any] = field(
         default_factory=lambda: {
             "background": {"type": "solid", "color": "white"},
-            "textColor": "black",
-            "fontSize": 12,
-            "fontFamily": "Roboto, sans-serif",
+            "textColor": "#131722",  # TradingView dark gray text
+            "fontSize": 11,
+            "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         }
     )
 
     # Grid configuration
     grid: Dict[str, Any] = field(
         default_factory=lambda: {
-            "vertLines": {"visible": True, "color": "#e1e3e6"},
-            "horzLines": {"visible": True, "color": "#e1e3e6"},
+            "vertLines": {"visible": False, "color": "#e1e3e6"},  # No vertical grid lines like TradingView
+            "horzLines": {"visible": True, "color": "#f0f3fa"},  # Very light gray horizontal lines
         }
     )
 
@@ -127,6 +127,8 @@ class ChartOptions:
         default_factory=lambda: {
             "visible": True,
             "borderColor": "#e1e3e6",
+            "textColor": "#131722",  # TradingView dark gray text
+            "fontSize": 11,
             "scaleMargins": {"top": 0.1, "bottom": 0.1},
         }
     )
@@ -135,15 +137,22 @@ class ChartOptions:
         default_factory=lambda: {
             "visible": False,
             "borderColor": "#e1e3e6",
+            "textColor": "#131722",  # TradingView dark gray text
+            "fontSize": 11,
             "scaleMargins": {"top": 0.1, "bottom": 0.1},
         }
     )
+
+    # Overlay price scales for volume and other overlay series
+    overlay_price_scales: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     # Time scale configuration
     time_scale: Dict[str, Any] = field(
         default_factory=lambda: {
             "visible": True,
             "borderColor": "#e1e3e6",
+            "textColor": "#131722",  # TradingView dark gray text
+            "fontSize": 11,
             "timeVisible": True,
             "secondsVisible": False,
             "rightOffset": 12,
@@ -619,6 +628,10 @@ class ChartOptions:
             "leftPriceScale": self.left_price_scale,
             "timeScale": self.time_scale,
         }
+
+        # Add overlay price scales if they exist
+        if self.overlay_price_scales:
+            result["overlayPriceScales"] = self.overlay_price_scales
 
         # Add size constraints only if they are set
         if self.min_width is not None:

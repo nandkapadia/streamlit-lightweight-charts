@@ -20,7 +20,7 @@ def test_single_value_data():
     assert pd.to_datetime("2023-01-01") == d.time
     d_dict = d.to_dict()
     assert d_dict["value"] == 100.0
-    assert d_dict["time"] == "2023-01-01"
+    assert d_dict["time"] == 1672531200  # Unix timestamp for 2023-01-01
 
 
 def test_ohlc_data():
@@ -76,6 +76,6 @@ def test_to_utc_timestamp_and_from_utc_timestamp():
     dt2 = from_utc_timestamp(ts)
     # Compare dates, accounting for timezone differences
     assert abs((pd.to_datetime(dt) - dt2).total_seconds()) < 86400  # Within 1 day
-    # String passthrough
-    assert to_utc_timestamp("2023-01-01") == "2023-01-01"
-    assert from_utc_timestamp("2023-01-01") == pd.to_datetime("2023-01-01")
+    # String conversion to timestamp
+    assert to_utc_timestamp("2023-01-01") == 1672531200  # Unix timestamp for 2023-01-01
+    assert from_utc_timestamp(1672531200) == pd.to_datetime("2023-01-01")

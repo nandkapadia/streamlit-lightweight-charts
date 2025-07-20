@@ -16,6 +16,8 @@ from streamlit_lightweight_charts_pro.data import (
     MarkerShape,
     OhlcData,
     Trade,
+    TradeVisualizationOptions,
+    TradeVisualization,
 )
 
 st.set_page_config(page_title="Trade Drawing Demo", layout="wide")
@@ -33,7 +35,7 @@ This example shows the new trade drawing functionality that allows you to:
 
 
 # Generate sample data
-def generate_trade_data(days=100):
+def generate_trade_data(days=180):
     """Generate sample OHLCV data with trade opportunities"""
     data = []
     base_date = datetime.now() - timedelta(days=days)
@@ -64,35 +66,39 @@ def generate_trade_data(days=100):
 # Generate sample trades
 def generate_sample_trades():
     """Generate sample trades for demonstration"""
+    # Calculate dates that exist in the generated data
+    base_date = datetime.now() - timedelta(days=180)
+
+    # Create trades at specific intervals that match the data generation pattern
     trades = [
         Trade(
-            entry_time="2024-01-15",
+            entry_time=(base_date + timedelta(days=20)).strftime("%Y-%m-%d"),  # Day 20 (dip)
             entry_price=95.50,
-            exit_time="2024-01-25",
+            exit_time=(base_date + timedelta(days=30)).strftime("%Y-%m-%d"),  # Day 30
             exit_price=102.30,
             quantity=100,
             trade_type="long",
         ),
         Trade(
-            entry_time="2024-02-10",
+            entry_time=(base_date + timedelta(days=40)).strftime("%Y-%m-%d"),  # Day 40 (peak)
             entry_price=105.20,
-            exit_time="2024-02-20",
+            exit_time=(base_date + timedelta(days=50)).strftime("%Y-%m-%d"),  # Day 50
             exit_price=98.80,
             quantity=50,
             trade_type="short",
         ),
         Trade(
-            entry_time="2024-03-05",
+            entry_time=(base_date + timedelta(days=60)).strftime("%Y-%m-%d"),  # Day 60 (dip)
             entry_price=92.10,
-            exit_time="2024-03-15",
+            exit_time=(base_date + timedelta(days=75)).strftime("%Y-%m-%d"),  # Day 75 (peak)
             exit_price=108.50,
             quantity=200,
             trade_type="long",
         ),
         Trade(
-            entry_time="2024-03-25",
+            entry_time=(base_date + timedelta(days=90)).strftime("%Y-%m-%d"),  # Day 90 (peak)
             entry_price=110.30,
-            exit_time="2024-04-05",
+            exit_time=(base_date + timedelta(days=105)).strftime("%Y-%m-%d"),  # Day 105 (dip)
             exit_price=95.20,
             quantity=75,
             trade_type="short",
@@ -159,9 +165,10 @@ with st.sidebar:
             st.success("Trade added!")
 
 # Create markers for demonstration
+base_date = datetime.now() - timedelta(days=180)
 markers = [
     Marker(
-        time="2024-01-10",
+        time=(base_date + timedelta(days=15)).strftime("%Y-%m-%d"),  # Day 15
         position=MarkerPosition.BELOW_BAR,
         color="#4CAF50",
         shape=MarkerShape.CIRCLE,
@@ -169,7 +176,7 @@ markers = [
         size=marker_size,
     ),
     Marker(
-        time="2024-02-05",
+        time=(base_date + timedelta(days=35)).strftime("%Y-%m-%d"),  # Day 35
         position=MarkerPosition.ABOVE_BAR,
         color="#FF5722",
         shape=MarkerShape.ARROW_DOWN,
@@ -178,12 +185,34 @@ markers = [
     ),
 ]
 
+# Determine trade visualization style based on user selections
+if show_markers and show_rectangles:
+    trade_style = TradeVisualization.BOTH
+elif show_markers:
+    trade_style = TradeVisualization.MARKERS
+elif show_rectangles:
+    trade_style = TradeVisualization.RECTANGLES
+else:
+    trade_style = None
+
 # Create candlestick series with trades and markers
 candlestick_series = CandlestickSeries(
     data=ohlcv_data,
     up_color="#4CAF50",
     down_color="#F44336",
     markers=markers if show_markers else None,
+    trades=sample_trades if (show_markers or show_rectangles) else None,
+    trade_visualization_options=(
+        TradeVisualizationOptions(
+            style=trade_style,
+            entry_marker_color_long="#4CAF50",
+            entry_marker_color_short="#FF5722",
+            exit_marker_color_profit="#4CAF50",
+            exit_marker_color_loss="#F44336",
+        )
+        if trade_style
+        else None
+    ),
 )
 
 # Create chart

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { 
   createChart, 
   IChartApi, 
@@ -16,6 +16,7 @@ import {
 import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualizationOptions, Annotation, AnnotationLayer, LegendConfig, TooltipConfig } from './types'
 import { createTradeVisualElements } from './tradeVisualization'
 import { createAnnotationVisualElements } from './annotationSystem'
+import { registerRectanglePlugin, RectangleOverlayPlugin } from './rectanglePlugin'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -26,6 +27,7 @@ interface LightweightChartsProps {
 const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = null }) => {
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
+  const rectanglePluginRefs = useRef<{ [key: string]: RectangleOverlayPlugin }>({})
   const [isInitialized, setIsInitialized] = useState(false)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
@@ -142,6 +144,23 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         chartRefs.current[chartId] = chart
 
+        // Configure overlay price scales (volume, indicators, etc.) if they exist
+        if (chartConfig.chart?.overlayPriceScales) {
+          Object.entries(chartConfig.chart.overlayPriceScales).forEach(([scaleId, scaleConfig]) => {
+            try {
+              // Create overlay price scale - use the scaleId directly
+              const overlayScale = chart.priceScale(scaleId)
+              if (overlayScale) {
+                overlayScale.applyOptions(scaleConfig as any)
+              } else {
+                // console.warn(`Overlay price scale ${scaleId} not found - it will be created when series is added`)
+              }
+            } catch (error) {
+              // console.warn(`Failed to configure overlay price scale ${scaleId}:`, error)
+            }
+          })
+        }
+
         // Initialize series
         const seriesList: ISeriesApi<any>[] = []
         
@@ -151,9 +170,26 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           if (series) {
             seriesList.push(series)
             
+            // Apply overlay price scale configuration if this series uses one
+            if (seriesConfig.options?.priceScaleId && 
+                seriesConfig.options?.priceScaleId !== 'right' && 
+                seriesConfig.options?.priceScaleId !== 'left' &&
+                chartConfig.chart?.overlayPriceScales?.[seriesConfig.options.priceScaleId]) {
+              
+              const scaleConfig = chartConfig.chart.overlayPriceScales[seriesConfig.options.priceScaleId]
+              try {
+                const priceScale = series.priceScale()
+                if (priceScale) {
+                  priceScale.applyOptions(scaleConfig as any)
+                }
+              } catch (error) {
+                // console.warn(`Failed to apply overlay price scale config for ${seriesConfig.options.priceScaleId}:`, error)
+              }
+            }
+            
             // Add trade visualization if configured
             if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions) {
-              addTradeVisualization(series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
+              addTradeVisualization(chart, series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
             }
             
             // Add series-level annotations
@@ -180,7 +216,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               exitMarkerColorProfit: '#4CAF50',
               exitMarkerColorLoss: '#F44336'
             }
-            addTradeVisualization(firstSeries, chartConfig.trades, defaultOptions, chartConfig.series[0]?.data)
+            addTradeVisualization(chart, firstSeries, chartConfig.trades, defaultOptions, chartConfig.series[0]?.data)
           }
         }
 
@@ -242,7 +278,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
 
       } catch (error) {
-        console.error('❌ [DEBUG] Error creating chart in container:', error)
+        // console.error('❌ [DEBUG] Error creating chart in container:', error)
         // Error creating chart in container - handled silently in production
       }
     }
@@ -262,8 +298,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       Object.values(chartRefs.current).forEach(chart => {
         chart.remove()
       })
+          Object.values(rectanglePluginRefs.current).forEach(plugin => {
+      plugin.destroy()
+    })
       chartRefs.current = {}
       seriesRefs.current = {}
+      rectanglePluginRefs.current = {}
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect()
       }
@@ -288,7 +328,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     switch (normalizedType) {
       case 'area':
         const areaOptions = {
-          lineColor: '#2196F3',
+          lineColor: '#2196F3',  // TradingView blue
           topColor: 'rgba(33, 150, 243, 0.4)',
           bottomColor: 'rgba(33, 150, 243, 0.0)',
           lineWidth: 2,
@@ -320,13 +360,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'histogram':
         const histogramOptions = {
-          color: '#2196F3',
+          color: '#2196F3',  // TradingView light blue/teal for volume
           priceFormat: priceFormat || {
             type: 'volume',
           },
           priceScaleId: options.priceScaleId || '',
-          scaleMargins: {
-            top: 0.8,
+          scaleMargins: options.scaleMargins || {
+            top: 0.75,
             bottom: 0,
           },
           ...otherOptions
@@ -336,7 +376,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'line':
         const lineOptions = {
-          color: '#2196F3',
+          color: '#2196F3',  // TradingView blue
           lineWidth: 2,
           ...otherOptions
         }
@@ -348,11 +388,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'bar':
         const barOptions = {
-          upColor: '#4CAF50',
-          downColor: '#F44336',
-          borderVisible: false,
-          wickUpColor: '#4CAF50',
-          wickDownColor: '#F44336',
+          upColor: '#4CAF50',  // TradingView vibrant green
+          downColor: '#F44336',  // TradingView vibrant red
+          borderVisible: true,  // TradingView shows borders
+          wickUpColor: '#4CAF50',  // TradingView vibrant green
+          wickDownColor: '#F44336',  // TradingView vibrant red
           ...otherOptions
         }
         if (priceFormat) {
@@ -363,11 +403,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'candlestick':
         const candlestickOptions = {
-          upColor: '#4CAF50',
-          downColor: '#F44336',
-          borderVisible: false,
-          wickUpColor: '#4CAF50',
-          wickDownColor: '#F44336',
+          upColor: '#4CAF50',  // TradingView vibrant green
+          downColor: '#F44336',  // TradingView vibrant red
+          borderVisible: true,  // TradingView shows borders
+          wickUpColor: '#4CAF50',  // TradingView vibrant green
+          wickDownColor: '#F44336',  // TradingView vibrant red
           ...otherOptions
         }
         if (priceFormat) {
@@ -391,41 +431,63 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
     // Set data
     if (data && data.length > 0) {
-
       series.setData(data)
     }
 
     return series
   }
 
-  const addTradeVisualization = (
-    series: ISeriesApi<any>,
-    trades: TradeConfig[],
-    options: TradeVisualizationOptions,
-    chartData?: any[]
-  ) => {
-    const visualElements = createTradeVisualElements(trades, options, chartData)
+  const addTradeVisualization = useCallback((chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
+    if (!trades || trades.length === 0) return;
 
-    // Add markers using the markers plugin
-    if (visualElements.markers.length > 0) {
-      const seriesMarkers = createSeriesMarkers(series, visualElements.markers)
-      // The markers are now set through the plugin
+    try {
+      // Create visual elements for trade visualization
+      const visualElements = createTradeVisualElements(trades, options, chartData, 'right');
+      
+      // Add markers to the series
+      if (visualElements.markers.length > 0) {
+        try {
+          const seriesMarkers = createSeriesMarkers(series, visualElements.markers);
+        } catch (error) {
+          // Silent error handling
+        }
+      }
+
+      // Add rectangles using the robust plugin
+      const chartId = chart.chartElement().id || 'default';
+      
+      if (!rectanglePluginRefs.current[chartId]) {
+        const rectanglePlugin = registerRectanglePlugin(chart, series, visualElements.rectangles);
+        rectanglePluginRefs.current[chartId] = rectanglePlugin;
+      }
+      
+      const rectanglePlugin = rectanglePluginRefs.current[chartId];
+      rectanglePlugin.clearRectangles();
+      
+      visualElements.rectangles.forEach(rect => {
+        rectanglePlugin.addRectangle(rect);
+      });
+
+      // Add annotations to the series
+      if (visualElements.annotations.length > 0) {
+        try {
+          visualElements.annotations.forEach(annotation => {
+            if ((series as any).addShape) {
+              (series as any).addShape(annotation);
+            } else if ((series as any).setShapes) {
+              (series as any).setShapes([annotation]);
+            } else if ((series as any).addAnnotation) {
+              (series as any).addAnnotation(annotation);
+            }
+          });
+        } catch (error) {
+          // Silent error handling
+        }
+      }
+    } catch (error) {
+      // Silent error handling
     }
-
-    // Add shapes (rectangles, lines, arrows, zones)
-    // REMOVED: if (visualElements.shapes.length > 0) {
-    //   visualElements.shapes.forEach(shape => {
-    //     series.setShapes([shape])
-    //   })
-    // }
-
-    // Add annotations
-    // REMOVED: if (visualElements.annotations.length > 0) {
-    //   visualElements.annotations.forEach(annotation => {
-    //     series.setShapes([annotation])
-    //   })
-    // }
-  }
+  }, []);
 
   const addAnnotations = (chart: IChartApi, annotations: Annotation[]) => {
     const visualElements = createAnnotationVisualElements(annotations)

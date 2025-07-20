@@ -5,23 +5,45 @@ Price Volume Chart example with candlestick and volume.
 
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 from streamlit_lightweight_charts_pro import PriceVolumeChart
+from examples.dataSamples import series_candlestick_chart, series_volume_chart
 
 st.title("📊 Price Volume Chart Example")
 
-# Create sample OHLCV data
-df = pd.DataFrame(
-    {
-        "datetime": ["2022-01-17", "2022-01-18", "2022-01-19", "2022-01-20", "2022-01-21"],
-        "open": [10.0, 9.8, 9.6, 9.9, 9.7],
-        "high": [10.2, 10.1, 9.8, 10.0, 9.9],
-        "low": [9.7, 9.5, 9.4, 9.6, 9.5],
-        "close": [9.8, 9.6, 9.9, 9.7, 9.8],
-        "volume": [1000, 1200, 800, 1500, 1100],
-    }
-)
+def create_ohlcv_data():
+    """Create OHLCV data by combining candlestick and volume data from dataSamples.py"""
+    # Convert Unix timestamps to datetime strings for both datasets
+    def timestamp_to_datetime(timestamp):
+        return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d')
+    
+    # Create a dictionary to map datetime to volume data
+    volume_dict = {}
+    for item in series_volume_chart:
+        dt_str = timestamp_to_datetime(item["datetime"])
+        volume_dict[dt_str] = item["value"]
+    
+    # Combine candlestick data with volume data
+    ohlcv_data = []
+    for candle in series_candlestick_chart:
+        dt_str = timestamp_to_datetime(candle["datetime"])
+        volume = volume_dict.get(dt_str, 0)  # Default to 0 if no volume data
+        
+        ohlcv_data.append({
+            "datetime": dt_str,
+            "open": candle["open"],
+            "high": candle["high"],
+            "low": candle["low"],
+            "close": candle["close"],
+            "volume": volume
+        })
+    
+    return pd.DataFrame(ohlcv_data)
 
-st.write("### OHLCV Data:")
+# Create OHLCV data from dataSamples.py
+df = create_ohlcv_data()
+
+st.write("### OHLCV Data from dataSamples.py:")
 st.dataframe(df)
 
 # Test PriceVolumeChart
@@ -52,6 +74,7 @@ st.write("- ✅ Volume histogram in bottom area (25% of height)")
 st.write("- ✅ Volume with 0.8 alpha transparency")
 st.write("- ✅ Proper price scale configuration")
 st.write("- ✅ Volume uses overlay price scale")
+st.write("- ✅ Data sourced from dataSamples.py")
 
 # Test without volume
 st.write("### Test: PriceVolumeChart without Volume")
@@ -97,6 +120,10 @@ st.write("### Usage:")
 st.code(
     """
 from streamlit_lightweight_charts_pro import PriceVolumeChart
+from examples.dataSamples import create_ohlcv_data
+
+# Create OHLCV data from dataSamples.py
+df = create_ohlcv_data()
 
 # Create PriceVolumeChart
 chart = PriceVolumeChart(

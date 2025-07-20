@@ -244,7 +244,9 @@ class TestTradeVisualizationExtended:
         result = create_trade_annotation(trade, options)
         
         assert result["type"] == "text"
-        assert result["time"] == trade.entry_timestamp
+        # Annotation is positioned at midpoint between entry and exit
+        expected_mid_time = (trade.entry_timestamp + trade.exit_timestamp) / 2
+        assert result["time"] == expected_mid_time
         assert result["text"] is not None
         assert "LONG" in result["text"]
         assert "100" in result["text"]  # Quantity
