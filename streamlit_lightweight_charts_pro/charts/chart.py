@@ -5,7 +5,7 @@ This module provides the Chart class, which is the primary chart
 type for displaying financial data in a single pane. It supports multiple
 series types, annotations, and comprehensive customization options.
 
-The Chart class provides a complete implementation for rendering interactive 
+The Chart class provides a complete implementation for rendering interactive
 financial charts with method chaining support for fluent API usage.
 
 Example:
@@ -26,23 +26,24 @@ Example:
     ```
 """
 
-from typing import Any, Dict, List, Optional, Union, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
+
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
-from streamlit_lightweight_charts_pro.charts.series import Series
-from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-    PriceScaleOptions,
     PriceScaleMargins,
+    PriceScaleOptions,
 )
 from streamlit_lightweight_charts_pro.charts.series import (
     CandlestickSeries,
-    LineSeries,
     HistogramSeries,
+    LineSeries,
+    Series,
 )
+from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data import OhlcData, OhlcvData
+from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
 from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
 
 
@@ -306,8 +307,8 @@ class Chart:
             Chart: Self for method chaining.
 
         Example:
-            chart.add_overlay_price_scale('volume', PriceScaleOptions(visible=False, 
-                                           scale_margin_top=0.8, scale_margin_bottom=0, 
+            chart.add_overlay_price_scale('volume', PriceScaleOptions(visible=False,
+                                           scale_margin_top=0.8, scale_margin_bottom=0,
                                            overlay=True,
                                            autoScale=True,
                                            mode=PriceScaleMode.NORMAL,

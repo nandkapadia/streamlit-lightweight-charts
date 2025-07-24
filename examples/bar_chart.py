@@ -23,7 +23,9 @@ import streamlit as st
 
 from examples.dataSamples import get_dataframe_line_data, get_line_data
 from streamlit_lightweight_charts_pro import BarSeries, SinglePaneChart, create_chart
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 from streamlit_lightweight_charts_pro.data import create_text_annotation
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def main():
@@ -75,7 +77,13 @@ def basic_bar_chart_example():
     bar_data = get_line_data()
 
     # Create bar series
-    bar_series = BarSeries(data=bar_data, color="#26a69a", base=0, price_scale_id="right")
+    bar_series = BarSeries(
+        data=bar_data,
+        color="#26a69a",
+        base=0,
+        price_scale_id="right",
+        price_scale_config=PriceScaleOptions(visible=True, auto_scale=True),
+    )
 
     # Create chart with fitContent enabled
     chart = SinglePaneChart(series=bar_series)
@@ -125,7 +133,13 @@ def method_chaining_example():
                 border_color="#2E7D32",
             )
         )
-        .update_options(height=400, width=600, watermark="Sample Bar Data", legend=True, fit_content_on_load=True)
+        .update_options(
+            height=400,
+            width=600,
+            watermark="Sample Bar Data",
+            legend=True,
+            fit_content_on_load=True,
+        )
         .add_annotation(
             create_text_annotation(
                 "2018-12-25",
@@ -223,7 +237,14 @@ def dataframe_example():
     # Create chart using create_chart() function
     chart = (
         create_chart()
-        .add_bar_series(df, column_mapping={"time": "datetime", "value": "value"}, color="#FF9800")
+        .add_bar_series(
+            df,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
+            color="#FF9800",
+        )
         .set_height(400)
         .set_width(600)
         .set_watermark("DataFrame Bar Chart")
@@ -254,12 +275,24 @@ def dataframe_example():
 
     with col1:
         st.write("**Base at 0:**")
-        chart1 = create_chart().add_bar_series(df, color="#2196F3", base=0).set_height(200).set_fit_content_on_load(True).build()
+        chart1 = (
+            create_chart()
+            .add_bar_series(df, color="#2196F3", base=0)
+            .set_height(200)
+            .set_fit_content_on_load(True)
+            .build()
+        )
         chart1.render(key="bar_base_0")
 
     with col2:
         st.write("**Base at 25:**")
-        chart2 = create_chart().add_bar_series(df, color="#9C27B0", base=25).set_height(200).set_fit_content_on_load(True).build()
+        chart2 = (
+            create_chart()
+            .add_bar_series(df, color="#9C27B0", base=25)
+            .set_height(200)
+            .set_fit_content_on_load(True)
+            .build()
+        )
         chart2.render(key="bar_base_25")
 
 

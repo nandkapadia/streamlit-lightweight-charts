@@ -8,26 +8,6 @@ The data models are designed to be flexible and support various input formats
 while maintaining consistency in the internal representation.
 """
 
-# Import base classes and utilities
-from .base import BaseData, to_utc_timestamp, from_utc_timestamp
-
-# Import single value data classes
-from .single_value import SingleValueData
-
-# Import OHLC data classes
-from .ohlc import OhlcData, OhlcvData
-
-
-
-# Import band data classes
-from .band import BandData
-
-# Import marker classes
-from .marker import Marker
-
-# Import trade classes
-from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
-
 # Import annotation classes
 from .annotation import (
     Annotation,
@@ -40,34 +20,44 @@ from .annotation import (
     create_text_annotation,
 )
 
+# Import band data classes
+from .band import BandData
+
+# Import base classes and utilities
+from .base import BaseData, from_utc_timestamp, to_utc_timestamp
+
+# Import marker classes
+from .marker import Marker
+
+# Import OHLC data classes
+from .ohlc import OhlcData, OhlcvData
+
+# Import single value data classes
+from .single_value import SingleValueData
+
+# Import trade classes
+from .trade import Trade, TradeType, TradeVisualization, TradeVisualizationOptions
+
 # Re-export all classes for backward compatibility
 __all__ = [
     # Base classes and utilities
     "BaseData",
     "to_utc_timestamp",
     "from_utc_timestamp",
-    
     # Single value data classes
     "SingleValueData",
-    
     # OHLC data classes
     "OhlcData",
     "OhlcvData",
-    
-
-    
     # Band data classes
     "BandData",
-    
     # Marker classes
     "Marker",
-    
     # Trade classes
     "Trade",
     "TradeType",
     "TradeVisualization",
     "TradeVisualizationOptions",
-    
     # Annotation classes
     "Annotation",
     "AnnotationLayer",

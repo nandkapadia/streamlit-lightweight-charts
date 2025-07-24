@@ -8,6 +8,9 @@ from typing import Optional, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.data import Marker
+from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
 
 
 class TradeType(str, Enum):
@@ -155,10 +158,6 @@ class Trade:
         Returns:
             List of marker dictionaries
         """
-        from streamlit_lightweight_charts_pro.data import Marker
-        from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
-        from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-
         # Default colors based on trade type and profit
         if entry_color is None:
             entry_color = "#2196F3" if self.trade_type == TradeType.LONG else "#FF9800"

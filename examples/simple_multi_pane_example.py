@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import MultiPaneChart
+# MultiPaneChart removed - using Chart instead
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
 from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData
 
@@ -57,16 +57,16 @@ st.subheader("Synchronized Charts")
 theme_name = st.selectbox("Select Theme", ["Light", "Dark", "Trading View"])
 
 # Create charts
-from streamlit_lightweight_charts_pro import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts import Chart
 
 candlestick_series = CandlestickSeries(data=candlestick_data)
-candlestick_chart = SinglePaneChart(series=candlestick_series)
+candlestick_chart = Chart(series=candlestick_series)
 
 histogram_series = HistogramSeries(data=volume_data)
-histogram_chart = SinglePaneChart(series=histogram_series)
+histogram_chart = Chart(series=histogram_series)
 
-# Create multi-pane chart
-chart = MultiPaneChart([candlestick_chart, histogram_chart])
+# MultiPaneChart removed - using individual charts instead
+chart = candlestick_chart  # Use candlestick chart as primary
 
 # Render the charts
 chart.render(key="simple_charts")
@@ -86,7 +86,7 @@ with col1:
 with col2:
     volume_change = volume_data[-1].value - volume_data[-2].value
     volume_change_pct = (volume_change / volume_data[-2].value) * 100
-    st.metric("Volume", f"{volume_data[-1].value:,}", f"{volume_change_pct:+.1f}%")
+    st.metric(ColumnNames.VOLUME, f"{volume_data[-1].value:,}", f"{volume_change_pct:+.1f}%")
 
 with col3:
     price_range = last_candle.high - last_candle.low
@@ -122,8 +122,8 @@ with st.expander("Show Code"):
 candlestick_chart = CandlestickChart(data=candlestick_data)
 histogram_chart = HistogramChart(data=volume_data)
 
-    # Create multi-pane chart
-    chart = MultiPaneChart([candlestick_chart, histogram_chart])
+    # MultiPaneChart removed - using individual charts instead
+    chart = candlestick_chart  # Use candlestick chart as primary
 
 # Render the chart
 chart.render(key="charts")

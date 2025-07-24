@@ -15,12 +15,12 @@ The tests focus on:
 
 from unittest.mock import MagicMock, patch
 
-from streamlit_lightweight_charts_pro import LineSeries, SinglePaneChart, SingleValueData
+from streamlit_lightweight_charts_pro import Chart, LineSeries, SingleValueData
 
 
 def test_render_chart_serialization():
     """
-    Test chart rendering with BaseChart.render() method.
+    Test chart rendering with Chart.render() method.
 
     This test verifies that the chart rendering system correctly:
         1. Creates a chart with series data
@@ -41,14 +41,14 @@ def test_render_chart_serialization():
         ```python
         # This test ensures the chart rendering pipeline works correctly
         series = LineSeries([SingleValueData("2023-01-01", 1.0)], color="#ff0000")
-        chart = SinglePaneChart(series)
+        chart = Chart(series)
         result = chart.render()
         assert result is not None
         ```
     """
     # Create test data and series
     series = LineSeries([SingleValueData("2023-01-01", 1.0)], color="#ff0000")
-    chart = SinglePaneChart(series)
+    chart = Chart(series)
 
     # Test the configuration generation first (this doesn't require mocking)
     config = chart.to_frontend_config()

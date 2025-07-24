@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
-    LineStyle,
     CrosshairMode,
-    TrackingExitMode,
+    LineStyle,
     TrackingActivationMode,
+    TrackingExitMode,
 )
 
 

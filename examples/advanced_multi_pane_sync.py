@@ -14,14 +14,14 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import MultiPaneChart
+from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts import (
     CandlestickSeries,
     HistogramSeries,
     LineSeries,
-    SinglePaneChart,
 )
 from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData, SingleValueData
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 # Generate sample data
@@ -43,20 +43,20 @@ def generate_sample_data(days_=100):
     # Create OHLCV dataframe
     df_ = pd.DataFrame(
         {
-            "time": dates,
-            "open": open_prices,
-            "high": high_prices,
-            "low": low_prices,
-            "close": close_prices,
-            "volume": volume,
+            ColumnNames.TIME: dates,
+            ColumnNames.OPEN: open_prices,
+            ColumnNames.HIGH: high_prices,
+            ColumnNames.LOW: low_prices,
+            ColumnNames.CLOSE: close_prices,
+            ColumnNames.VOLUME: volume,
         }
     )
 
     # Calculate indicators
-    df_["sma_20"] = df_["close"].rolling(window=20).mean()
-    df_["sma_50"] = df_["close"].rolling(window=50).mean()
-    df_["rsi"] = calculate_rsi(df_["close"])
-    df_["macd"], df_["signal"], df_["histogram"] = calculate_macd(df_["close"])
+    df_["sma_20"] = df_[ColumnNames.CLOSE].rolling(window=20).mean()
+    df_["sma_50"] = df_[ColumnNames.CLOSE].rolling(window=50).mean()
+    df_["rsi"] = calculate_rsi(df_[ColumnNames.CLOSE])
+    df_["macd"], df_["signal"], df_["histogram"] = calculate_macd(df_[ColumnNames.CLOSE])
 
     return df_
 
@@ -119,69 +119,88 @@ with st.sidebar:
 df = generate_sample_data(days)
 
 # Convert data to objects
-df["time"] = pd.to_datetime(df["time"]).dt.strftime("%Y-%m-%d")
+df[ColumnNames.TIME] = pd.to_datetime(df[ColumnNames.TIME]).dt.strftime("%Y-%m-%d")
 df_dict = df.to_dict("records")
 
 candlestick_data = [
-    OhlcData(row["time"], row["open"], row["high"], row["low"], row["close"]) for row in df_dict
+    OhlcData(
+        row[ColumnNames.TIME],
+        row[ColumnNames.OPEN],
+        row[ColumnNames.HIGH],
+        row[ColumnNames.LOW],
+        row[ColumnNames.CLOSE],
+    )
+    for row in df_dict
 ]
 
-volume_data = [HistogramData(row["time"], row["volume"]) for row in df_dict]
+volume_data = [HistogramData(row[ColumnNames.TIME], row[ColumnNames.VOLUME]) for row in df_dict]
 
 # Create charts
 candlestick_series = CandlestickSeries(data=candlestick_data)
-candlestick_chart = SinglePaneChart(series=candlestick_series)
-chart = MultiPaneChart()
+candlestick_chart = Chart(series=candlestick_series)
+chart = Chart()
 chart.add_pane(candlestick_chart)
 
 if show_volume:
     volume_series = HistogramSeries(data=volume_data)
-    volume_chart = SinglePaneChart(series=volume_series)
+    volume_chart = Chart(series=volume_series)
     chart.add_pane(volume_chart)
 
 if show_sma:
     sma_20_data = [
-        SingleValueData(row["time"], row["sma_20"]) for row in df_dict if pd.notna(row["sma_20"])
+        SingleValueData(row[ColumnNames.TIME], row["sma_20"])
+        for row in df_dict
+        if pd.notna(row["sma_20"])
     ]
     sma_20_series = LineSeries(data=sma_20_data)
-    sma_20_chart = SinglePaneChart(series=sma_20_series)
+    sma_20_chart = Chart(series=sma_20_series)
     chart.add_pane(sma_20_chart)
 
     sma_50_data = [
-        SingleValueData(row["time"], row["sma_50"]) for row in df_dict if pd.notna(row["sma_50"])
+        SingleValueData(row[ColumnNames.TIME], row["sma_50"])
+        for row in df_dict
+        if pd.notna(row["sma_50"])
     ]
     sma_50_series = LineSeries(data=sma_50_data)
-    sma_50_chart = SinglePaneChart(series=sma_50_series)
+    sma_50_chart = Chart(series=sma_50_series)
     chart.add_pane(sma_50_chart)
 
 if show_rsi:
-    rsi_data = [SingleValueData(row["time"], row["rsi"]) for row in df_dict if pd.notna(row["rsi"])]
+    rsi_data = [
+        SingleValueData(row[ColumnNames.TIME], row["rsi"])
+        for row in df_dict
+        if pd.notna(row["rsi"])
+    ]
     rsi_series = LineSeries(data=rsi_data)
-    rsi_chart = SinglePaneChart(series=rsi_series)
+    rsi_chart = Chart(series=rsi_series)
     chart.add_pane(rsi_chart)
 
 if show_macd:
     macd_data = [
-        SingleValueData(row["time"], row["macd"]) for row in df_dict if pd.notna(row["macd"])
+        SingleValueData(row[ColumnNames.TIME], row["macd"])
+        for row in df_dict
+        if pd.notna(row["macd"])
     ]
     macd_series = LineSeries(data=macd_data)
-    macd_chart = SinglePaneChart(series=macd_series)
+    macd_chart = Chart(series=macd_series)
     chart.add_pane(macd_chart)
 
     signal_data = [
-        SingleValueData(row["time"], row["signal"]) for row in df_dict if pd.notna(row["signal"])
+        SingleValueData(row[ColumnNames.TIME], row["signal"])
+        for row in df_dict
+        if pd.notna(row["signal"])
     ]
     signal_series = LineSeries(data=signal_data)
-    signal_chart = SinglePaneChart(series=signal_series)
+    signal_chart = Chart(series=signal_series)
     chart.add_pane(signal_chart)
 
     hist_data = [
-        SingleValueData(row["time"], row["histogram"])
+        SingleValueData(row[ColumnNames.TIME], row["histogram"])
         for row in df_dict
         if pd.notna(row["histogram"])
     ]
     hist_series = LineSeries(data=hist_data)
-    hist_chart = SinglePaneChart(series=hist_series)
+    hist_chart = Chart(series=hist_series)
     chart.add_pane(hist_chart)
 
 # Render the chart

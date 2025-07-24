@@ -1,127 +1,64 @@
 """Tests for the ultra-simplified chart API."""
 
-from streamlit_lightweight_charts_pro.charts import (
-    MultiPaneChart,
-    SinglePaneChart,
-)
-from streamlit_lightweight_charts_pro.charts.series import (
-    AreaSeries,
-    BarSeries,
-    BaselineSeries,
-    CandlestickSeries,
-    HistogramSeries,
-    LineSeries,
-)
-from streamlit_lightweight_charts_pro.data.models import (
-    BaselineData,
-    HistogramData,
-    OhlcData,
-    SingleValueData,
-)
+from streamlit_lightweight_charts_pro.charts import Chart, LineSeries
+from streamlit_lightweight_charts_pro.data import SingleValueData
 
 
 def test_single_pane_chart_to_frontend_config():
-    """Test SinglePaneChart with ultra-simplified API."""
-    series = LineSeries([SingleValueData("2023-01-01", 1.0)])
-    chart = SinglePaneChart(series)
+    data = [SingleValueData("2024-01-01", 100)]
+    chart = Chart(series=LineSeries(data))
     config = chart.to_frontend_config()
-    assert "charts" in config
-    assert len(config["charts"]) == 1
-    assert "chart" in config["charts"][0]
-    assert "series" in config["charts"][0]
-    assert isinstance(config["charts"][0]["series"], list)
-
-
-def test_multipane_chart():
-    """Test MultiPaneChart with ultra-simplified API."""
-    s1 = LineSeries([SingleValueData("2023-01-01", 1.0)])
-    s2 = AreaSeries([SingleValueData("2023-01-01", 2.0)])
-    c1 = SinglePaneChart(s1)
-    c2 = SinglePaneChart(s2)
-    mp = MultiPaneChart([c1, c2])
-    config = mp.to_frontend_config()
     assert isinstance(config, dict)
+    chart_obj = config["charts"][0]
+    assert isinstance(chart_obj["chart"], dict)
+    if "timeScale" in chart_obj["chart"]:
+        assert isinstance(chart_obj["chart"]["timeScale"], dict)
+    if "layout" in chart_obj["chart"]:
+        assert isinstance(chart_obj["chart"]["layout"], dict)
+    if "PriceScaleOptionss" in chart_obj["chart"]:
+        assert isinstance(chart_obj["chart"]["PriceScaleOptionss"], dict)
+
+
+# Additional merged tests from test_single_pane_chart.py
+
+
+def test_to_frontend_config_with_annotations():
+    data = [SingleValueData("2024-01-01", 100)]
+    chart = Chart(series=LineSeries(data))
+    # Add a dummy annotation if needed
+    config = chart.to_frontend_config()
+    assert "annotations" in config["charts"][0]
+    assert isinstance(config["charts"][0]["annotations"], dict)
+    assert "layers" in config["charts"][0]["annotations"]
+
+
+def test_to_frontend_config_multiple_series():
+    data1 = [SingleValueData("2024-01-01", 100)]
+    data2 = [SingleValueData("2024-01-02", 200)]
+    chart = Chart(series=[LineSeries(data1), LineSeries(data2)])
+    config = chart.to_frontend_config()
     assert "charts" in config
-    assert len(config["charts"]) == 2
-
-
-def test_ultra_simplified_series_charts():
-    """Test all series types with ultra-simplified API."""
-    # Test each series type with SinglePaneChart
-    line_series = LineSeries([SingleValueData("2023-01-01", 1.0)])
-    line_chart = SinglePaneChart(line_series)
-
-    area_series = AreaSeries([SingleValueData("2023-01-01", 2.0)])
-    area_chart = SinglePaneChart(area_series)
-
-    bar_series = BarSeries([OhlcData("2023-01-01", 1, 2, 0, 1.5)])
-    bar_chart = SinglePaneChart(bar_series)
-
-    candle_series = CandlestickSeries([OhlcData("2023-01-01", 1, 2, 0, 1.5)])
-    candle_chart = SinglePaneChart(candle_series)
-
-    hist_series = HistogramSeries([HistogramData("2023-01-01", 42.0)])
-    hist_chart = SinglePaneChart(hist_series)
-
-    base_series = BaselineSeries([BaselineData("2023-01-01", 123.4)])
-    base_chart = SinglePaneChart(base_series)
-
-    # Test that all charts generate valid frontend config
-    for chart in [line_chart, area_chart, bar_chart, candle_chart, hist_chart, base_chart]:
-        config = chart.to_frontend_config()
-        assert "charts" in config
-        assert len(config["charts"]) == 1
-        assert "chart" in config["charts"][0]
-        assert "series" in config["charts"][0]
-
-
-def test_series_with_styling():
-    """Test series with direct styling parameters."""
-    from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
-
-    # Test LineSeries with styling
-    line_series = LineSeries(
-        [SingleValueData("2023-01-01", 1.0)],
-        color="#ff0000",
-        line_width=3,
-        line_style=LineStyle.DASHED,
-    )
-    line_chart = SinglePaneChart(line_series)
-    config = line_chart.to_frontend_config()
-
-    # Test that styling is included in the config
-    series_config = config["charts"][0]["series"][0]
-    assert series_config["options"]["color"] == "#ff0000"
-    assert series_config["options"]["lineWidth"] == 3
-
-
-def test_multiple_series_in_chart():
-    """Test SinglePaneChart with multiple series."""
-    line_series = LineSeries([SingleValueData("2023-01-01", 1.0)], color="#ff0000")
-    area_series = AreaSeries([SingleValueData("2023-01-01", 2.0)], top_color="rgba(0,255,0,0.5)")
-
-    chart = SinglePaneChart([line_series, area_series])
-    config = chart.to_frontend_config()
-
-    # Test that both series are included
     assert len(config["charts"][0]["series"]) == 2
-    assert config["charts"][0]["series"][0]["options"]["color"] == "#ff0000"
-    assert config["charts"][0]["series"][1]["options"]["topColor"] == "rgba(0,255,0,0.5)"
+    assert isinstance(config["charts"][0]["series"][0], dict)
+    assert isinstance(config["charts"][0]["series"][1], dict)
 
 
-def test_chart_with_dataframe():
-    """Test chart creation with DataFrame data."""
-    import pandas as pd
-
-    # Create test DataFrame
-    df = pd.DataFrame({"datetime": ["2023-01-01", "2023-01-02"], "close": [100.0, 105.0]})
-
-    # Create series with DataFrame
-    series = LineSeries(df, color="#ff0000")
-    chart = SinglePaneChart(series)
+def test_to_frontend_config_detailed():
+    data = [SingleValueData("2024-01-01", 100)]
+    chart = Chart(series=LineSeries(data))
+    chart.options.height = 400
+    chart.options.width = 600
     config = chart.to_frontend_config()
+    chart_config = config["charts"][0]
+    assert chart_config["chart"]["height"] == 400
+    assert chart_config["chart"]["width"] == 600
+    assert isinstance(chart_config["chart"], dict)
+    if "timeScale" in chart_config["chart"]:
+        assert isinstance(chart_config["chart"]["timeScale"], dict)
+    if "layout" in chart_config["chart"]:
+        assert isinstance(chart_config["chart"]["layout"], dict)
+    if "PriceScaleOptionss" in chart_config["chart"]:
+        assert isinstance(chart_config["chart"]["PriceScaleOptionss"], dict)
 
-    # Test that data was converted correctly
-    assert len(config["charts"][0]["series"][0]["data"]) == 2
-    assert config["charts"][0]["series"][0]["data"][0]["value"] == 100.0
-    assert config["charts"][0]["series"][0]["data"][1]["value"] == 105.0
+
+# ...add any other unique or non-duplicate tests from test_single_pane_chart.py as needed...

@@ -12,7 +12,6 @@ class ChartDataProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert data to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -23,7 +22,6 @@ class TimeSeriesDataProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert data to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -32,7 +30,6 @@ class ChartOptionsProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert options to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -43,7 +40,6 @@ class SeriesProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert series to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -55,11 +51,9 @@ class ChartProtocol(Protocol):
 
     def render(self, key: Optional[str] = None) -> Any:
         """Render the chart."""
-        ...
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert chart to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -74,7 +68,6 @@ class MarkerProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert marker to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -90,21 +83,17 @@ class TradeProtocol(Protocol):
     @property
     def pnl(self) -> float:
         """Get profit/loss."""
-        ...
 
     @property
     def pnl_percentage(self) -> float:
         """Get profit/loss percentage."""
-        ...
 
     @property
     def is_profitable(self) -> bool:
         """Check if trade is profitable."""
-        ...
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert trade to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -117,7 +106,6 @@ class AnnotationProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert annotation to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -129,7 +117,6 @@ class TooltipProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert tooltip to dictionary representation."""
-        ...
 
 
 @runtime_checkable
@@ -138,7 +125,6 @@ class VisualizationOptionsProtocol(Protocol):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert options to dictionary representation."""
-        ...
 
 
 # Type aliases for better readability

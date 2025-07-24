@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 # Page configuration
 st.set_page_config(page_title="Range Switcher Example", page_icon="📊", layout="wide")
@@ -38,41 +38,41 @@ TradingView range switcher demo.
 def generate_sample_data(start_date, end_date, freq="D", base_price=100):
     """Generate sample OHLCV data for different timeframes."""
     date_range = pd.date_range(start=start_date, end=end_date, freq=freq)
-    
+
     data = []
     current_price = base_price
-    
+
     for date in date_range:
         # Generate realistic price movements
         change = np.random.normal(0, 0.02)  # 2% daily volatility
         current_price *= 1 + change
-        
+
         # Generate OHLC from current price
         high = current_price * (1 + abs(np.random.normal(0, 0.01)))
         low = current_price * (1 - abs(np.random.normal(0, 0.01)))
         open_price = current_price * (1 + np.random.normal(0, 0.005))
         close_price = current_price
-        
+
         # Ensure OHLC relationships
         high = max(high, open_price, close_price)
         low = min(low, open_price, close_price)
-        
+
         # Generate volume
         volume = np.random.randint(1000000, 10000000)
-        
+
         data.append(
             {
-                "time": date.strftime("%Y-%m-%d"),
-                "open": round(open_price, 2),
-                "high": round(high, 2),
-                "low": round(low, 2),
-                "close": round(close_price, 2),
-                "volume": volume,
+                ColumnNames.TIME: date.strftime("%Y-%m-%d"),
+                ColumnNames.OPEN: round(open_price, 2),
+                ColumnNames.HIGH: round(high, 2),
+                ColumnNames.LOW: round(low, 2),
+                ColumnNames.CLOSE: round(close_price, 2),
+                ColumnNames.VOLUME: volume,
             }
         )
-        
+
         current_price = close_price
-    
+
     return data
 
 
@@ -93,7 +93,10 @@ yearly_data = generate_sample_data(start_date_yearly, end_date, "Y", 100)
 # Create volume data for each timeframe
 def create_volume_data(ohlc_data):
     """Create volume data from OHLC data."""
-    return [{"time": item["time"], "value": item["volume"]} for item in ohlc_data]
+    return [
+        {ColumnNames.TIME: item[ColumnNames.TIME], ColumnNames.VALUE: item[ColumnNames.VOLUME]}
+        for item in ohlc_data
+    ]
 
 
 daily_volume = create_volume_data(daily_data)
@@ -139,8 +142,8 @@ with col2:
 with col3:
     st.metric("Date Range", f"{current_data[0]['time']} to {current_data[-1]['time']}")
 with col4:
-    latest_price = current_data[-1]["close"]
-    prev_price = current_data[-2]["close"] if len(current_data) > 1 else latest_price
+    latest_price = current_data[-1][ColumnNames.CLOSE]
+    prev_price = current_data[-2][ColumnNames.CLOSE] if len(current_data) > 1 else latest_price
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100 if prev_price > 0 else 0
     st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")
@@ -219,7 +222,7 @@ volume_series = [
         "options": {
             "color": "#26a69a",
             "priceFormat": {
-                "type": "volume",
+                "type": ColumnNames.VOLUME,
             },
             "priceScaleId": "",
         },
@@ -253,12 +256,12 @@ st.dataframe(
     use_container_width=True,
     hide_index=True,
     column_config={
-        "time": st.column_config.TextColumn("Date", width="medium"),
-        "open": st.column_config.NumberColumn("Open", format="$%.2f"),
-        "high": st.column_config.NumberColumn("High", format="$%.2f"),
-        "low": st.column_config.NumberColumn("Low", format="$%.2f"),
-        "close": st.column_config.NumberColumn("Close", format="$%.2f"),
-        "volume": st.column_config.NumberColumn("Volume", format="%d"),
+        ColumnNames.TIME: st.column_config.TextColumn("Date", width="medium"),
+        ColumnNames.OPEN: st.column_config.NumberColumn(ColumnNames.OPEN, format="$%.2f"),
+        ColumnNames.HIGH: st.column_config.NumberColumn(ColumnNames.HIGH, format="$%.2f"),
+        ColumnNames.LOW: st.column_config.NumberColumn(ColumnNames.LOW, format="$%.2f"),
+        ColumnNames.CLOSE: st.column_config.NumberColumn(ColumnNames.CLOSE, format="$%.2f"),
+        ColumnNames.VOLUME: st.column_config.NumberColumn(ColumnNames.VOLUME, format="%d"),
     },
 )
 
@@ -268,7 +271,7 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.write("**Price Statistics**")
-    prices = [d["close"] for d in current_data]
+    prices = [d[ColumnNames.CLOSE] for d in current_data]
     st.write(f"Min: ${min(prices):.2f}")
     st.write(f"Max: ${max(prices):.2f}")
     st.write(f"Mean: ${np.mean(prices):.2f}")
@@ -276,7 +279,7 @@ with col1:
 
 with col2:
     st.write("**Volume Statistics**")
-    volumes = [d["volume"] for d in current_data]
+    volumes = [d[ColumnNames.VOLUME] for d in current_data]
     st.write(f"Min: {min(volumes):,}")
     st.write(f"Max: {max(volumes):,}")
     st.write(f"Mean: {np.mean(volumes):,.0f}")
@@ -286,11 +289,11 @@ with col3:
     st.write("**Returns**")
     returns = []
     for i in range(1, len(current_data)):
-        ret = (current_data[i]["close"] - current_data[i - 1]["close"]) / current_data[i - 1][
-            "close"
-        ]
+        ret = (
+            current_data[i][ColumnNames.CLOSE] - current_data[i - 1][ColumnNames.CLOSE]
+        ) / current_data[i - 1][ColumnNames.CLOSE]
         returns.append(ret)
-    
+
     if returns:
         st.write(f"Avg Daily Return: {np.mean(returns)*100:.2f}%")
         st.write(f"Volatility: {np.std(returns)*100:.2f}%")

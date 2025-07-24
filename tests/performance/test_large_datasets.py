@@ -2,9 +2,10 @@ import time
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, LineSeries
-from streamlit_lightweight_charts_pro.data.models import SingleValueData
+from streamlit_lightweight_charts_pro.data import SingleValueData
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames
 
 
 def test_large_line_chart_performance():
@@ -13,8 +14,8 @@ def test_large_line_chart_performance():
     n_points = 10000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
-            "close": range(n_points),
+            ColumnNames.DATETIME: pd.date_range("2023-01-01", periods=n_points, freq="h"),
+            ColumnNames.CLOSE: range(n_points),
         }
     )
 
@@ -23,7 +24,7 @@ def test_large_line_chart_performance():
     series_time = time.time() - start_time
 
     start_time = time.time()
-    chart = SinglePaneChart(series)
+    chart = Chart(series)
     chart_time = time.time() - start_time
 
     start_time = time.time()
@@ -43,11 +44,11 @@ def test_large_candlestick_chart_performance():
     n_points = 5000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
-            "open": range(n_points),
-            "high": [x + 1 for x in range(n_points)],
-            "low": [x - 1 for x in range(n_points)],
-            "close": [x + 0.5 for x in range(n_points)],
+            ColumnNames.DATETIME: pd.date_range("2023-01-01", periods=n_points, freq="h"),
+            ColumnNames.OPEN: range(n_points),
+            ColumnNames.HIGH: [x + 1 for x in range(n_points)],
+            ColumnNames.LOW: [x - 1 for x in range(n_points)],
+            ColumnNames.CLOSE: [x + 0.5 for x in range(n_points)],
         }
     )
 
@@ -56,7 +57,7 @@ def test_large_candlestick_chart_performance():
     series_time = time.time() - start_time
 
     start_time = time.time()
-    chart = SinglePaneChart(series)
+    chart = Chart(series)
     chart_time = time.time() - start_time
 
     start_time = time.time()
@@ -81,9 +82,10 @@ def test_memory_usage():
 
     # Create large dataset
     n_points = 5000
-    data = [SingleValueData(f"2023-01-{i:02d}", i) for i in range(n_points)]
+    dates = pd.date_range("2023-01-01", periods=n_points, freq="D")
+    data = [SingleValueData(dates[i], i) for i in range(n_points)]
     series = LineSeries(data, color="#ff0000")
-    chart = SinglePaneChart(series)
+    chart = Chart(series)
     chart.to_frontend_config()
 
     final_memory = process.memory_info().rss
@@ -101,11 +103,12 @@ def test_many_series_performance():
 
     series_list = []
     for i in range(n_series):
-        data = [SingleValueData(f"2023-01-{j:02d}", j + i) for j in range(n_points)]
+        dates = pd.date_range("2023-01-01", periods=n_points, freq="D")
+        data = [SingleValueData(dates[j], j + i) for j in range(n_points)]
         series_list.append(LineSeries(data, color=f"#{i:06x}"))
 
     start_time = time.time()
-    chart = SinglePaneChart(series_list)
+    chart = Chart(series_list)
     chart_time = time.time() - start_time
 
     start_time = time.time()
@@ -124,8 +127,8 @@ def test_dataframe_conversion_performance():
     n_points = 10000
     df = pd.DataFrame(
         {
-            "datetime": pd.date_range("2023-01-01", periods=n_points, freq="h"),
-            "close": range(n_points),
+            ColumnNames.DATETIME: pd.date_range("2023-01-01", periods=n_points, freq="h"),
+            ColumnNames.CLOSE: range(n_points),
         }
     )
 

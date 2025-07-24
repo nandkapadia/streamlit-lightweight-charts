@@ -11,22 +11,21 @@ import pytest
 
 from streamlit_lightweight_charts_pro.charts import (
     CandlestickSeries,
-    PriceVolumeChart,
+    Chart,
 )
 from streamlit_lightweight_charts_pro.charts.options import (
     ChartOptions,
 )
 from streamlit_lightweight_charts_pro.data import (
     Marker,
-    MarkerShape,
     OhlcvData,
     SingleValueData,
-    Trade,
-    TradeType,
 )
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.data.trade import Trade, TradeType
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 from streamlit_lightweight_charts_pro.type_definitions.colors import SolidColor
-from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType
+from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType, MarkerShape
 
 
 def test_invalid_time_format():
@@ -82,6 +81,8 @@ def test_invalid_enum_value():
 
 def test_missing_required_fields():
     """Test handling of missing required fields."""
+    import pytest
+
     with pytest.raises(TypeError):
         Trade()  # Missing all required arguments
 
@@ -105,35 +106,44 @@ def test_negative_quantity():
 def test_invalid_marker_position():
     """Test handling of invalid marker position."""
     # Not all models raise ValueError for invalid marker position, so skip for now
-    # from streamlit_lightweight_charts_pro.data.models import Marker, MarkerShape, MarkerPosition
+    # from streamlit_lightweight_charts_pro.data import Marker, MarkerShape, MarkerPosition
     # with pytest.raises(ValueError):
     #     Marker('2023-01-01', 'invalid_position', '#000', MarkerShape.CIRCLE)
 
 
 class TestPriceVolumeChartErrorHandling:
-    """Test error handling for PriceVolumeChart."""
+    """Test error handling for Chart.from_price_volume_dataframe()."""
 
     def test_invalid_data_type(self):
         """Test handling of invalid data types."""
         # Test with non-DataFrame data that can't be converted
         # String data is handled gracefully
-        chart = PriceVolumeChart(data="invalid_data")
+        chart = Chart.from_price_volume_dataframe("invalid_data")
         assert chart is not None
 
         # Integer data is handled gracefully (not raising TypeError)
-        chart = PriceVolumeChart(data=123)
+        chart = Chart.from_price_volume_dataframe(123)
         assert chart is not None
 
         # None data is also handled gracefully
-        chart = PriceVolumeChart(data=None)
+        chart = Chart.from_price_volume_dataframe(None)
         assert chart is not None
 
     def test_empty_dataframe(self):
         """Test handling of empty DataFrame."""
-        empty_df = pd.DataFrame(columns=["datetime", "open", "high", "low", "close", "volume"])
+        empty_df = pd.DataFrame(
+            columns=[
+                ColumnNames.DATETIME,
+                ColumnNames.OPEN,
+                ColumnNames.HIGH,
+                ColumnNames.LOW,
+                ColumnNames.CLOSE,
+                ColumnNames.VOLUME,
+            ]
+        )
 
         # Should handle empty DataFrame gracefully
-        chart = PriceVolumeChart(data=empty_df)
+        chart = Chart.from_price_volume_dataframe(empty_df)
         assert len(chart.series) == 2  # Price and volume series
         assert len(chart.series[0].data) == 0  # Price series empty
         assert len(chart.series[1].data) == 0  # Volume series empty
@@ -143,197 +153,211 @@ class TestPriceVolumeChartErrorHandling:
         # Missing datetime column
         df_missing_datetime = pd.DataFrame(
             {
-                "open": [100, 101, 102],
-                "high": [105, 106, 107],
-                "low": [95, 96, 97],
-                "close": [102, 103, 104],
-                "volume": [1000, 1100, 1200],
+                ColumnNames.OPEN: [100, 101, 102],
+                ColumnNames.HIGH: [105, 106, 107],
+                ColumnNames.LOW: [95, 96, 97],
+                ColumnNames.CLOSE: [102, 103, 104],
+                ColumnNames.VOLUME: [1000, 1100, 1200],
             }
         )
 
         # This will fail when PriceVolumeChart tries to access datetime column
-        with pytest.raises(KeyError):
-            PriceVolumeChart(data=df_missing_datetime)
+        with pytest.raises(ValueError, match="Columns.*are missing in the data"):
+            Chart.from_price_volume_dataframe(df_missing_datetime)
 
         # Missing OHLC columns
         df_missing_ohlc = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02", "2022-01-03"],
-                "volume": [1000, 1100, 1200],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02", "2022-01-03"],
+                ColumnNames.VOLUME: [1000, 1100, 1200],
             }
         )
 
         # This will fail when CandlestickSeries tries to convert the data
         with pytest.raises(ValueError):
-            PriceVolumeChart(data=df_missing_ohlc)
+            Chart.from_price_volume_dataframe(df_missing_ohlc)
 
     def test_invalid_column_mapping(self):
         """Test handling of invalid column mapping."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Invalid column mapping - this will fail when series tries to access columns
-        with pytest.raises(KeyError):
-            PriceVolumeChart(data=df, column_mapping={"time": "nonexistent_column"})
+        with pytest.raises(ValueError, match="Columns.*are missing in the data"):
+            Chart.from_price_volume_dataframe(
+                df, column_mapping={ColumnNames.TIME: "nonexistent_column"}
+            )
 
     def test_invalid_data_values(self):
         """Test handling of invalid data values."""
         # Non-numeric values in OHLC columns
         df_invalid_ohlc = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": ["invalid", 101],
-                "high": [105, "invalid"],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: ["invalid", 101],
+                ColumnNames.HIGH: [105, "invalid"],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # This will fail when trying to convert to float
         with pytest.raises(ValueError):
-            PriceVolumeChart(data=df_invalid_ohlc)
+            Chart.from_price_volume_dataframe(df_invalid_ohlc)
 
         # Negative values in volume - this should work fine
         df_negative_volume = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [-1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [-1000, 1100],
             }
         )
 
         # Negative volume should be handled gracefully
-        chart = PriceVolumeChart(data=df_negative_volume)
-        assert chart.has_volume()
+        chart = Chart.from_price_volume_dataframe(df_negative_volume)
+        assert len(chart.series) == 2  # Price and volume series
 
     def test_invalid_ohlc_relationships(self):
         """Test handling of invalid OHLC relationships."""
         # High < Open - this should work fine as no validation is done
         df_invalid_high = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [95, 106],  # 95 < 100
-                "low": [90, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [95, 106],  # 95 < 100
+                ColumnNames.LOW: [90, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Invalid OHLC relationships should be handled gracefully
-        chart = PriceVolumeChart(data=df_invalid_high)
+        chart = Chart.from_price_volume_dataframe(df_invalid_high)
         assert len(chart.series) == 2
 
         # Low > Close - this should also work fine
         df_invalid_low = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [110, 96],  # 110 > 102
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [110, 96],  # 110 > 102
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Invalid OHLC relationships should be handled gracefully
-        chart = PriceVolumeChart(data=df_invalid_low)
+        chart = Chart.from_price_volume_dataframe(df_invalid_low)
         assert len(chart.series) == 2
 
     def test_invalid_datetime_format(self):
         """Test handling of invalid datetime format."""
-        # Invalid datetime format
+        import pandas as pd
+        import pytest
+
+        # Invalid datetime format should raise a pandas error
         df_invalid_datetime = pd.DataFrame(
             {
-                "datetime": ["invalid_date", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["invalid_date", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
-
-        # Invalid datetime format should be handled gracefully
-        chart = PriceVolumeChart(data=df_invalid_datetime)
-        assert len(chart.series) == 2
+        with pytest.raises(Exception) as excinfo:
+            Chart.from_price_volume_dataframe(df_invalid_datetime)
+        # Accept either pandas.errors.ParserError or DateParseError
+        assert any(
+            err in str(excinfo.value)
+            for err in ["ParserError", "DateParseError", "Unknown datetime string format"]
+        )
 
     def test_duplicate_datetime_values(self):
         """Test handling of duplicate datetime values."""
         df_duplicate_datetime = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-01"],  # Duplicate
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-01"],  # Duplicate
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Duplicate datetime values should be handled gracefully
-        chart = PriceVolumeChart(data=df_duplicate_datetime)
+        chart = Chart.from_price_volume_dataframe(df_duplicate_datetime)
         assert len(chart.series) == 2
 
     def test_invalid_options(self):
         """Test handling of invalid options."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Invalid height - should be handled gracefully
-        chart = PriceVolumeChart(data=df, height=-100)
+        chart = Chart.from_price_volume_dataframe(df)
+        chart.update_options(height=-100)
         assert chart.options.height == -100
 
-        chart = PriceVolumeChart(data=df, height=0)
+        chart = Chart.from_price_volume_dataframe(df)
+        chart.update_options(height=0)
         assert chart.options.height == 0
 
         # Invalid width - should be handled gracefully
-        chart = PriceVolumeChart(data=df, width=-100)
+        chart = Chart.from_price_volume_dataframe(df)
+        chart.update_options(width=-100)
         assert chart.options.width == -100
 
-        chart = PriceVolumeChart(data=df, width=0)
+        chart = Chart.from_price_volume_dataframe(df)
+        chart.update_options(width=0)
         assert chart.options.width == 0
 
     def test_invalid_series_options(self):
         """Test handling of invalid series options."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
         # Invalid color format - should be handled gracefully
-        chart = PriceVolumeChart(data=df, up_color="invalid_color")
-        assert chart.candlestick_series.up_color == "invalid_color"
+        chart = Chart.from_price_volume_dataframe(df)
+        # The new API doesn't have up_color parameter, so we just check that chart was created
+        assert len(chart.series) == 2
 
         # Invalid alpha value - should be handled gracefully
-        chart = PriceVolumeChart(data=df, volume_alpha=2.0)  # > 1.0
-        assert chart.volume_series is not None
+        chart = Chart.from_price_volume_dataframe(df)
+        # The new API doesn't have volume_alpha parameter, so we just check that chart was created
+        assert len(chart.series) == 2
 
     def test_memory_overflow_protection(self):
         """Test memory overflow protection with large datasets."""
@@ -341,17 +365,17 @@ class TestPriceVolumeChartErrorHandling:
         dates = pd.date_range("2022-01-01", periods=100000, freq="h")
         large_df = pd.DataFrame(
             {
-                "datetime": dates,
-                "open": [100 + i * 0.01 for i in range(100000)],
-                "high": [105 + i * 0.01 for i in range(100000)],
-                "low": [95 + i * 0.01 for i in range(100000)],
-                "close": [102 + i * 0.01 for i in range(100000)],
-                "volume": [1000 + i for i in range(100000)],
+                ColumnNames.DATETIME: dates,
+                ColumnNames.OPEN: [100 + i * 0.01 for i in range(100000)],
+                ColumnNames.HIGH: [105 + i * 0.01 for i in range(100000)],
+                ColumnNames.LOW: [95 + i * 0.01 for i in range(100000)],
+                ColumnNames.CLOSE: [102 + i * 0.01 for i in range(100000)],
+                ColumnNames.VOLUME: [1000 + i for i in range(100000)],
             }
         )
 
         # Should handle large datasets gracefully
-        chart = PriceVolumeChart(data=large_df)
+        chart = Chart.from_price_volume_dataframe(large_df)
         assert len(chart.series) == 2
         assert len(chart.series[0].data) == 100000
         assert len(chart.series[1].data) == 100000
@@ -395,10 +419,10 @@ class TestChartOptionsErrorHandling:
 
     def test_invalid_price_scale_options(self):
         """Test handling of invalid price scale options."""
-        from streamlit_lightweight_charts_pro.charts.options import RightPriceScale
+        from streamlit_lightweight_charts_pro.charts.options import PriceScaleOptions
 
         # Invalid price scale options should be handled gracefully
-        price_scale = RightPriceScale(minimum_width=-10)
+        price_scale = PriceScaleOptions(minimum_width=-10)
         options = ChartOptions(right_price_scale=price_scale)
         assert options.right_price_scale.minimum_width == -10
 
@@ -443,11 +467,11 @@ class TestSeriesErrorHandling:
         """Test handling of invalid series options."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
             }
         )
 
@@ -460,8 +484,8 @@ class TestSeriesErrorHandling:
         # Missing required columns
         df_missing_columns = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
                 # Missing high, low, close
             }
         )
@@ -497,15 +521,14 @@ class TestDataModelErrorHandling:
 
     def test_invalid_marker_data(self):
         """Test handling of invalid marker data."""
-        # Invalid marker data should be handled gracefully
-        # Invalid position - this is handled gracefully
-        marker = Marker(
-            time="2022-01-01",
-            position="invalid_position",
-            shape=MarkerShape.CIRCLE,
-            color="#FF0000",
-        )
-        assert marker.position == "invalid_position"
+        # Invalid marker data should raise ValueError for invalid position
+        with pytest.raises(ValueError):
+            marker = Marker(
+                time="2022-01-01",
+                position="invalid_position",
+                shape=MarkerShape.CIRCLE,
+                color="#FF0000",
+            )
 
 
 class TestEdgeCases:
@@ -515,16 +538,16 @@ class TestEdgeCases:
         """Test handling of single data point."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01"],
-                "open": [100],
-                "high": [105],
-                "low": [95],
-                "close": [102],
-                "volume": [1000],
+                ColumnNames.DATETIME: ["2022-01-01"],
+                ColumnNames.OPEN: [100],
+                ColumnNames.HIGH: [105],
+                ColumnNames.LOW: [95],
+                ColumnNames.CLOSE: [102],
+                ColumnNames.VOLUME: [1000],
             }
         )
 
-        chart = PriceVolumeChart(data=df)
+        chart = Chart.from_price_volume_dataframe(df)
         assert len(chart.series[0].data) == 1
         assert len(chart.series[1].data) == 1
 
@@ -533,32 +556,32 @@ class TestEdgeCases:
         # Very large numbers
         df_large = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [1e10, 1e10 + 1],
-                "high": [1e10 + 5, 1e10 + 6],
-                "low": [1e10 - 5, 1e10 - 4],
-                "close": [1e10 + 2, 1e10 + 3],
-                "volume": [1e9, 1e9 + 1],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [1e10, 1e10 + 1],
+                ColumnNames.HIGH: [1e10 + 5, 1e10 + 6],
+                ColumnNames.LOW: [1e10 - 5, 1e10 - 4],
+                ColumnNames.CLOSE: [1e10 + 2, 1e10 + 3],
+                ColumnNames.VOLUME: [1e9, 1e9 + 1],
             }
         )
 
-        chart = PriceVolumeChart(data=df_large)
+        chart = Chart.from_price_volume_dataframe(df_large)
         assert len(chart.series[0].data) == 2
         assert len(chart.series[1].data) == 2
 
         # Very small numbers
         df_small = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [1e-10, 1e-10 + 1e-12],
-                "high": [1e-10 + 1e-12, 1e-10 + 2e-12],
-                "low": [1e-10 - 1e-12, 1e-10],
-                "close": [1e-10 + 5e-13, 1e-10 + 1.5e-12],
-                "volume": [1, 2],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [1e-10, 1e-10 + 1e-12],
+                ColumnNames.HIGH: [1e-10 + 1e-12, 1e-10 + 2e-12],
+                ColumnNames.LOW: [1e-10 - 1e-12, 1e-10],
+                ColumnNames.CLOSE: [1e-10 + 5e-13, 1e-10 + 1.5e-12],
+                ColumnNames.VOLUME: [1, 2],
             }
         )
 
-        chart = PriceVolumeChart(data=df_small)
+        chart = Chart.from_price_volume_dataframe(df_small)
         assert len(chart.series[0].data) == 2
         assert len(chart.series[1].data) == 2
 
@@ -566,16 +589,16 @@ class TestEdgeCases:
         """Test handling of zero values."""
         df_zero = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [0, 0],
-                "high": [0, 0],
-                "low": [0, 0],
-                "close": [0, 0],
-                "volume": [0, 0],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [0, 0],
+                ColumnNames.HIGH: [0, 0],
+                ColumnNames.LOW: [0, 0],
+                ColumnNames.CLOSE: [0, 0],
+                ColumnNames.VOLUME: [0, 0],
             }
         )
 
-        chart = PriceVolumeChart(data=df_zero)
+        chart = Chart.from_price_volume_dataframe(df_zero)
         assert len(chart.series[0].data) == 2
         assert len(chart.series[1].data) == 2
 
@@ -583,16 +606,16 @@ class TestEdgeCases:
         """Test handling of identical values."""
         df_identical = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02", "2022-01-03"],
-                "open": [100, 100, 100],
-                "high": [100, 100, 100],
-                "low": [100, 100, 100],
-                "close": [100, 100, 100],
-                "volume": [1000, 1000, 1000],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02", "2022-01-03"],
+                ColumnNames.OPEN: [100, 100, 100],
+                ColumnNames.HIGH: [100, 100, 100],
+                ColumnNames.LOW: [100, 100, 100],
+                ColumnNames.CLOSE: [100, 100, 100],
+                ColumnNames.VOLUME: [1000, 1000, 1000],
             }
         )
 
-        chart = PriceVolumeChart(data=df_identical)
+        chart = Chart.from_price_volume_dataframe(df_identical)
         assert len(chart.series[0].data) == 3
         assert len(chart.series[1].data) == 3
 
@@ -600,16 +623,16 @@ class TestEdgeCases:
         """Test handling of mixed data types."""
         df_mixed = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100.0, 101],
-                "high": [105, 106.5],
-                "low": [95.5, 96],
-                "close": [102, 103.0],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100.0, 101],
+                ColumnNames.HIGH: [105, 106.5],
+                ColumnNames.LOW: [95.5, 96],
+                ColumnNames.CLOSE: [102, 103.0],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
-        chart = PriceVolumeChart(data=df_mixed)
+        chart = Chart.from_price_volume_dataframe(df_mixed)
         assert len(chart.series[0].data) == 2
         assert len(chart.series[1].data) == 2
 
@@ -617,16 +640,16 @@ class TestEdgeCases:
         """Test handling of unicode characters in data."""
         df_unicode = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
-        chart = PriceVolumeChart(data=df_unicode)
+        chart = Chart.from_price_volume_dataframe(df_unicode)
         assert len(chart.series[0].data) == 2
         assert len(chart.series[1].data) == 2
 
@@ -639,18 +662,18 @@ class TestRecoveryAndGracefulDegradation:
         # DataFrame with some invalid rows
         df_partial = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02", "2022-01-03"],
-                "open": [100, "invalid", 102],
-                "high": [105, 106, 107],
-                "low": [95, 96, 97],
-                "close": [102, 103, 104],
-                "volume": [1000, 1100, 1200],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02", "2022-01-03"],
+                ColumnNames.OPEN: [100, "invalid", 102],
+                ColumnNames.HIGH: [105, 106, 107],
+                ColumnNames.LOW: [95, 96, 97],
+                ColumnNames.CLOSE: [102, 103, 104],
+                ColumnNames.VOLUME: [1000, 1100, 1200],
             }
         )
 
         # Should handle gracefully by filtering out invalid rows
         with pytest.raises(ValueError):
-            PriceVolumeChart(data=df_partial)
+            Chart.from_price_volume_dataframe(df_partial)
 
     def test_memory_pressure_handling(self):
         """Test handling under memory pressure."""
@@ -658,17 +681,17 @@ class TestRecoveryAndGracefulDegradation:
         dates = pd.date_range("2022-01-01", periods=50000, freq="h")
         large_df = pd.DataFrame(
             {
-                "datetime": dates,
-                "open": np.random.uniform(100, 200, 50000),
-                "high": np.random.uniform(200, 300, 50000),
-                "low": np.random.uniform(50, 100, 50000),
-                "close": np.random.uniform(100, 200, 50000),
-                "volume": np.random.randint(1000, 10000, 50000),
+                ColumnNames.DATETIME: dates,
+                ColumnNames.OPEN: np.random.uniform(100, 200, 50000),
+                ColumnNames.HIGH: np.random.uniform(200, 300, 50000),
+                ColumnNames.LOW: np.random.uniform(50, 100, 50000),
+                ColumnNames.CLOSE: np.random.uniform(100, 200, 50000),
+                ColumnNames.VOLUME: np.random.randint(1000, 10000, 50000),
             }
         )
 
         # Should handle large dataset without memory issues
-        chart = PriceVolumeChart(data=large_df)
+        chart = Chart.from_price_volume_dataframe(large_df)
         assert len(chart.series[0].data) == 50000
 
     def test_network_timeout_simulation(self):
@@ -685,12 +708,12 @@ class TestRecoveryAndGracefulDegradation:
         """Test protection against concurrent access issues."""
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-01", "2022-01-02"],
-                "open": [100, 101],
-                "high": [105, 106],
-                "low": [95, 96],
-                "close": [102, 103],
-                "volume": [1000, 1100],
+                ColumnNames.DATETIME: ["2022-01-01", "2022-01-02"],
+                ColumnNames.OPEN: [100, 101],
+                ColumnNames.HIGH: [105, 106],
+                ColumnNames.LOW: [95, 96],
+                ColumnNames.CLOSE: [102, 103],
+                ColumnNames.VOLUME: [1000, 1100],
             }
         )
 
@@ -699,7 +722,7 @@ class TestRecoveryAndGracefulDegradation:
 
         def create_chart():
             try:
-                chart = PriceVolumeChart(data=df)
+                chart = Chart.from_price_volume_dataframe(df)
                 charts.append(chart)
             except Exception as e:
                 errors.append(e)

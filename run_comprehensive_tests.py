@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive test runner for streamlit-lightweight-charts-pro.
+Comprehensive test runner for streamlit_lightweight_charts_pro.
 
 This script runs all tests with detailed reporting and coverage analysis.
 Updated for the new test directory structure.

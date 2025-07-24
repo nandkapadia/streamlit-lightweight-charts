@@ -1,138 +1,50 @@
-#!/usr/bin/env python3
-"""
-Price Volume Chart example with candlestick and volume.
-"""
-
+import numpy as np
 import pandas as pd
 import streamlit as st
-from datetime import datetime
-from streamlit_lightweight_charts_pro import PriceVolumeChart
-from examples.dataSamples import series_candlestick_chart, series_volume_chart
 
-st.title("📊 Price Volume Chart Example")
+from streamlit_lightweight_charts_pro import Chart
+from streamlit_lightweight_charts_pro.charts.series import AreaSeries
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
-def create_ohlcv_data():
-    """Create OHLCV data by combining candlestick and volume data from dataSamples.py"""
-    # Convert Unix timestamps to datetime strings for both datasets
-    def timestamp_to_datetime(timestamp):
-        return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d')
-    
-    # Create a dictionary to map datetime to volume data
-    volume_dict = {}
-    for item in series_volume_chart:
-        dt_str = timestamp_to_datetime(item["datetime"])
-        volume_dict[dt_str] = item["value"]
-    
-    # Combine candlestick data with volume data
-    ohlcv_data = []
-    for candle in series_candlestick_chart:
-        dt_str = timestamp_to_datetime(candle["datetime"])
-        volume = volume_dict.get(dt_str, 0)  # Default to 0 if no volume data
-        
-        ohlcv_data.append({
-            "datetime": dt_str,
-            "open": candle["open"],
-            "high": candle["high"],
-            "low": candle["low"],
-            "close": candle["close"],
-            "volume": volume
-        })
-    
-    return pd.DataFrame(ohlcv_data)
+st.title("Price and Volume Series Chart sample")
 
-# Create OHLCV data from dataSamples.py
-df = create_ohlcv_data()
+# Generate synthetic OHLC and volume data
+dates = pd.date_range(start="2023-03-01", end="2024-05-31", freq="B")
+np.random.seed(42)
+prices = np.cumsum(np.random.normal(0, 0.5, len(dates))) + 58
+opens = prices + np.random.normal(0, 0.2, len(dates))
+highs = np.maximum(opens, prices) + np.random.uniform(0, 0.5, len(dates))
+lows = np.minimum(opens, prices) - np.random.uniform(0, 0.5, len(dates))
+volumes = np.random.randint(1_000_000, 3_500_000, len(dates))
 
-st.write("### OHLCV Data from dataSamples.py:")
-st.dataframe(df)
-
-# Test PriceVolumeChart
-st.write("### Test: PriceVolumeChart")
-
-# Create PriceVolumeChart with default settings
-price_volume_chart = PriceVolumeChart(
-    data=df,
-    # Candlestick options
-    up_color="#4CAF50",
-    down_color="#F44336",
-    border_visible=False,
-    wick_up_color="#4CAF50",
-    wick_down_color="#F44336",
-    # Volume options
-    volume_color="#26a69a",
-    volume_alpha=0.8,
-    # Chart options
-    height=400,
+price_df = pd.DataFrame(
+    {
+        ColumnNames.DATETIME.value: dates,
+        ColumnNames.OPEN.value: opens,
+        ColumnNames.HIGH.value: highs,
+        ColumnNames.LOW.value: lows,
+        ColumnNames.CLOSE.value: prices,
+        "volume": volumes,
+    }
 )
 
-# Render the chart
-price_volume_chart.render(key="price_volume_chart_example")
+# Step 1: Convert to DataFrame
+sma_df = pd.DataFrame({"datetime": dates, "volume": volumes})
 
-st.write("### Features:")
-st.write("- ✅ Candlestick chart in main area (75% of height)")
-st.write("- ✅ Volume histogram in bottom area (25% of height)")
-st.write("- ✅ Volume with 0.8 alpha transparency")
-st.write("- ✅ Proper price scale configuration")
-st.write("- ✅ Volume uses overlay price scale")
-st.write("- ✅ Data sourced from dataSamples.py")
+# Step 2: Calculate SMA
+sma_df["volume_sma"] = sma_df["volume"].rolling(window=14).mean()
 
-# Test without volume
-st.write("### Test: PriceVolumeChart without Volume")
-df_no_volume = df.drop(columns=["volume"])
+# Drop the 'volume' column from sma_df
+sma_df = sma_df.drop(columns=["volume"])
 
-price_volume_chart_no_vol = PriceVolumeChart(
-    data=df_no_volume, up_color="#4CAF50", down_color="#F44336", border_visible=False, height=400
+chart = Chart.from_price_volume_dataframe(price_df)
+
+area_series = AreaSeries(
+    data=sma_df, column_mapping={"datetime": "datetime", "value": "volume_sma"}
 )
+area_series.pane_id = 1
+area_series.overlay = False
 
-price_volume_chart_no_vol.render(key="price_volume_chart_no_volume")
+chart.add_series(area_series)
 
-st.write("### Features (No Volume):")
-st.write("- ✅ Candlestick chart only")
-st.write("- ✅ No volume histogram")
-st.write("- ✅ Chart adapts automatically")
-
-# Test custom styling
-st.write("### Test: Custom Styling")
-price_volume_chart_custom = PriceVolumeChart(
-    data=df,
-    # Custom candlestick colors
-    up_color="#00C851",
-    down_color="#FF4444",
-    border_visible=True,
-    wick_up_color="#00C851",
-    wick_down_color="#FF4444",
-    # Custom volume styling
-    volume_color="#2196F3",
-    volume_alpha=0.6,
-    # Custom chart options
-    height=500,
-)
-
-price_volume_chart_custom.render(key="price_volume_chart_custom")
-
-st.write("### Custom Features:")
-st.write("- ✅ Custom candlestick colors")
-st.write("- ✅ Visible candle borders")
-st.write("- ✅ Custom volume color and transparency")
-st.write("- ✅ Larger chart height")
-
-st.write("### Usage:")
-st.code(
-    """
-from streamlit_lightweight_charts_pro import PriceVolumeChart
-from examples.dataSamples import create_ohlcv_data
-
-# Create OHLCV data from dataSamples.py
-df = create_ohlcv_data()
-
-# Create PriceVolumeChart
-chart = PriceVolumeChart(
-    data=df,  # DataFrame with OHLCV data
-    volume_alpha=0.8,  # Volume transparency
-    height=400
-)
-
-# Render the chart
-chart.render(key="my_chart")
-"""
-)
+chart.render()

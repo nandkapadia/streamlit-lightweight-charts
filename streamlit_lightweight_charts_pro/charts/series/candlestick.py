@@ -5,7 +5,7 @@ This module provides the CandlestickSeries class for creating candlestick charts
 OHLC or OHLCV data. Candlestick series are commonly used for price charts and technical analysis.
 
 The CandlestickSeries class supports various styling options for up/down colors, wicks, borders,
-and animation effects. It also supports markers, price line configurations, and trade 
+and animation effects. It also supports markers, price line configurations, and trade
 visualizations.
 
 Example:

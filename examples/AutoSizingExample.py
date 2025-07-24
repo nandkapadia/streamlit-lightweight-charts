@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 # Page configuration
 st.set_page_config(page_title="Auto-Sizing Charts Example", page_icon="📊", layout="wide")
@@ -53,11 +53,11 @@ def generate_sample_data(days=50, base_price=100):
 
         data.append(
             {
-                "time": date.strftime("%Y-%m-%d"),
-                "open": round(open_price, 2),
-                "high": round(high, 2),
-                "low": round(low, 2),
-                "close": round(close_price, 2),
+                ColumnNames.TIME: date.strftime("%Y-%m-%d"),
+                ColumnNames.OPEN: round(open_price, 2),
+                ColumnNames.HIGH: round(high, 2),
+                ColumnNames.LOW: round(low, 2),
+                ColumnNames.CLOSE: round(close_price, 2),
             }
         )
 
@@ -160,7 +160,13 @@ with col1:
     line_series_2 = [
         {
             "type": "Line",
-            "data": [{"time": item["time"], "value": item["close"]} for item in data],
+            "data": [
+                {
+                    ColumnNames.TIME: item[ColumnNames.TIME],
+                    ColumnNames.VALUE: item[ColumnNames.CLOSE],
+                }
+                for item in data
+            ],
             "options": {
                 "color": "#2962ff",
                 "lineWidth": 2,
@@ -208,7 +214,13 @@ with col2:
     area_series_3 = [
         {
             "type": "Area",
-            "data": [{"time": item["time"], "value": item["close"]} for item in data],
+            "data": [
+                {
+                    ColumnNames.TIME: item[ColumnNames.TIME],
+                    ColumnNames.VALUE: item[ColumnNames.CLOSE],
+                }
+                for item in data
+            ],
             "options": {
                 "topColor": "rgba(76, 175, 80, 0.4)",
                 "bottomColor": "rgba(76, 175, 80, 0.0)",
@@ -256,7 +268,13 @@ with col3:
     bar_series_width = [
         {
             "type": "Bar",
-            "data": [{"time": item["time"], "value": item["close"]} for item in data],
+            "data": [
+                {
+                    ColumnNames.TIME: item[ColumnNames.TIME],
+                    ColumnNames.VALUE: item[ColumnNames.CLOSE],
+                }
+                for item in data
+            ],
             "options": {
                 "upColor": "#26a69a",
                 "downColor": "#ef5350",
@@ -296,7 +314,13 @@ with col4:
     line_series_height = [
         {
             "type": "Line",
-            "data": [{"time": item["time"], "value": item["close"]} for item in data],
+            "data": [
+                {
+                    ColumnNames.TIME: item[ColumnNames.TIME],
+                    ColumnNames.VALUE: item[ColumnNames.CLOSE],
+                }
+                for item in data
+            ],
             "options": {
                 "color": "#ff9800",
                 "lineWidth": 3,
@@ -372,8 +396,8 @@ with col_info1:
     st.metric("Date Range", f"{data[0]['time']} to {data[-1]['time']}")
 
 with col_info2:
-    latest_price = data[-1]["close"]
-    prev_price = data[-2]["close"] if len(data) > 1 else latest_price
+    latest_price = data[-1][ColumnNames.CLOSE]
+    prev_price = data[-2][ColumnNames.CLOSE] if len(data) > 1 else latest_price
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100 if prev_price > 0 else 0
     st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")

@@ -8,17 +8,17 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
 from streamlit_lightweight_charts_pro.data import (
     Marker,
-    MarkerPosition,
-    MarkerShape,
-    OhlcData,
+    OhlcvData,
     Trade,
-    TradeVisualizationOptions,
     TradeVisualization,
+    TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
 
 st.set_page_config(page_title="Trade Drawing Demo", layout="wide")
 
@@ -38,63 +38,64 @@ This example shows the new trade drawing functionality that allows you to:
 def generate_trade_data(days=180):
     """Generate realistic OHLCV data using Geometric Brownian Motion"""
     import numpy as np
-    
+
     data = []
     base_date = datetime.now() - timedelta(days=days)
     base_price = 100.0
     volume_base = 1000000
-    
+
     # GBM parameters
     mu = 0.0001  # Daily drift (annualized ~2.5%)
     sigma = 0.02  # Daily volatility (annualized ~32%)
     dt = 1.0  # Daily time step
-    
+
     # Generate price path using GBM
     np.random.seed(42)  # For reproducible results
     price_path = [base_price]
-    
+
     for i in range(days - 1):
         # GBM formula: S(t+1) = S(t) * exp((mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z)
         drift = (mu - 0.5 * sigma**2) * dt
         diffusion = sigma * np.sqrt(dt) * np.random.normal(0, 1)
         new_price = price_path[-1] * np.exp(drift + diffusion)
         price_path.append(new_price)
-    
+
     # Create OHLC data from price path
     for i, close_price in enumerate(price_path):
         date = base_date + timedelta(days=i)
-        
+
         # Generate realistic OHLC from close price
         # Add some intraday volatility
         intraday_vol = sigma * 0.3  # 30% of daily volatility for intraday
-        
+
         # Generate open, high, low from close
         open_price = close_price * (1 + np.random.normal(0, intraday_vol * 0.5))
-        
+
         # High and low with realistic ranges
         price_range = close_price * intraday_vol
         high_price = max(open_price, close_price) + np.random.uniform(0, price_range * 0.5)
         low_price = min(open_price, close_price) - np.random.uniform(0, price_range * 0.5)
-        
+
         # Ensure realistic OHLC relationships
         high_price = max(high_price, open_price, close_price)
         low_price = min(low_price, open_price, close_price)
-        
+
         # Volume with some correlation to price movement
         price_change = abs(close_price - open_price) / open_price
         volume_factor = 1 + price_change * 5 + np.random.uniform(-0.3, 0.3)
         volume = max(volume_base * volume_factor, volume_base * 0.5)
-        
+
         data.append(
-            OhlcData(
+            OhlcvData(
                 time=date.strftime("%Y-%m-%d"),
                 open_=round(open_price, 2),
                 high=round(high_price, 2),
                 low=round(low_price, 2),
-                close=round(close_price, 2)
+                close=round(close_price, 2),
+                volume=int(volume),  # Add volume to OHLC data
             )
         )
-    
+
     return data
 
 
@@ -103,121 +104,131 @@ def generate_sample_trades(ohlcv_data):
     """Generate sample trades using actual OHLCV data prices with intraday times"""
     # Create a dictionary for quick lookup
     ohlcv_dict = {ohlc.time: ohlc for ohlc in ohlcv_data}
-    
+
     # Get available dates from OHLC data
     available_dates = list(ohlcv_dict.keys())
     st.write(f"**Available dates in OHLC data: {len(available_dates)}**")
     st.write(f"**Date range: {available_dates[0]} to {available_dates[-1]}**")
-    
+
     trades = []
-    
+
     # Trade 1: Long trade with intraday entry time
     if len(available_dates) >= 20:
         entry_date = available_dates[10]  # Use actual date from data
-        exit_date = available_dates[20]   # Use actual date from data
-        
+        exit_date = available_dates[20]  # Use actual date from data
+
         if entry_date in ohlcv_dict and exit_date in ohlcv_dict:
             entry_price = ohlcv_dict[entry_date].close
             exit_price = ohlcv_dict[exit_date].close
-            
+
             # Add intraday time to entry (09:30 AM)
             entry_time_with_intraday = f"{entry_date} 09:30:00"
-            
-            trades.append(Trade(
-                entry_time=entry_time_with_intraday,
-                entry_price=entry_price,
-                exit_time=exit_date,
-                exit_price=exit_price,
-                quantity=100,
-                trade_type="long",
-            ))
-    
+
+            trades.append(
+                Trade(
+                    entry_time=entry_time_with_intraday,
+                    entry_price=entry_price,
+                    exit_time=exit_date,
+                    exit_price=exit_price,
+                    quantity=100,
+                    trade_type="long",
+                )
+            )
+
     # Trade 2: Short trade with intraday exit time
     if len(available_dates) >= 40:
         entry_date = available_dates[25]  # Use actual date from data
-        exit_date = available_dates[35]   # Use actual date from data
-        
+        exit_date = available_dates[35]  # Use actual date from data
+
         if entry_date in ohlcv_dict and exit_date in ohlcv_dict:
             entry_price = ohlcv_dict[entry_date].close
             exit_price = ohlcv_dict[exit_date].close
-            
+
             # Add intraday time to exit (14:45 PM)
             exit_time_with_intraday = f"{exit_date} 14:45:00"
-            
-            trades.append(Trade(
-                entry_time=entry_date,
-                entry_price=entry_price,
-                exit_time=exit_time_with_intraday,
-                exit_price=exit_price,
-                quantity=50,
-                trade_type="short",
-            ))
-    
+
+            trades.append(
+                Trade(
+                    entry_time=entry_date,
+                    entry_price=entry_price,
+                    exit_time=exit_time_with_intraday,
+                    exit_price=exit_price,
+                    quantity=50,
+                    trade_type="short",
+                )
+            )
+
     # Trade 3: Long trade with both intraday times
     if len(available_dates) >= 60:
         entry_date = available_dates[40]  # Use actual date from data
-        exit_date = available_dates[55]   # Use actual date from data
-        
+        exit_date = available_dates[55]  # Use actual date from data
+
         if entry_date in ohlcv_dict and exit_date in ohlcv_dict:
             entry_price = ohlcv_dict[entry_date].close
             exit_price = ohlcv_dict[exit_date].close
-            
+
             # Add intraday times to both entry and exit
             entry_time_with_intraday = f"{entry_date} 10:15:00"
             exit_time_with_intraday = f"{exit_date} 15:20:00"
-            
-            trades.append(Trade(
-                entry_time=entry_time_with_intraday,
-                entry_price=entry_price,
-                exit_time=exit_time_with_intraday,
-                exit_price=exit_price,
-                quantity=200,
-                trade_type="long",
-            ))
-    
+
+            trades.append(
+                Trade(
+                    entry_time=entry_time_with_intraday,
+                    entry_price=entry_price,
+                    exit_time=exit_time_with_intraday,
+                    exit_price=exit_price,
+                    quantity=200,
+                    trade_type="long",
+                )
+            )
+
     # Trade 4: Short trade with intraday entry time
     if len(available_dates) >= 80:
         entry_date = available_dates[60]  # Use actual date from data
-        exit_date = available_dates[75]   # Use actual date from data
-        
+        exit_date = available_dates[75]  # Use actual date from data
+
         if entry_date in ohlcv_dict and exit_date in ohlcv_dict:
             entry_price = ohlcv_dict[entry_date].close
             exit_price = ohlcv_dict[exit_date].close
-            
+
             # Add intraday time to entry (11:30 AM)
             entry_time_with_intraday = f"{entry_date} 11:30:00"
-            
-            trades.append(Trade(
-                entry_time=entry_time_with_intraday,
-                entry_price=entry_price,
-                exit_time=exit_date,
-                exit_price=exit_price,
-                quantity=75,
-                trade_type="short",
-            ))
-    
+
+            trades.append(
+                Trade(
+                    entry_time=entry_time_with_intraday,
+                    entry_price=entry_price,
+                    exit_time=exit_date,
+                    exit_price=exit_price,
+                    quantity=75,
+                    trade_type="short",
+                )
+            )
+
     # Trade 5: Test trade with time between market hours (12:30 PM)
     if len(available_dates) >= 100:
         entry_date = available_dates[80]  # Use actual date from data
-        exit_date = available_dates[90]   # Use actual date from data
-        
+        exit_date = available_dates[90]  # Use actual date from data
+
         if entry_date in ohlcv_dict and exit_date in ohlcv_dict:
             entry_price = ohlcv_dict[entry_date].close
             exit_price = ohlcv_dict[exit_date].close
-            
+
             # Add intraday time between market hours
             entry_time_with_intraday = f"{entry_date} 12:30:00"
             exit_time_with_intraday = f"{exit_date} 13:45:00"
-            
-            trades.append(Trade(
-                entry_time=entry_time_with_intraday,
-                entry_price=entry_price,
-                exit_time=exit_time_with_intraday,
-                exit_price=exit_price,
-                quantity=150,
-                trade_type="long",
-            ))
-    
+
+            trades.append(
+                Trade(
+                    entry_time=entry_time_with_intraday,
+                    entry_price=entry_price,
+                    exit_time=exit_time_with_intraday,
+                    exit_price=exit_price,
+                    quantity=150,
+                    trade_type="long",
+                )
+            )
+
     st.write(f"**Generated {len(trades)} trades using actual OHLC data with intraday times**")
     return trades
 
@@ -242,7 +253,9 @@ for i, trade in enumerate(sample_trades):
 # Debug: Show OHLC data sample
 st.write("**OHLC Data Sample (first 5 points):**")
 for i, ohlc in enumerate(ohlcv_data[:5]):
-    st.write(f"  {i+1}. {ohlc.time}: O={ohlc.open:.2f}, H={ohlc.high:.2f}, L={ohlc.low:.2f}, C={ohlc.close:.2f}")
+    st.write(
+        f"  {i+1}. {ohlc.time}: O={ohlc.open:.2f}, H={ohlc.high:.2f}, L={ohlc.low:.2f}, C={ohlc.close:.2f}"
+    )
 
 # Sidebar controls
 with st.sidebar:
@@ -351,22 +364,24 @@ candlestick_series = CandlestickSeries(
         rectangle_border_width=2,
         show_trade_id=True,
         show_quantity=True,
-        show_pnl_in_markers=True
-    )
+        show_pnl_in_markers=True,
+    ),
 )
 
 # Create chart
-chart = SinglePaneChart(series=candlestick_series)
+# Replace SinglePaneChart with Chart
+# chart = SinglePaneChart(series=candlestick_series)
+chart = Chart(series=candlestick_series)
 
 # Debug: Show chart configuration
 st.write("**Chart Configuration:**")
 chart_config = chart.to_frontend_config()
 st.write(f"  Number of charts: {len(chart_config['charts'])}")
-if chart_config['charts']:
-    first_chart = chart_config['charts'][0]
+if chart_config["charts"]:
+    first_chart = chart_config["charts"][0]
     st.write(f"  Number of series: {len(first_chart['series'])}")
     st.write(f"  Has trades: {'trades' in first_chart}")
-    if 'trades' in first_chart:
+    if "trades" in first_chart:
         st.write(f"  Number of trades: {len(first_chart['trades'])}")
         st.write(f"  Has trade options: {'tradeVisualizationOptions' in first_chart}")
     st.write(f"  Chart config keys: {list(first_chart.keys())}")

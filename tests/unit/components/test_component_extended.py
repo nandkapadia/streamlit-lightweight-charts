@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from streamlit_lightweight_charts_pro.component import get_component_func
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class TestComponentExtended:
@@ -128,11 +129,11 @@ class TestComponentExtended:
                         "type": "candlestick",
                         "data": [
                             {
-                                "time": "2023-01-01",
-                                "open": 100,
-                                "high": 110,
-                                "low": 90,
-                                "close": 105,
+                                ColumnNames.TIME: "2023-01-01",
+                                ColumnNames.OPEN: 100,
+                                ColumnNames.HIGH: 110,
+                                ColumnNames.LOW: 90,
+                                ColumnNames.CLOSE: 105,
                             }
                         ],
                         "options": {"upColor": "#26a69a", "downColor": "#ef5350"},
@@ -168,9 +169,11 @@ class TestComponentExtended:
             config = {"charts": [], "syncConfig": {}}
 
             # Test with extra parameters
-            get_component_func()(config=config, key="test", extra_param="value")
+            get_component_func()(config=config, key="test", extra_param=ColumnNames.VALUE)
 
-            mock_component.assert_called_once_with(config=config, key="test", extra_param="value")
+            mock_component.assert_called_once_with(
+                config=config, key="test", extra_param=ColumnNames.VALUE
+            )
 
     def test_component_initialization_production_mode(self):
         """Test component initialization in production mode."""
@@ -223,3 +226,18 @@ class TestComponentExtended:
 
                     result = get_component_func()
                     assert result is None
+
+    def test_import_error_for_streamlit_components(self):
+        """Test ImportError is handled gracefully if streamlit.components.v1 is missing."""
+        import sys
+
+        with patch.dict(sys.modules, {"streamlit.components.v1": None}):
+            with patch("streamlit_lightweight_charts_pro.component._RELEASE", True):
+                with patch("pathlib.Path.exists") as mock_exists:
+                    mock_exists.return_value = True
+                    import importlib
+
+                    import streamlit_lightweight_charts_pro.component
+
+                    importlib.reload(streamlit_lightweight_charts_pro.component)
+                    # Should not raise ImportError

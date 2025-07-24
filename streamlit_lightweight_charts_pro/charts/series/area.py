@@ -34,15 +34,12 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
+from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import SingleValueData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
-    LastPriceAnimationMode,
-    LineStyle,
-    LineType,
+    ColumnNames,
 )
-from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class AreaSeries(Series):

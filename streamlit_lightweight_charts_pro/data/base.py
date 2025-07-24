@@ -5,10 +5,10 @@ This module provides the base data class and utility functions for time format c
 used throughout the library for representing financial data points.
 """
 
+import math
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
-import math
 
 import pandas as pd
 

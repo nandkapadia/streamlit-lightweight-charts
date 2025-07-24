@@ -7,13 +7,13 @@ from playwright.sync_api import sync_playwright
 
 STREAMLIT_APP_CODE = """\
 import streamlit as st
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart, LineSeries
-from streamlit_lightweight_charts_pro.data.models import SingleValueData
+from streamlit_lightweight_charts_pro.charts import Chart, LineSeries
+from streamlit_lightweight_charts_pro.data import SingleValueData
 
 # Create line series with the data
 line_series = LineSeries([SingleValueData('2023-01-01', 1.0), SingleValueData('2023-01-02', 2.0)])
 # Create single pane chart with the line series
-chart = SinglePaneChart(series=line_series)
+chart = Chart(series=line_series)
 st.write('Test Chart')
 chart.render()
 """

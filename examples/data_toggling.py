@@ -5,8 +5,8 @@ This example demonstrates how to toggle between different datasets in an area ch
 """
 
 import streamlit as st
-
 from dataSamples import get_multi_area_data_1, get_multi_area_data_2
+
 from streamlit_lightweight_charts_pro import SinglePaneChart
 from streamlit_lightweight_charts_pro.charts.series import AreaSeries
 

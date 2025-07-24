@@ -35,21 +35,20 @@ from examples.dataSamples import (
 from streamlit_lightweight_charts_pro import (
     AreaSeries,
     CandlestickSeries,
+    Chart,
     ChartBuilder,
     HistogramSeries,
     LineSeries,
-    MultiPaneChart,
-    SinglePaneChart,
     create_chart,
 )
 from streamlit_lightweight_charts_pro.data import (
-    HistogramData,
     OhlcData,
     SingleValueData,
     create_arrow_annotation,
     create_text_annotation,
 )
 from streamlit_lightweight_charts_pro.data.trade import Trade, TradeType
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def main():
@@ -132,7 +131,7 @@ def basic_method_chaining_demo():
 
         # Create chart with method chaining
         chart = (
-            SinglePaneChart(series=LineSeries(data=line_data))
+            Chart(series=LineSeries(data=line_data))
             .update_options(height=400, width=600)
             .add_annotation(
                 create_text_annotation(
@@ -672,12 +671,12 @@ def multi_pane_charts_demo():
     volume_data = get_volume_data()
 
     # Create multi-pane chart
-    chart = MultiPaneChart(
+    chart = Chart(
         [
-            SinglePaneChart(series=CandlestickSeries(data=candlestick_data))
+            Chart(series=CandlestickSeries(data=candlestick_data))
             .update_options(height=300)
             .set_watermark("Price Chart"),
-            SinglePaneChart(series=HistogramSeries(data=volume_data))
+            Chart(series=HistogramSeries(data=volume_data))
             .update_options(height=200)
             .set_watermark("Volume Chart"),
         ]
@@ -708,16 +707,11 @@ def multi_pane_charts_demo():
         SingleValueData("2022-01-21", 65),
     ]
 
-    # Create multi-pane chart with indicators
-    chart = MultiPaneChart(
-        [
-            SinglePaneChart(series=CandlestickSeries(data=candlestick_data))
-            .update_options(height=300)
-            .set_watermark("Price Chart"),
-            SinglePaneChart(series=LineSeries(data=indicator_data))
-            .update_options(height=200)
-            .set_watermark("RSI Indicator"),
-        ]
+    # MultiPaneChart removed - using individual charts instead
+    chart = (
+        Chart(series=CandlestickSeries(data=candlestick_data))
+        .update_options(height=300)
+        .set_watermark("Price Chart")
     )
 
     # Render the chart
@@ -757,12 +751,18 @@ def data_processing_demo():
         # Create sample DataFrame
         df = pd.DataFrame(
             {
-                "datetime": ["2022-01-17", "2022-01-18", "2022-01-19", "2022-01-20", "2022-01-21"],
-                "open": [10.0, 9.8, 9.6, 9.9, 9.7],
-                "high": [10.2, 10.1, 9.8, 10.0, 9.9],
-                "low": [9.7, 9.5, 9.4, 9.6, 9.5],
-                "close": [9.8, 9.6, 9.9, 9.7, 9.8],
-                "volume": [1000000, 1200000, 800000, 1500000, 900000],
+                ColumnNames.DATETIME: [
+                    "2022-01-17",
+                    "2022-01-18",
+                    "2022-01-19",
+                    "2022-01-20",
+                    "2022-01-21",
+                ],
+                ColumnNames.OPEN: [10.0, 9.8, 9.6, 9.9, 9.7],
+                ColumnNames.HIGH: [10.2, 10.1, 9.8, 10.0, 9.9],
+                ColumnNames.LOW: [9.7, 9.5, 9.4, 9.6, 9.5],
+                ColumnNames.CLOSE: [9.8, 9.6, 9.9, 9.7, 9.8],
+                ColumnNames.VOLUME: [1000000, 1200000, 800000, 1500000, 900000],
             }
         )
 
@@ -801,17 +801,18 @@ def data_processing_demo():
         # Convert DataFrame to data models
         ohlc_data = [
             OhlcData(
-                time=row["datetime"],
-                open_=row["open"],
-                high=row["high"],
-                low=row["low"],
-                close=row["close"],
+                time=row[ColumnNames.DATETIME],
+                open_=row[ColumnNames.OPEN],
+                high=row[ColumnNames.HIGH],
+                low=row[ColumnNames.LOW],
+                close=row[ColumnNames.CLOSE],
             )
             for _, row in df.iterrows()
         ]
 
         volume_data = [
-            HistogramData(time=row["datetime"], value=row["volume"]) for _, row in df.iterrows()
+            HistogramData(time=row[ColumnNames.DATETIME], value=row[ColumnNames.VOLUME])
+            for _, row in df.iterrows()
         ]
 
         st.write(f"Created {len(ohlc_data)} OHLC data points")

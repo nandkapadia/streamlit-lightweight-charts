@@ -32,8 +32,7 @@ import pandas as pd
 
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import SingleValueData
-from streamlit_lightweight_charts_pro.type_definitions import ChartType
-from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, ColumnNames
 
 
 class HistogramSeries(Series):
@@ -147,8 +146,8 @@ class HistogramSeries(Series):
 
         time_col = column_mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
         value_col = column_mapping.get(ColumnNames.VALUE, ColumnNames.CLOSE)
-        open_col = column_mapping.get(ColumnNames.OPEN, ColumnNames.OPEN)
-        close_col = column_mapping.get(ColumnNames.CLOSE, ColumnNames.CLOSE)
+        column_mapping.get(ColumnNames.OPEN, ColumnNames.OPEN)
+        column_mapping.get(ColumnNames.CLOSE, ColumnNames.CLOSE)
 
         if time_col not in df.columns or value_col not in df.columns:
             raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")

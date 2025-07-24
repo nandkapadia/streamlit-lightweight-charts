@@ -26,8 +26,8 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
 )
 from streamlit_lightweight_charts_pro.charts.options.localization_options import LocalizationOptions
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-    PriceScaleOptions,
     PriceScaleMargins,
+    PriceScaleOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.time_scale_options import TimeScaleOptions
 from streamlit_lightweight_charts_pro.charts.options.ui_options import (

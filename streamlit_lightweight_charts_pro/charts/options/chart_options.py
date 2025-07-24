@@ -24,16 +24,16 @@ Example:
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from streamlit_lightweight_charts_pro.charts.options.layout_options import (
-    LayoutOptions,
-    GridOptions,
-    WatermarkOptions,
-    GridLineOptions,
-)
 from streamlit_lightweight_charts_pro.charts.options.interaction_options import (
-    CrosshairOptions,
-    CrosshairMode,
     CrosshairLineOptions,
+    CrosshairMode,
+    CrosshairOptions,
+)
+from streamlit_lightweight_charts_pro.charts.options.layout_options import (
+    GridLineOptions,
+    GridOptions,
+    LayoutOptions,
+    WatermarkOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 from streamlit_lightweight_charts_pro.charts.options.time_scale_options import TimeScaleOptions
@@ -433,24 +433,28 @@ class ChartOptions:
                 self.layout.to_dict() if hasattr(self.layout, "to_dict") else self.layout
             )
         if self.grid is not None:
-            result["grid"] = (
-                self.grid.to_dict() if hasattr(self.grid, "to_dict") else self.grid
-            )
+            result["grid"] = self.grid.to_dict() if hasattr(self.grid, "to_dict") else self.grid
         if self.crosshair is not None:
             result["crosshair"] = (
                 self.crosshair.to_dict() if hasattr(self.crosshair, "to_dict") else self.crosshair
             )
         if self.right_price_scale is not None:
             result["rightPriceScale"] = (
-                self.right_price_scale.to_dict() if hasattr(self.right_price_scale, "to_dict") else self.right_price_scale
+                self.right_price_scale.to_dict()
+                if hasattr(self.right_price_scale, "to_dict")
+                else self.right_price_scale
             )
         if self.left_price_scale is not None:
             result["PriceScaleOptions"] = (
-                self.left_price_scale.to_dict() if hasattr(self.left_price_scale, "to_dict") else self.left_price_scale
+                self.left_price_scale.to_dict()
+                if hasattr(self.left_price_scale, "to_dict")
+                else self.left_price_scale
             )
         if self.time_scale is not None:
             result["timeScale"] = (
-                self.time_scale.to_dict() if hasattr(self.time_scale, "to_dict") else self.time_scale
+                self.time_scale.to_dict()
+                if hasattr(self.time_scale, "to_dict")
+                else self.time_scale
             )
         if self.tooltip is not None:
             result["tooltip"] = self.tooltip

@@ -28,7 +28,7 @@ Example:
     )
 """
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
@@ -36,12 +36,11 @@ from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enu
 from streamlit_lightweight_charts_pro.data import BandData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
+    ColumnNames,
     LastPriceAnimationMode,
     LineStyle,
     LineType,
 )
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
-from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class BandSeries(Series):
@@ -70,27 +69,35 @@ class BandSeries(Series):
     ):
         # Pop band-specific options before calling super().__init__
         band_kwargs = {}
-        band_kwargs['upper_line_color'] = kwargs.pop("upper_line_color", "#4CAF50")
-        band_kwargs['middle_line_color'] = kwargs.pop("middle_line_color", "#2196F3")
-        band_kwargs['lower_line_color'] = kwargs.pop("lower_line_color", "#F44336")
-        band_kwargs['upper_line_width'] = kwargs.pop("upper_line_width", 2)
-        band_kwargs['middle_line_width'] = kwargs.pop("middle_line_width", 2)
-        band_kwargs['lower_line_width'] = kwargs.pop("lower_line_width", 2)
-        band_kwargs['upper_line_style'] = kwargs.pop("upper_line_style", LineStyle.SOLID)
-        band_kwargs['middle_line_style'] = kwargs.pop("middle_line_style", LineStyle.SOLID)
-        band_kwargs['lower_line_style'] = kwargs.pop("lower_line_style", LineStyle.SOLID)
-        band_kwargs['upper_line_visible'] = kwargs.pop("upper_line_visible", True)
-        band_kwargs['middle_line_visible'] = kwargs.pop("middle_line_visible", True)
-        band_kwargs['lower_line_visible'] = kwargs.pop("lower_line_visible", True)
-        band_kwargs['upper_fill_color'] = kwargs.pop("upper_fill_color", "rgba(76, 175, 80, 0.1)")
-        band_kwargs['lower_fill_color'] = kwargs.pop("lower_fill_color", "rgba(244, 67, 54, 0.1)")
-        band_kwargs['line_type'] = kwargs.pop("line_type", LineType.SIMPLE)
-        band_kwargs['crosshair_marker_visible'] = kwargs.pop("crosshair_marker_visible", False)
-        band_kwargs['crosshair_marker_radius'] = kwargs.pop("crosshair_marker_radius", 4)
-        band_kwargs['crosshair_marker_border_color'] = kwargs.pop("crosshair_marker_border_color", "#2196F3")
-        band_kwargs['crosshair_marker_background_color'] = kwargs.pop("crosshair_marker_background_color", "#fff")
-        band_kwargs['crosshair_marker_border_width'] = kwargs.pop("crosshair_marker_border_width", 1)
-        band_kwargs['last_price_animation'] = kwargs.pop("last_price_animation", LastPriceAnimationMode.DISABLED)
+        band_kwargs["upper_line_color"] = kwargs.pop("upper_line_color", "#4CAF50")
+        band_kwargs["middle_line_color"] = kwargs.pop("middle_line_color", "#2196F3")
+        band_kwargs["lower_line_color"] = kwargs.pop("lower_line_color", "#F44336")
+        band_kwargs["upper_line_width"] = kwargs.pop("upper_line_width", 2)
+        band_kwargs["middle_line_width"] = kwargs.pop("middle_line_width", 2)
+        band_kwargs["lower_line_width"] = kwargs.pop("lower_line_width", 2)
+        band_kwargs["upper_line_style"] = kwargs.pop("upper_line_style", LineStyle.SOLID)
+        band_kwargs["middle_line_style"] = kwargs.pop("middle_line_style", LineStyle.SOLID)
+        band_kwargs["lower_line_style"] = kwargs.pop("lower_line_style", LineStyle.SOLID)
+        band_kwargs["upper_line_visible"] = kwargs.pop("upper_line_visible", True)
+        band_kwargs["middle_line_visible"] = kwargs.pop("middle_line_visible", True)
+        band_kwargs["lower_line_visible"] = kwargs.pop("lower_line_visible", True)
+        band_kwargs["upper_fill_color"] = kwargs.pop("upper_fill_color", "rgba(76, 175, 80, 0.1)")
+        band_kwargs["lower_fill_color"] = kwargs.pop("lower_fill_color", "rgba(244, 67, 54, 0.1)")
+        band_kwargs["line_type"] = kwargs.pop("line_type", LineType.SIMPLE)
+        band_kwargs["crosshair_marker_visible"] = kwargs.pop("crosshair_marker_visible", False)
+        band_kwargs["crosshair_marker_radius"] = kwargs.pop("crosshair_marker_radius", 4)
+        band_kwargs["crosshair_marker_border_color"] = kwargs.pop(
+            "crosshair_marker_border_color", "#2196F3"
+        )
+        band_kwargs["crosshair_marker_background_color"] = kwargs.pop(
+            "crosshair_marker_background_color", "#fff"
+        )
+        band_kwargs["crosshair_marker_border_width"] = kwargs.pop(
+            "crosshair_marker_border_width", 1
+        )
+        band_kwargs["last_price_animation"] = kwargs.pop(
+            "last_price_animation", LastPriceAnimationMode.DISABLED
+        )
         super().__init__(
             data=data,
             column_mapping=column_mapping,
@@ -111,27 +118,27 @@ class BandSeries(Series):
             overlay=overlay,
             **kwargs,
         )
-        self.upper_line_color = band_kwargs['upper_line_color']
-        self.middle_line_color = band_kwargs['middle_line_color']
-        self.lower_line_color = band_kwargs['lower_line_color']
-        self.upper_line_width = band_kwargs['upper_line_width']
-        self.middle_line_width = band_kwargs['middle_line_width']
-        self.lower_line_width = band_kwargs['lower_line_width']
-        self.upper_line_style = band_kwargs['upper_line_style']
-        self.middle_line_style = band_kwargs['middle_line_style']
-        self.lower_line_style = band_kwargs['lower_line_style']
-        self.upper_line_visible = band_kwargs['upper_line_visible']
-        self.middle_line_visible = band_kwargs['middle_line_visible']
-        self.lower_line_visible = band_kwargs['lower_line_visible']
-        self.upper_fill_color = band_kwargs['upper_fill_color']
-        self.lower_fill_color = band_kwargs['lower_fill_color']
-        self.line_type = band_kwargs['line_type']
-        self.crosshair_marker_visible = band_kwargs['crosshair_marker_visible']
-        self.crosshair_marker_radius = band_kwargs['crosshair_marker_radius']
-        self.crosshair_marker_border_color = band_kwargs['crosshair_marker_border_color']
-        self.crosshair_marker_background_color = band_kwargs['crosshair_marker_background_color']
-        self.crosshair_marker_border_width = band_kwargs['crosshair_marker_border_width']
-        self.last_price_animation = band_kwargs['last_price_animation']
+        self.upper_line_color = band_kwargs["upper_line_color"]
+        self.middle_line_color = band_kwargs["middle_line_color"]
+        self.lower_line_color = band_kwargs["lower_line_color"]
+        self.upper_line_width = band_kwargs["upper_line_width"]
+        self.middle_line_width = band_kwargs["middle_line_width"]
+        self.lower_line_width = band_kwargs["lower_line_width"]
+        self.upper_line_style = band_kwargs["upper_line_style"]
+        self.middle_line_style = band_kwargs["middle_line_style"]
+        self.lower_line_style = band_kwargs["lower_line_style"]
+        self.upper_line_visible = band_kwargs["upper_line_visible"]
+        self.middle_line_visible = band_kwargs["middle_line_visible"]
+        self.lower_line_visible = band_kwargs["lower_line_visible"]
+        self.upper_fill_color = band_kwargs["upper_fill_color"]
+        self.lower_fill_color = band_kwargs["lower_fill_color"]
+        self.line_type = band_kwargs["line_type"]
+        self.crosshair_marker_visible = band_kwargs["crosshair_marker_visible"]
+        self.crosshair_marker_radius = band_kwargs["crosshair_marker_radius"]
+        self.crosshair_marker_border_color = band_kwargs["crosshair_marker_border_color"]
+        self.crosshair_marker_background_color = band_kwargs["crosshair_marker_background_color"]
+        self.crosshair_marker_border_width = band_kwargs["crosshair_marker_border_width"]
+        self.last_price_animation = band_kwargs["last_price_animation"]
 
     @property
     def chart_type(self) -> ChartType:
@@ -220,7 +227,7 @@ class BandSeries(Series):
         """
         # Validate pane configuration
         self._validate_pane_config()
-        
+
         # Get base configuration
         config = {
             "type": "band",

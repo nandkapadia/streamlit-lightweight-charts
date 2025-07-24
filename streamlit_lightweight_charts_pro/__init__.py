@@ -55,8 +55,8 @@ License: MIT
 
 # Import core components
 from streamlit_lightweight_charts_pro.charts import (
-    ChartBuilder,
     Chart,
+    ChartBuilder,
     create_chart,
 )
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
@@ -76,7 +76,6 @@ from streamlit_lightweight_charts_pro.data import (
     OhlcvData,
     SingleValueData,
 )
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, ColumnNames
 from streamlit_lightweight_charts_pro.data.annotation import (
     AnnotationLayer,
     AnnotationManager,
@@ -94,6 +93,7 @@ from streamlit_lightweight_charts_pro.data.trade import (
 # Import logging configuration
 from streamlit_lightweight_charts_pro.logging_config import get_logger, setup_logging
 from streamlit_lightweight_charts_pro.type_definitions import ChartType, LineStyle, MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames, MarkerShape
 
 # Version information
 __version__ = "0.1.0"

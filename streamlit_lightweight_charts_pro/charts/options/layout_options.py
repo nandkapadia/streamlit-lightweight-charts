@@ -12,16 +12,21 @@ Example:
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from streamlit_lightweight_charts_pro.type_definitions import Background
-from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle, HorzAlign, VertAlign
+from streamlit_lightweight_charts_pro.type_definitions.enums import HorzAlign, LineStyle, VertAlign
 
 
 class GridLineOptions:
     """Grid line configuration."""
 
-    def __init__(self, color: str = "#e1e3e6", style: Union[int, LineStyle] = LineStyle.SOLID, visible: bool = False):
+    def __init__(
+        self,
+        color: str = "#e1e3e6",
+        style: Union[int, LineStyle] = LineStyle.SOLID,
+        visible: bool = False,
+    ):
         self.color = color
         # Accept both int and Enum for style
         if isinstance(style, int):
@@ -87,6 +92,7 @@ class PaneOptions:
             d["enableResize"] = self.enable_resize
         return d
 
+
 @dataclass
 class LayoutOptions:
     """Layout configuration for chart."""
@@ -145,9 +151,14 @@ class LayoutOptions:
         """
         Set pane options for the chart layout.
 
-        You can pass either a PaneOptions instance or keyword arguments for separator_color, separator_hover_color, and enable_resize.
+        You can pass either a PaneOptions instance or keyword arguments for separator_color,
+        separator_hover_color, and enable_resize.
         Example:
-            layout.set_pane_options(separator_color="#f22c3d", separator_hover_color="rgba(255, 0, 0, 0.1)", enable_resize=False)
+            layout.set_pane_options(
+                separator_color="#f22c3d",
+                separator_hover_color="rgba(255, 0, 0, 0.1)",
+                enable_resize=False,
+            )
         """
         if len(kwargs) == 1 and isinstance(list(kwargs.values())[0], PaneOptions):
             self.panes = list(kwargs.values())[0]
@@ -159,7 +170,15 @@ class LayoutOptions:
 class WatermarkOptions:
     """Watermark configuration."""
 
-    def __init__(self, visible: bool = False, text: str = "", font_size: int = 48, horz_align: Union[str, HorzAlign] = HorzAlign.CENTER, vert_align: Union[str, VertAlign] = VertAlign.CENTER, color: str = "rgba(171, 71, 188, 0.3)"):
+    def __init__(
+        self,
+        visible: bool = False,
+        text: str = "",
+        font_size: int = 48,
+        horz_align: Union[str, HorzAlign] = HorzAlign.CENTER,
+        vert_align: Union[str, VertAlign] = VertAlign.CENTER,
+        color: str = "rgba(171, 71, 188, 0.3)",
+    ):
         self.visible = visible
         self.text = text
         self.font_size = font_size

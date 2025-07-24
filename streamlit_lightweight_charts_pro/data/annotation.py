@@ -33,15 +33,17 @@ Example:
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
-from streamlit_lightweight_charts_pro.type_definitions.enums import AnnotationType, AnnotationPosition
+from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    AnnotationPosition,
+    AnnotationType,
+)
 
 # Initialize logger
 logger = get_logger("data.annotation")
@@ -90,23 +92,24 @@ class Annotation:
     show_time: bool = False
     tooltip: Optional[str] = None
 
-    def __init__(self,
-                 time: Union[pd.Timestamp, datetime, str, int, float],
-                 price: float,
-                 text: str,
-                 annotation_type: Union[str, AnnotationType] = AnnotationType.TEXT,
-                 position: Union[str, AnnotationPosition] = AnnotationPosition.ABOVE,
-                 color: str = "#2196F3",
-                 background_color: str = "rgba(255, 255, 255, 0.9)",
-                 font_size: int = 12,
-                 font_weight: str = "normal",
-                 text_color: str = "#000000",
-                 border_color: str = "#CCCCCC",
-                 border_width: int = 1,
-                 opacity: float = 1.0,
-                 show_time: bool = False,
-                 tooltip: Optional[str] = None,
-                 ):
+    def __init__(
+        self,
+        time: Union[pd.Timestamp, datetime, str, int, float],
+        price: float,
+        text: str,
+        annotation_type: Union[str, AnnotationType] = AnnotationType.TEXT,
+        position: Union[str, AnnotationPosition] = AnnotationPosition.ABOVE,
+        color: str = "#2196F3",
+        background_color: str = "rgba(255, 255, 255, 0.9)",
+        font_size: int = 12,
+        font_weight: str = "normal",
+        text_color: str = "#000000",
+        border_color: str = "#CCCCCC",
+        border_width: int = 1,
+        opacity: float = 1.0,
+        show_time: bool = False,
+        tooltip: Optional[str] = None,
+    ):
         # Convert time to UTC timestamp for consistent storage
         self._timestamp = to_utc_timestamp(time)
 
@@ -167,7 +170,7 @@ class Annotation:
         return self._timestamp
 
     @property
-    def datetime(self) -> pd.Timestamp:
+    def datetime_value(self) -> pd.Timestamp:
         """
         Get time as pandas Timestamp.
 
@@ -552,7 +555,9 @@ class AnnotationManager:
         self.layers.clear()
         return self
 
-    def add_annotation(self, annotation: Annotation, layer_name: str = "default") -> "AnnotationManager":
+    def add_annotation(
+        self, annotation: Annotation, layer_name: str = "default"
+    ) -> "AnnotationManager":
         """
         Add annotation to a specific layer.
 
@@ -573,7 +578,7 @@ class AnnotationManager:
         """
         if layer_name not in self.layers:
             self.create_layer(layer_name)
-        
+
         self.layers[layer_name].add_annotation(annotation)
         return self
 

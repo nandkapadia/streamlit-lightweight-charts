@@ -25,7 +25,7 @@ Example:
 
 from typing import Any, List, Optional
 
-from streamlit_lightweight_charts_pro.data.annotation import Annotation
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
@@ -35,7 +35,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
     HistogramSeries,
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.charts.chart import Chart
+from streamlit_lightweight_charts_pro.data.annotation import Annotation
 
 
 class ChartBuilder:
@@ -235,12 +235,24 @@ class ChartBuilder:
         # Remove baseline-specific kwargs before passing to BaselineSeries
         baseline_kwargs = {}
         for key in [
-            "top_line_color", "bottom_line_color", "top_fill_color1", "top_fill_color2",
-            "bottom_fill_color1", "bottom_fill_color2", "base_value",
-            "line_width", "line_style", "line_visible", "point_markers_visible",
-            "point_markers_radius", "crosshair_marker_visible", "crosshair_marker_radius",
-            "crosshair_marker_border_color", "crosshair_marker_background_color",
-            "crosshair_marker_border_width", "last_price_animation"
+            "top_line_color",
+            "bottom_line_color",
+            "top_fill_color1",
+            "top_fill_color2",
+            "bottom_fill_color1",
+            "bottom_fill_color2",
+            "base_value",
+            "line_width",
+            "line_style",
+            "line_visible",
+            "point_markers_visible",
+            "point_markers_radius",
+            "crosshair_marker_visible",
+            "crosshair_marker_radius",
+            "crosshair_marker_border_color",
+            "crosshair_marker_background_color",
+            "crosshair_marker_border_width",
+            "last_price_animation",
         ]:
             if key in kwargs:
                 baseline_kwargs[key] = kwargs.pop(key)
@@ -437,7 +449,7 @@ class ChartBuilder:
         self.annotations.extend(annotations)
         return self
 
-    def build(self) -> Chart:   
+    def build(self) -> Chart:
         """
         Build and return the chart.
 
@@ -460,9 +472,7 @@ class ChartBuilder:
         if not self.series:
             raise ValueError("At least one series must be added to the chart")
 
-        return Chart(
-            series=self.series, options=self.options, annotations=self.annotations
-        )
+        return Chart(series=self.series, options=self.options, annotations=self.annotations)
 
 
 def create_chart() -> ChartBuilder:

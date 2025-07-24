@@ -35,13 +35,7 @@ from streamlit_lightweight_charts_pro.logging_config import get_logger
 _component_func: Optional[Callable[..., Any]] = None
 
 # Initialize logger
-try:
-    logger = get_logger("component")
-except Exception:
-    class DummyLogger:
-        def warning(self, msg):
-            pass
-    logger = DummyLogger()
+logger = get_logger("component")
 
 # Determine if we're in a release build or development
 # Set to True for production builds, False for development

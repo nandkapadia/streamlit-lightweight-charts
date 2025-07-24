@@ -2,10 +2,11 @@
 
 import pandas as pd
 
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, LineSeries
-from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
 from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data import OhlcData, SingleValueData, create_text_annotation
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames
 
 
 class TestComponentIntegration:
@@ -37,7 +38,7 @@ class TestComponentIntegration:
 
     def test_component_rendering_basic(self):
         """Test basic chart rendering configuration."""
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
         config = chart.to_frontend_config()
 
         # Test that configuration is properly structured
@@ -53,7 +54,7 @@ class TestComponentIntegration:
 
     def test_component_rendering_with_height_width(self):
         """Test chart rendering with custom height and width."""
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
         chart.update_options(height=600, width=800)
         config = chart.to_frontend_config()
 
@@ -64,19 +65,20 @@ class TestComponentIntegration:
 
     def test_component_rendering_with_annotations(self):
         """Test chart rendering with annotations."""
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
         annotation = create_text_annotation("2024-01-01", 100, "Test")
         chart.add_annotation(annotation)
         config = chart.to_frontend_config()
 
         # Test that annotations are properly included
         annotations = config["charts"][0]["annotations"]
-        assert len(annotations) == 1
-        assert annotations[0]["name"] == "default"
+        assert "layers" in annotations
+        assert "default" in annotations["layers"]
+        assert len(annotations["layers"]["default"]["annotations"]) == 1
 
     def test_component_rendering_multiple_series(self):
         """Test chart rendering with multiple series."""
-        chart = SinglePaneChart(series=[self.line_series, self.candlestick_series])
+        chart = Chart(series=[self.line_series, self.candlestick_series])
         config = chart.to_frontend_config()
 
         # Test that multiple series are properly included
@@ -87,7 +89,7 @@ class TestComponentIntegration:
 
     def test_component_rendering_with_custom_options(self):
         """Test chart rendering with custom chart options."""
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
         chart.update_options(height=500, width=700, auto_size=True)
         config = chart.to_frontend_config()
 
@@ -100,11 +102,14 @@ class TestComponentIntegration:
     def test_component_rendering_with_dataframe_series(self):
         """Test chart rendering with DataFrame series."""
         df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "close": [100, 105, 110]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.CLOSE: [100, 105, 110],
+            }
         )
 
         series = LineSeries(df, color="#ff0000")
-        chart = SinglePaneChart(series=series)
+        chart = Chart(series=series)
         config = chart.to_frontend_config()
 
         # Test that DataFrame series is properly processed
@@ -115,7 +120,7 @@ class TestComponentIntegration:
     def test_component_rendering_error_handling(self):
         """Test chart rendering error handling."""
         # Test with empty series
-        chart = SinglePaneChart(series=[])
+        chart = Chart(series=[])
         config = chart.to_frontend_config()
 
         # Should handle empty series gracefully
@@ -125,9 +130,13 @@ class TestComponentIntegration:
 
     def test_component_rendering_large_dataset(self):
         """Test chart rendering with large dataset."""
-        large_data = [SingleValueData(f"2024-01-{i:02d}", 100 + i) for i in range(1, 1001)]
+        import pandas as pd
+
+        # Generate 1000 valid consecutive dates starting from 2024-01-01
+        dates = pd.date_range(start="2024-01-01", periods=1000, freq="D")
+        large_data = [SingleValueData(str(date.date()), 100 + i) for i, date in enumerate(dates)]
         large_series = LineSeries(large_data, color="#ff0000")
-        chart = SinglePaneChart(series=large_series)
+        chart = Chart(series=large_series)
         config = chart.to_frontend_config()
 
         # Test that large dataset is properly processed
@@ -139,7 +148,7 @@ class TestComponentIntegration:
     def test_component_rendering_complex_configuration(self):
         """Test chart rendering with complex configuration."""
         chart = (
-            SinglePaneChart(series=self.line_series)
+            Chart(series=self.line_series)
             .add_series(self.candlestick_series)
             .update_options(height=600, width=800, auto_size=True)
             .add_annotation(create_text_annotation("2024-01-01", 100, "Start"))
@@ -153,7 +162,9 @@ class TestComponentIntegration:
 
         chart_config = config["charts"][0]
         assert len(chart_config["series"]) == 2
-        assert len(chart_config["annotations"]) == 1
+        assert "layers" in chart_config["annotations"]
+        assert "default" in chart_config["annotations"]["layers"]
+        assert len(chart_config["annotations"]["layers"]["default"]["annotations"]) == 1
 
         chart_options = chart_config["chart"]
         assert chart_options["height"] == 600
@@ -162,7 +173,7 @@ class TestComponentIntegration:
 
     def test_component_rendering_with_empty_series(self):
         """Test chart rendering with empty series."""
-        chart = SinglePaneChart(series=[])
+        chart = Chart(series=[])
         config = chart.to_frontend_config()
 
         # Should handle empty series gracefully
@@ -174,7 +185,7 @@ class TestComponentIntegration:
         """Test chart rendering performance."""
         import time
 
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
 
         start_time = time.time()
         config = chart.to_frontend_config()
@@ -193,7 +204,7 @@ class TestComponentIntegration:
         process = psutil.Process()
         initial_memory = process.memory_info().rss
 
-        chart = SinglePaneChart(series=self.line_series)
+        chart = Chart(series=self.line_series)
         chart.to_frontend_config()
 
         # Force garbage collection
@@ -211,7 +222,7 @@ class TestComponentIntegration:
             SingleValueData("2024-01-02", 105),
         ]
 
-        chart = SinglePaneChart(series=LineSeries(special_data))
+        chart = Chart(series=LineSeries(special_data))
         annotation = create_text_annotation("2024-01-01", 100, "Test & Special < > \" ' Characters")
         chart.add_annotation(annotation)
         config = chart.to_frontend_config()
@@ -225,7 +236,7 @@ class TestComponentIntegration:
         """Test complete integration workflow."""
         # Create complex chart
         chart = (
-            SinglePaneChart(series=self.line_series)
+            Chart(series=self.line_series)
             .add_series(self.candlestick_series)
             .update_options(height=600, width=800, auto_size=True)
             .add_annotation(create_text_annotation("2024-01-01", 100, "Start"))

@@ -57,7 +57,7 @@ class SingleValueData(BaseData):
             self.time = pd.Timestamp(time)
         elif isinstance(time, (int, float)):
             # Assume UNIX timestamp in seconds
-            self.time = pd.to_datetime(time, unit='s')
+            self.time = pd.to_datetime(time, unit="s")
         elif isinstance(time, str):
             self.time = pd.to_datetime(time)
         else:

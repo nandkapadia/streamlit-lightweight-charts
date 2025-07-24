@@ -22,12 +22,10 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data import Marker
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, ColumnNames
-from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.data import BaseData
+from streamlit_lightweight_charts_pro.data import BaseData, Marker
 from streamlit_lightweight_charts_pro.logging_config import get_logger
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames, MarkerShape
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -506,10 +504,10 @@ class Series(ABC):
     def _validate_pane_config(self):
         """
         Validate pane configuration for the series.
-        
+
         This method ensures that pane_id is properly set based on the overlay setting.
         It should be called by subclasses in their to_dict() method.
-        
+
         Raises:
             ValueError: If overlay is False and pane_id is None.
         """
@@ -533,7 +531,6 @@ class Series(ABC):
         Raises:
             NotImplementedError: If the subclass doesn't implement this method.
         """
-        pass
 
     def get_data_range(self) -> Optional[Dict[str, Union[float, str]]]:
         """

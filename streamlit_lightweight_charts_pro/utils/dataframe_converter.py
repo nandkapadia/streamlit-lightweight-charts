@@ -9,17 +9,20 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 from streamlit_lightweight_charts_pro.data import (
     OhlcData,
     OhlcvData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def df_to_line_data(
-    df: pd.DataFrame, value_column: str = ColumnNames.CLOSE, time_column: Optional[str] = None, color_column: Optional[str] = None
+    df: pd.DataFrame,
+    value_column: str = ColumnNames.CLOSE,
+    time_column: Optional[str] = None,
+    color_column: Optional[str] = None,
 ) -> List[SingleValueData]:
     """
     Convert a pandas DataFrame to line chart data.
@@ -63,12 +66,18 @@ def df_to_line_data(
         # Use DataFrame index as time values
         for timestamp, row in df.iterrows():
             color = row[color_column] if color_column and color_column in row else None
-            data.append(SingleValueData(time=str(timestamp), value=float(row[value_column]), color=color))
+            data.append(
+                SingleValueData(time=str(timestamp), value=float(row[value_column]), color=color)
+            )
     else:
         # Use specified column as time values
         for _, row in df.iterrows():
             color = row[color_column] if color_column and color_column in row else None
-            data.append(SingleValueData(time=str(row[time_column]), value=float(row[value_column]), color=color))
+            data.append(
+                SingleValueData(
+                    time=str(row[time_column]), value=float(row[value_column]), color=color
+                )
+            )
 
     return data
 
@@ -324,7 +333,7 @@ def df_to_data(
         if chart_type == "baseline" and "value_column" not in kwargs:
             kwargs["value_column"] = ColumnNames.VALUE
         return df_to_line_data(df, **kwargs)
-    elif chart_type in ["candlestick", "bar"]:
+    if chart_type in ["candlestick", "bar"]:
         return df_to_ohlc_data(df, **kwargs)
-    else:
-        raise ValueError(f"Unknown chart type: {chart_type}")
+
+    raise ValueError(f"Unknown chart type: {chart_type}")

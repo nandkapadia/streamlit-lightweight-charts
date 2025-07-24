@@ -59,4 +59,4 @@ class BandData(BaseData):
         self.time = time
         self.upper = upper
         self.middle = middle
-        self.lower = lower 
+        self.lower = lower

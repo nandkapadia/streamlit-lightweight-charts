@@ -22,8 +22,10 @@ Example:
 import streamlit as st
 
 from examples.dataSamples import get_dataframe_line_data, get_line_data
-from streamlit_lightweight_charts_pro import AreaSeries, SinglePaneChart, create_chart
+from streamlit_lightweight_charts_pro import AreaSeries, Chart, create_chart
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 from streamlit_lightweight_charts_pro.data import create_text_annotation
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def main():
@@ -77,16 +79,16 @@ def basic_area_chart_example():
     # Create area series
     area_series = AreaSeries(
         data=area_data,
+        price_scale_config=PriceScaleOptions(visible=True, auto_scale=True),
         line_color="#2196F3",
         top_color="rgba(33, 150, 243, 0.4)",
         bottom_color="rgba(33, 150, 243, 0.0)",
         line_width=2,
-        price_scale_id="right",
     )
 
-    # Create chart with fitContent enabled
-    chart = SinglePaneChart(series=area_series)
-    chart.update_options(fit_content_on_load=True)
+    # Create chart with fitContent enabled and auto-sizing
+    chart = Chart(series=area_series)
+    chart.update_options(fit_content_on_load=True, height=400, auto_size=True)
 
     # Render chart
     chart.render(key="basic_area_chart")
@@ -124,7 +126,7 @@ def method_chaining_example():
 
     # Create chart with method chaining
     chart = (
-        SinglePaneChart(
+        Chart(
             series=AreaSeries(
                 data=area_data,
                 line_color="#4CAF50",
@@ -134,11 +136,12 @@ def method_chaining_example():
             )
         )
         .update_options(
-            height=400, 
-            width=600, 
-            watermark="Sample Area Data", 
-            legend=True, 
-            fit_content_on_load=True
+            height=400,
+            width=None,
+            watermark="Sample Area Data",
+            legend=True,
+            fit_content_on_load=True,
+            auto_size=True,
         )
         .add_annotation(
             create_text_annotation(
@@ -183,14 +186,14 @@ def method_chaining_example():
     st.code(
         """
 # Create chart with method chaining
-chart = (SinglePaneChart(series=AreaSeries(
+chart = (Chart(series=AreaSeries(
     data=area_data,
     line_color="#4CAF50",
     top_color="rgba(76, 175, 80, 0.6)",
     bottom_color="rgba(76, 175, 80, 0.0)",
     line_width=3
 ))
-.update_options(height=400, width=600, watermark="Sample Area Data", legend=True, fit_content_on_load=True)
+.update_options(height=400, width=None, watermark="Sample Area Data", legend=True, fit_content_on_load=True, auto_size=True)
 .add_annotation(
     create_text_annotation(
         "2018-12-25", 27.32, "Peak Value",
@@ -239,16 +242,20 @@ def dataframe_example():
         create_chart()
         .add_area_series(
             df,
-            column_mapping={"time": "datetime", "value": "value"},
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
             line_color="#FF9800",
             top_color="rgba(255, 152, 0, 0.5)",
             bottom_color="rgba(255, 152, 0, 0.0)",
             line_width=2,
         )
         .set_height(400)
-        .set_width(600)
+        .set_width(None)
         .set_watermark("DataFrame Area Chart")
         .set_fit_content_on_load(True)
+        .set_auto_size(True)
         .build()
     )
 

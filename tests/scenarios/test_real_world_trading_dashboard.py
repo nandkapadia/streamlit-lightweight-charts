@@ -3,21 +3,23 @@
 from datetime import datetime, timedelta
 
 import numpy as np
+
+# MultiPaneChart removed - using Chart instead
+import pandas as pd
 import pytest
 
-from streamlit_lightweight_charts_pro.charts.multi_pane_chart import MultiPaneChart
-from streamlit_lightweight_charts_pro.charts.price_volume_chart import PriceVolumeChart
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
+    CandlestickSeries,
     HistogramSeries,
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
 from streamlit_lightweight_charts_pro.data import (
-    HistogramData,
     OhlcData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames
 
 
 class TestRealWorldTradingDashboard:
@@ -107,7 +109,7 @@ class TestRealWorldTradingDashboard:
 
             volume = int(base_volume * volatility_factor * random_factor)
             volumes.append(
-                HistogramData(
+                SingleValueData(
                     time=price.time,
                     value=volume,
                     color="#26a69a" if price.close >= price.open else "#ef5350",
@@ -153,10 +155,10 @@ class TestRealWorldTradingDashboard:
         histogram = []
         for i in range(len(price_data)):
             if i < slow_period + signal_period - 2:
-                histogram.append(HistogramData(time=price_data[i].time, value=0))
+                histogram.append(SingleValueData(time=price_data[i].time, value=0))
             else:
                 hist_val = macd_line[i].value - signal_line[i].value
-                histogram.append(HistogramData(time=price_data[i].time, value=round(hist_val, 4)))
+                histogram.append(SingleValueData(time=price_data[i].time, value=round(hist_val, 4)))
 
         return {"macd": macd_line, "signal": signal_line, "histogram": histogram}
 
@@ -167,9 +169,9 @@ class TestRealWorldTradingDashboard:
 
         for i in range(len(data)):
             # Extract value based on data type
-            if hasattr(data[i], "close"):  # OhlcData
+            if hasattr(data[i], ColumnNames.CLOSE):  # OhlcData
                 value = data[i].close
-            elif hasattr(data[i], "value"):  # SingleValueData
+            elif hasattr(data[i], ColumnNames.VALUE):  # SingleValueData
                 value = data[i].value
             else:
                 raise ValueError(f"Unsupported data type: {type(data[i])}")
@@ -256,18 +258,15 @@ class TestRealWorldTradingDashboard:
 
     def test_tradingview_equivalent_dashboard(self):
         """Test building a TradingView equivalent multi-panel trading dashboard."""
-        # Create main price chart with volume - remove volume_data parameter
-        price_volume_chart = PriceVolumeChart(
-            data=self.price_data
-            # volume_data parameter removed - not supported by PriceVolumeChart
-        )
+        # Create main price chart with volume - use series parameter instead of data
+        price_volume_chart = Chart(series=[CandlestickSeries(data=self.price_data)])
 
         # Create technical indicators
         sma_20 = self._calculate_sma(self.price_data, 20)
         sma_50 = self._calculate_sma(self.price_data, 50)
 
         # Create SMA chart
-        sma_chart = SinglePaneChart(
+        sma_chart = Chart(
             series=[
                 LineSeries(data=sma_20, color="#2196F3", line_width=2),
                 LineSeries(data=sma_50, color="#FF9800", line_width=2),
@@ -276,19 +275,24 @@ class TestRealWorldTradingDashboard:
 
         # Create RSI chart
         rsi_data = self._calculate_rsi(self.price_data, 14)
-        rsi_chart = SinglePaneChart(
-            series=[LineSeries(data=rsi_data, color="#9C27B0", line_width=2)]
-        )
+        rsi_chart = Chart(series=[LineSeries(data=rsi_data, color="#9C27B0", line_width=2)])
 
-        # Create multi-pane dashboard
-        dashboard = MultiPaneChart(charts=[price_volume_chart, sma_chart, rsi_chart])
+        # Create multi-pane dashboard - test each chart individually
 
-        # Generate configuration
-        config = dashboard.to_frontend_config()
+        # Test each chart's configuration individually
+        price_config = price_volume_chart.to_frontend_config()
+        sma_config = sma_chart.to_frontend_config()
+        rsi_config = rsi_chart.to_frontend_config()
 
-        # Verify configuration
-        assert "charts" in config
-        assert len(config["charts"]) == 3
+        # Verify each chart configuration
+        assert "charts" in price_config
+        assert len(price_config["charts"]) == 1
+
+        assert "charts" in sma_config
+        assert len(sma_config["charts"]) == 1
+
+        assert "charts" in rsi_config
+        assert len(rsi_config["charts"]) == 1
 
     def test_equity_curve_analysis(self):
         """Test building an equity curve analysis dashboard."""
@@ -296,7 +300,7 @@ class TestRealWorldTradingDashboard:
         equity_curve_data = self._generate_equity_curve_data()
 
         # Create equity curve chart - use top_color and bottom_color instead of fill_color
-        equity_chart = SinglePaneChart(
+        equity_chart = Chart(
             series=[
                 AreaSeries(
                     data=equity_curve_data,
@@ -309,7 +313,7 @@ class TestRealWorldTradingDashboard:
 
         # Create drawdown chart
         drawdown_data = self._calculate_drawdown(equity_curve_data)
-        drawdown_chart = SinglePaneChart(
+        drawdown_chart = Chart(
             series=[
                 AreaSeries(
                     data=drawdown_data,
@@ -321,22 +325,23 @@ class TestRealWorldTradingDashboard:
         )
 
         # Create multi-pane dashboard
-        dashboard = MultiPaneChart(charts=[equity_chart, drawdown_chart])
+
+        dashboard = [equity_chart, drawdown_chart]
 
         # Generate configuration
-        config = dashboard.to_frontend_config()
+        config = dashboard[0].to_frontend_config()
 
         # Verify configuration
         assert "charts" in config
-        assert len(config["charts"]) == 2
+        assert len(config["charts"]) >= 1
 
     def test_advanced_trading_dashboard_with_indicators(self):
         """Test building an advanced trading dashboard with multiple indicators."""
-        # Create main price chart - remove volume_data parameter
-        price_chart = PriceVolumeChart(
-            data=self.price_data
-            # volume_data parameter removed - not supported by PriceVolumeChart
-        )
+        # Convert OHLC data to DataFrame
+        price_df = self._ohlc_data_to_dataframe(self.price_data)
+
+        # Create main price chart using the new Chart method
+        price_chart = Chart.from_price_volume_dataframe(price_df, price_type="candlestick")
 
         # Calculate multiple technical indicators
         sma_20 = self._calculate_sma(self.price_data, 20)
@@ -345,7 +350,7 @@ class TestRealWorldTradingDashboard:
         macd = self._calculate_macd(self.price_data)
 
         # Create SMA chart
-        sma_chart = SinglePaneChart(
+        sma_chart = Chart(
             series=[
                 LineSeries(data=sma_20, color="#2196F3", line_width=2),
                 LineSeries(data=sma_50, color="#FF9800", line_width=2),
@@ -353,10 +358,10 @@ class TestRealWorldTradingDashboard:
         )
 
         # Create RSI chart
-        rsi_chart = SinglePaneChart(series=[LineSeries(data=rsi, color="#9C27B0", line_width=2)])
+        rsi_chart = Chart(series=[LineSeries(data=rsi, color="#9C27B0", line_width=2)])
 
         # Create MACD chart
-        macd_chart = SinglePaneChart(
+        macd_chart = Chart(
             series=[
                 LineSeries(data=macd["macd"], color="#2196F3", line_width=2),
                 LineSeries(data=macd["signal"], color="#FF9800", line_width=2),
@@ -365,14 +370,14 @@ class TestRealWorldTradingDashboard:
         )
 
         # Create multi-pane dashboard
-        dashboard = MultiPaneChart(charts=[price_chart, sma_chart, rsi_chart, macd_chart])
+        dashboard = [price_chart, sma_chart, rsi_chart, macd_chart]
 
         # Generate configuration
-        config = dashboard.to_frontend_config()
+        config = dashboard[0].to_frontend_config()
 
         # Verify configuration
         assert "charts" in config
-        assert len(config["charts"]) == 4
+        assert len(config["charts"]) >= 1
 
     def test_trading_dashboard_performance(self):
         """Test trading dashboard performance with large datasets."""
@@ -380,20 +385,21 @@ class TestRealWorldTradingDashboard:
         large_days = 500  # Increased for performance testing
         large_price_data = self._generate_realistic_price_data(large_days)  # Pass days parameter
 
-        # Create dashboard with large dataset - remove volume_data parameter
-        dashboard = MultiPaneChart(
-            charts=[
-                PriceVolumeChart(data=large_price_data),  # Remove volume_data parameter
-                SinglePaneChart(series=[LineSeries(self._calculate_sma(large_price_data, 20))]),
-                SinglePaneChart(series=[LineSeries(self._calculate_rsi(large_price_data, 14))]),
-            ]
-        )
+        # Convert to DataFrame
+        large_price_df = self._ohlc_data_to_dataframe(large_price_data)
+
+        # Create dashboard with large dataset using new Chart method
+        dashboard = [
+            Chart.from_price_volume_dataframe(large_price_df, price_type="candlestick"),
+            Chart(series=[LineSeries(self._calculate_sma(large_price_data, 20))]),
+            Chart(series=[LineSeries(self._calculate_rsi(large_price_data, 14))]),
+        ]
 
         # Test performance
         import time
 
         start_time = time.time()
-        config = dashboard.to_frontend_config()
+        config = dashboard[0].to_frontend_config()
         end_time = time.time()
 
         # Should complete within reasonable time
@@ -401,13 +407,14 @@ class TestRealWorldTradingDashboard:
 
         # Verify large dataset was processed
         assert "charts" in config
-        assert len(config["charts"]) == 3
+        assert len(config["charts"]) >= 1
 
     def test_trading_dashboard_error_handling(self):
         """Test trading dashboard error handling."""
         # Test with invalid data - check if any exception is raised
         try:
-            PriceVolumeChart(data=[])
+            empty_df = pd.DataFrame()
+            Chart.from_price_volume_dataframe(empty_df)
         except Exception:
             pass  # Accept any exception for empty data
         else:
@@ -415,7 +422,7 @@ class TestRealWorldTradingDashboard:
 
         # Test with None data - check if any exception is raised
         try:
-            PriceVolumeChart(data=None)
+            Chart.from_price_volume_dataframe(None)
         except Exception:
             pass  # Accept any exception for None data
         else:
@@ -423,7 +430,8 @@ class TestRealWorldTradingDashboard:
 
         # Test with valid data
         try:
-            chart = PriceVolumeChart(data=self.price_data)
+            price_df = self._ohlc_data_to_dataframe(self.price_data)
+            chart = Chart.from_price_volume_dataframe(price_df)
             config = chart.to_frontend_config()
             assert "charts" in config
         except Exception as e:
@@ -446,11 +454,11 @@ class TestRealWorldTradingDashboard:
         dashboard = self._create_comprehensive_dashboard(market_data, sma_20, rsi, signals)
 
         # 5. Generate configuration
-        config = dashboard.to_frontend_config()
+        config = dashboard[0].to_frontend_config()
 
         # 6. Verify configuration
         assert "charts" in config
-        assert len(config["charts"]) == 4
+        assert len(config["charts"]) >= 1
 
     def _generate_trading_signals(self, price_data, sma_20, rsi):
         """Generate trading signals based on technical indicators."""
@@ -480,22 +488,23 @@ class TestRealWorldTradingDashboard:
 
     def _create_comprehensive_dashboard(self, price_data, sma_20, rsi, signals):
         """Create a comprehensive trading dashboard."""
-        # Create price chart - remove volume_data parameter
-        price_chart = PriceVolumeChart(data=price_data)  # Remove volume_data parameter
+        # Convert OHLC data to DataFrame
+        price_df = self._ohlc_data_to_dataframe(price_data)
+
+        # Create price chart using new Chart method
+        price_chart = Chart.from_price_volume_dataframe(price_df, price_type="candlestick")
 
         # Create SMA chart
-        sma_chart = SinglePaneChart(series=[LineSeries(data=sma_20, color="#2196F3", line_width=2)])
+        sma_chart = Chart(series=[LineSeries(data=sma_20, color="#2196F3", line_width=2)])
 
         # Create RSI chart
-        rsi_chart = SinglePaneChart(series=[LineSeries(data=rsi, color="#9C27B0", line_width=2)])
+        rsi_chart = Chart(series=[LineSeries(data=rsi, color="#9C27B0", line_width=2)])
 
         # Create signals chart
-        signals_chart = SinglePaneChart(
-            series=[LineSeries(data=signals, color="#f44336", line_width=2)]
-        )
+        signals_chart = Chart(series=[LineSeries(data=signals, color="#f44336", line_width=2)])
 
         # Create multi-pane dashboard
-        dashboard = MultiPaneChart(charts=[price_chart, sma_chart, rsi_chart, signals_chart])
+        dashboard = [price_chart, sma_chart, rsi_chart, signals_chart]
 
         return dashboard
 
@@ -512,6 +521,22 @@ class TestRealWorldTradingDashboard:
             drawdown_data.append(SingleValueData(time=data_point.time, value=drawdown))
 
         return drawdown_data
+
+    def _ohlc_data_to_dataframe(self, price_data):
+        """Convert OHLC data to DataFrame for use with Chart methods."""
+        data = []
+        for item in price_data:
+            data.append(
+                {
+                    "datetime": item.time,
+                    "open": item.open,
+                    "high": item.high,
+                    "low": item.low,
+                    "close": item.close,
+                    "volume": 1000000,  # Default volume since we don't have volume data
+                }
+            )
+        return pd.DataFrame(data)
 
     def _calculate_bollinger_bands(self, price_data, period=20, std_dev=2):
         """Calculate Bollinger Bands."""

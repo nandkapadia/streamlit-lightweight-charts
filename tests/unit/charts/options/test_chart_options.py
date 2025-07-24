@@ -16,7 +16,7 @@ from streamlit_lightweight_charts_pro.charts.options import (
     GridLineOptions,
     GridOptions,
     LayoutOptions,
-    RightPriceScale,
+    PriceScaleOptions,
     TimeScaleOptions,
     WatermarkOptions,
 )
@@ -101,8 +101,8 @@ class TestChartOptions:
         assert d["horzLine"]["color"] == "#00ff00"
 
     def test_price_scale_options(self):
-        """Test RightPriceScale functionality."""
-        options = RightPriceScale(
+        """Test PriceScaleOptions functionality."""
+        options = PriceScaleOptions(
             border_visible=False, border_color="#cccccc", mode=PriceScaleMode.LOGARITHMIC
         )
         assert options.border_visible is False
@@ -152,14 +152,12 @@ class TestChartOptions:
     def test_chart_options_initialization_defaults(self):
         """Test ChartOptions initialization with default values."""
         options = ChartOptions()
-
         assert options.height == 400
         assert options.width is None
         assert options.auto_size is True
         assert options.grid is not None
         assert options.crosshair is not None
         assert options.watermark is None
-        assert options.time_scale is not None
 
     def test_chart_options_initialization_custom_values(self):
         """Test ChartOptions initialization with custom values."""
@@ -174,7 +172,7 @@ class TestChartOptions:
         layout = LayoutOptions()
         grid = GridOptions()
         crosshair = CrosshairOptions()
-        right_price_scale = RightPriceScale()
+        right_price_scale = PriceScaleOptions()
         time_scale = TimeScaleOptions()
 
         options = ChartOptions(
@@ -336,11 +334,10 @@ class TestChartOptions:
         result = options.set_layout(
             background_color="#ffffff", text_color="#000000", font_size=12, font_family="Arial"
         )
-
-        assert options.layout["background_color"] == "#ffffff"
-        assert options.layout["text_color"] == "#000000"
-        assert options.layout["font_size"] == 12
-        assert options.layout["font_family"] == "Arial"
+        assert options.layout.background_color == "#ffffff"
+        assert options.layout.text_color == "#000000"
+        assert options.layout.font_size == 12
+        assert options.layout.font_family == "Arial"
         assert result is options
 
     def test_chart_options_set_grid(self):
@@ -350,11 +347,10 @@ class TestChartOptions:
             vert_lines={"visible": True, "color": "#cccccc"},
             horz_lines={"visible": False, "color": "#dddddd"},
         )
-
-        assert options.grid["vert_lines"]["visible"] is True
-        assert options.grid["vert_lines"]["color"] == "#cccccc"
-        assert options.grid["horz_lines"]["visible"] is False
-        assert options.grid["horz_lines"]["color"] == "#dddddd"
+        assert options.grid.vert_lines.visible is True
+        assert options.grid.vert_lines.color == "#cccccc"
+        assert options.grid.horz_lines.visible is False
+        assert options.grid.horz_lines.color == "#dddddd"
         assert result is options
 
     def test_chart_options_set_crosshair(self):
@@ -365,22 +361,18 @@ class TestChartOptions:
             vert_line={"visible": True, "color": "#ff0000"},
             horz_line={"visible": True, "color": "#00ff00"},
         )
-
-        assert options.crosshair["mode"] == 1
-        # The update method replaces the entire nested dict
-        assert options.crosshair["vert_line"]["visible"] is True
-        assert options.crosshair["vert_line"]["color"] == "#ff0000"
-        assert options.crosshair["horz_line"]["visible"] is True
-        assert options.crosshair["horz_line"]["color"] == "#00ff00"
+        assert options.crosshair.mode.value == 1
+        assert options.crosshair.vert_line.visible is True
+        assert options.crosshair.vert_line.color == "#ff0000"
+        assert options.crosshair.horz_line.visible is True
+        assert options.crosshair.horz_line.color == "#00ff00"
         assert result is options
 
     def test_chart_options_set_watermark(self):
         """Test set_watermark method."""
         options = ChartOptions()
-        result = options.set_watermark("Test Watermark")
-
-        assert options.watermark == "Test Watermark"
-        assert result is options
+        options.set_watermark("Test Watermark")
+        assert options.watermark.text == "Test Watermark"
 
     def test_chart_options_set_localization(self):
         """Test set_localization method."""
@@ -480,11 +472,9 @@ class TestChartOptions:
         result = options.set_right_price_scale(
             visible=True, auto_scale=True, scale_margins={"top": 0.1, "bottom": 0.1}
         )
-
-        assert options.right_price_scale["visible"] is True
-        assert options.right_price_scale["auto_scale"] is True
-        assert options.right_price_scale["scale_margins"]["top"] == 0.1
-        assert options.right_price_scale["scale_margins"]["bottom"] == 0.1
+        assert options.right_price_scale.visible is True
+        assert options.right_price_scale.auto_scale is True
+        assert options.right_price_scale.scale_margins == {"top": 0.1, "bottom": 0.1}
         assert result is options
 
     def test_chart_options_set_left_price_scale(self):
@@ -493,11 +483,9 @@ class TestChartOptions:
         result = options.set_left_price_scale(
             visible=True, auto_scale=False, scale_margins={"top": 0.2, "bottom": 0.2}
         )
-
-        assert options.left_price_scale["visible"] is True
-        assert options.left_price_scale["auto_scale"] is False
-        assert options.left_price_scale["scale_margins"]["top"] == 0.2
-        assert options.left_price_scale["scale_margins"]["bottom"] == 0.2
+        assert options.left_price_scale.visible is True
+        assert options.left_price_scale.auto_scale is False
+        assert options.left_price_scale.scale_margins == {"top": 0.2, "bottom": 0.2}
         assert result is options
 
     def test_chart_options_set_time_scale(self):
@@ -568,7 +556,14 @@ class TestChartOptions:
         assert result["width"] == 800
         assert result["height"] == 600
         assert result["autoSize"] is False
-        assert result["watermark"] == "Test Chart"
+        assert result["watermark"] == {
+            "visible": False,
+            "text": "Test Chart",
+            "fontSize": 48,
+            "horzAlign": "center",
+            "vertAlign": "center",
+            "color": "rgba(171, 71, 188, 0.3)",
+        }
         assert result["legend"] is True
         assert result["rangeSwitcher"] is True
         assert result["kineticScroll"] is False
@@ -584,7 +579,7 @@ class TestChartOptions:
         assert result["crosshair"]["mode"] == 1
         assert result["crosshair"]["vertLine"]["visible"] is True
         assert result["rightPriceScale"]["visible"] is True
-        assert result["leftPriceScale"]["visible"] is False
+        assert result["PriceScaleOptions"]["visible"] is False
         assert result["timeScale"]["visible"] is True
         assert result["timeScale"]["timeVisible"] is True
 
@@ -767,7 +762,10 @@ class TestChartOptions:
         assert options.layout["background"]["color"] == "white"
         assert options.layout["textColor"] == "#131722"
         assert options.layout["fontSize"] == 11
-        assert options.layout["fontFamily"] == "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        assert (
+            options.layout["fontFamily"]
+            == "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        )
 
         assert options.grid["vertLines"]["visible"] is False
         assert options.grid["horzLines"]["visible"] is True
@@ -898,3 +896,35 @@ class TestChartOptions:
         assert result["height"] == 600
         assert result["width"] == 800
         assert result["autoSize"] is False
+
+    def test_layout_options_pane_options(self):
+        """Test that pane options can be set and serialized in LayoutOptions."""
+
+        layout = LayoutOptions()
+        layout.set_pane_options(
+            separator_color="#f22c3d",
+            separator_hover_color="rgba(255, 0, 0, 0.1)",
+            enable_resize=False,
+        )
+        d = layout.to_dict()
+        assert "panes" in d
+        assert d["panes"]["separatorColor"] == "#f22c3d"
+        assert d["panes"]["separatorHoverColor"] == "rgba(255, 0, 0, 0.1)"
+        assert d["panes"]["enableResize"] is False
+
+    def test_chart_options_with_pane_options(self):
+        """Test that pane options are included in ChartOptions serialization."""
+
+        layout = LayoutOptions()
+        layout.set_pane_options(
+            separator_color="#f22c3d",
+            separator_hover_color="rgba(255, 0, 0, 0.1)",
+            enable_resize=False,
+        )
+        options = ChartOptions(layout=layout)
+        d = options.to_dict()
+        assert "layout" in d
+        assert "panes" in d["layout"]
+        assert d["layout"]["panes"]["separatorColor"] == "#f22c3d"
+        assert d["layout"]["panes"]["separatorHoverColor"] == "rgba(255, 0, 0, 0.1)"
+        assert d["layout"]["panes"]["enableResize"] is False

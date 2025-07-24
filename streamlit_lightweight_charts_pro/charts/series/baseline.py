@@ -27,19 +27,18 @@ Example:
     )
 """
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List
 
 import pandas as pd
 
+from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
 from streamlit_lightweight_charts_pro.data import SingleValueData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
+    ColumnNames,
     LastPriceAnimationMode,
     LineStyle,
 )
-from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
-from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class BaselineSeries(Series):
@@ -192,7 +191,7 @@ class BaselineSeries(Series):
         """
         # Validate pane configuration
         self._validate_pane_config()
-        
+
         # Base configuration
         config = {
             "type": "baseline",

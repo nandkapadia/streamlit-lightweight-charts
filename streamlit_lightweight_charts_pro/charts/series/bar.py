@@ -25,15 +25,13 @@ Example:
     )
 """
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List
 
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import SingleValueData
-from streamlit_lightweight_charts_pro.type_definitions import ChartType
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
-from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, ColumnNames
 
 
 class BarSeries(Series):
@@ -142,7 +140,7 @@ class BarSeries(Series):
         """
         # Validate pane configuration
         self._validate_pane_config()
-        
+
         # Get base configuration
         config = {
             "type": "bar",

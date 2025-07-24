@@ -12,8 +12,8 @@ from typing import Any, Dict, Optional, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, MarkerPosition
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 
 @dataclass

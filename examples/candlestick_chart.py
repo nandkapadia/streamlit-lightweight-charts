@@ -23,7 +23,8 @@ Example:
 import streamlit as st
 
 from examples.dataSamples import get_candlestick_data, get_dataframe_candlestick_data
-from streamlit_lightweight_charts_pro import CandlestickSeries, SinglePaneChart, create_chart
+from streamlit_lightweight_charts_pro import CandlestickSeries, Chart, create_chart
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 from streamlit_lightweight_charts_pro.data import create_arrow_annotation, create_text_annotation
 
 
@@ -83,12 +84,12 @@ def basic_candlestick_example():
         border_visible=False,  # Hide borders for cleaner look
         wick_up_color="#4CAF50",  # Green wicks for up candles
         wick_down_color="#F44336",  # Red wicks for down candles
-        price_scale_id="right",
+        price_scale_config=PriceScaleOptions(visible=True, auto_scale=True),
     )
 
-    # Create chart with fitContent enabled
-    chart = SinglePaneChart(series=candlestick_series)
-    chart.update_options(fit_content_on_load=True)
+    # Create chart with fitContent enabled and auto-sizing
+    chart = Chart(series=candlestick_series)
+    chart.update_options(fit_content_on_load=True, height=400, auto_size=True)
 
     # Render chart
     chart.render(key="basic_candlestick_chart")
@@ -135,10 +136,11 @@ def method_chaining_example():
             wick_up_color="#4CAF50",
             wick_down_color="#F44336",
         )
-        .set_height(500)
-        .set_width(800)
+        .set_height(400)
+        .set_width(None)
         .set_watermark("OHLC Candlestick Data")
         .set_legend(True)
+        .set_auto_size(True)
         .add_annotation(
             create_text_annotation(
                 "2022-01-19",
@@ -185,7 +187,7 @@ def method_chaining_example():
     st.code(
         """
 # Create chart with method chaining
-chart = (SinglePaneChart(series=CandlestickSeries(
+chart = (Chart(series=CandlestickSeries(
     data=candlestick_data,
     up_color="#4CAF50",
     down_color="#F44336",
@@ -193,9 +195,10 @@ chart = (SinglePaneChart(series=CandlestickSeries(
     wick_up_color="#4CAF50",
     wick_down_color="#F44336"
 ))
-.update_options(height=500, width=800)
+.update_options(height=400, width=None)
 .set_watermark("OHLC Candlestick Data")
 .set_legend(True)
+.set_auto_size(True)
 .add_annotation(
     create_text_annotation(
         "2022-01-19", 9.78, "Support Level",
@@ -256,10 +259,11 @@ def dataframe_example():
             wick_up_color="#4CAF50",
             wick_down_color="#F44336",
         )
-        .set_height(500)
-        .set_width(800)
+        .set_height(400)
+        .set_width(None)
         .set_watermark("DataFrame OHLC Chart")
         .set_legend(True)
+        .set_auto_size(True)
         .add_annotation(
             create_text_annotation(
                 "2022-01-19",
@@ -295,7 +299,7 @@ def dataframe_example():
 df = get_dataframe_candlestick_data()
 
 # Create chart from DataFrame
-chart = (SinglePaneChart(series=CandlestickSeries(
+chart = (Chart(series=CandlestickSeries(
     data=df,
     up_color="#4CAF50",
     down_color="#F44336",
@@ -303,9 +307,10 @@ chart = (SinglePaneChart(series=CandlestickSeries(
     wick_up_color="#4CAF50",
     wick_down_color="#F44336"
 ))
-.update_options(height=500, width=800)
+.update_options(height=400, width=None)
 .set_watermark("DataFrame OHLC Chart")
 .set_legend(True)
+.set_auto_size(True)
 .add_annotation(
     create_text_annotation(
         "2022-01-19", 9.78, "DataFrame Example",
@@ -337,11 +342,11 @@ chart.render(key="dataframe_candlestick_chart")
         """
 # Example DataFrame structure
 df = pd.DataFrame({
-    "datetime": ["2022-01-17", "2022-01-18", "2022-01-19"],
-    "open": [10.0, 9.8, 9.6],
-    "high": [10.2, 10.1, 9.8],
-    "low": [9.7, 9.5, 9.4],
-    "close": [9.8, 9.6, 9.9]
+    ColumnNames.DATETIME: ["2022-01-17", "2022-01-18", "2022-01-19"],
+    ColumnNames.OPEN: [10.0, 9.8, 9.6],
+    ColumnNames.HIGH: [10.2, 10.1, 9.8],
+    ColumnNames.LOW: [9.7, 9.5, 9.4],
+    ColumnNames.CLOSE: [9.8, 9.6, 9.9]
 })
     """,
         language="python",

@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 st.title("📊 Simple Range Switcher Example")
 st.markdown(
@@ -56,12 +56,12 @@ def generate_data():
 
         data.append(
             {
-                "time": date.strftime("%Y-%m-%d"),
-                "open": round(open_price, 2),
-                "high": round(high, 2),
-                "low": round(low, 2),
-                "close": round(close_price, 2),
-                "volume": volume,
+                ColumnNames.TIME: date.strftime("%Y-%m-%d"),
+                ColumnNames.OPEN: round(open_price, 2),
+                ColumnNames.HIGH: round(high, 2),
+                ColumnNames.LOW: round(low, 2),
+                ColumnNames.CLOSE: round(close_price, 2),
+                ColumnNames.VOLUME: volume,
             }
         )
 
@@ -74,7 +74,10 @@ def generate_data():
 data = generate_data()
 
 # Create volume data
-volume_data = [{"time": item["time"], "value": item["volume"]} for item in data]
+volume_data = [
+    {ColumnNames.TIME: item[ColumnNames.TIME], ColumnNames.VALUE: item[ColumnNames.VOLUME]}
+    for item in data
+]
 
 # Chart configuration with range switcher
 chart_options = {
@@ -148,7 +151,7 @@ volume_series = [
         "options": {
             "color": "#26a69a",
             "priceFormat": {
-                "type": "volume",
+                "type": ColumnNames.VOLUME,
             },
             "priceScaleId": "",
         },
@@ -183,13 +186,13 @@ with col1:
 with col2:
     st.metric("Date Range", f"{data[0]['time']} to {data[-1]['time']}")
 with col3:
-    latest_price = data[-1]["close"]
-    prev_price = data[-2]["close"]
+    latest_price = data[-1][ColumnNames.CLOSE]
+    prev_price = data[-2][ColumnNames.CLOSE]
     change = latest_price - prev_price
     change_pct = (change / prev_price) * 100
     st.metric("Latest Price", f"${latest_price:.2f}", f"{change:+.2f} ({change_pct:+.2f}%)")
 with col4:
-    total_volume = sum(d["volume"] for d in data)
+    total_volume = sum(d[ColumnNames.VOLUME] for d in data)
     st.metric("Total Volume", f"{total_volume:,}")
 
 # Show sample data
@@ -200,12 +203,12 @@ st.dataframe(
     use_container_width=True,
     hide_index=True,
     column_config={
-        "time": st.column_config.TextColumn("Date", width="medium"),
-        "open": st.column_config.NumberColumn("Open", format="$%.2f"),
-        "high": st.column_config.NumberColumn("High", format="$%.2f"),
-        "low": st.column_config.NumberColumn("Low", format="$%.2f"),
-        "close": st.column_config.NumberColumn("Close", format="$%.2f"),
-        "volume": st.column_config.NumberColumn("Volume", format="%d"),
+        ColumnNames.TIME: st.column_config.TextColumn("Date", width="medium"),
+        ColumnNames.OPEN: st.column_config.NumberColumn(ColumnNames.OPEN, format="$%.2f"),
+        ColumnNames.HIGH: st.column_config.NumberColumn(ColumnNames.HIGH, format="$%.2f"),
+        ColumnNames.LOW: st.column_config.NumberColumn(ColumnNames.LOW, format="$%.2f"),
+        ColumnNames.CLOSE: st.column_config.NumberColumn(ColumnNames.CLOSE, format="$%.2f"),
+        ColumnNames.VOLUME: st.column_config.NumberColumn(ColumnNames.VOLUME, format="%d"),
     },
 )
 

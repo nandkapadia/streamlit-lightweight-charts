@@ -4,14 +4,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="streamlit-lightweight-charts-pro",
+    name="streamlit_lightweight_charts_pro",
     version="0.1.0",
     author="Nand Kapadia",
     author_email="nand.kapadia@gmail.com",
     description="Enhanced Streamlit component for TradingView's lightweight-charts with ultra-simplified API and performance optimizations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/nandkapadia/streamlit-lightweight-charts-pro",
+    url="https://github.com/nandkapadia/streamlit_lightweight_charts_pro",
     packages=setuptools.find_packages(include=["streamlit_lightweight_charts_pro*"]),
     include_package_data=True,
     classifiers=[
@@ -56,8 +56,8 @@ setuptools.setup(
         ],
     },
     project_urls={
-        "Bug Reports": "https://github.com/nandkapadia/streamlit-lightweight-charts-pro/issues",
-        "Source": "https://github.com/nandkapadia/streamlit-lightweight-charts-pro",
-        "Documentation": "https://github.com/nandkapadia/streamlit-lightweight-charts-pro/blob/main/README.md",
+        "Bug Reports": "https://github.com/nandkapadia/streamlit_lightweight_charts_pro/issues",
+        "Source": "https://github.com/nandkapadia/streamlit_lightweight_charts_pro",
+        "Documentation": "https://github.com/nandkapadia/streamlit_lightweight_charts_pro/blob/main/README.md",
     },
 )

@@ -3,11 +3,7 @@
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data import (
-    BaselineData,
-    HistogramData,
     Marker,
-    MarkerPosition,
-    MarkerShape,
     OhlcData,
     OhlcvData,
     SingleValueData,
@@ -28,6 +24,8 @@ from streamlit_lightweight_charts_pro.data.trade import (
     TradeVisualization,
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames, MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
 
 
 class TestSingleValueData:
@@ -62,8 +60,8 @@ class TestSingleValueData:
         data = SingleValueData("2022-01-01", 100.0)
         result = data.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["value"] == 100.0
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.VALUE] == 100.0
 
     def test_to_dict_with_marker(self):
         """Test SingleValueData to_dict with marker."""
@@ -79,8 +77,8 @@ class TestSingleValueData:
         data = SingleValueData("2022-01-01", 100.0)
         result = data.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["value"] == 100.0
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.VALUE] == 100.0
         # Marker would be handled separately in series
 
 
@@ -102,11 +100,11 @@ class TestOhlcData:
         data = OhlcData("2022-01-01", 100.0, 105.0, 98.0, 102.0)
         result = data.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["open"] == 100.0
-        assert result["high"] == 105.0
-        assert result["low"] == 98.0
-        assert result["close"] == 102.0
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.OPEN] == 100.0
+        assert result[ColumnNames.HIGH] == 105.0
+        assert result[ColumnNames.LOW] == 98.0
+        assert result[ColumnNames.CLOSE] == 102.0
 
     def test_data_validation(self):
         """Test OhlcData validation."""
@@ -137,12 +135,12 @@ class TestOhlcvData:
         data = OhlcvData("2022-01-01", 100.0, 105.0, 98.0, 102.0, 1000)
         result = data.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["open"] == 100.0
-        assert result["high"] == 105.0
-        assert result["low"] == 98.0
-        assert result["close"] == 102.0
-        assert result["volume"] == 1000
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.OPEN] == 100.0
+        assert result[ColumnNames.HIGH] == 105.0
+        assert result[ColumnNames.LOW] == 98.0
+        assert result[ColumnNames.CLOSE] == 102.0
+        assert result[ColumnNames.VOLUME] == 1000
 
     def test_inheritance(self):
         """Test that OhlcvData inherits from OhlcData."""
@@ -152,52 +150,21 @@ class TestOhlcvData:
         assert isinstance(data, OhlcvData)
 
 
-class TestHistogramData:
-    """Test cases for HistogramData."""
+class TestSingleValueDataAsHistogram:
+    """Test cases for SingleValueData as HistogramData replacement."""
 
-    def test_basic_creation(self):
-        """Test basic HistogramData creation."""
-        data = HistogramData("2022-01-01", 1000)
-
+    def test_single_value_data_creation(self):
+        """Test basic SingleValueData creation (as HistogramData replacement)."""
+        data = SingleValueData("2022-01-01", 1000)
         assert data.time == pd.Timestamp("2022-01-01")
         assert data.value == 1000
 
-    def test_with_color(self):
-        """Test HistogramData with color."""
-        data = HistogramData("2022-01-01", 1000, color="#FF0000")
-
-        assert data.time == pd.Timestamp("2022-01-01")
-        assert data.value == 1000
-        assert data.color == "#FF0000"
-
-    def test_to_dict(self):
-        """Test HistogramData to_dict method."""
-        data = HistogramData("2022-01-01", 1000, color="#FF0000")
-        result = data.to_dict()
-
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["value"] == 1000
-        assert result["color"] == "#FF0000"
-
-
-class TestBaselineData:
-    """Test cases for BaselineData."""
-
-    def test_basic_creation(self):
-        """Test basic BaselineData creation."""
-        # Note: BaselineData only takes time and value in new structure
-        data = BaselineData("2022-01-01", 100.0)
-
-        assert data.time == pd.Timestamp("2022-01-01")
-        assert data.value == 100.0
-
-    def test_to_dict(self):
-        """Test BaselineData to_dict method."""
-        data = BaselineData("2022-01-01", 100.0)
-        result = data.to_dict()
-
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
-        assert result["value"] == 100.0
+    def test_single_value_data_to_dict(self):
+        """Test SingleValueData to_dict method (as HistogramData replacement)."""
+        data = SingleValueData("2022-01-01", 1000)
+        d = data.to_dict()
+        assert d[ColumnNames.TIME] == 1640995200
+        assert d[ColumnNames.VALUE] == 1000
 
 
 class TestMarker:
@@ -231,7 +198,7 @@ class TestMarker:
 
         result = marker.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["position"] == MarkerPosition.ABOVE_BAR.value
         assert result["shape"] == MarkerShape.CIRCLE.value
         assert result["color"] == "#FF0000"
@@ -373,7 +340,7 @@ class TestAnnotation:
 
         result = annotation.to_dict()
 
-        assert result["time"] == 1640995200  # Unix timestamp for 2022-01-01
+        assert result[ColumnNames.TIME] == 1640995200  # Unix timestamp for 2022-01-01
         assert result["price"] == 100.0
         assert result["text"] == "Test annotation"
         assert result["type"] == AnnotationType.TEXT.value
@@ -582,8 +549,8 @@ class TestDataModelIntegration:
             SingleValueData("2022-01-01", 100.0),
             OhlcData("2022-01-01", 100.0, 105.0, 98.0, 102.0),
             OhlcvData("2022-01-01", 100.0, 105.0, 98.0, 102.0, 1000),
-            HistogramData("2022-01-01", 1000),
-            BaselineData("2022-01-01", 100.0),
+            SingleValueData("2022-01-01", 1000),
+            SingleValueData("2022-01-01", 100.0),
         ]
 
         for data in data_models:

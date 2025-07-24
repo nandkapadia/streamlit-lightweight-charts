@@ -1,7 +1,7 @@
 """
 Chart classes for streamlit-lightweight-charts.
 
-This module provides all chart classes including Chart and various series types 
+This module provides all chart classes including Chart and various series types
 for creating interactive financial charts.
 
 The module also includes a ChartBuilder class that provides a fluent API for
@@ -29,6 +29,7 @@ Example:
     ```
 """
 
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.chart_builder import ChartBuilder, create_chart
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
@@ -38,7 +39,6 @@ from streamlit_lightweight_charts_pro.charts.series import (
     HistogramSeries,
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.charts.chart import Chart
 
 __all__ = [
     "ChartBuilder",

@@ -9,8 +9,6 @@ import pandas as pd
 import pytest
 
 from streamlit_lightweight_charts_pro.data import (
-    BaselineData,
-    HistogramData,
     OhlcData,
     OhlcvData,
     SingleValueData,
@@ -21,10 +19,9 @@ from streamlit_lightweight_charts_pro.data.trade import (
     TradeVisualization,
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
-    df_to_baseline_data,
     df_to_data,
-    df_to_histogram_data,
     df_to_line_data,
     df_to_ohlc_data,
     df_to_ohlcv_data,
@@ -44,13 +41,13 @@ class TestDataConversionUtilities:
         """Set up test data."""
         self.df = pd.DataFrame(
             {
-                "datetime": pd.date_range("2022-01-01", periods=10, freq="D"),
-                "open": [100 + i for i in range(10)],
-                "high": [105 + i for i in range(10)],
-                "low": [95 + i for i in range(10)],
-                "close": [102 + i for i in range(10)],
-                "volume": [1000 + i * 100 for i in range(10)],
-                "value": [100 + i * 2 for i in range(10)],
+                ColumnNames.DATETIME: pd.date_range("2022-01-01", periods=10, freq="D"),
+                ColumnNames.OPEN: [100 + i for i in range(10)],
+                ColumnNames.HIGH: [105 + i for i in range(10)],
+                ColumnNames.LOW: [95 + i for i in range(10)],
+                ColumnNames.CLOSE: [102 + i for i in range(10)],
+                ColumnNames.VOLUME: [1000 + i * 100 for i in range(10)],
+                ColumnNames.VALUE: [100 + i * 2 for i in range(10)],
                 "base_value": [110 + i for i in range(10)],
             }
         )
@@ -58,7 +55,9 @@ class TestDataConversionUtilities:
     def test_df_to_line_data(self):
         """Test DataFrame to line data conversion."""
         # Test with value column and time column
-        result = df_to_line_data(self.df, value_column="value", time_column="datetime")
+        result = df_to_line_data(
+            self.df, value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+        )
 
         assert len(result) == 10
         assert all(isinstance(item, SingleValueData) for item in result)
@@ -69,11 +68,11 @@ class TestDataConversionUtilities:
         """Test DataFrame to OHLC data conversion."""
         result = df_to_ohlc_data(
             self.df,
-            time_column="datetime",
-            open_column="open",
-            high_column="high",
-            low_column="low",
-            close_column="close",
+            time_column=ColumnNames.DATETIME,
+            open_column=ColumnNames.OPEN,
+            high_column=ColumnNames.HIGH,
+            low_column=ColumnNames.LOW,
+            close_column=ColumnNames.CLOSE,
         )
 
         assert len(result) == 10
@@ -87,12 +86,12 @@ class TestDataConversionUtilities:
         """Test DataFrame to OHLCV data conversion."""
         result = df_to_ohlcv_data(
             self.df,
-            time_column="datetime",
-            open_column="open",
-            high_column="high",
-            low_column="low",
-            close_column="close",
-            volume_column="volume",
+            time_column=ColumnNames.DATETIME,
+            open_column=ColumnNames.OPEN,
+            high_column=ColumnNames.HIGH,
+            low_column=ColumnNames.LOW,
+            close_column=ColumnNames.CLOSE,
+            volume_column=ColumnNames.VOLUME,
         )
 
         assert len(result) == 10
@@ -100,39 +99,17 @@ class TestDataConversionUtilities:
         assert result[0].open == 100.0
         assert result[0].volume == 1000.0
 
-    def test_df_to_histogram_data(self):
-        """Test DataFrame to histogram data conversion."""
-        result = df_to_histogram_data(
-            self.df,
-            value_column="volume",
-            time_column="datetime",
-        )
-
-        assert len(result) == 10
-        assert all(isinstance(item, HistogramData) for item in result)
-        assert result[0].value == 1000.0
-
-    def test_df_to_baseline_data(self):
-        """Test DataFrame to baseline data conversion."""
-        result = df_to_baseline_data(
-            self.df,
-            value_column="value",
-            time_column="datetime",
-        )
-
-        assert len(result) == 10
-        assert all(isinstance(item, BaselineData) for item in result)
-        assert result[0].value == 100.0
-
     def test_df_to_data_generic(self):
         """Test generic DataFrame to data conversion."""
         # Test line data
-        result = df_to_data(self.df, "line", value_column="value", time_column="datetime")
+        result = df_to_data(
+            self.df, "line", value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+        )
         assert len(result) == 10
         assert all(isinstance(item, SingleValueData) for item in result)
 
         # Test OHLC data
-        result = df_to_data(self.df, "candlestick", time_column="datetime")
+        result = df_to_data(self.df, "candlestick", time_column=ColumnNames.DATETIME)
         assert len(result) == 10
         assert all(isinstance(item, OhlcData) for item in result)
 
@@ -153,37 +130,43 @@ class TestDataConversionUtilities:
         """Test data conversion with missing columns."""
         incomplete_df = pd.DataFrame(
             {
-                "datetime": self.df["datetime"],
-                "value": self.df["value"],
+                ColumnNames.DATETIME: self.df[ColumnNames.DATETIME],
+                ColumnNames.VALUE: self.df[ColumnNames.VALUE],
                 # Missing 'volume' column
             }
         )
 
         # Should work for line data
-        result = df_to_line_data(incomplete_df, value_column="value", time_column="datetime")
+        result = df_to_line_data(
+            incomplete_df, value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+        )
         assert len(result) == 10
 
         # Should fail for OHLCV data due to missing volume column
         with pytest.raises(KeyError):
-            df_to_ohlcv_data(incomplete_df, time_column="datetime")
+            df_to_ohlcv_data(incomplete_df, time_column=ColumnNames.DATETIME)
 
     def test_data_type_conversion(self):
         """Test data type conversion in utilities."""
         # Test with string dates
         string_df = self.df.copy()
-        string_df["datetime"] = string_df["datetime"].astype(str)
+        string_df[ColumnNames.DATETIME] = string_df[ColumnNames.DATETIME].astype(str)
 
-        result = df_to_line_data(string_df, value_column="value", time_column="datetime")
+        result = df_to_line_data(
+            string_df, value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+        )
         assert len(result) == 10
 
     def test_numeric_validation(self):
         """Test numeric validation in data conversion."""
         # Test with non-numeric values
         invalid_df = self.df.copy()
-        invalid_df.loc[0, "value"] = "invalid"
+        invalid_df.loc[0, ColumnNames.VALUE] = "invalid"
 
         with pytest.raises(ValueError):
-            df_to_line_data(invalid_df, value_column="value", time_column="datetime")
+            df_to_line_data(
+                invalid_df, value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+            )
 
 
 class TestResamplingUtilities:
@@ -195,11 +178,11 @@ class TestResamplingUtilities:
         dates = pd.date_range("2022-01-01", periods=100, freq="h")
         self.high_freq_df = pd.DataFrame(
             {
-                "open": [100 + i * 0.1 for i in range(100)],
-                "high": [105 + i * 0.1 for i in range(100)],
-                "low": [95 + i * 0.1 for i in range(100)],
-                "close": [102 + i * 0.1 for i in range(100)],
-                "volume": [1000 + i * 10 for i in range(100)],
+                ColumnNames.OPEN: [100 + i * 0.1 for i in range(100)],
+                ColumnNames.HIGH: [105 + i * 0.1 for i in range(100)],
+                ColumnNames.LOW: [95 + i * 0.1 for i in range(100)],
+                ColumnNames.CLOSE: [102 + i * 0.1 for i in range(100)],
+                ColumnNames.VOLUME: [1000 + i * 10 for i in range(100)],
             },
             index=dates,
         )
@@ -209,22 +192,22 @@ class TestResamplingUtilities:
         result = resample_df_for_charts(self.high_freq_df, "1D")
 
         assert len(result) > 0
-        assert "open" in result.columns
-        assert "high" in result.columns
-        assert "low" in result.columns
-        assert "close" in result.columns
-        assert "volume" in result.columns
+        assert ColumnNames.OPEN in result.columns
+        assert ColumnNames.HIGH in result.columns
+        assert ColumnNames.LOW in result.columns
+        assert ColumnNames.CLOSE in result.columns
+        assert ColumnNames.VOLUME in result.columns
 
     def test_resample_to_weekly(self):
         """Test resampling to weekly frequency."""
         result = resample_df_for_charts(self.high_freq_df, "1W")
 
         assert len(result) > 0
-        assert "open" in result.columns
-        assert "high" in result.columns
-        assert "low" in result.columns
-        assert "close" in result.columns
-        assert "volume" in result.columns
+        assert ColumnNames.OPEN in result.columns
+        assert ColumnNames.HIGH in result.columns
+        assert ColumnNames.LOW in result.columns
+        assert ColumnNames.CLOSE in result.columns
+        assert ColumnNames.VOLUME in result.columns
 
     def test_resample_with_custom_agg(self):
         """Test resampling with custom aggregation."""
@@ -233,32 +216,32 @@ class TestResamplingUtilities:
         result = resample_df_for_charts(self.high_freq_df, "1D")
 
         assert len(result) > 0
-        assert "open" in result.columns
+        assert ColumnNames.OPEN in result.columns
 
     def test_resample_line_data(self):
         """Test resampling line data."""
         line_df = pd.DataFrame(
             {
-                "value": [100 + i * 0.1 for i in range(100)],
+                ColumnNames.VALUE: [100 + i * 0.1 for i in range(100)],
             },
             index=self.high_freq_df.index,
         )
 
         result = resample_df_for_charts(line_df, "1D")
         assert len(result) > 0
-        assert "value" in result.columns
+        assert ColumnNames.VALUE in result.columns
 
     def test_resample_empty_dataframe(self):
         """Test resampling empty DataFrame."""
         # Create empty DataFrame with datetime index
-        empty_df = pd.DataFrame(columns=["value"])
+        empty_df = pd.DataFrame(columns=[ColumnNames.VALUE])
 
         # Empty DataFrame without datetime index should raise TypeError
         with pytest.raises(TypeError):
             resample_df_for_charts(empty_df, "1D")
 
         # Create empty DataFrame with datetime index
-        empty_df_with_index = pd.DataFrame(columns=["value"], index=pd.DatetimeIndex([]))
+        empty_df_with_index = pd.DataFrame(columns=[ColumnNames.VALUE], index=pd.DatetimeIndex([]))
 
         # Empty DataFrame with datetime index should raise ValueError
         with pytest.raises(ValueError):
@@ -267,7 +250,7 @@ class TestResamplingUtilities:
     def test_invalid_frequency(self):
         """Test resampling with invalid frequency."""
         dates = pd.date_range("2022-01-01", periods=100, freq="h")
-        df = pd.DataFrame({"value": range(100)}, index=dates)
+        df = pd.DataFrame({ColumnNames.VALUE: range(100)}, index=dates)
 
         # Should handle invalid frequency gracefully
         with pytest.raises(ValueError):
@@ -358,9 +341,27 @@ class TestTradeUtilities:
     def test_trade_time_matching(self):
         """Test trade time matching with chart data."""
         chart_data = [
-            {"time": "2022-01-01", "open": 100, "high": 105, "low": 95, "close": 102},
-            {"time": "2022-01-02", "open": 102, "high": 107, "low": 100, "close": 104},
-            {"time": "2022-01-03", "open": 104, "high": 109, "low": 102, "close": 106},
+            {
+                ColumnNames.TIME: "2022-01-01",
+                ColumnNames.OPEN: 100,
+                ColumnNames.HIGH: 105,
+                ColumnNames.LOW: 95,
+                ColumnNames.CLOSE: 102,
+            },
+            {
+                ColumnNames.TIME: "2022-01-02",
+                ColumnNames.OPEN: 102,
+                ColumnNames.HIGH: 107,
+                ColumnNames.LOW: 100,
+                ColumnNames.CLOSE: 104,
+            },
+            {
+                ColumnNames.TIME: "2022-01-03",
+                ColumnNames.OPEN: 104,
+                ColumnNames.HIGH: 109,
+                ColumnNames.LOW: 102,
+                ColumnNames.CLOSE: 106,
+            },
         ]
 
         result = trades_to_visual_elements(self.trades, self.options, chart_data)
@@ -379,21 +380,31 @@ class TestUtilityIntegration:
         dates = pd.date_range("2022-01-01", periods=10, freq="D")
         df = pd.DataFrame(
             {
-                "datetime": dates,
-                "open": [100 + i for i in range(10)],
-                "high": [105 + i for i in range(10)],
-                "low": [95 + i for i in range(10)],
-                "close": [102 + i for i in range(10)],
-                "volume": [1000 + i * 100 for i in range(10)],
+                ColumnNames.DATETIME: dates,
+                ColumnNames.OPEN: [100 + i for i in range(10)],
+                ColumnNames.HIGH: [105 + i for i in range(10)],
+                ColumnNames.LOW: [95 + i for i in range(10)],
+                ColumnNames.CLOSE: [102 + i for i in range(10)],
+                ColumnNames.VOLUME: [1000 + i * 100 for i in range(10)],
             }
         )
 
         # Ensure OHLC consistency
-        df["high"] = df[["open", "close", "high"]].max(axis=1)
-        df["low"] = df[["open", "close", "low"]].min(axis=1)
+        df[ColumnNames.HIGH] = df[[ColumnNames.OPEN, ColumnNames.CLOSE, ColumnNames.HIGH]].max(
+            axis=1
+        )
+        df[ColumnNames.LOW] = df[[ColumnNames.OPEN, ColumnNames.CLOSE, ColumnNames.LOW]].min(axis=1)
 
         # Convert to data
-        ohlcv_data = df_to_ohlcv_data(df, "datetime", "open", "high", "low", "close", "volume")
+        ohlcv_data = df_to_ohlcv_data(
+            df,
+            ColumnNames.DATETIME,
+            ColumnNames.OPEN,
+            ColumnNames.HIGH,
+            ColumnNames.LOW,
+            ColumnNames.CLOSE,
+            ColumnNames.VOLUME,
+        )
         assert len(ohlcv_data) == 10
 
         # Create trades
@@ -421,17 +432,19 @@ class TestUtilityIntegration:
         dates = pd.date_range("2022-01-01", periods=5, freq="D")
         df = pd.DataFrame(
             {
-                "datetime": dates,
-                "value": [100, 102, 98, 105, 103],
+                ColumnNames.DATETIME: dates,
+                ColumnNames.VALUE: [100, 102, 98, 105, 103],
             }
         )
 
         # Test different conversion methods
-        line_data = df_to_line_data(df, value_column="value", time_column="datetime")
+        line_data = df_to_line_data(
+            df, value_column=ColumnNames.VALUE, time_column=ColumnNames.DATETIME
+        )
         assert len(line_data) == 5
 
         # Test resampling
-        df_with_index = df.set_index("datetime")
+        df_with_index = df.set_index(ColumnNames.DATETIME)
         resampled = resample_df_for_charts(df_with_index, "2D")
         assert len(resampled) > 0
 
@@ -441,7 +454,7 @@ class TestUtilityIntegration:
         dates = pd.date_range("2022-01-01", periods=1000, freq="h")
         large_df = pd.DataFrame(
             {
-                "value": range(1000),
+                ColumnNames.VALUE: range(1000),
             },
             index=dates,
         )
@@ -450,7 +463,7 @@ class TestUtilityIntegration:
         import time
 
         start_time = time.time()
-        data = df_to_line_data(large_df, value_column="value")
+        data = df_to_line_data(large_df, value_column=ColumnNames.VALUE)
         end_time = time.time()
 
         assert len(data) == 1000

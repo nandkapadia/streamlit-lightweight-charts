@@ -18,6 +18,7 @@ from streamlit_lightweight_charts_pro.data import (
     TradeVisualizationOptions,
 )
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 
 
 def trades_to_visual_elements(
@@ -287,14 +288,13 @@ def create_trade_zone(
 
     if chart_data and options.zone_extend_bars > 0:
         # Convert chart data timestamps to integers for comparison
-        from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
 
         # Extend the zone by the specified number of bars
-        for i, bar in enumerate(chart_data):
+        for i, bar_ in enumerate(chart_data):
             bar_time = (
-                to_utc_timestamp(bar[ColumnNames.TIME])
-                if isinstance(bar[ColumnNames.TIME], str)
-                else bar[ColumnNames.TIME]
+                to_utc_timestamp(bar_[ColumnNames.TIME])
+                if isinstance(bar_[ColumnNames.TIME], str)
+                else bar_[ColumnNames.TIME]
             )
             if bar_time >= trade.entry_timestamp:
                 if i >= options.zone_extend_bars:
@@ -306,11 +306,11 @@ def create_trade_zone(
                     )
                 break
 
-        for i, bar in enumerate(reversed(chart_data)):
+        for i, bar_ in enumerate(reversed(chart_data)):
             bar_time = (
-                to_utc_timestamp(bar[ColumnNames.TIME])
-                if isinstance(bar[ColumnNames.TIME], str)
-                else bar[ColumnNames.TIME]
+                to_utc_timestamp(bar_[ColumnNames.TIME])
+                if isinstance(bar_[ColumnNames.TIME], str)
+                else bar_[ColumnNames.TIME]
             )
             if bar_time <= trade.exit_timestamp:
                 idx = len(chart_data) - i - 1

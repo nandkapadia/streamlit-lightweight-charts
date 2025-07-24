@@ -18,6 +18,7 @@ from streamlit_lightweight_charts_pro.data import (
     SingleValueData,
     create_text_annotation,
 )
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames
 
 
 class TestChartBuilder:
@@ -59,7 +60,10 @@ class TestChartBuilder:
     def test_add_line_series_with_dataframe(self):
         """Test adding line series with DataFrame."""
         df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "close": [100, 105, 110]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.CLOSE: [100, 105, 110],
+            }
         )
 
         result = self.builder.add_line_series(df, color="#00ff00")
@@ -80,11 +84,11 @@ class TestChartBuilder:
         """Test adding candlestick series with DataFrame."""
         df = pd.DataFrame(
             {
-                "datetime": ["2024-01-01", "2024-01-02", "2024-01-03"],
-                "open": [100, 103, 106],
-                "high": [105, 108, 112],
-                "low": [98, 102, 104],
-                "close": [103, 106, 110],
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.OPEN: [100, 103, 106],
+                ColumnNames.HIGH: [105, 108, 112],
+                ColumnNames.LOW: [98, 102, 104],
+                ColumnNames.CLOSE: [103, 106, 110],
             }
         )
 
@@ -276,7 +280,10 @@ class TestChartBuilder:
     def test_builder_with_dataframe_series(self):
         """Test builder with DataFrame series."""
         df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "close": [100, 105, 110]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.CLOSE: [100, 105, 110],
+            }
         )
 
         chart = self.builder.add_line_series(df, color="#ff0000").set_height(400).build()

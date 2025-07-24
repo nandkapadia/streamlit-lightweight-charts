@@ -1,6 +1,6 @@
-from streamlit_lightweight_charts_pro.charts import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
-from streamlit_lightweight_charts_pro.data.models import OhlcData
+from streamlit_lightweight_charts_pro.data import OhlcData
 from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
@@ -28,10 +28,10 @@ def test_candlestick_chart_with_trades():
     )
 
     # Create single pane chart
-    chart = SinglePaneChart([candlestick_series])
+    chart = Chart([candlestick_series])
 
     config = chart.to_frontend_config()
-    # The SinglePaneChart returns a structure with "charts" array containing the chart config
+    # The Chart returns a structure with "charts" array containing the chart config
     assert "charts" in config
     assert len(config["charts"]) == 1
 
@@ -39,8 +39,8 @@ def test_candlestick_chart_with_trades():
     assert "series" in chart_config
     found_trade = False
     for s in chart_config["series"]:
-        # Check for trade-related keys that are actually stored in the series
-        if any(key in s for key in ["trades", "tradeVisualizationOptions"]):
+        # Check for trade-related keys that add_trades_to_series adds
+        if any(key in s for key in ["markers", "shapes", "annotations"]):
             found_trade = True
             break
     assert found_trade

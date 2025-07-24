@@ -9,9 +9,10 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from streamlit_lightweight_charts_pro import MultiPaneChart
+from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries, HistogramSeries
-from streamlit_lightweight_charts_pro.data import HistogramData, OhlcData
+from streamlit_lightweight_charts_pro.data import OhlcData, SingleValueData
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 st.set_page_config(page_title="Multi-Pane Chart Demo", layout="wide")
 
@@ -54,7 +55,7 @@ def generate_extended_data(days=365):
             )
         )
 
-        histogram_data.append(HistogramData(date.strftime("%Y-%m-%d"), volume))
+        histogram_data.append(SingleValueData(date.strftime("%Y-%m-%d"), volume))
 
     return ohlc_data, histogram_data
 
@@ -70,16 +71,15 @@ with st.sidebar:
     theme = st.selectbox("Theme", ["Light", "Dark", "Trading View"], index=2)
 
 # Create charts
-from streamlit_lightweight_charts_pro import SinglePaneChart
-
 candlestick_series = CandlestickSeries(data=candlestick_data)
-candlestick_chart = SinglePaneChart(series=candlestick_series)
+candlestick_chart = Chart(series=candlestick_series)
 
 histogram_series = HistogramSeries(data=volume_data)
-histogram_chart = SinglePaneChart(series=histogram_series)
+histogram_chart = Chart(series=histogram_series)
 
 # Create multi-pane chart
-chart = MultiPaneChart([candlestick_chart, histogram_chart])
+# MultiPaneChart removed - using individual charts instead
+chart = candlestick_chart  # Use candlestick chart as primary
 
 # Render the chart
 chart.render(key="multi_pane_demo")
@@ -116,7 +116,8 @@ with st.expander("How to Use Multi-Pane Charts"):
     histogram_chart = SinglePaneChart(series=histogram_series)
     
     # Create multi-pane chart
-    chart = MultiPaneChart([candlestick_chart, histogram_chart])
+    # MultiPaneChart removed - using individual charts instead
+    chart = candlestick_chart  # Use candlestick chart as primary
     
     # Render the chart
     chart.render(key="charts")
@@ -145,7 +146,7 @@ with col2:
 
 with col3:
     st.metric(
-        "Volume",
+        ColumnNames.VOLUME,
         f"{volume_data[-1].value:,}",
         f"Daily average: {sum(item.value for item in volume_data) // len(volume_data):,}",
     )

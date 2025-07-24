@@ -2,16 +2,14 @@ from datetime import datetime
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
-from streamlit_lightweight_charts_pro.data.models import (
-    BaselineData,
-    HistogramData,
+from streamlit_lightweight_charts_pro.data import (
     Marker,
-    MarkerPosition,
-    MarkerShape,
     OhlcData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames, MarkerPosition
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
 
 
 def test_single_value_data():
@@ -19,8 +17,8 @@ def test_single_value_data():
     assert d.value == 100.0
     assert pd.to_datetime("2023-01-01") == d.time
     d_dict = d.to_dict()
-    assert d_dict["value"] == 100.0
-    assert d_dict["time"] == 1672531200  # Unix timestamp for 2023-01-01
+    assert d_dict[ColumnNames.VALUE] == 100.0
+    assert d_dict[ColumnNames.TIME] == 1672531200  # Unix timestamp for 2023-01-01
 
 
 def test_ohlc_data():
@@ -30,25 +28,24 @@ def test_ohlc_data():
     assert d.low == 0
     assert d.close == 1.5
     d_dict = d.to_dict()
-    assert d_dict["open"] == 1
-    assert d_dict["high"] == 2
-    assert d_dict["low"] == 0
-    assert d_dict["close"] == 1.5
+    assert d_dict[ColumnNames.OPEN] == 1
+    assert d_dict[ColumnNames.HIGH] == 2
+    assert d_dict[ColumnNames.LOW] == 0
+    assert d_dict[ColumnNames.CLOSE] == 1.5
 
 
 def test_histogram_data():
-    d = HistogramData("2023-01-01", 42.0, color="#ff0000")
+    d = SingleValueData("2023-01-01", 42.0)
     assert d.value == 42.0
-    assert d.color == "#ff0000"
     d_dict = d.to_dict()
-    assert d_dict["color"] == "#ff0000"
+    assert d_dict[ColumnNames.VALUE] == 42.0
 
 
 def test_baseline_data():
-    d = BaselineData("2023-01-01", 123.4)
+    d = SingleValueData("2023-01-01", 123.4)
     assert d.value == 123.4
     d_dict = d.to_dict()
-    assert d_dict["value"] == 123.4
+    assert d_dict[ColumnNames.VALUE] == 123.4
 
 
 def test_marker():

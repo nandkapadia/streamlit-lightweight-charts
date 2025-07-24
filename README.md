@@ -1,6 +1,6 @@
 # Streamlit Lightweight Charts Pro
 
-[![PyPI version](https://badge.fury.io/py/streamlit-lightweight-charts-pro.svg)](https://badge.fury.io/py/streamlit-lightweight-charts-pro)
+[![PyPI version](https://badge.fury.io/py/streamlit_lightweight_charts_pro.svg)](https://badge.fury.io/py/streamlit_lightweight_charts_pro)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -37,7 +37,7 @@ Streamlit Lightweight Charts Pro is a comprehensive Python library that brings T
 ## 📦 Installation
 
 ```bash
-pip install streamlit-lightweight-charts-pro
+pip install streamlit_lightweight_charts_pro
 ```
 
 ## 🚀 Quick Start
@@ -46,7 +46,7 @@ pip install streamlit-lightweight-charts-pro
 
 ```python
 import streamlit as st
-from streamlit_lightweight_charts_pro import SinglePaneChart, LineSeries
+from streamlit_lightweight_charts_pro import Chart, LineSeries
 from streamlit_lightweight_charts_pro.data import SingleValueData
 
 # Create sample data
@@ -58,7 +58,7 @@ data = [
 ]
 
 # Create and render chart
-chart = SinglePaneChart(series=LineSeries(data, color="#2196F3"))
+chart = Chart(series=LineSeries(data, color="#2196F3"))
 chart.render(key="basic_line_chart")
 ```
 
@@ -137,13 +137,10 @@ CandlestickSeries(ohlc_data, up_color="#4CAF50", down_color="#F44336")
 ### Multi-Pane Charts
 
 ```python
-from streamlit_lightweight_charts_pro import MultiPaneChart
+# MultiPaneChart removed - using Chart instead
 
-# Create multi-pane chart
-chart = MultiPaneChart([
-    SinglePaneChart(series=[CandlestickSeries(ohlc_data)]),
-    SinglePaneChart(series=[HistogramSeries(volume_data)])
-])
+# MultiPaneChart removed - using individual charts instead
+chart = Chart(series=[CandlestickSeries(ohlc_data), HistogramSeries(volume_data)])
 chart.render(key="multi_pane")
 ```
 
@@ -168,7 +165,7 @@ trades = [
 ]
 
 # Add trades to chart
-chart = SinglePaneChart(
+chart = Chart(
     series=[CandlestickSeries(ohlc_data)],
     trades=trades,
     trade_visualization=TradeVisualization.BOTH  # Shows markers and rectangles
@@ -231,7 +228,7 @@ df = pd.read_csv('stock_data.csv', index_col='date', parse_dates=True)
 from streamlit_lightweight_charts_pro.utils import df_to_ohlc_data
 
 ohlc_data = df_to_ohlc_data(df)
-chart = SinglePaneChart(series=CandlestickSeries(ohlc_data))
+chart = Chart(series=CandlestickSeries(ohlc_data))
 ```
 
 ### From CSV Files
@@ -290,7 +287,7 @@ options = ChartOptions(
     }
 )
 
-chart = SinglePaneChart(series=series, options=options)
+chart = Chart(series=series, options=options)
 ```
 
 ### Series Styling
@@ -337,12 +334,8 @@ chart_options = {
 ### Multi-Pane Synchronization
 
 ```python
-# Create synchronized multi-pane chart
-chart = MultiPaneChart([
-    SinglePaneChart(series=[CandlestickSeries(ohlc_data)]),
-    SinglePaneChart(series=[HistogramSeries(volume_data)]),
-    SinglePaneChart(series=[LineSeries(rsi_data)])
-])
+# MultiPaneChart removed - using individual charts instead
+chart = Chart(series=[CandlestickSeries(ohlc_data), HistogramSeries(volume_data), LineSeries(rsi_data)])
 ```
 
 ### Custom Annotations with Layers
@@ -377,8 +370,8 @@ Check out the comprehensive examples in the `examples/` directory:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/streamlit-lightweight-charts-pro.git
-cd streamlit-lightweight-charts-pro
+git clone https://github.com/your-username/streamlit_lightweight_charts_pro.git
+cd streamlit_lightweight_charts_pro
 
 # Install in development mode
 pip install -e ".[dev]"
@@ -447,8 +440,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [PyPI Package](https://pypi.org/project/streamlit-lightweight-charts-pro/)
-- [GitHub Repository](https://github.com/your-username/streamlit-lightweight-charts-pro)
+- [PyPI Package](https://pypi.org/project/streamlit_lightweight_charts_pro/)
+- [GitHub Repository](https://github.com/your-username/streamlit_lightweight_charts_pro)
 - [TradingView Lightweight Charts](https://tradingview.github.io/lightweight-charts/)
 - [Streamlit Documentation](https://docs.streamlit.io/)
 

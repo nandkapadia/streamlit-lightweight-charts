@@ -31,11 +31,10 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data import (
-    BaselineData,
-    HistogramData,
     OhlcData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 # =============================================================================
 # RAW DATA DICTIONARIES (for backward compatibility)
@@ -43,216 +42,336 @@ from streamlit_lightweight_charts_pro.data import (
 
 # Sample data for single value charts (line, area)
 series_single_value_data = [
-    {"datetime": "2018-12-22", "value": 32.51},
-    {"datetime": "2018-12-23", "value": 31.11},
-    {"datetime": "2018-12-24", "value": 27.02},
-    {"datetime": "2018-12-25", "value": 27.32},
-    {"datetime": "2018-12-26", "value": 25.17},
-    {"datetime": "2018-12-27", "value": 28.89},
-    {"datetime": "2018-12-28", "value": 25.46},
-    {"datetime": "2018-12-29", "value": 23.92},
-    {"datetime": "2018-12-30", "value": 22.68},
-    {"datetime": "2018-12-31", "value": 22.67},
+    {ColumnNames.DATETIME: "2018-12-22", ColumnNames.VALUE: 32.51},
+    {ColumnNames.DATETIME: "2018-12-23", ColumnNames.VALUE: 31.11},
+    {ColumnNames.DATETIME: "2018-12-24", ColumnNames.VALUE: 27.02},
+    {ColumnNames.DATETIME: "2018-12-25", ColumnNames.VALUE: 27.32},
+    {ColumnNames.DATETIME: "2018-12-26", ColumnNames.VALUE: 25.17},
+    {ColumnNames.DATETIME: "2018-12-27", ColumnNames.VALUE: 28.89},
+    {ColumnNames.DATETIME: "2018-12-28", ColumnNames.VALUE: 25.46},
+    {ColumnNames.DATETIME: "2018-12-29", ColumnNames.VALUE: 23.92},
+    {ColumnNames.DATETIME: "2018-12-30", ColumnNames.VALUE: 22.68},
+    {ColumnNames.DATETIME: "2018-12-31", ColumnNames.VALUE: 22.67},
 ]
 
 # Sample data for baseline charts
 series_baseline_chart = [
-    {"value": 1, "datetime": 1642425322},
-    {"value": 8, "datetime": 1642511722},
-    {"value": 10, "datetime": 1642598122},
-    {"value": 20, "datetime": 1642684522},
-    {"value": 3, "datetime": 1642770922},
-    {"value": 43, "datetime": 1642857322},
-    {"value": 41, "datetime": 1642943722},
-    {"value": 43, "datetime": 1643030122},
-    {"value": 56, "datetime": 1643116522},
-    {"value": 46, "datetime": 1643202922},
+    {ColumnNames.VALUE: 1, ColumnNames.DATETIME: 1642425322},
+    {ColumnNames.VALUE: 8, ColumnNames.DATETIME: 1642511722},
+    {ColumnNames.VALUE: 10, ColumnNames.DATETIME: 1642598122},
+    {ColumnNames.VALUE: 20, ColumnNames.DATETIME: 1642684522},
+    {ColumnNames.VALUE: 3, ColumnNames.DATETIME: 1642770922},
+    {ColumnNames.VALUE: 43, ColumnNames.DATETIME: 1642857322},
+    {ColumnNames.VALUE: 41, ColumnNames.DATETIME: 1642943722},
+    {ColumnNames.VALUE: 43, ColumnNames.DATETIME: 1643030122},
+    {ColumnNames.VALUE: 56, ColumnNames.DATETIME: 1643116522},
+    {ColumnNames.VALUE: 46, ColumnNames.DATETIME: 1643202922},
 ]
 
 # Sample data for histogram charts
 series_histogram_chart = [
-    {"value": 1, "datetime": 1642425322},
-    {"value": 8, "datetime": 1642511722},
-    {"value": 10, "datetime": 1642598122},
-    {"value": 20, "datetime": 1642684522},
-    {"value": 3, "datetime": 1642770922, "color": "red"},
-    {"value": 43, "datetime": 1642857322},
-    {"value": 41, "datetime": 1642943722, "color": "red"},
-    {"value": 43, "datetime": 1643030122},
-    {"value": 56, "datetime": 1643116522},
-    {"value": 46, "datetime": 1643202922, "color": "red"},
+    {ColumnNames.VALUE: 1, ColumnNames.DATETIME: 1642425322},
+    {ColumnNames.VALUE: 8, ColumnNames.DATETIME: 1642511722},
+    {ColumnNames.VALUE: 10, ColumnNames.DATETIME: 1642598122},
+    {ColumnNames.VALUE: 20, ColumnNames.DATETIME: 1642684522},
+    {ColumnNames.VALUE: 3, ColumnNames.DATETIME: 1642770922, "color": "red"},
+    {ColumnNames.VALUE: 43, ColumnNames.DATETIME: 1642857322},
+    {ColumnNames.VALUE: 41, ColumnNames.DATETIME: 1642943722, "color": "red"},
+    {ColumnNames.VALUE: 43, ColumnNames.DATETIME: 1643030122},
+    {ColumnNames.VALUE: 56, ColumnNames.DATETIME: 1643116522},
+    {ColumnNames.VALUE: 46, ColumnNames.DATETIME: 1643202922, "color": "red"},
 ]
 
 # Sample data for bar charts
 series_bar_chart = [
-    {"open": 10, "high": 10.63, "low": 9.49, "close": 9.55, "datetime": 1642427876},
-    {"open": 9.55, "high": 10.30, "low": 9.42, "close": 9.94, "datetime": 1642514276},
-    {"open": 9.94, "high": 10.17, "low": 9.92, "close": 9.78, "datetime": 1642600676},
-    {"open": 9.78, "high": 10.59, "low": 9.18, "close": 9.51, "datetime": 1642687076},
-    {"open": 9.51, "high": 10.46, "low": 9.10, "close": 10.17, "datetime": 1642773476},
-    {"open": 10.17, "high": 10.96, "low": 10.16, "close": 10.47, "datetime": 1642859876},
-    {"open": 10.47, "high": 11.39, "low": 10.40, "close": 10.81, "datetime": 1642946276},
-    {"open": 10.81, "high": 11.60, "low": 10.30, "close": 10.75, "datetime": 1643032676},
-    {"open": 10.75, "high": 11.60, "low": 10.49, "close": 10.93, "datetime": 1643119076},
-    {"open": 10.93, "high": 11.53, "low": 10.76, "close": 10.96, "datetime": 1643205476},
+    {
+        ColumnNames.OPEN: 10,
+        ColumnNames.HIGH: 10.63,
+        ColumnNames.LOW: 9.49,
+        ColumnNames.CLOSE: 9.55,
+        ColumnNames.DATETIME: 1642427876,
+    },
+    {
+        ColumnNames.OPEN: 9.55,
+        ColumnNames.HIGH: 10.30,
+        ColumnNames.LOW: 9.42,
+        ColumnNames.CLOSE: 9.94,
+        ColumnNames.DATETIME: 1642514276,
+    },
+    {
+        ColumnNames.OPEN: 9.94,
+        ColumnNames.HIGH: 10.17,
+        ColumnNames.LOW: 9.92,
+        ColumnNames.CLOSE: 9.78,
+        ColumnNames.DATETIME: 1642600676,
+    },
+    {
+        ColumnNames.OPEN: 9.78,
+        ColumnNames.HIGH: 10.59,
+        ColumnNames.LOW: 9.18,
+        ColumnNames.CLOSE: 9.51,
+        ColumnNames.DATETIME: 1642687076,
+    },
+    {
+        ColumnNames.OPEN: 9.51,
+        ColumnNames.HIGH: 10.46,
+        ColumnNames.LOW: 9.10,
+        ColumnNames.CLOSE: 10.17,
+        ColumnNames.DATETIME: 1642773476,
+    },
+    {
+        ColumnNames.OPEN: 10.17,
+        ColumnNames.HIGH: 10.96,
+        ColumnNames.LOW: 10.16,
+        ColumnNames.CLOSE: 10.47,
+        ColumnNames.DATETIME: 1642859876,
+    },
+    {
+        ColumnNames.OPEN: 10.47,
+        ColumnNames.HIGH: 11.39,
+        ColumnNames.LOW: 10.40,
+        ColumnNames.CLOSE: 10.81,
+        ColumnNames.DATETIME: 1642946276,
+    },
+    {
+        ColumnNames.OPEN: 10.81,
+        ColumnNames.HIGH: 11.60,
+        ColumnNames.LOW: 10.30,
+        ColumnNames.CLOSE: 10.75,
+        ColumnNames.DATETIME: 1643032676,
+    },
+    {
+        ColumnNames.OPEN: 10.75,
+        ColumnNames.HIGH: 11.60,
+        ColumnNames.LOW: 10.49,
+        ColumnNames.CLOSE: 10.93,
+        ColumnNames.DATETIME: 1643119076,
+    },
+    {
+        ColumnNames.OPEN: 10.93,
+        ColumnNames.HIGH: 11.53,
+        ColumnNames.LOW: 10.76,
+        ColumnNames.CLOSE: 10.96,
+        ColumnNames.DATETIME: 1643205476,
+    },
 ]
 
 # Sample data for candlestick charts
 series_candlestick_chart = [
-    {"open": 10, "high": 10.63, "low": 9.49, "close": 9.55, "datetime": 1642427876},
-    {"open": 9.55, "high": 10.30, "low": 9.42, "close": 9.94, "datetime": 1642514276},
-    {"open": 9.94, "high": 10.17, "low": 9.92, "close": 9.78, "datetime": 1642600676},
-    {"open": 9.78, "high": 10.59, "low": 9.18, "close": 9.51, "datetime": 1642687076},
-    {"open": 9.51, "high": 10.46, "low": 9.10, "close": 10.17, "datetime": 1642773476},
-    {"open": 10.17, "high": 10.96, "low": 10.16, "close": 10.47, "datetime": 1642859876},
-    {"open": 10.47, "high": 11.39, "low": 10.40, "close": 10.81, "datetime": 1642946276},
-    {"open": 10.81, "high": 11.60, "low": 10.30, "close": 10.75, "datetime": 1643032676},
-    {"open": 10.75, "high": 11.60, "low": 10.49, "close": 10.93, "datetime": 1643119076},
-    {"open": 10.93, "high": 11.53, "low": 10.76, "close": 10.96, "datetime": 1643205476},
+    {
+        ColumnNames.OPEN: 10,
+        ColumnNames.HIGH: 10.63,
+        ColumnNames.LOW: 9.49,
+        ColumnNames.CLOSE: 9.55,
+        ColumnNames.DATETIME: 1642427876,
+    },
+    {
+        ColumnNames.OPEN: 9.55,
+        ColumnNames.HIGH: 10.30,
+        ColumnNames.LOW: 9.42,
+        ColumnNames.CLOSE: 9.94,
+        ColumnNames.DATETIME: 1642514276,
+    },
+    {
+        ColumnNames.OPEN: 9.94,
+        ColumnNames.HIGH: 10.17,
+        ColumnNames.LOW: 9.92,
+        ColumnNames.CLOSE: 9.78,
+        ColumnNames.DATETIME: 1642600676,
+    },
+    {
+        ColumnNames.OPEN: 9.78,
+        ColumnNames.HIGH: 10.59,
+        ColumnNames.LOW: 9.18,
+        ColumnNames.CLOSE: 9.51,
+        ColumnNames.DATETIME: 1642687076,
+    },
+    {
+        ColumnNames.OPEN: 9.51,
+        ColumnNames.HIGH: 10.46,
+        ColumnNames.LOW: 9.10,
+        ColumnNames.CLOSE: 10.17,
+        ColumnNames.DATETIME: 1642773476,
+    },
+    {
+        ColumnNames.OPEN: 10.17,
+        ColumnNames.HIGH: 10.96,
+        ColumnNames.LOW: 10.16,
+        ColumnNames.CLOSE: 10.47,
+        ColumnNames.DATETIME: 1642859876,
+    },
+    {
+        ColumnNames.OPEN: 10.47,
+        ColumnNames.HIGH: 11.39,
+        ColumnNames.LOW: 10.40,
+        ColumnNames.CLOSE: 10.81,
+        ColumnNames.DATETIME: 1642946276,
+    },
+    {
+        ColumnNames.OPEN: 10.81,
+        ColumnNames.HIGH: 11.60,
+        ColumnNames.LOW: 10.30,
+        ColumnNames.CLOSE: 10.75,
+        ColumnNames.DATETIME: 1643032676,
+    },
+    {
+        ColumnNames.OPEN: 10.75,
+        ColumnNames.HIGH: 11.60,
+        ColumnNames.LOW: 10.49,
+        ColumnNames.CLOSE: 10.93,
+        ColumnNames.DATETIME: 1643119076,
+    },
+    {
+        ColumnNames.OPEN: 10.93,
+        ColumnNames.HIGH: 11.53,
+        ColumnNames.LOW: 10.76,
+        ColumnNames.CLOSE: 10.96,
+        ColumnNames.DATETIME: 1643205476,
+    },
 ]
 
 # Sample data for multi-chart area series 1
 series_multiple_chart_area_01 = [
-    {"datetime": "2019-03-01", "value": 42.58},
-    {"datetime": "2019-03-04", "value": 42.64},
-    {"datetime": "2019-03-05", "value": 42.74},
-    {"datetime": "2019-03-06", "value": 42.7},
-    {"datetime": "2019-03-07", "value": 42.63},
-    {"datetime": "2019-03-08", "value": 42.25},
-    {"datetime": "2019-03-11", "value": 42.33},
-    {"datetime": "2019-03-12", "value": 42.46},
-    {"datetime": "2019-03-13", "value": 43.83},
-    {"datetime": "2019-03-14", "value": 43.95},
-    {"datetime": "2019-03-15", "value": 43.87},
-    {"datetime": "2019-03-18", "value": 44.24},
-    {"datetime": "2019-03-19", "value": 44.47},
-    {"datetime": "2019-03-20", "value": 44.53},
-    {"datetime": "2019-03-21", "value": 44.53},
-    {"datetime": "2019-03-22", "value": 43.95},
-    {"datetime": "2019-03-25", "value": 43.53},
-    {"datetime": "2019-03-26", "value": 43.82},
-    {"datetime": "2019-03-27", "value": 43.59},
-    {"datetime": "2019-03-28", "value": 43.63},
-    {"datetime": "2019-03-29", "value": 43.72},
-    {"datetime": "2019-04-01", "value": 44.09},
-    {"datetime": "2019-04-02", "value": 44.23},
-    {"datetime": "2019-04-03", "value": 44.23},
-    {"datetime": "2019-04-04", "value": 44.15},
-    {"datetime": "2019-04-05", "value": 44.53},
-    {"datetime": "2019-04-08", "value": 45.23},
-    {"datetime": "2019-04-09", "value": 44.99},
-    {"datetime": "2019-04-10", "value": 45.04},
-    {"datetime": "2019-04-11", "value": 44.87},
-    {"datetime": "2019-04-12", "value": 44.67},
-    {"datetime": "2019-04-15", "value": 44.67},
-    {"datetime": "2019-04-16", "value": 44.48},
-    {"datetime": "2019-04-17", "value": 44.62},
-    {"datetime": "2019-04-18", "value": 44.39},
-    {"datetime": "2019-04-22", "value": 45.04},
-    {"datetime": "2019-04-23", "value": 45.02},
-    {"datetime": "2019-04-24", "value": 44.13},
-    {"datetime": "2019-04-25", "value": 43.96},
-    {"datetime": "2019-04-26", "value": 43.31},
-    {"datetime": "2019-04-29", "value": 43.02},
-    {"datetime": "2019-04-30", "value": 43.73},
-    {"datetime": "2019-05-01", "value": 43.08},
-    {"datetime": "2019-05-02", "value": 42.63},
-    {"datetime": "2019-05-03", "value": 43.08},
-    {"datetime": "2019-05-06", "value": 42.93},
-    {"datetime": "2019-05-07", "value": 42.22},
-    {"datetime": "2019-05-08", "value": 42.28},
-    {"datetime": "2019-05-09", "value": 41.65},
-    {"datetime": "2019-05-10", "value": 41.5},
-    {"datetime": "2019-05-13", "value": 41.23},
-    {"datetime": "2019-05-14", "value": 41.55},
-    {"datetime": "2019-05-15", "value": 41.77},
-    {"datetime": "2019-05-16", "value": 42.28},
-    {"datetime": "2019-05-17", "value": 42.34},
-    {"datetime": "2019-05-20", "value": 42.58},
-    {"datetime": "2019-05-21", "value": 42.75},
-    {"datetime": "2019-05-22", "value": 42.34},
-    {"datetime": "2019-05-23", "value": 41.34},
-    {"datetime": "2019-05-24", "value": 41.76},
-    {"datetime": "2019-05-28", "value": 41.625},
+    {ColumnNames.DATETIME: "2019-03-01", ColumnNames.VALUE: 42.58},
+    {ColumnNames.DATETIME: "2019-03-04", ColumnNames.VALUE: 42.64},
+    {ColumnNames.DATETIME: "2019-03-05", ColumnNames.VALUE: 42.74},
+    {ColumnNames.DATETIME: "2019-03-06", ColumnNames.VALUE: 42.7},
+    {ColumnNames.DATETIME: "2019-03-07", ColumnNames.VALUE: 42.63},
+    {ColumnNames.DATETIME: "2019-03-08", ColumnNames.VALUE: 42.25},
+    {ColumnNames.DATETIME: "2019-03-11", ColumnNames.VALUE: 42.33},
+    {ColumnNames.DATETIME: "2019-03-12", ColumnNames.VALUE: 42.46},
+    {ColumnNames.DATETIME: "2019-03-13", ColumnNames.VALUE: 43.83},
+    {ColumnNames.DATETIME: "2019-03-14", ColumnNames.VALUE: 43.95},
+    {ColumnNames.DATETIME: "2019-03-15", ColumnNames.VALUE: 43.87},
+    {ColumnNames.DATETIME: "2019-03-18", ColumnNames.VALUE: 44.24},
+    {ColumnNames.DATETIME: "2019-03-19", ColumnNames.VALUE: 44.47},
+    {ColumnNames.DATETIME: "2019-03-20", ColumnNames.VALUE: 44.53},
+    {ColumnNames.DATETIME: "2019-03-21", ColumnNames.VALUE: 44.53},
+    {ColumnNames.DATETIME: "2019-03-22", ColumnNames.VALUE: 43.95},
+    {ColumnNames.DATETIME: "2019-03-25", ColumnNames.VALUE: 43.53},
+    {ColumnNames.DATETIME: "2019-03-26", ColumnNames.VALUE: 43.82},
+    {ColumnNames.DATETIME: "2019-03-27", ColumnNames.VALUE: 43.59},
+    {ColumnNames.DATETIME: "2019-03-28", ColumnNames.VALUE: 43.63},
+    {ColumnNames.DATETIME: "2019-03-29", ColumnNames.VALUE: 43.72},
+    {ColumnNames.DATETIME: "2019-04-01", ColumnNames.VALUE: 44.09},
+    {ColumnNames.DATETIME: "2019-04-02", ColumnNames.VALUE: 44.23},
+    {ColumnNames.DATETIME: "2019-04-03", ColumnNames.VALUE: 44.23},
+    {ColumnNames.DATETIME: "2019-04-04", ColumnNames.VALUE: 44.15},
+    {ColumnNames.DATETIME: "2019-04-05", ColumnNames.VALUE: 44.53},
+    {ColumnNames.DATETIME: "2019-04-08", ColumnNames.VALUE: 45.23},
+    {ColumnNames.DATETIME: "2019-04-09", ColumnNames.VALUE: 44.99},
+    {ColumnNames.DATETIME: "2019-04-10", ColumnNames.VALUE: 45.04},
+    {ColumnNames.DATETIME: "2019-04-11", ColumnNames.VALUE: 44.87},
+    {ColumnNames.DATETIME: "2019-04-12", ColumnNames.VALUE: 44.67},
+    {ColumnNames.DATETIME: "2019-04-15", ColumnNames.VALUE: 44.67},
+    {ColumnNames.DATETIME: "2019-04-16", ColumnNames.VALUE: 44.48},
+    {ColumnNames.DATETIME: "2019-04-17", ColumnNames.VALUE: 44.62},
+    {ColumnNames.DATETIME: "2019-04-18", ColumnNames.VALUE: 44.39},
+    {ColumnNames.DATETIME: "2019-04-22", ColumnNames.VALUE: 45.04},
+    {ColumnNames.DATETIME: "2019-04-23", ColumnNames.VALUE: 45.02},
+    {ColumnNames.DATETIME: "2019-04-24", ColumnNames.VALUE: 44.13},
+    {ColumnNames.DATETIME: "2019-04-25", ColumnNames.VALUE: 43.96},
+    {ColumnNames.DATETIME: "2019-04-26", ColumnNames.VALUE: 43.31},
+    {ColumnNames.DATETIME: "2019-04-29", ColumnNames.VALUE: 43.02},
+    {ColumnNames.DATETIME: "2019-04-30", ColumnNames.VALUE: 43.73},
+    {ColumnNames.DATETIME: "2019-05-01", ColumnNames.VALUE: 43.08},
+    {ColumnNames.DATETIME: "2019-05-02", ColumnNames.VALUE: 42.63},
+    {ColumnNames.DATETIME: "2019-05-03", ColumnNames.VALUE: 43.08},
+    {ColumnNames.DATETIME: "2019-05-06", ColumnNames.VALUE: 42.93},
+    {ColumnNames.DATETIME: "2019-05-07", ColumnNames.VALUE: 42.22},
+    {ColumnNames.DATETIME: "2019-05-08", ColumnNames.VALUE: 42.28},
+    {ColumnNames.DATETIME: "2019-05-09", ColumnNames.VALUE: 41.65},
+    {ColumnNames.DATETIME: "2019-05-10", ColumnNames.VALUE: 41.5},
+    {ColumnNames.DATETIME: "2019-05-13", ColumnNames.VALUE: 41.23},
+    {ColumnNames.DATETIME: "2019-05-14", ColumnNames.VALUE: 41.55},
+    {ColumnNames.DATETIME: "2019-05-15", ColumnNames.VALUE: 41.77},
+    {ColumnNames.DATETIME: "2019-05-16", ColumnNames.VALUE: 42.28},
+    {ColumnNames.DATETIME: "2019-05-17", ColumnNames.VALUE: 42.34},
+    {ColumnNames.DATETIME: "2019-05-20", ColumnNames.VALUE: 42.58},
+    {ColumnNames.DATETIME: "2019-05-21", ColumnNames.VALUE: 42.75},
+    {ColumnNames.DATETIME: "2019-05-22", ColumnNames.VALUE: 42.34},
+    {ColumnNames.DATETIME: "2019-05-23", ColumnNames.VALUE: 41.34},
+    {ColumnNames.DATETIME: "2019-05-24", ColumnNames.VALUE: 41.76},
+    {ColumnNames.DATETIME: "2019-05-28", ColumnNames.VALUE: 41.625},
 ]
 
 # Sample data for multi-chart area series 2
 series_multiple_chart_area_02 = [
-    {"datetime": "2019-03-01", "value": 174.97},
-    {"datetime": "2019-03-04", "value": 175.85},
-    {"datetime": "2019-03-05", "value": 175.53},
-    {"datetime": "2019-03-06", "value": 174.52},
-    {"datetime": "2019-03-07", "value": 172.5},
-    {"datetime": "2019-03-08", "value": 172.91},
-    {"datetime": "2019-03-11", "value": 178.9},
-    {"datetime": "2019-03-12", "value": 180.91},
-    {"datetime": "2019-03-13", "value": 181.71},
-    {"datetime": "2019-03-14", "value": 183.73},
-    {"datetime": "2019-03-15", "value": 186.12},
-    {"datetime": "2019-03-18", "value": 188.02},
-    {"datetime": "2019-03-19", "value": 186.53},
-    {"datetime": "2019-03-20", "value": 188.16},
-    {"datetime": "2019-03-21", "value": 195.09},
-    {"datetime": "2019-03-22", "value": 191.05},
-    {"datetime": "2019-03-25", "value": 188.74},
-    {"datetime": "2019-03-26", "value": 186.79},
-    {"datetime": "2019-03-27", "value": 188.47},
-    {"datetime": "2019-03-28", "value": 188.72},
-    {"datetime": "2019-03-29", "value": 189.95},
-    {"datetime": "2019-04-01", "value": 191.24},
-    {"datetime": "2019-04-02", "value": 194.02},
-    {"datetime": "2019-04-03", "value": 195.35},
-    {"datetime": "2019-04-04", "value": 195.69},
-    {"datetime": "2019-04-05", "value": 197},
-    {"datetime": "2019-04-08", "value": 200.1},
-    {"datetime": "2019-04-09", "value": 199.5},
-    {"datetime": "2019-04-10", "value": 200.62},
-    {"datetime": "2019-04-11", "value": 198.95},
-    {"datetime": "2019-04-12", "value": 198.87},
-    {"datetime": "2019-04-15", "value": 199.23},
-    {"datetime": "2019-04-16", "value": 199.25},
-    {"datetime": "2019-04-17", "value": 203.13},
-    {"datetime": "2019-04-18", "value": 203.86},
-    {"datetime": "2019-04-22", "value": 204.53},
-    {"datetime": "2019-04-23", "value": 207.48},
-    {"datetime": "2019-04-24", "value": 207.16},
-    {"datetime": "2019-04-25", "value": 205.28},
-    {"datetime": "2019-04-26", "value": 204.3},
-    {"datetime": "2019-04-29", "value": 204.61},
-    {"datetime": "2019-04-30", "value": 200.67},
-    {"datetime": "2019-05-01", "value": 210.52},
-    {"datetime": "2019-05-02", "value": 209.15},
-    {"datetime": "2019-05-03", "value": 211.75},
-    {"datetime": "2019-05-06", "value": 208.48},
-    {"datetime": "2019-05-07", "value": 202.86},
-    {"datetime": "2019-05-08", "value": 202.9},
-    {"datetime": "2019-05-09", "value": 200.72},
-    {"datetime": "2019-05-10", "value": 197.18},
-    {"datetime": "2019-05-13", "value": 185.72},
-    {"datetime": "2019-05-14", "value": 188.66},
-    {"datetime": "2019-05-15", "value": 190.92},
-    {"datetime": "2019-05-16", "value": 190.08},
-    {"datetime": "2019-05-17", "value": 191.44},
-    {"datetime": "2019-05-20", "value": 191.83},
-    {"datetime": "2019-05-21", "value": 190.04},
-    {"datetime": "2019-05-22", "value": 186.6},
-    {"datetime": "2019-05-23", "value": 186.79},
-    {"datetime": "2019-05-24", "value": 185.72},
-    {"datetime": "2019-05-28", "value": 188.66},
+    {ColumnNames.DATETIME: "2019-03-01", ColumnNames.VALUE: 174.97},
+    {ColumnNames.DATETIME: "2019-03-04", ColumnNames.VALUE: 175.85},
+    {ColumnNames.DATETIME: "2019-03-05", ColumnNames.VALUE: 175.53},
+    {ColumnNames.DATETIME: "2019-03-06", ColumnNames.VALUE: 174.52},
+    {ColumnNames.DATETIME: "2019-03-07", ColumnNames.VALUE: 172.5},
+    {ColumnNames.DATETIME: "2019-03-08", ColumnNames.VALUE: 172.91},
+    {ColumnNames.DATETIME: "2019-03-11", ColumnNames.VALUE: 178.9},
+    {ColumnNames.DATETIME: "2019-03-12", ColumnNames.VALUE: 180.91},
+    {ColumnNames.DATETIME: "2019-03-13", ColumnNames.VALUE: 181.71},
+    {ColumnNames.DATETIME: "2019-03-14", ColumnNames.VALUE: 183.73},
+    {ColumnNames.DATETIME: "2019-03-15", ColumnNames.VALUE: 186.12},
+    {ColumnNames.DATETIME: "2019-03-18", ColumnNames.VALUE: 188.02},
+    {ColumnNames.DATETIME: "2019-03-19", ColumnNames.VALUE: 186.53},
+    {ColumnNames.DATETIME: "2019-03-20", ColumnNames.VALUE: 188.16},
+    {ColumnNames.DATETIME: "2019-03-21", ColumnNames.VALUE: 195.09},
+    {ColumnNames.DATETIME: "2019-03-22", ColumnNames.VALUE: 191.05},
+    {ColumnNames.DATETIME: "2019-03-25", ColumnNames.VALUE: 188.74},
+    {ColumnNames.DATETIME: "2019-03-26", ColumnNames.VALUE: 186.79},
+    {ColumnNames.DATETIME: "2019-03-27", ColumnNames.VALUE: 188.47},
+    {ColumnNames.DATETIME: "2019-03-28", ColumnNames.VALUE: 188.72},
+    {ColumnNames.DATETIME: "2019-03-29", ColumnNames.VALUE: 189.95},
+    {ColumnNames.DATETIME: "2019-04-01", ColumnNames.VALUE: 191.24},
+    {ColumnNames.DATETIME: "2019-04-02", ColumnNames.VALUE: 194.02},
+    {ColumnNames.DATETIME: "2019-04-03", ColumnNames.VALUE: 195.35},
+    {ColumnNames.DATETIME: "2019-04-04", ColumnNames.VALUE: 195.69},
+    {ColumnNames.DATETIME: "2019-04-05", ColumnNames.VALUE: 197},
+    {ColumnNames.DATETIME: "2019-04-08", ColumnNames.VALUE: 200.1},
+    {ColumnNames.DATETIME: "2019-04-09", ColumnNames.VALUE: 199.5},
+    {ColumnNames.DATETIME: "2019-04-10", ColumnNames.VALUE: 200.62},
+    {ColumnNames.DATETIME: "2019-04-11", ColumnNames.VALUE: 198.95},
+    {ColumnNames.DATETIME: "2019-04-12", ColumnNames.VALUE: 198.87},
+    {ColumnNames.DATETIME: "2019-04-15", ColumnNames.VALUE: 199.23},
+    {ColumnNames.DATETIME: "2019-04-16", ColumnNames.VALUE: 199.25},
+    {ColumnNames.DATETIME: "2019-04-17", ColumnNames.VALUE: 203.13},
+    {ColumnNames.DATETIME: "2019-04-18", ColumnNames.VALUE: 203.86},
+    {ColumnNames.DATETIME: "2019-04-22", ColumnNames.VALUE: 204.53},
+    {ColumnNames.DATETIME: "2019-04-23", ColumnNames.VALUE: 207.48},
+    {ColumnNames.DATETIME: "2019-04-24", ColumnNames.VALUE: 207.16},
+    {ColumnNames.DATETIME: "2019-04-25", ColumnNames.VALUE: 205.28},
+    {ColumnNames.DATETIME: "2019-04-26", ColumnNames.VALUE: 204.3},
+    {ColumnNames.DATETIME: "2019-04-29", ColumnNames.VALUE: 204.61},
+    {ColumnNames.DATETIME: "2019-04-30", ColumnNames.VALUE: 200.67},
+    {ColumnNames.DATETIME: "2019-05-01", ColumnNames.VALUE: 210.52},
+    {ColumnNames.DATETIME: "2019-05-02", ColumnNames.VALUE: 209.15},
+    {ColumnNames.DATETIME: "2019-05-03", ColumnNames.VALUE: 211.75},
+    {ColumnNames.DATETIME: "2019-05-06", ColumnNames.VALUE: 208.48},
+    {ColumnNames.DATETIME: "2019-05-07", ColumnNames.VALUE: 202.86},
+    {ColumnNames.DATETIME: "2019-05-08", ColumnNames.VALUE: 202.9},
+    {ColumnNames.DATETIME: "2019-05-09", ColumnNames.VALUE: 200.72},
+    {ColumnNames.DATETIME: "2019-05-10", ColumnNames.VALUE: 197.18},
+    {ColumnNames.DATETIME: "2019-05-13", ColumnNames.VALUE: 185.72},
+    {ColumnNames.DATETIME: "2019-05-14", ColumnNames.VALUE: 188.66},
+    {ColumnNames.DATETIME: "2019-05-15", ColumnNames.VALUE: 190.92},
+    {ColumnNames.DATETIME: "2019-05-16", ColumnNames.VALUE: 190.08},
+    {ColumnNames.DATETIME: "2019-05-17", ColumnNames.VALUE: 191.44},
+    {ColumnNames.DATETIME: "2019-05-20", ColumnNames.VALUE: 191.83},
+    {ColumnNames.DATETIME: "2019-05-21", ColumnNames.VALUE: 190.04},
+    {ColumnNames.DATETIME: "2019-05-22", ColumnNames.VALUE: 186.6},
+    {ColumnNames.DATETIME: "2019-05-23", ColumnNames.VALUE: 186.79},
+    {ColumnNames.DATETIME: "2019-05-24", ColumnNames.VALUE: 185.72},
+    {ColumnNames.DATETIME: "2019-05-28", ColumnNames.VALUE: 188.66},
 ]
 
 # Sample data for volume charts
 series_volume_chart = [
-    {"value": 1000000, "datetime": 1642425322},
-    {"value": 1200000, "datetime": 1642511722},
-    {"value": 800000, "datetime": 1642598122},
-    {"value": 1500000, "datetime": 1642684522},
-    {"value": 900000, "datetime": 1642770922},
-    {"value": 2000000, "datetime": 1642857322},
-    {"value": 1800000, "datetime": 1642943722},
-    {"value": 1600000, "datetime": 1643030122},
-    {"value": 2200000, "datetime": 1643116522},
-    {"value": 1900000, "datetime": 1643202922},
+    {ColumnNames.VALUE: 1000000, ColumnNames.DATETIME: 1642425322},
+    {ColumnNames.VALUE: 1200000, ColumnNames.DATETIME: 1642511722},
+    {ColumnNames.VALUE: 800000, ColumnNames.DATETIME: 1642598122},
+    {ColumnNames.VALUE: 1500000, ColumnNames.DATETIME: 1642684522},
+    {ColumnNames.VALUE: 900000, ColumnNames.DATETIME: 1642770922},
+    {ColumnNames.VALUE: 2000000, ColumnNames.DATETIME: 1642857322},
+    {ColumnNames.VALUE: 1800000, ColumnNames.DATETIME: 1642943722},
+    {ColumnNames.VALUE: 1600000, ColumnNames.DATETIME: 1643030122},
+    {ColumnNames.VALUE: 2200000, ColumnNames.DATETIME: 1643116522},
+    {ColumnNames.VALUE: 1900000, ColumnNames.DATETIME: 1643202922},
 ]
 
 # =============================================================================
@@ -276,7 +395,7 @@ def get_line_data() -> List[SingleValueData]:
         ```
     """
     return [
-        SingleValueData(time=item["datetime"], value=item["value"])
+        SingleValueData(time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE])
         for item in series_single_value_data
     ]
 
@@ -298,22 +417,22 @@ def get_candlestick_data() -> List[OhlcData]:
     """
     return [
         OhlcData(
-            time=item["datetime"],
-            open_=item["open"],
-            high=item["high"],
-            low=item["low"],
-            close=item["close"],
+            time=item[ColumnNames.DATETIME],
+            open_=item[ColumnNames.OPEN],
+            high=item[ColumnNames.HIGH],
+            low=item[ColumnNames.LOW],
+            close=item[ColumnNames.CLOSE],
         )
         for item in series_candlestick_chart
     ]
 
 
-def get_volume_data() -> List[HistogramData]:
+def get_volume_data() -> List[SingleValueData]:
     """
-    Get sample volume chart data as HistogramData objects.
+    Get sample volume chart data as SingleValueData objects.
 
     Returns:
-        List[HistogramData]: List of histogram data points for volume charts.
+        List[SingleValueData]: List of histogram data points for volume charts.
 
     Example:
         ```python
@@ -324,17 +443,19 @@ def get_volume_data() -> List[HistogramData]:
         ```
     """
     return [
-        HistogramData(time=item["datetime"], value=item["value"], color=item.get("color"))
+        SingleValueData(
+            time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE], color=item.get("color")
+        )
         for item in series_histogram_chart
     ]
 
 
-def get_baseline_data() -> List[BaselineData]:
+def get_baseline_data() -> List[SingleValueData]:
     """
-    Get sample baseline chart data as BaselineData objects.
+    Get sample baseline chart data as SingleValueData objects.
 
     Returns:
-        List[BaselineData]: List of baseline data points for baseline charts.
+        List[SingleValueData]: List of baseline data points for baseline charts.
 
     Example:
         ```python
@@ -345,7 +466,8 @@ def get_baseline_data() -> List[BaselineData]:
         ```
     """
     return [
-        BaselineData(time=item["datetime"], value=item["value"]) for item in series_baseline_chart
+        SingleValueData(time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE])
+        for item in series_baseline_chart
     ]
 
 
@@ -365,7 +487,7 @@ def get_multi_area_data_1() -> List[SingleValueData]:
         ```
     """
     return [
-        SingleValueData(time=item["datetime"], value=item["value"])
+        SingleValueData(time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE])
         for item in series_multiple_chart_area_01
     ]
 
@@ -386,17 +508,17 @@ def get_multi_area_data_2() -> List[SingleValueData]:
         ```
     """
     return [
-        SingleValueData(time=item["datetime"], value=item["value"])
+        SingleValueData(time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE])
         for item in series_multiple_chart_area_02
     ]
 
 
-def get_volume_histogram_data() -> List[HistogramData]:
+def get_volume_histogram_data() -> List[SingleValueData]:
     """
-    Get sample volume histogram data as HistogramData objects.
+    Get sample volume histogram data as SingleValueData objects.
 
     Returns:
-        List[HistogramData]: List of histogram data points for volume charts.
+        List[SingleValueData]: List of histogram data points for volume charts.
 
     Example:
         ```python
@@ -407,7 +529,8 @@ def get_volume_histogram_data() -> List[HistogramData]:
         ```
     """
     return [
-        HistogramData(time=item["datetime"], value=item["value"]) for item in series_volume_chart
+        SingleValueData(time=item[ColumnNames.DATETIME], value=item[ColumnNames.VALUE])
+        for item in series_volume_chart
     ]
 
 
@@ -475,7 +598,7 @@ def get_sample_data_for_chart_type(chart_type: str) -> Union[List, pd.DataFrame]
     Get sample data for a specific chart type.
 
     Args:
-        chart_type: Type of chart ("line", "candlestick", "volume", "baseline", "area").
+        chart_type: Type of chart ("line", "candlestick", ColumnNames.VOLUME, "baseline", "area").
 
     Returns:
         Union[List, pd.DataFrame]: Sample data appropriate for the chart type.
@@ -498,7 +621,7 @@ def get_sample_data_for_chart_type(chart_type: str) -> Union[List, pd.DataFrame]
         return get_line_data()
     elif chart_type == "candlestick":
         return get_candlestick_data()
-    elif chart_type == "volume":
+    elif chart_type == ColumnNames.VOLUME:
         return get_volume_data()
     elif chart_type == "baseline":
         return get_baseline_data()
@@ -529,7 +652,7 @@ def get_all_sample_datasets() -> Dict[str, Union[List, pd.DataFrame]]:
     return {
         "line": get_line_data(),
         "candlestick": get_candlestick_data(),
-        "volume": get_volume_data(),
+        ColumnNames.VOLUME: get_volume_data(),
         "baseline": get_baseline_data(),
         "area_1": get_multi_area_data_1(),
         "area_2": get_multi_area_data_2(),

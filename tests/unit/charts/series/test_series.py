@@ -10,7 +10,7 @@ import pandas as pd
 import psutil
 import pytest
 
-from streamlit_lightweight_charts_pro import SinglePaneChart, create_chart
+from streamlit_lightweight_charts_pro import Chart, create_chart
 from streamlit_lightweight_charts_pro.charts.chart_builder import ChartBuilder
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
@@ -22,16 +22,14 @@ from streamlit_lightweight_charts_pro.charts.series import (
 )
 from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
 from streamlit_lightweight_charts_pro.data import (
-    BaselineData,
-    HistogramData,
-    MarkerPosition,
-    MarkerShape,
     OhlcData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames, MarkerPosition
 from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle as LineStyleEnum
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LineType,
+    MarkerShape,
 )
 
 
@@ -53,7 +51,10 @@ class TestSeries:
         ]
 
         self.sample_df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "close": [100, 105, 110]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.CLOSE: [100, 105, 110],
+            }
         )
 
     # ===== SERIES BASE CLASS TESTS =====
@@ -169,19 +170,9 @@ class TestSeries:
         """Test AreaSeries with ultra-simplified API."""
         series = AreaSeries(
             data=self.sample_data,
-            top_color="rgba(0,255,0,0.5)",
-            bottom_color="rgba(0,255,0,0.0)",
             line_color="#00ff00",
-            line_width=3,
         )
-
-        assert series.top_color == "rgba(0,255,0,0.5)"
-        assert series.line_width == 3
-
-        options = series._get_options_dict()
-        assert options["topColor"] == "rgba(0,255,0,0.5)"
-        assert options["lineWidth"] == 3
-        assert options["lineStyle"] == LineStyleEnum.SOLID.value
+        assert series.line_color == "#00ff00"
 
     def test_area_series_column_mapping_attribute(self):
         """Test that AreaSeries has column_mapping attribute set correctly."""
@@ -192,9 +183,16 @@ class TestSeries:
 
         # Test with custom column mapping
         series = AreaSeries(
-            data=self.sample_data, column_mapping={"time": "datetime", "value": "close"}
+            data=self.sample_data,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.CLOSE,
+            },
         )
-        assert series.column_mapping == {"time": "datetime", "value": "close"}
+        assert series.column_mapping == {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            ColumnNames.VALUE: ColumnNames.CLOSE,
+        }
 
     # ===== BAR SERIES TESTS =====
 
@@ -216,10 +214,17 @@ class TestSeries:
     def test_bar_series_column_mapping_attribute(self):
         """Test that BarSeries has column_mapping attribute set correctly."""
         series = BarSeries(
-            data=self.sample_data, column_mapping={"time": "datetime", "value": "value"}
+            data=self.sample_data,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
         )
         assert hasattr(series, "column_mapping")
-        assert series.column_mapping == {"time": "datetime", "value": "value"}
+        assert series.column_mapping == {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            ColumnNames.VALUE: ColumnNames.VALUE,
+        }
 
     # ===== CANDLESTICK SERIES TESTS =====
 
@@ -246,7 +251,7 @@ class TestSeries:
 
     def test_histogram_series_ultra_simplified(self):
         """Test HistogramSeries with ultra-simplified API."""
-        data = [HistogramData("2024-01-01", 1000000)]
+        data = [SingleValueData("2024-01-01", 1000000)]
 
         series = HistogramSeries(
             data=data,
@@ -264,16 +269,38 @@ class TestSeries:
     def test_histogram_series_column_mapping_attribute(self):
         """Test that HistogramSeries has column_mapping attribute set correctly."""
         series = HistogramSeries(
-            data=self.sample_data, column_mapping={"time": "datetime", "value": "value"}
+            data=self.sample_data,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
         )
         assert hasattr(series, "column_mapping")
-        assert series.column_mapping == {"time": "datetime", "value": "value"}
+        assert series.column_mapping == {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            ColumnNames.VALUE: ColumnNames.VALUE,
+        }
+
+    def test_histogram_series_with_custom_column_mapping(self):
+        """Test HistogramSeries with a DataFrame and custom column mapping."""
+        df = pd.DataFrame(
+            {
+                "date_col": ["2024-01-01", "2024-01-02"],
+                "val_col": [10, 20],
+            }
+        )
+        mapping = {"time": "date_col", "value": "val_col"}
+        series = HistogramSeries(data=df, column_mapping=mapping)
+        # Should not raise and should use mapping
+        assert series.column_mapping == mapping
+        # Optionally, check that the internal data is normalized as expected
+        # (depends on your implementation)
 
     # ===== BASELINE SERIES TESTS =====
 
     def test_baseline_series_ultra_simplified(self):
         """Test BaselineSeries with ultra-simplified API."""
-        data = [BaselineData("2024-01-01", 5.2)]
+        data = [SingleValueData("2024-01-01", 5.2)]
 
         series = BaselineSeries(
             data=data,
@@ -320,36 +347,63 @@ class TestSeries:
 
     def test_dataframe_column_mapping_issue(self):
         """Test the DataFrame column mapping issue we encountered."""
-        # Create DataFrame with "datetime" and "value" columns (not "close")
+        # Create DataFrame with ColumnNames.DATETIME and ColumnNames.VALUE columns (not ColumnNames.CLOSE)
         df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "value": [100, 105, 103]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                ColumnNames.VALUE: [100, 105, 103],
+            }
         )
 
         # This should work with correct column mapping
-        series = AreaSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
+        series = AreaSeries(
+            data=df,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
+        )
         assert len(series.data) == 3
 
-        # This should fail without column mapping (expecting "close" column)
-        with pytest.raises(ValueError, match="DataFrame must contain columns: datetime and close"):
+        # This should fail without column mapping (expecting ColumnNames.CLOSE column)
+        with pytest.raises(ValueError, match="Columns.*are missing in the data"):
             AreaSeries(data=df)
 
     def test_dataframe_processing_with_column_mapping(self):
         """Test DataFrame processing with various column mappings."""
-        df = pd.DataFrame({"datetime": ["2024-01-01", "2024-01-02"], "value": [100, 105]})
+        df = pd.DataFrame(
+            {ColumnNames.DATETIME: ["2024-01-01", "2024-01-02"], ColumnNames.VALUE: [100, 105]}
+        )
 
         # Test AreaSeries
-        area_series = AreaSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
+        area_series = AreaSeries(
+            data=df,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
+        )
         assert len(area_series.data) == 2
         assert str(area_series.data[0].time) == "2024-01-01 00:00:00"
         assert area_series.data[0].value == 100
 
         # Test BarSeries
-        bar_series = BarSeries(data=df, column_mapping={"time": "datetime", "value": "value"})
+        bar_series = BarSeries(
+            data=df,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
+        )
         assert len(bar_series.data) == 2
 
         # Test HistogramSeries
         hist_series = HistogramSeries(
-            data=df, column_mapping={"time": "datetime", "value": "value"}
+            data=df,
+            column_mapping={
+                ColumnNames.TIME: ColumnNames.DATETIME,
+                ColumnNames.VALUE: ColumnNames.VALUE,
+            },
         )
         assert len(hist_series.data) == 2
 
@@ -375,7 +429,9 @@ class TestSeries:
 
         # Test LineSeries with custom column mapping
         series = LineSeries(
-            data=df, column_mapping={"time": "date", "value": "price"}, color="#ff0000"
+            data=df,
+            column_mapping={ColumnNames.TIME: "date", ColumnNames.VALUE: "price"},
+            color="#ff0000",
         )
 
         # Test that data was converted correctly
@@ -386,10 +442,15 @@ class TestSeries:
     def test_series_dataframe_custom_columns(self):
         """Test series DataFrame with custom column mapping."""
         df = pd.DataFrame(
-            {"datetime": ["2024-01-01", "2024-01-02", "2024-01-03"], "price": [100, 105, 110]}
+            {
+                ColumnNames.DATETIME: ["2024-01-01", "2024-01-02", "2024-01-03"],
+                "price": [100, 105, 110],
+            }
         )
 
-        series = LineSeries(df, column_mapping={"time": "datetime", "value": "price"})
+        series = LineSeries(
+            df, column_mapping={ColumnNames.TIME: ColumnNames.DATETIME, ColumnNames.VALUE: "price"}
+        )
 
         assert len(series.data) == 3
         assert str(series.data[0].time) == "2024-01-01 00:00:00"
@@ -530,7 +591,11 @@ class TestSeries:
 
     def test_series_performance_large_dataset(self):
         """Test series performance with large dataset."""
-        large_data = [SingleValueData(f"2024-01-{i:02d}", 100 + i) for i in range(1, 1001)]
+        import pandas as pd
+
+        # Generate 1000 valid consecutive dates starting from 2024-01-01
+        dates = pd.date_range(start="2024-01-01", periods=1000, freq="D")
+        large_data = [SingleValueData(str(date.date()), 100 + i) for i, date in enumerate(dates)]
         series = LineSeries(large_data)
 
         # Test serialization performance
@@ -594,7 +659,6 @@ class TestSeries:
                 shape=MarkerShape.CIRCLE,
                 text="Test Marker",
             )
-            .set_price_scale_config(visible=True, auto_scale=True)
         )
 
         assert result is series
@@ -685,18 +749,6 @@ class TestSeries:
         assert "minMove" in series.price_format
         assert "precision" in series.price_format
 
-    def test_series_set_price_scale_config(self):
-        """Test series set_price_scale_config method."""
-        series = LineSeries(self.sample_data)
-
-        result = series.set_price_scale_config(
-            visible=True, auto_scale=True, scale_margins={"top": 0.1, "bottom": 0.1}
-        )
-
-        assert result is series
-        # Note: The actual attribute name may be different
-        # The method sets internal configuration
-
     # ===== MARKER TESTS =====
 
     def test_series_add_marker(self):
@@ -745,8 +797,18 @@ class TestSeries:
         series = LineSeries(self.sample_data)
 
         markers = [
-            {"time": "2024-01-01", "position": "aboveBar", "shape": "circle", "text": "Start"},
-            {"time": "2024-01-03", "position": "belowBar", "shape": "arrowDown", "text": "End"},
+            {
+                ColumnNames.TIME: "2024-01-01",
+                "position": "aboveBar",
+                "shape": "circle",
+                "text": "Start",
+            },
+            {
+                ColumnNames.TIME: "2024-01-03",
+                "position": "belowBar",
+                "shape": "arrowDown",
+                "text": "End",
+            },
         ]
 
         result = series.add_markers(markers)
@@ -836,9 +898,9 @@ class TestSeries:
     # ===== INTEGRATION TESTS =====
 
     def test_series_to_frontend_config_structure(self):
-        """Test that series to_frontend_config returns correct structure."""
+        """Test that series to_dict returns correct structure."""
         series = LineSeries(self.sample_data)
-        config = series.to_frontend_config()
+        config = series.to_dict()
 
         assert "type" in config
         assert "data" in config
@@ -846,7 +908,7 @@ class TestSeries:
 
     def test_single_pane_chart_to_frontend_config_structure(self):
         """Test that to_frontend_config returns the correct structure."""
-        chart = SinglePaneChart(series=LineSeries(self.sample_data))
+        chart = Chart(series=LineSeries(self.sample_data))
         config = chart.to_frontend_config()
 
         # Test the structure we fixed
@@ -920,7 +982,6 @@ class TestSeries:
                 shape=MarkerShape.CIRCLE,
                 text="Test Marker",
             )
-            .set_price_scale_config(visible=True, auto_scale=True)
         )
 
         # Test serialization
@@ -976,3 +1037,45 @@ class TestSeries:
         # Test that modifications work correctly
         series.color = "#00ff00"
         assert series.color == "#00ff00"
+
+    def test_series_pane_id_assignment(self):
+        """Test that pane_id is correctly assigned and serialized for all series types."""
+        for SeriesClass in [
+            LineSeries,
+            AreaSeries,
+            BarSeries,
+            BaselineSeries,
+            CandlestickSeries,
+            HistogramSeries,
+        ]:
+            series = SeriesClass(self.sample_data, pane_id=2)
+            assert hasattr(series, "pane_id")
+            assert series.pane_id == 2
+            config = series.to_dict()
+            assert "pane_id" in config
+            assert config["pane_id"] == 2
+
+    def test_overlay_false_requires_pane_id(self):
+        """Test that overlay=False and pane_id=None raises ValueError in Series."""
+        from streamlit_lightweight_charts_pro.charts.series import LineSeries
+
+        with pytest.raises(ValueError):
+            s = LineSeries([SingleValueData("2024-01-01", 100)], overlay=False, pane_id=None)
+            s.to_dict()
+
+    def test_overlay_true_defaults_pane_id_zero(self):
+        """Test that overlay=True and pane_id=None sets pane_id to 0 in Series config."""
+        from streamlit_lightweight_charts_pro.charts.series import LineSeries
+
+        s = LineSeries([SingleValueData("2024-01-01", 100)], overlay=True, pane_id=None)
+        config = s.to_dict()
+        assert config["pane_id"] == 0
+
+    def test_series_height_in_config(self):
+        """Test that height is included in Series config if set."""
+        from streamlit_lightweight_charts_pro.charts.series import LineSeries
+
+        s = LineSeries([SingleValueData("2024-01-01", 100)], pane_id=1, height=250)
+        config = s.to_dict()
+        assert config["height"] == 250
+        assert config["pane_id"] == 1

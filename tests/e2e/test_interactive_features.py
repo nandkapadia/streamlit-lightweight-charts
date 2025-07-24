@@ -8,17 +8,17 @@ from playwright.sync_api import sync_playwright
 STREAMLIT_INTERACTIVE_APP = """\
 import streamlit as st
 import pandas as pd
-from streamlit_lightweight_charts_pro import SinglePaneChart
+from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.series import CandlestickSeries
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 
 # Create sample data as DataFrame
 data = [
-    {"datetime": "2023-01-01", "open": 100, "high": 110, "low": 95, "close": 105},
-    {"datetime": "2023-01-02", "open": 105, "high": 115, "low": 100, "close": 110},
-    {"datetime": "2023-01-03", "open": 110, "high": 120, "low": 105, "close": 115},
-    {"datetime": "2023-01-04", "open": 115, "high": 125, "low": 110, "close": 120},
-    {"datetime": "2023-01-05", "open": 120, "high": 130, "low": 115, "close": 125}
+    {ColumnNames.DATETIME: "2023-01-01", ColumnNames.OPEN: 100, ColumnNames.HIGH: 110, ColumnNames.LOW: 95, ColumnNames.CLOSE: 105},
+    {ColumnNames.DATETIME: "2023-01-02", ColumnNames.OPEN: 105, ColumnNames.HIGH: 115, ColumnNames.LOW: 100, ColumnNames.CLOSE: 110},
+    {ColumnNames.DATETIME: "2023-01-03", ColumnNames.OPEN: 110, ColumnNames.HIGH: 120, ColumnNames.LOW: 105, ColumnNames.CLOSE: 115},
+    {ColumnNames.DATETIME: "2023-01-04", ColumnNames.OPEN: 115, ColumnNames.HIGH: 125, ColumnNames.LOW: 110, ColumnNames.CLOSE: 120},
+    {ColumnNames.DATETIME: "2023-01-05", ColumnNames.OPEN: 120, ColumnNames.HIGH: 130, ColumnNames.LOW: 115, ColumnNames.CLOSE: 125}
 ]
 
 df = pd.DataFrame(data)
@@ -26,7 +26,7 @@ df = pd.DataFrame(data)
 st.write('Interactive Candlestick Chart')
 series = CandlestickSeries(data=df)
 chart_options = ChartOptions(height=400, width=600)
-chart = SinglePaneChart(series=[series], options=chart_options)
+chart = Chart(series=[series], options=chart_options)
 chart.render()
 """
 
@@ -204,3 +204,22 @@ def test_trade_visualization_rendering(tmp_path):
             proc.wait(timeout=5)
         except Exception:
             proc.kill()
+
+
+def test_multi_pane_chart_e2e():
+    """E2E test for multi-pane chart with pane heights and overlays (placeholder)."""
+    # This is a placeholder for a real browser-based test (e.g., Selenium/Playwright)
+    # Here we just check the backend config for now
+    from streamlit_lightweight_charts_pro.charts.chart import Chart
+    from streamlit_lightweight_charts_pro.charts.series import HistogramSeries, LineSeries
+    from streamlit_lightweight_charts_pro.data import SingleValueData
+
+    data = [SingleValueData("2024-01-01", 100), SingleValueData("2024-01-02", 105)]
+    s1 = LineSeries(data, pane_id=0, height=200)
+    s2 = HistogramSeries(data, pane_id=1, height=300)
+    s3 = LineSeries(data, pane_id=0, overlay=True)
+    chart = Chart(series=[s1, s2, s3])
+    config = chart.to_frontend_config()
+    assert config["charts"][0]["paneHeights"][0] == 200
+    assert config["charts"][0]["paneHeights"][1] == 300
+    assert config["charts"][0]["series"][2]["pane_id"] == 0

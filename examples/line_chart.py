@@ -23,6 +23,7 @@ import streamlit as st
 
 from examples.dataSamples import get_dataframe_line_data, get_line_data
 from streamlit_lightweight_charts_pro import LineSeries, SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 from streamlit_lightweight_charts_pro.data import create_text_annotation
 
 
@@ -75,7 +76,13 @@ def basic_line_chart_example():
     line_data = get_line_data()
 
     # Create line series
-    line_series = LineSeries(data=line_data, color="#2196F3", line_width=2, price_scale_id="right")
+    line_series = LineSeries(
+        data=line_data,
+        color="#2196F3",
+        line_width=2,
+        price_scale_id="right",
+        price_scale_config=PriceScaleOptions(visible=True, auto_scale=True),
+    )
 
     # Create chart
     chart = SinglePaneChart(series=line_series)

@@ -3,6 +3,7 @@ from streamlit_lightweight_charts_pro.data.trade import (
     TradeType,
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 from streamlit_lightweight_charts_pro.utils.trade_visualization import (
     add_trades_to_series,
     create_trade_shapes_series,
@@ -34,7 +35,15 @@ def test_create_trade_shapes_series():
 def test_add_trades_to_series():
     series_config = {
         "type": "Candlestick",
-        "data": [{"time": "2023-01-01", "open": 100, "high": 110, "low": 95, "close": 105}],
+        "data": [
+            {
+                ColumnNames.TIME: "2023-01-01",
+                ColumnNames.OPEN: 100,
+                ColumnNames.HIGH: 110,
+                ColumnNames.LOW: 95,
+                ColumnNames.CLOSE: 105,
+            }
+        ],
     }
     trades = [Trade("2023-01-01", 100, "2023-01-02", 110, 10, TradeType.LONG)]
     options = TradeVisualizationOptions(style="markers")
