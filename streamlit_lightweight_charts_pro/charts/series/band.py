@@ -231,7 +231,7 @@ class BandSeries(Series):
         # Get base configuration
         config = {
             "type": "band",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": self._get_options_dict(),
         }
 

@@ -249,6 +249,26 @@ class Series(ABC):
 
         return data
 
+    @property
+    def data_dict(self) -> List[Dict[str, Any]]:
+        """
+        Get the data in dictionary format.
+        Handles dict, list of dicts, or list of objects with to_dict.
+        """
+        if isinstance(self.data, dict):
+            return self.data
+        if isinstance(self.data, list):
+            if len(self.data) == 0:
+                return self.data
+            # If already list of dicts
+            if isinstance(self.data[0], dict):
+                return self.data
+            # If list of objects with to_dict
+            if hasattr(self.data[0], "to_dict"):
+                return [item.to_dict() for item in self.data]
+        # Fallback: return as-is
+        return self.data
+
     @abstractmethod
     def _process_dataframe(self, df: pd.DataFrame) -> List[BaseData]:
         """

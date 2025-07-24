@@ -64,13 +64,50 @@ class AreaSeries(Series):
         pane_id=0,
         height=None,
         overlay=True,
+        # TradingView AreaStyleOptions additions:
+        top_color="#2196F3",
+        bottom_color="rgba(33, 150, 243, 0.0)",
+        line_color="#2196F3",
+        line_width=2,
+        line_style=None,
+        relative_gradient=False,
+        invert_filled_area=False,
+        line_visible=True,
+        point_markers_visible=False,
+        point_markers_radius=None,
+        crosshair_marker_visible=True,
+        crosshair_marker_radius=4,
+        crosshair_marker_border_color="",
+        crosshair_marker_background_color="",
+        crosshair_marker_border_width=2,
+        last_price_animation="disabled",
         **kwargs,
     ):
-        # Support test expectation: allow .line_color to reflect price_line_color
-        line_color = kwargs.pop("line_color", price_line_color)
-        top_color = kwargs.pop("top_color", "#2196F3")
-        bottom_color = kwargs.pop("bottom_color", "rgba(33, 150, 243, 0.0)")
-        line_width = kwargs.pop("line_width", 2)
+        """
+        Args:
+            ...
+            relative_gradient (bool): Gradient is relative to base value (default: False)
+            invert_filled_area (bool): Invert filled area (default: False)
+            line_visible (bool): Show series line (default: True)
+            point_markers_visible (bool): Show circle markers (default: False)
+            point_markers_radius (Optional[int]): Circle marker radius (default: None)
+            crosshair_marker_visible (bool): Show crosshair marker (default: True)
+            crosshair_marker_radius (int): Crosshair marker radius (default: 4)
+            crosshair_marker_border_color (str): Crosshair marker border color (default: "")
+            crosshair_marker_background_color (str): Crosshair marker background color (default: "")
+            crosshair_marker_border_width (int): Crosshair marker border width (default: 2)
+            last_price_animation (str): Last price animation mode (default: "disabled")
+        """
+        # Remove from kwargs if present
+        for k in [
+            "top_color", "bottom_color", "line_color", "line_width", "line_style",
+            "relative_gradient", "invert_filled_area", "line_visible", "point_markers_visible",
+            "point_markers_radius", "crosshair_marker_visible", "crosshair_marker_radius",
+            "crosshair_marker_border_color", "crosshair_marker_background_color",
+            "crosshair_marker_border_width", "last_price_animation"
+        ]:
+            if k in kwargs:
+                locals()[k] = kwargs.pop(k)
         super().__init__(
             data=data,
             column_mapping=column_mapping,
@@ -95,6 +132,18 @@ class AreaSeries(Series):
         self.top_color = top_color
         self.bottom_color = bottom_color
         self.line_width = line_width
+        self.line_style = line_style
+        self.relative_gradient = relative_gradient
+        self.invert_filled_area = invert_filled_area
+        self.line_visible = line_visible
+        self.point_markers_visible = point_markers_visible
+        self.point_markers_radius = point_markers_radius
+        self.crosshair_marker_visible = crosshair_marker_visible
+        self.crosshair_marker_radius = crosshair_marker_radius
+        self.crosshair_marker_border_color = crosshair_marker_border_color
+        self.crosshair_marker_background_color = crosshair_marker_background_color
+        self.crosshair_marker_border_width = crosshair_marker_border_width
+        self.last_price_animation = last_price_animation
 
     @property
     def chart_type(self) -> ChartType:
@@ -154,7 +203,7 @@ class AreaSeries(Series):
         # Get base configuration
         config = {
             "type": "area",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": self._get_options_dict(),
         }
 
@@ -182,6 +231,22 @@ class AreaSeries(Series):
             "baseLineColor": self.base_line_color,
             "baseLineStyle": self.base_line_style,
             "priceFormat": self.price_format,
+            # TradingView AreaStyleOptions additions:
+            "topColor": self.top_color,
+            "bottomColor": self.bottom_color,
+            "relativeGradient": self.relative_gradient,
+            "invertFilledArea": self.invert_filled_area,
+            "lineColor": self.line_color,
+            "lineStyle": self.line_style,
+            "lineWidth": self.line_width,
+            "lineVisible": self.line_visible,
+            "pointMarkersVisible": self.point_markers_visible,
+            "pointMarkersRadius": self.point_markers_radius,
+            "crosshairMarkerVisible": self.crosshair_marker_visible,
+            "crosshairMarkerRadius": self.crosshair_marker_radius,
+            "crosshairMarkerBorderColor": self.crosshair_marker_border_color,
+            "crosshairMarkerBackgroundColor": self.crosshair_marker_background_color,
+            "crosshairMarkerBorderWidth": self.crosshair_marker_border_width,
+            "lastPriceAnimation": self.last_price_animation,
         }
-
         return options

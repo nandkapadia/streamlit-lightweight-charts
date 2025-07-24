@@ -124,7 +124,6 @@ class LineSeries(Series):
             pane_id=pane_id,
             height=height,
             overlay=overlay,
-            **kwargs,
         )
         self.color = color
         self.line_style = line_style
@@ -256,13 +255,13 @@ class LineSeries(Series):
             # }
             ```
         """
-        # Validate pane configuration
+        # Get data in proper format
         self._validate_pane_config()
 
         # Base configuration
         config = {
             "type": "line",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": {
                 "priceScaleId": self.price_scale_id,
                 "visible": self.visible,

@@ -146,6 +146,7 @@ class HistogramSeries(Series):
 
         time_col = column_mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
         value_col = column_mapping.get(ColumnNames.VALUE, ColumnNames.CLOSE)
+
         column_mapping.get(ColumnNames.OPEN, ColumnNames.OPEN)
         column_mapping.get(ColumnNames.CLOSE, ColumnNames.CLOSE)
 
@@ -183,7 +184,7 @@ class HistogramSeries(Series):
         # Get base configuration
         config = {
             "type": "histogram",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": self._get_options_dict(),
         }
 

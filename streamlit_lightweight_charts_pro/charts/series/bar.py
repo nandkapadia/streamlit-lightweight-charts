@@ -144,7 +144,7 @@ class BarSeries(Series):
         # Get base configuration
         config = {
             "type": "bar",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": self._get_options_dict(),
         }
 

@@ -44,7 +44,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
 from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data import OhlcData, OhlcvData
 from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
-from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
+from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames, PriceScaleMode
 
 
 class Chart:
@@ -365,14 +365,18 @@ class Chart:
             border_visible=False,
             mode=PriceScaleMode.NORMAL,
             scale_margins=PriceScaleMargins(top=0.8, bottom=0.0),
-            price_scale_id="volume",
+            price_scale_id=ColumnNames.VOLUME,
         )
-        self.add_overlay_price_scale("volume", volume_price_scale)
+        self.add_overlay_price_scale(ColumnNames.VOLUME, volume_price_scale)
+
+        # need to add a mapping for the volume column
+        column_mapping[ColumnNames.VALUE] = ColumnNames.VOLUME
+
         volume_series = HistogramSeries(
             data=data,
             column_mapping=column_mapping,
             pane_id=volume_pane_id,
-            price_scale_id="volume",
+            price_scale_id=ColumnNames.VOLUME,
             price_format={"type": "volume", "precision": 0},
             **volume_kwargs,
         )

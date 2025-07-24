@@ -211,7 +211,7 @@ class CandlestickSeries(Series):
         # Base configuration
         config = {
             "type": "candlestick",
-            "data": [item.to_dict() for item in self.data],
+            "data": self.data_dict,
             "options": {
                 "priceScaleId": self.price_scale_id,
                 "visible": self.visible,
