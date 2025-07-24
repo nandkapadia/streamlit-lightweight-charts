@@ -1,4 +1,29 @@
-"""Bar series for streamlit-lightweight-charts."""
+"""
+Bar series for streamlit-lightweight-charts.
+
+This module provides the BarSeries class for creating bar charts that display
+OHLC data as bars. Bar series are commonly used for price charts and volume overlays.
+
+The BarSeries class supports various styling options including bar color, base value,
+and animation effects. It also supports markers and price line configurations.
+
+Example:
+    from streamlit_lightweight_charts_pro.charts.series import BarSeries
+    from streamlit_lightweight_charts_pro.data import SingleValueData
+
+    # Create bar data
+    data = [
+        SingleValueData("2024-01-01", 100),
+        SingleValueData("2024-01-02", 105)
+    ]
+
+    # Create bar series with styling
+    series = BarSeries(
+        data=data,
+        color="#26a69a",
+        base=0
+    )
+"""
 
 from typing import Any, Dict, List, Optional, Sequence, Union
 
@@ -7,6 +32,8 @@ import pandas as pd
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import SingleValueData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class BarSeries(Series):
@@ -14,36 +41,30 @@ class BarSeries(Series):
 
     def __init__(
         self,
-        data: Union[Sequence[SingleValueData], pd.DataFrame],
-        visible: bool = True,
-        price_scale_id: str = "right",
-        price_line_visible: bool = False,
-        base_line_visible: bool = False,
-        price_line_width: int = 1,
-        price_line_color: str = "#2196F3",
-        price_line_style: str = "solid",
-        base_line_width: int = 1,
-        base_line_color: str = "#FF9800",
-        base_line_style: str = "solid",
-        price_format: Optional[Dict[str, Any]] = None,
-        markers: Optional[List[Any]] = None,
-        price_scale_config: Optional[Dict[str, Any]] = None,
-        # Bar-specific options
-        column_mapping: Optional[Dict[str, str]] = None,
-        color: str = "#26a69a",
-        base: float = 0,
+        data,
+        column_mapping=None,
+        visible=True,
+        price_scale_id="right",
+        price_line_visible=False,
+        base_line_visible=False,
+        price_line_width=1,
+        price_line_color="#2196F3",
+        price_line_style="solid",
+        base_line_width=1,
+        base_line_color="#FF9800",
+        base_line_style="solid",
+        price_format=None,
+        markers=None,
+        pane_id=0,
+        height=None,
+        overlay=True,
+        **kwargs,
     ):
-        """Initialize bar series."""
-        # Store column mapping first
-        self.column_mapping = column_mapping
-
-        # Bar-specific styling options
-        self.color = color
-        self.base = base
-
-        # Call parent constructor after setting column_mapping
+        color = kwargs.pop("color", "#26a69a")
+        base = kwargs.pop("base", 0)
         super().__init__(
             data=data,
+            column_mapping=column_mapping,
             visible=visible,
             price_scale_id=price_scale_id,
             price_line_visible=price_line_visible,
@@ -56,13 +77,27 @@ class BarSeries(Series):
             base_line_style=base_line_style,
             price_format=price_format,
             markers=markers,
-            price_scale_config=price_scale_config,
+            pane_id=pane_id,
+            height=height,
+            overlay=overlay,
+            **kwargs,
         )
+        self.color = color
+        self.base = base
 
     @property
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.BAR
+
+    def _get_columns(self) -> Dict[str, str]:
+        """
+        Return the column mapping for bar series, using self.column_mapping if set.
+        """
+        return self.column_mapping or {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            ColumnNames.VALUE: ColumnNames.CLOSE,
+        }
 
     def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
         """
@@ -80,11 +115,11 @@ class BarSeries(Series):
         Raises:
             ValueError: If required columns are missing from the DataFrame.
         """
-        # Use default column mapping if none provided
-        column_mapping = self.column_mapping or {"time": "datetime", "value": "close"}
+        # Use _get_columns for column mapping
+        column_mapping = self._get_columns()
 
-        time_col = column_mapping.get("time", "datetime")
-        value_col = column_mapping.get("value", "close")
+        time_col = column_mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
+        value_col = column_mapping.get(ColumnNames.VALUE, ColumnNames.CLOSE)
 
         if time_col not in df.columns or value_col not in df.columns:
             raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")
@@ -95,9 +130,9 @@ class BarSeries(Series):
 
         return [SingleValueData(time=time, value=value) for time, value in zip(times, values)]
 
-    def to_frontend_config(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
-        Convert series to frontend-compatible configuration.
+        Convert series to dictionary representation.
 
         This method creates a dictionary representation of the bar series
         that can be consumed by the frontend React component.
@@ -105,6 +140,9 @@ class BarSeries(Series):
         Returns:
             Dict[str, Any]: Dictionary containing series configuration for the frontend.
         """
+        # Validate pane configuration
+        self._validate_pane_config()
+        
         # Get base configuration
         config = {
             "type": "bar",
@@ -116,6 +154,10 @@ class BarSeries(Series):
         if self.markers:
             config["markers"] = [marker.to_dict() for marker in self.markers]
 
+        # Add height and pane_id
+        if self.height is not None:
+            config["height"] = self.height
+        config["pane_id"] = self.pane_id
         return config
 
     def _get_options_dict(self) -> Dict[str, Any]:

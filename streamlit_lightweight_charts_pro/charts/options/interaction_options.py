@@ -1,32 +1,53 @@
 """Interaction option classes for streamlit-lightweight-charts."""
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Union
 
-from streamlit_lightweight_charts_pro.type_definitions import (
-    CrosshairMode,
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LineStyle,
-    TrackingActivationMode,
+    CrosshairMode,
     TrackingExitMode,
+    TrackingActivationMode,
 )
 
 
-@dataclass
 class CrosshairLineOptions:
     """Crosshair line configuration."""
 
-    visible: bool = True
-    width: int = 1
-    color: str = "rgba(224, 227, 235, 0.2)"
-    style: LineStyle = LineStyle.DASHED
+    def __init__(
+        self,
+        color: str = "#758696",
+        width: int = 1,
+        style: Union[int, LineStyle] = LineStyle.SOLID,
+        visible: bool = True,
+    ):
+        self.color = color
+        self.width = width
+        # Accept both int and Enum for style
+        if isinstance(style, int):
+            self.style = LineStyle(style)
+        else:
+            self.style = style
+        self.visible = visible
+
+    def __getitem__(self, key):
+        if key == "color":
+            return self.color
+        if key == "width":
+            return self.width
+        if key == "style":
+            return self.style.value
+        if key == "visible":
+            return self.visible
+        raise KeyError(key)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
         return {
-            "visible": self.visible,
-            "width": self.width,
             "color": self.color,
+            "width": self.width,
             "style": self.style.value,
+            "visible": self.visible,
         }
 
 
@@ -47,15 +68,38 @@ class CrosshairSyncOptions:
         }
 
 
-@dataclass
 class CrosshairOptions:
     """Crosshair configuration for chart."""
 
-    mode: CrosshairMode = CrosshairMode.MAGNET
-    vert_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
-    horz_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
-    sync: Optional[CrosshairSyncOptions] = None
-    group_id: Optional[str] = None
+    def __init__(
+        self,
+        mode: Union[int, CrosshairMode] = 1,  # Default to magnetic (1) for test compatibility
+        vert_line: CrosshairLineOptions = None,
+        horz_line: CrosshairLineOptions = None,
+        sync: Optional["CrosshairSyncOptions"] = None,
+        group_id: Optional[str] = None,
+    ):
+        # Accept both int and Enum for mode
+        if isinstance(mode, int):
+            self.mode = CrosshairMode(mode)
+        else:
+            self.mode = mode
+        self.vert_line = vert_line or CrosshairLineOptions()
+        self.horz_line = horz_line or CrosshairLineOptions()
+        self.sync = sync
+        self.group_id = group_id
+
+    def __getitem__(self, key):
+        if key == "mode":
+            return self.mode.value
+        if key in ("vert_line", "vertLine"):
+            return self.vert_line
+        if key in ("horz_line", "horzLine"):
+            return self.horz_line
+        d = self.to_dict()
+        if key in d:
+            return d[key]
+        raise KeyError(key)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
@@ -89,16 +133,25 @@ class KineticScrollOptions:
         }
 
 
-@dataclass
 class TrackingModeOptions:
     """Tracking mode configuration for chart."""
 
-    exit_mode: TrackingExitMode = TrackingExitMode.EXIT_ON_MOVE
-    activation_mode: TrackingActivationMode = TrackingActivationMode.ON_MOUSE_ENTER
+    def __init__(
+        self,
+        exit_mode: Union[str, TrackingExitMode] = TrackingExitMode.EXIT_ON_MOVE,
+        activation_mode: Union[str, TrackingActivationMode] = TrackingActivationMode.ON_MOUSE_ENTER,
+    ):
+        # Accept both str and Enum for exit_mode
+        if isinstance(exit_mode, str):
+            self.exit_mode = TrackingExitMode(exit_mode)
+        else:
+            self.exit_mode = exit_mode
+        # Accept both str and Enum for activation_mode
+        if isinstance(activation_mode, str):
+            self.activation_mode = TrackingActivationMode(activation_mode)
+        else:
+            self.activation_mode = activation_mode
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
-        return {
-            "exitMode": self.exit_mode.value,
-            "activationMode": self.activation_mode.value,
-        }
+        return {"exitMode": self.exit_mode.value, "activationMode": self.activation_mode.value}

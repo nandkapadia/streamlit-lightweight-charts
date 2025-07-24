@@ -5,7 +5,7 @@ This package contains all chart option classes organized by functionality:
 - layout_options.py: Layout, Grid, Watermark options
 - interaction_options.py: Crosshair, KineticScroll, TrackingMode options
 - scale_options.py: TimeScale options
-- price_scale_options.py: PriceScale options
+- price_scale_options.py: PriceScaleOptions options
 - ui_options.py: Legend and RangeSwitcher options
 - localization_options.py: Localization options
 """
@@ -25,18 +25,11 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     WatermarkOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.localization_options import LocalizationOptions
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (  # Backward compatibility aliases
-    LeftPriceScale,
-    LeftPriceScaleOptions,
-    OverlayPriceScale,
-    OverlayPriceScaleOptions,
-    PriceScale,
-    PriceScaleMargins,
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
     PriceScaleOptions,
-    RightPriceScale,
-    RightPriceScaleOptions,
+    PriceScaleMargins,
 )
-from streamlit_lightweight_charts_pro.charts.options.scale_options import TimeScaleOptions
+from streamlit_lightweight_charts_pro.charts.options.time_scale_options import TimeScaleOptions
 from streamlit_lightweight_charts_pro.charts.options.ui_options import (
     LegendOptions,
     RangeConfig,
@@ -60,15 +53,7 @@ __all__ = [
     # Scale options
     "TimeScaleOptions",
     "PriceScaleOptions",
-    "RightPriceScaleOptions",
-    "LeftPriceScaleOptions",
-    "OverlayPriceScaleOptions",
     "PriceScaleMargins",
-    # Backward compatibility aliases
-    "PriceScale",
-    "RightPriceScale",
-    "LeftPriceScale",
-    "OverlayPriceScale",
     # UI options
     "LegendOptions",
     "RangeConfig",

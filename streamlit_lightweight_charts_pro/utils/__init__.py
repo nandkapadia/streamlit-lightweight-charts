@@ -1,9 +1,7 @@
 """Utilities for streamlit-lightweight-charts."""
 
 from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
-    df_to_baseline_data,
     df_to_data,
-    df_to_histogram_data,
     df_to_line_data,
     df_to_ohlc_data,
     df_to_ohlcv_data,
@@ -19,8 +17,6 @@ __all__ = [
     # DataFrame converters
     "df_to_line_data",
     "df_to_ohlc_data",
-    "df_to_histogram_data",
-    "df_to_baseline_data",
     "df_to_data",
     "df_to_ohlcv_data",
     "resample_df_for_charts",

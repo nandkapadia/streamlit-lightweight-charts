@@ -209,3 +209,67 @@ class TrackingActivationMode(str, Enum):
 
     ON_MOUSE_ENTER = "ON_MOUSE_ENTER"
     ON_TOUCH_START = "ON_TOUCH_START"
+
+
+class MarkerPosition(str, Enum):
+    """
+    Marker position enumeration for chart markers.
+
+    Defines where markers should be positioned relative to the data bars
+    or points on the chart.
+
+    Attributes:
+        ABOVE_BAR: Position marker above the data bar/point.
+        BELOW_BAR: Position marker below the data bar/point.
+        IN_BAR: Position marker inside the data bar/point.
+    """
+
+    ABOVE_BAR = "aboveBar"
+    BELOW_BAR = "belowBar"
+    IN_BAR = "inBar"
+
+
+class MarkerShape(str, Enum):
+    """
+    Marker shape enumeration for chart markers.
+
+    Defines the available shapes for chart markers that can be displayed
+    on charts to highlight specific data points or events.
+
+    Attributes:
+        CIRCLE: Circular marker shape.
+        SQUARE: Square marker shape.
+        ARROW_UP: Upward-pointing arrow marker.
+        ARROW_DOWN: Downward-pointing arrow marker.
+    """
+
+    CIRCLE = "circle"
+    SQUARE = "square"
+    ARROW_UP = "arrowUp"
+    ARROW_DOWN = "arrowDown"
+
+
+class AnnotationType(str, Enum):
+    TEXT = "text"
+    ARROW = "arrow"
+    SHAPE = "shape"
+    LINE = "line"
+    RECTANGLE = "rectangle"
+    CIRCLE = "circle"
+
+
+class AnnotationPosition(str, Enum):
+    ABOVE = "above"
+    BELOW = "below"
+    INLINE = "inline"
+
+
+class ColumnNames(str, Enum):
+    TIME = "time"
+    OPEN = "open"
+    HIGH = "high"
+    LOW = "low"
+    CLOSE = "close"
+    VOLUME = "volume"
+    DATETIME = "datetime"
+    VALUE = "value"

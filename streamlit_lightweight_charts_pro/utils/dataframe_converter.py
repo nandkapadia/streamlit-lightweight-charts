@@ -10,17 +10,16 @@ from typing import Any, Dict, List, Optional, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
-from streamlit_lightweight_charts_pro.data.models import (
-    BaselineData,
-    HistogramData,
+from streamlit_lightweight_charts_pro.data import (
     OhlcData,
     OhlcvData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def df_to_line_data(
-    df: pd.DataFrame, value_column: str = "close", time_column: Optional[str] = None
+    df: pd.DataFrame, value_column: str = ColumnNames.CLOSE, time_column: Optional[str] = None, color_column: Optional[str] = None
 ) -> List[SingleValueData]:
     """
     Convert a pandas DataFrame to line chart data.
@@ -34,9 +33,11 @@ def df_to_line_data(
             values in the value_column and time information in either the
             index or time_column.
         value_column: Name of the column containing the numeric values to plot.
-            Defaults to "close" for typical financial data.
+            Defaults to ColumnNames.CLOSE for typical financial data.
         time_column: Name of the column containing time values. If None,
             uses the DataFrame index as time values.
+        color_column: Name of the column containing color values. If None,
+            no color will be assigned to the data points.
 
     Returns:
         List of SingleValueData objects ready for use in line or area charts.
@@ -61,11 +62,13 @@ def df_to_line_data(
     if time_column is None:
         # Use DataFrame index as time values
         for timestamp, row in df.iterrows():
-            data.append(SingleValueData(time=str(timestamp), value=float(row[value_column])))
+            color = row[color_column] if color_column and color_column in row else None
+            data.append(SingleValueData(time=str(timestamp), value=float(row[value_column]), color=color))
     else:
         # Use specified column as time values
         for _, row in df.iterrows():
-            data.append(SingleValueData(time=str(row[time_column]), value=float(row[value_column])))
+            color = row[color_column] if color_column and color_column in row else None
+            data.append(SingleValueData(time=str(row[time_column]), value=float(row[value_column]), color=color))
 
     return data
 
@@ -73,10 +76,10 @@ def df_to_line_data(
 def df_to_ohlc_data(
     df: pd.DataFrame,
     time_column: Optional[str] = None,
-    open_column: str = "open",
-    high_column: str = "high",
-    low_column: str = "low",
-    close_column: str = "close",
+    open_column: str = ColumnNames.OPEN,
+    high_column: str = ColumnNames.HIGH,
+    low_column: str = ColumnNames.LOW,
+    close_column: str = ColumnNames.CLOSE,
 ) -> List[OhlcData]:
     """
     Convert DataFrame to list of OhlcData objects.
@@ -133,11 +136,11 @@ def df_to_ohlc_data(
 def df_to_ohlcv_data(
     df: pd.DataFrame,
     time_column: Optional[str] = None,
-    open_column: str = "open",
-    high_column: str = "high",
-    low_column: str = "low",
-    close_column: str = "close",
-    volume_column: str = "volume",
+    open_column: str = ColumnNames.OPEN,
+    high_column: str = ColumnNames.HIGH,
+    low_column: str = ColumnNames.LOW,
+    close_column: str = ColumnNames.CLOSE,
+    volume_column: str = ColumnNames.VOLUME,
 ) -> List[OhlcvData]:
     """
     Convert DataFrame to list of OhlcvData objects.
@@ -194,133 +197,6 @@ def df_to_ohlcv_data(
     return ohlcv_data
 
 
-def df_to_histogram_data(
-    df: pd.DataFrame,
-    value_column: str = "volume",
-    color_column: Optional[str] = None,
-    time_column: Optional[str] = None,
-    positive_color: str = "#26a69a",
-    negative_color: str = "#ef5350",
-) -> List[HistogramData]:
-    """
-    Convert a pandas DataFrame to histogram chart data.
-
-    This function converts a DataFrame into a list of HistogramData objects
-    suitable for volume charts and other histogram visualizations. It supports
-    automatic color assignment based on value sign or custom color columns.
-
-    Args:
-        df: DataFrame containing the data to convert. Should have numeric
-            values in the value_column.
-        value_column: Name of the column containing the numeric values to plot.
-            Defaults to "volume" for typical financial data.
-        color_column: Name of the column containing color values. If None,
-            colors are automatically assigned based on value sign.
-        time_column: Name of the column containing time values. If None,
-            uses the DataFrame index as time values.
-        positive_color: Color to use for positive values when color_column
-            is not specified. Defaults to "#26a69a" (green).
-        negative_color: Color to use for negative values when color_column
-            is not specified. Defaults to "#ef5350" (red).
-
-    Returns:
-        List of HistogramData objects ready for use in histogram charts.
-
-    Example:
-        ```python
-        # Automatic color assignment based on value sign
-        df = pd.DataFrame({
-            'volume': [1000000, -500000, 750000]
-        }, index=pd.date_range('2024-01-01', periods=3))
-        hist_data = df_to_histogram_data(df, value_column='volume')
-
-        # Using custom color column
-        df = pd.DataFrame({
-            'volume': [1000000, 500000, 750000],
-            'color': ['#26a69a', '#ef5350', '#26a69a']
-        }, index=pd.date_range('2024-01-01', periods=3))
-        hist_data = df_to_histogram_data(
-            df, value_column='volume', color_column='color'
-        )
-        ```
-    """
-    data = []
-
-    if time_column is None:
-        # Use DataFrame index as time values
-        for timestamp, row in df.iterrows():
-            value = row[value_column]
-
-            # Determine color based on available information
-            if color_column is not None:
-                color = row[color_column]
-            else:
-                # Use sign-based color assignment
-                color = positive_color if value >= 0 else negative_color
-
-            data.append(HistogramData(time=str(timestamp), value=float(value), color=str(color)))
-    else:
-        # Use specified column as time values
-        for _, row in df.iterrows():
-            value = row[value_column]
-
-            # Determine color based on available information
-            if color_column is not None:
-                color = row[color_column]
-            else:
-                # Use sign-based color assignment
-                color = positive_color if value >= 0 else negative_color
-
-            data.append(
-                HistogramData(time=str(row[time_column]), value=float(value), color=str(color))
-            )
-
-    return data
-
-
-def df_to_baseline_data(
-    df: pd.DataFrame, value_column: str = "value", time_column: Optional[str] = None
-) -> List[BaselineData]:
-    """
-    Convert a pandas DataFrame to baseline chart data.
-
-    This function converts a DataFrame into a list of BaselineData objects
-    suitable for baseline charts that show values relative to a baseline.
-
-    Args:
-        df: DataFrame containing the data to convert. Should have numeric
-            values in the value_column.
-        value_column: Name of the column containing the numeric values to plot.
-            Defaults to "value".
-        time_column: Name of the column containing time values. If None,
-            uses the DataFrame index as time values.
-
-    Returns:
-        List of BaselineData objects ready for use in baseline charts.
-
-    Example:
-        ```python
-        # Using DataFrame index as time
-        df = pd.DataFrame({
-            'returns': [0.05, -0.02, 0.03, -0.01]
-        }, index=pd.date_range('2024-01-01', periods=4))
-        baseline_data = df_to_baseline_data(df, value_column='returns')
-        ```
-    """
-    data = []
-
-    if time_column is None:
-        # Use DataFrame index as time values
-        for timestamp, row in df.iterrows():
-            data.append(BaselineData(time=str(timestamp), value=float(row[value_column])))
-    else:
-        # Use specified column as time values
-        for _, row in df.iterrows():
-            data.append(BaselineData(time=str(row[time_column]), value=float(row[value_column])))
-
-    return data
-
-
 def resample_df_for_charts(
     df: pd.DataFrame, freq: str, agg_dict: Optional[Dict[str, Any]] = None
 ) -> pd.DataFrame:
@@ -375,16 +251,16 @@ def resample_df_for_charts(
         agg_dict = {}
 
         # OHLC columns with appropriate aggregations
-        if "open" in df.columns:
-            agg_dict["open"] = "first"
-        if "high" in df.columns:
-            agg_dict["high"] = "max"
-        if "low" in df.columns:
-            agg_dict["low"] = "min"
-        if "close" in df.columns:
-            agg_dict["close"] = "last"
-        if "volume" in df.columns:
-            agg_dict["volume"] = "sum"
+        if ColumnNames.OPEN in df.columns:
+            agg_dict[ColumnNames.OPEN] = "first"
+        if ColumnNames.HIGH in df.columns:
+            agg_dict[ColumnNames.HIGH] = "max"
+        if ColumnNames.LOW in df.columns:
+            agg_dict[ColumnNames.LOW] = "min"
+        if ColumnNames.CLOSE in df.columns:
+            agg_dict[ColumnNames.CLOSE] = "last"
+        if ColumnNames.VOLUME in df.columns:
+            agg_dict[ColumnNames.VOLUME] = "sum"
 
         # For other numeric columns, use mean as default
         for col in df.select_dtypes(include=["number"]).columns:
@@ -397,7 +273,7 @@ def resample_df_for_charts(
 
 def df_to_data(
     df: pd.DataFrame, chart_type: str, **kwargs
-) -> Union[List[SingleValueData], List[OhlcData], List[HistogramData], List[BaselineData]]:
+) -> Union[List[SingleValueData], List[OhlcData]]:
     """
     Convert DataFrame to appropriate data type based on chart type.
 
@@ -443,13 +319,12 @@ def df_to_data(
     """
     chart_type = chart_type.lower()
 
-    if chart_type in ["line", "area"]:
+    if chart_type in ["line", "area", "histogram", "baseline"]:
+        # For baseline charts, use VALUE column as default if not specified
+        if chart_type == "baseline" and "value_column" not in kwargs:
+            kwargs["value_column"] = ColumnNames.VALUE
         return df_to_line_data(df, **kwargs)
     elif chart_type in ["candlestick", "bar"]:
         return df_to_ohlc_data(df, **kwargs)
-    elif chart_type == "histogram":
-        return df_to_histogram_data(df, **kwargs)
-    elif chart_type == "baseline":
-        return df_to_baseline_data(df, **kwargs)
     else:
         raise ValueError(f"Unknown chart type: {chart_type}")

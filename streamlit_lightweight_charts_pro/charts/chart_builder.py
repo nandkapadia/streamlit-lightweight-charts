@@ -35,7 +35,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
     HistogramSeries,
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.charts.single_pane_chart import SinglePaneChart
+from streamlit_lightweight_charts_pro.charts.chart import Chart
 
 
 class ChartBuilder:
@@ -154,6 +154,9 @@ class ChartBuilder:
             builder.add_area_series(data, color="#2196F3", fill_color="#E3F2FD")
             ```
         """
+        # Map 'line_color' to 'price_line_color' for AreaSeries compatibility
+        if "line_color" in kwargs:
+            kwargs["price_line_color"] = kwargs.pop("line_color")
         series = AreaSeries(data=data, **kwargs)
         self.series.append(series)
         return self
@@ -229,7 +232,19 @@ class ChartBuilder:
             builder.add_baseline_series(data, base_value=100, top_fill_color="#4CAF50")
             ```
         """
-        series = BaselineSeries(data=data, **kwargs)
+        # Remove baseline-specific kwargs before passing to BaselineSeries
+        baseline_kwargs = {}
+        for key in [
+            "top_line_color", "bottom_line_color", "top_fill_color1", "top_fill_color2",
+            "bottom_fill_color1", "bottom_fill_color2", "base_value",
+            "line_width", "line_style", "line_visible", "point_markers_visible",
+            "point_markers_radius", "crosshair_marker_visible", "crosshair_marker_radius",
+            "crosshair_marker_border_color", "crosshair_marker_background_color",
+            "crosshair_marker_border_width", "last_price_animation"
+        ]:
+            if key in kwargs:
+                baseline_kwargs[key] = kwargs.pop(key)
+        series = BaselineSeries(data=data, **baseline_kwargs, **kwargs)
         self.series.append(series)
         return self
 
@@ -422,16 +437,16 @@ class ChartBuilder:
         self.annotations.extend(annotations)
         return self
 
-    def build(self) -> SinglePaneChart:
+    def build(self) -> Chart:   
         """
         Build and return the chart.
 
-        Creates a SinglePaneChart instance with all configured series,
+        Creates a Chart instance with all configured series,
         options, and annotations. Raises an error if no series have
         been added.
 
         Returns:
-            SinglePaneChart: The configured chart instance.
+            Chart: The configured chart instance.
 
         Raises:
             ValueError: If no series have been added to the chart.
@@ -445,7 +460,7 @@ class ChartBuilder:
         if not self.series:
             raise ValueError("At least one series must be added to the chart")
 
-        return SinglePaneChart(
+        return Chart(
             series=self.series, options=self.options, annotations=self.annotations
         )
 

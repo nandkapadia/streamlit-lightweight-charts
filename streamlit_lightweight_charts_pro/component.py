@@ -35,7 +35,13 @@ from streamlit_lightweight_charts_pro.logging_config import get_logger
 _component_func: Optional[Callable[..., Any]] = None
 
 # Initialize logger
-logger = get_logger("component")
+try:
+    logger = get_logger("component")
+except Exception:
+    class DummyLogger:
+        def warning(self, msg):
+            pass
+    logger = DummyLogger()
 
 # Determine if we're in a release build or development
 # Set to True for production builds, False for development
@@ -84,7 +90,7 @@ if _RELEASE:
 
             # Declare the component with the built frontend files
             _component_func = components.declare_component(
-                "streamlit-lightweight-charts-pro",
+                "streamlit_lightweight_charts_pro",
                 path=str(frontend_dir),
             )
         except Exception as e:
@@ -103,7 +109,7 @@ else:
 
         # Declare the component with development server URL
         _component_func = components.declare_component(
-            "streamlit-lightweight-charts-pro",
+            "streamlit_lightweight_charts_pro",
             url="http://localhost:3001",
         )
     except Exception as e:

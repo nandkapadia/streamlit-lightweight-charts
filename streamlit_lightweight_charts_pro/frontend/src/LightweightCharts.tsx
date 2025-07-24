@@ -23,6 +23,8 @@ interface LightweightChartsProps {
   width?: number | null
 }
 
+console.log("LightweightCharts component loaded!");
+
 const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = null }) => {
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
@@ -79,7 +81,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }
 
   // Function to setup auto-sizing for a chart
-  const setupAutoSizing = (chart: IChartApi, container: HTMLElement, chartConfig: any) => {
+  const setupAutoSizing = useCallback((chart: IChartApi, container: HTMLElement, chartConfig: any) => {
     if (!chartConfig.autoSize && !chartConfig.autoWidth && !chartConfig.autoHeight) {
       return
     }
@@ -97,7 +99,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     resizeObserverRef.current.observe(container)
-  }
+  }, [])
 
   useEffect(() => {
     if (!config.charts || config.charts.length === 0) return
@@ -139,6 +141,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...chartConfig.chart
         }
 
+        console.log("Chart options passed to createChart:", chartOptions);
         const chart = createChart(container, chartOptions)
 
         // Check if chart was created successfully
@@ -147,6 +150,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         chartRefs.current[chartId] = chart
+
+        // Apply layout.panes options if present
+        if (chartOptions.layout && chartOptions.layout.panes) {
+          chart.applyOptions({ layout: { panes: chartOptions.layout.panes } })
+        }
 
         // Configure overlay price scales (volume, indicators, etc.) if they exist
         if (chartConfig.chart?.overlayPriceScales) {
@@ -259,24 +267,133 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         // Setup auto-sizing for the chart
         setupAutoSizing(chart, container, chartConfig)
+        
+        // Subscribe to data loaded events for better fitContent timing
+        if (chartConfig.chart?.fitContentOnLoad !== false) {
+          // Listen for when the chart is ready
+          const handleDataLoaded = () => {
+            try {
+              const timeScale = chart.timeScale()
+              if (timeScale) {
+                timeScale.fitContent()
+                console.log('✅ fitContent() called after data loaded event')
+              }
+            } catch (error) {
+              console.warn('❌ fitContent after data loaded failed:', error)
+            }
+          }
+          
+          // Try to fit content when the chart is ready
+          setTimeout(handleDataLoaded, 200)
+          
+          // Also listen for crosshair move events as a proxy for data being ready
+          chart.subscribeCrosshairMove(() => {
+            // Once crosshair moves, data is definitely loaded
+            chart.unsubscribeCrosshairMove(handleDataLoaded)
+            handleDataLoaded()
+          })
+        }
 
         // Fit chart to content when first displayed (if enabled)
         if (chartConfig.chart?.fitContentOnLoad !== false) {
-          // Try multiple times with increasing delays to ensure fitContent works
+          console.log('🎯 fitContentOnLoad enabled, setting up fitContent...')
+          
+          // Wait for data to be fully loaded before calling fitContent
           const tryFitContent = (attempt: number = 1) => {
             setTimeout(() => {
               try {
-                chart.timeScale().fitContent()
+                // Check if chart is still valid
+                if (!chart || !chart.timeScale) {
+                  console.warn('❌ Chart not ready for fitContent, attempt:', attempt)
+                  if (attempt < 10) {
+                    tryFitContent(attempt + 1)
+                  }
+                  return
+                }
+                
+                // Check if we have data
+                const timeScale = chart.timeScale()
+                if (!timeScale) {
+                  console.warn('❌ TimeScale not ready for fitContent, attempt:', attempt)
+                  if (attempt < 10) {
+                    tryFitContent(attempt + 1)
+                  }
+                  return
+                }
+                
+                // Check if we have series with data
+                const seriesList = seriesRefs.current[chartId] || []
+                if (seriesList.length === 0) {
+                  console.warn('❌ No series found for fitContent, attempt:', attempt)
+                  if (attempt < 10) {
+                    tryFitContent(attempt + 1)
+                  }
+                  return
+                }
+                
+                // Check if series exist and are valid
+                let allSeriesValid = true
+                for (const series of seriesList) {
+                  if (!series || typeof series.setData !== 'function') {
+                    allSeriesValid = false
+                    break
+                  }
+                }
+                
+                if (!allSeriesValid) {
+                  console.warn('❌ Not all series are valid yet, attempt:', attempt)
+                  if (attempt < 10) {
+                    tryFitContent(attempt + 1)
+                  }
+                  return
+                }
+                
+                // Check if data is loaded by trying to get visible range
+                try {
+                  const visibleRange = timeScale.getVisibleRange()
+                  if (!visibleRange) {
+                    console.warn('❌ No visible range yet, data may not be loaded, attempt:', attempt)
+                    if (attempt < 10) {
+                      tryFitContent(attempt + 1)
+                    }
+                    return
+                  }
+                  
+                  // Additional check: ensure we have a reasonable time range
+                  const timeRange = Number(visibleRange.to) - Number(visibleRange.from)
+                  if (timeRange < 1000) { // Less than 1 second range
+                    console.warn('❌ Time range too small, data may not be fully loaded, attempt:', attempt)
+                    if (attempt < 10) {
+                      tryFitContent(attempt + 1)
+                    }
+                    return
+                  }
+                } catch (error) {
+                  console.warn('❌ Cannot get visible range, data may not be loaded, attempt:', attempt)
+                  if (attempt < 10) {
+                    tryFitContent(attempt + 1)
+                  }
+                  return
+                }
+                
+                // Try to fit content
+                timeScale.fitContent()
+                console.log('✅ fitContent() called successfully on attempt:', attempt)
               } catch (error) {
-                // Retry up to 3 times with increasing delays
-                if (attempt < 3) {
+                console.warn('❌ fitContent() failed on attempt:', attempt, error)
+                // Retry up to 10 times with increasing delays
+                if (attempt < 10) {
                   tryFitContent(attempt + 1)
                 }
               }
-            }, attempt * 200) // 200ms, 400ms, 600ms delays
+            }, attempt * 300) // 300ms, 600ms, 900ms, 1200ms, 1500ms, etc. delays
           }
           
-          tryFitContent()
+          // Start with a longer initial delay to ensure data is fully loaded
+          setTimeout(() => {
+            console.log('🚀 Starting fitContent attempts...')
+            tryFitContent()
+          }, 1500) // Increased initial delay
         }
 
 
@@ -325,7 +442,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [config, height, width])
 
   const createSeries = (chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
-    const { type, data, options = {}, priceScale } = seriesConfig
+    const { type, data, options = {}, priceScale, pane_id } = seriesConfig
 
     let series: ISeriesApi<any>
     
@@ -350,7 +467,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           areaOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(AreaSeries, areaOptions)
+        series = chart.addSeries(AreaSeries, areaOptions, pane_id)
         break
       case 'band':
         try {
@@ -431,7 +548,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           baselineOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(BaselineSeries, baselineOptions)
+        series = chart.addSeries(BaselineSeries, baselineOptions, pane_id)
         break
       case 'histogram':
         const histogramOptions = {
@@ -447,7 +564,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...otherOptions
         }
 
-        series = chart.addSeries(HistogramSeries, histogramOptions)
+        series = chart.addSeries(HistogramSeries, histogramOptions, pane_id)
         break
       case 'line':
         const lineOptions = {
@@ -459,7 +576,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           lineOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(LineSeries, lineOptions)
+        series = chart.addSeries(LineSeries, lineOptions, pane_id)
         break
       case 'bar':
         const barOptions = {
@@ -474,7 +591,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           barOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(BarSeries, barOptions)
+        series = chart.addSeries(BarSeries, barOptions, pane_id)
         break
       case 'candlestick':
         const candlestickOptions = {
@@ -489,7 +606,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           candlestickOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(CandlestickSeries, candlestickOptions)
+        series = chart.addSeries(CandlestickSeries, candlestickOptions, pane_id)
         break
       default:
 
@@ -507,6 +624,24 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Set data
     if (data && data.length > 0) {
       series.setData(data)
+      
+      // For fitContent to work properly, we need to ensure data is loaded
+      // This is a more reliable approach than waiting for timeouts
+      if (data.length > 0) {
+        // Small delay to ensure data is processed
+        setTimeout(() => {
+          try {
+            // Try to fit content immediately after data is set
+            const timeScale = chart.timeScale()
+            if (timeScale) {
+              timeScale.fitContent()
+              console.log('✅ fitContent() called immediately after data set')
+            }
+          } catch (error) {
+            console.warn('❌ Immediate fitContent failed, will retry:', error)
+          }
+        }, 100)
+      }
     }
 
     return series
@@ -586,7 +721,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // }
   }
 
-  const addAnnotationLayers = (chart: IChartApi, layers: AnnotationLayer[]) => {
+  const addAnnotationLayers = useCallback((chart: IChartApi, layers: AnnotationLayer[]) => {
     const allAnnotations = layers
       .filter(layer => layer.visible)
       .flatMap(layer => layer.annotations)
@@ -594,9 +729,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     if (allAnnotations.length > 0) {
       addAnnotations(chart, allAnnotations)
     }
-  }
+  }, [])
 
-  const addModularTooltip = (chart: IChartApi, container: HTMLElement, seriesList: ISeriesApi<any>[], chartConfig: ChartConfig) => {
+  const addModularTooltip = useCallback((chart: IChartApi, container: HTMLElement, seriesList: ISeriesApi<any>[], chartConfig: ChartConfig) => {
     // Check if tooltip is enabled at chart level
     const chartTooltip = chartConfig.tooltip
     if (!chartTooltip || !chartTooltip.enabled) {
@@ -677,7 +812,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       // Position tooltip
       positionTooltip(tooltip, param, container, chartTooltip)
     })
-  }
+  }, [])
 
 
 
@@ -922,7 +1057,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     tooltip.style.top = `${top}px`
   }
 
-  const addRangeSwitcher = (chart: IChartApi, rangeConfig: any) => {
+  const addRangeSwitcher = useCallback((chart: IChartApi, rangeConfig: any) => {
     // Create range switcher UI
     const container = chart.chartElement()
     
@@ -1071,7 +1206,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     container.appendChild(switcher)
-  }
+  }, [])
 
   const addLegend = (chart: IChartApi, legendConfig: LegendConfig, seriesList: ISeriesApi<any>[]) => {
     const container = chart.chartElement()

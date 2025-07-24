@@ -10,13 +10,11 @@ providing a consistent interface for series creation, configuration, and
 rendering. It supports method chaining for fluent API usage.
 
 Example:
-    ```python
     from streamlit_lightweight_charts_pro.charts.series.base import Series
 
     class MyCustomSeries(Series):
         def to_frontend_config(self):
             return {"type": "custom", "data": self.data}
-    ```
 """
 
 from abc import ABC, abstractmethod
@@ -24,12 +22,15 @@ from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
-from streamlit_lightweight_charts_pro.data.models import BaseData
+from streamlit_lightweight_charts_pro.data import Marker
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, ColumnNames
+from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+from streamlit_lightweight_charts_pro.data import BaseData
 from streamlit_lightweight_charts_pro.logging_config import get_logger
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
 
 # Initialize logger
-logger = get_logger("charts.series.base")
+logger = get_logger(__name__)
 
 
 def _get_enum_value(value, enum_class):
@@ -94,7 +95,7 @@ class Series(ABC):
         base_line_style: Style of the base line
         price_format: Price formatting configuration
         markers: List of markers to display on this series
-        price_scale_config: Configuration for the price scale
+        pane_id: The pane index this series belongs to.
     """
 
     def __init__(
@@ -112,7 +113,10 @@ class Series(ABC):
         base_line_style: str = "solid",
         price_format: Optional[Dict[str, Any]] = None,
         markers: Optional[List[Marker]] = None,
-        price_scale_config: Optional[Dict[str, Any]] = None,
+        pane_id: Optional[int] = 0,
+        height: Optional[int] = None,
+        overlay: Optional[bool] = True,
+        column_mapping: Optional[dict] = None,
     ):
         """
         Initialize a series with data and configuration.
@@ -131,7 +135,7 @@ class Series(ABC):
             base_line_style: Style of the base line. Defaults to "solid".
             price_format: Price formatting configuration. Defaults to None.
             markers: List of markers to display. Defaults to None.
-            price_scale_config: Price scale configuration. Defaults to None.
+            pane_id: The pane index this series belongs to. Defaults to 0.
 
         Example:
             ```python
@@ -143,13 +147,16 @@ class Series(ABC):
                 data=line_data,
                 visible=True,
                 price_line_visible=True,
-                price_line_color="#ff0000"
+                price_line_color="#ff0000",
+                pane_id=1
             )
             ```
         """
-        # Process data input
-        if isinstance(data, pd.DataFrame):
-            self.data = self._process_dataframe(data)
+        self.column_mapping = column_mapping
+
+        if isinstance(data, (pd.Series, pd.DataFrame)):
+            # Process data input
+            self.data = self._normalize_input_data(data)
         else:
             self.data = data
 
@@ -176,7 +183,73 @@ class Series(ABC):
         self.markers = markers or []
 
         # Price scale configuration
-        self.price_scale_config = price_scale_config or {}
+        self.pane_id = pane_id
+        self.height = height
+        self.overlay = overlay
+
+    def _get_columns(self) -> Dict[str, str]:
+        """
+        Get the columns to use for the series.
+        """
+        raise NotImplementedError("Subclasses must implement _get_columns")
+
+    def _normalize_input_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Normalize input data to ensure consistent format.
+
+        This method ensures that the input data is in a consistent format
+        for processing. It handles cases where the data is a pandas Series
+        or a pandas DataFrame.
+
+        Args:
+            data: Pandas DataFrame to normalize.
+
+        Returns:
+            pd.DataFrame: Normalized pandas DataFrame.
+        """
+        if isinstance(data, pd.Series):
+            data = data.to_frame()
+
+        columns_mapping = self._get_columns()
+
+        data = self._process_index_columns(data, columns_mapping.values())
+
+        if not all(col in data.columns for col in columns_mapping.values()):
+            missing = [col for col in columns_mapping.values() if col not in data.columns]
+            raise ValueError(f"Columns {missing} are missing in the data")
+
+        data = self._process_dataframe(data)
+
+        return data
+
+    def _process_index_columns(self, data: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
+        """
+        Ensure that all columns in `columns` are available as regular columns,
+        even if they are currently part of the index.
+
+        Special handling:
+        - If the index is a DatetimeIndex and we need 'datetime',
+        assign that name and reset the index.
+        - If the index is a MultiIndex, reset it only if any desired column is in it.
+        """
+        if isinstance(data.index, pd.DatetimeIndex):
+            idx_name = data.index.name
+            if idx_name is None and ColumnNames.DATETIME in columns:
+                data.index.name = ColumnNames.DATETIME
+                data = data.reset_index()
+            elif idx_name in columns:
+                data = data.reset_index()
+
+        elif isinstance(data.index, pd.MultiIndex):
+            index_names = list(data.index.names)
+            if any(col in index_names for col in columns):
+                for i, name in enumerate(index_names):
+                    if name is None:
+                        index_names[i] = f"level_{i}"
+                data.index.names = index_names
+                data = data.reset_index()
+
+        return data
 
     @abstractmethod
     def _process_dataframe(self, df: pd.DataFrame) -> List[BaseData]:
@@ -323,7 +396,7 @@ class Series(ABC):
         for method chaining.
 
         Args:
-            format_type: Type of price format ("price", "volume", "percent").
+            format_type: Type of price format ("price", ColumnNames.VOLUME, "percent").
             precision: Number of decimal places to display.
             min_move: Minimum price movement for formatting.
 
@@ -430,46 +503,37 @@ class Series(ABC):
         self.markers.clear()
         return self
 
-    def set_price_scale_config(self, **kwargs) -> "Series":
+    def _validate_pane_config(self):
         """
-        Set price scale configuration for this series.
-
-        Updates the price scale configuration options. Returns self
-        for method chaining.
-
-        Args:
-            **kwargs: Price scale configuration options to update.
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.set_price_scale_config(
-                autoScale=True,
-                scaleMargins={"top": 0.1, "bottom": 0.1}
-            )
-            ```
+        Validate pane configuration for the series.
+        
+        This method ensures that pane_id is properly set based on the overlay setting.
+        It should be called by subclasses in their to_dict() method.
+        
+        Raises:
+            ValueError: If overlay is False and pane_id is None.
         """
-        self.price_scale_config.update(kwargs)
-        return self
+        if self.overlay is False and self.pane_id is None:
+            raise ValueError("If overlay is False, pane_id must be defined for the series.")
+        if self.overlay is True and self.pane_id is None:
+            self.pane_id = 0
 
     @abstractmethod
-    def to_frontend_config(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
-        Convert series to frontend-compatible configuration.
+        Convert series to dictionary representation.
 
         This method must be implemented by subclasses to convert the
         series object into a format that can be consumed by the frontend
         React component.
 
         Returns:
-            Dict[str, Any]: Frontend-compatible configuration dictionary.
+            Dict[str, Any]: Dictionary representation of the series.
 
         Raises:
             NotImplementedError: If the subclass doesn't implement this method.
         """
-        raise NotImplementedError("Subclasses must implement to_frontend_config")
+        pass
 
     def get_data_range(self) -> Optional[Dict[str, Union[float, str]]]:
         """
@@ -497,17 +561,17 @@ class Series(ABC):
         times = []
 
         for item in self.data:
-            if hasattr(item, "value"):
+            if hasattr(item, ColumnNames.VALUE):
                 if item.value is not None:
                     values.append(item.value)
-            elif hasattr(item, "close"):
+            elif hasattr(item, ColumnNames.CLOSE):
                 if item.close is not None:
                     values.append(item.close)
-            elif hasattr(item, "high"):
+            elif hasattr(item, ColumnNames.HIGH):
                 if item.high is not None and item.low is not None:
                     values.extend([item.high, item.low])
 
-            times.append(item._time)
+            times.append(item._time)  # pylint: disable=protected-access
 
         if not values:
             return {

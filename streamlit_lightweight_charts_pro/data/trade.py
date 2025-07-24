@@ -155,7 +155,9 @@ class Trade:
         Returns:
             List of marker dictionaries
         """
-        from streamlit_lightweight_charts_pro.data import Marker, MarkerPosition, MarkerShape
+        from streamlit_lightweight_charts_pro.data import Marker
+        from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+        from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
 
         # Default colors based on trade type and profit
         if entry_color is None:

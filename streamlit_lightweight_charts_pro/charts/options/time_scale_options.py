@@ -11,7 +11,7 @@ class TimeScaleOptions:
     right_offset: int = 0
     left_offset: int = 0
     bar_spacing: int = 6
-    min_bar_spacing: float = 0.5
+    min_bar_spacing: float = 0.001
     visible: bool = True
     time_visible: bool = True
     seconds_visible: bool = False
@@ -51,3 +51,6 @@ class TimeScaleOptions:
             result["tickMarkFormatter"] = self.tick_mark_formatter
 
         return result
+
+    def __getitem__(self, key):
+        return self.to_dict()[key]

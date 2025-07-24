@@ -40,54 +40,13 @@ import pandas as pd
 
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
+from streamlit_lightweight_charts_pro.type_definitions.enums import AnnotationType, AnnotationPosition
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 # Initialize logger
 logger = get_logger("data.annotation")
 
 
-class AnnotationType(str, Enum):
-    """
-    Annotation type enumeration.
-
-    Defines the available types of annotations that can be displayed
-    on charts to provide additional context and information.
-
-    Attributes:
-        TEXT: Text annotation for displaying labels or descriptions
-        ARROW: Arrow annotation for pointing to specific data points
-        SHAPE: Generic shape annotation
-        LINE: Line annotation for drawing lines on the chart
-        RECTANGLE: Rectangle annotation for highlighting areas
-        CIRCLE: Circle annotation for highlighting specific points
-    """
-
-    TEXT = "text"
-    ARROW = "arrow"
-    SHAPE = "shape"
-    LINE = "line"
-    RECTANGLE = "rectangle"
-    CIRCLE = "circle"
-
-
-class AnnotationPosition(str, Enum):
-    """
-    Annotation position enumeration.
-
-    Defines where annotations should be positioned relative to the
-    data points or price levels on the chart.
-
-    Attributes:
-        ABOVE: Position annotation above the data point/price level
-        BELOW: Position annotation below the data point/price level
-        INLINE: Position annotation at the same level as the data point
-    """
-
-    ABOVE = "above"
-    BELOW = "below"
-    INLINE = "inline"
-
-
-@dataclass
 class Annotation:
     """
     Represents a chart annotation.
@@ -131,46 +90,70 @@ class Annotation:
     show_time: bool = False
     tooltip: Optional[str] = None
 
-    def __post_init__(self):
-        """
-        Validate and process annotation data after initialization.
-
-        This method performs validation and data conversion after the
-        dataclass is initialized. It ensures all values are within
-        acceptable ranges and converts time formats.
-
-        Raises:
-            ValueError: If validation fails for any field.
-        """
+    def __init__(self,
+                 time: Union[pd.Timestamp, datetime, str, int, float],
+                 price: float,
+                 text: str,
+                 annotation_type: Union[str, AnnotationType] = AnnotationType.TEXT,
+                 position: Union[str, AnnotationPosition] = AnnotationPosition.ABOVE,
+                 color: str = "#2196F3",
+                 background_color: str = "rgba(255, 255, 255, 0.9)",
+                 font_size: int = 12,
+                 font_weight: str = "normal",
+                 text_color: str = "#000000",
+                 border_color: str = "#CCCCCC",
+                 border_width: int = 1,
+                 opacity: float = 1.0,
+                 show_time: bool = False,
+                 tooltip: Optional[str] = None,
+                 ):
         # Convert time to UTC timestamp for consistent storage
-        self._timestamp = to_utc_timestamp(self.time)
+        self._timestamp = to_utc_timestamp(time)
 
-        # Convert string enums to enum objects for consistency
-        if isinstance(self.annotation_type, str):
-            self.annotation_type = AnnotationType(self.annotation_type.lower())
+        # Accept both str and Enum for annotation_type
+        if isinstance(annotation_type, str):
+            self.annotation_type = AnnotationType(annotation_type)
+        else:
+            self.annotation_type = annotation_type
 
-        if isinstance(self.position, str):
-            self.position = AnnotationPosition(self.position.lower())
+        # Accept both str and Enum for position
+        if isinstance(position, str):
+            self.position = AnnotationPosition(position)
+        else:
+            self.position = position
 
         # Validate price value
-        if not isinstance(self.price, (int, float)):
+        if not isinstance(price, (int, float)):
             raise ValueError("Price must be a number")
+        self.price = price
 
         # Validate text content
-        if not self.text:
+        if not text:
             raise ValueError("Annotation text cannot be empty")
+        self.text = text
 
         # Validate opacity range
-        if not 0 <= self.opacity <= 1:
+        if not 0 <= opacity <= 1:
             raise ValueError("Opacity must be between 0 and 1")
+        self.opacity = opacity
 
         # Validate font size
-        if self.font_size <= 0:
+        if font_size <= 0:
             raise ValueError("Font size must be positive")
+        self.font_size = font_size
 
         # Validate border width
-        if self.border_width < 0:
+        if border_width < 0:
             raise ValueError("Border width must be non-negative")
+        self.border_width = border_width
+
+        self.color = color
+        self.background_color = background_color
+        self.font_weight = font_weight
+        self.text_color = text_color
+        self.border_color = border_color
+        self.show_time = show_time
+        self.tooltip = tooltip
 
     @property
     def timestamp(self) -> Union[int, str]:
@@ -206,7 +189,7 @@ class Annotation:
                 in a format suitable for the frontend component.
         """
         return {
-            "time": self.timestamp,
+            ColumnNames.TIME: self.timestamp,
             "price": self.price,
             "text": self.text,
             "type": self.annotation_type.value,
@@ -567,6 +550,97 @@ class AnnotationManager:
             ```
         """
         self.layers.clear()
+        return self
+
+    def add_annotation(self, annotation: Annotation, layer_name: str = "default") -> "AnnotationManager":
+        """
+        Add annotation to a specific layer.
+
+        Adds an annotation to the specified layer. If the layer doesn't exist,
+        it will be created automatically. Returns self for method chaining.
+
+        Args:
+            annotation: Annotation object to add.
+            layer_name: Name of the layer to add the annotation to.
+
+        Returns:
+            AnnotationManager: Self for method chaining.
+
+        Example:
+            ```python
+            manager.add_annotation(text_annotation, "events")
+            ```
+        """
+        if layer_name not in self.layers:
+            self.create_layer(layer_name)
+        
+        self.layers[layer_name].add_annotation(annotation)
+        return self
+
+    def hide_layer(self, name: str) -> "AnnotationManager":
+        """
+        Hide a specific annotation layer.
+
+        Makes the specified layer and all its annotations invisible.
+        Returns self for method chaining.
+
+        Args:
+            name: Name of the layer to hide.
+
+        Returns:
+            AnnotationManager: Self for method chaining.
+
+        Example:
+            ```python
+            manager.hide_layer("events")
+            ```
+        """
+        if name in self.layers:
+            self.layers[name].hide()
+        return self
+
+    def show_layer(self, name: str) -> "AnnotationManager":
+        """
+        Show a specific annotation layer.
+
+        Makes the specified layer and all its annotations visible.
+        Returns self for method chaining.
+
+        Args:
+            name: Name of the layer to show.
+
+        Returns:
+            AnnotationManager: Self for method chaining.
+
+        Example:
+            ```python
+            manager.show_layer("events")
+            ```
+        """
+        if name in self.layers:
+            self.layers[name].show()
+        return self
+
+    def clear_layer(self, name: str) -> "AnnotationManager":
+        """
+        Clear all annotations from a specific layer.
+
+        Removes all annotations from the specified layer while keeping
+        the layer itself. Returns self for method chaining.
+
+        Args:
+            name: Name of the layer to clear.
+
+        Returns:
+            AnnotationManager: Self for method chaining.
+
+        Example:
+            ```python
+            manager.clear_layer("events")
+            ```
+        """
+        if name in self.layers:
+            self.layers[name].clear_annotations()
         return self
 
     def get_all_annotations(self) -> List[Annotation]:

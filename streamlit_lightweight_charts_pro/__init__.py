@@ -21,7 +21,7 @@ Key Features:
 Example Usage:
     ```python
     from streamlit_lightweight_charts_pro import (
-        SinglePaneChart, LineSeries, create_chart, create_text_annotation
+        Chart, LineSeries, create_chart, create_text_annotation
     )
     from streamlit_lightweight_charts_pro.data import SingleValueData
 
@@ -29,7 +29,7 @@ Example Usage:
     data = [SingleValueData("2024-01-01", 100), SingleValueData("2024-01-02", 105)]
 
     # Method 1: Direct chart creation
-    chart = SinglePaneChart(series=LineSeries(data, color="#ff0000"))
+    chart = Chart(series=LineSeries(data, color="#ff0000"))
     chart.render(key="my_chart")
 
     # Method 2: Fluent API with method chaining
@@ -56,9 +56,7 @@ License: MIT
 # Import core components
 from streamlit_lightweight_charts_pro.charts import (
     ChartBuilder,
-    MultiPaneChart,
-    PriceVolumeChart,
-    SinglePaneChart,
+    Chart,
     create_chart,
 )
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
@@ -73,15 +71,12 @@ from streamlit_lightweight_charts_pro.charts.series import (
 )
 from streamlit_lightweight_charts_pro.data import (
     Annotation,
-    BaselineData,
-    HistogramData,
     Marker,
-    MarkerPosition,
-    MarkerShape,
     OhlcData,
     OhlcvData,
     SingleValueData,
 )
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, ColumnNames
 from streamlit_lightweight_charts_pro.data.annotation import (
     AnnotationLayer,
     AnnotationManager,
@@ -98,7 +93,7 @@ from streamlit_lightweight_charts_pro.data.trade import (
 
 # Import logging configuration
 from streamlit_lightweight_charts_pro.logging_config import get_logger, setup_logging
-from streamlit_lightweight_charts_pro.type_definitions import ChartType, LineStyle
+from streamlit_lightweight_charts_pro.type_definitions import ChartType, LineStyle, MarkerPosition
 
 # Version information
 __version__ = "0.1.0"
@@ -109,9 +104,7 @@ __all__ = [
     "get_logger",
     "setup_logging",
     # Core chart classes
-    "SinglePaneChart",
-    "MultiPaneChart",
-    "PriceVolumeChart",
+    "Chart",
     "create_chart",
     "ChartBuilder",
     # Series classes
@@ -126,8 +119,6 @@ __all__ = [
     "ChartOptions",
     # Data models
     "Annotation",
-    "BaselineData",
-    "HistogramData",
     "Marker",
     "OhlcData",
     "OhlcvData",
@@ -148,6 +139,7 @@ __all__ = [
     "LineStyle",
     "MarkerShape",
     "MarkerPosition",
+    "ColumnNames",
     # Version
     "__version__",
 ]

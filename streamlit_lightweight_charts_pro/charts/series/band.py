@@ -1,4 +1,32 @@
-"""Band series for streamlit-lightweight-charts."""
+"""
+Band series for streamlit-lightweight-charts.
+
+This module provides the BandSeries class for creating band charts (e.g., Bollinger Bands)
+that display upper, middle, and lower bands. Band series are commonly used for technical
+indicators and volatility analysis.
+
+The BandSeries class supports various styling options for each band, fill colors, and
+animation effects. It also supports markers and price line configurations.
+
+Example:
+    from streamlit_lightweight_charts_pro.charts.series import BandSeries
+    from streamlit_lightweight_charts_pro.data import BandData
+
+    # Create band data
+    data = [
+        BandData("2024-01-01", upper=110, middle=105, lower=100),
+        BandData("2024-01-02", upper=112, middle=107, lower=102)
+    ]
+
+    # Create band series with styling
+    series = BandSeries(
+        data=data,
+        upper_line_color="#4CAF50",
+        lower_line_color="#F44336",
+        upper_fill_color="rgba(76, 175, 80, 0.1)",
+        lower_fill_color="rgba(244, 67, 54, 0.1)"
+    )
+"""
 
 from typing import Any, Dict, List, Optional, Sequence, Union
 
@@ -12,6 +40,8 @@ from streamlit_lightweight_charts_pro.type_definitions import (
     LineStyle,
     LineType,
 )
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class BandSeries(Series):
@@ -19,94 +49,51 @@ class BandSeries(Series):
 
     def __init__(
         self,
-        data: Union[Sequence[BandData], pd.DataFrame],
-        visible: bool = True,
-        price_scale_id: str = "right",
-        price_line_visible: bool = False,
-        base_line_visible: bool = False,
-        price_line_width: int = 1,
-        price_line_color: str = "#2196F3",
-        price_line_style: str = "solid",
-        base_line_width: int = 1,
-        base_line_color: str = "#FF9800",
-        base_line_style: str = "solid",
-        price_format: Optional[Dict[str, Any]] = None,
-        markers: Optional[List[Any]] = None,
-        price_scale_config: Optional[Dict[str, Any]] = None,
-        # Band-specific options
-        column_mapping: Optional[Dict[str, str]] = None,
-        # Upper band styling
-        upper_line_color: str = "#4CAF50",  # TradingView green
-        upper_line_style: LineStyle = LineStyle.SOLID,
-        upper_line_width: int = 2,
-        upper_line_visible: bool = True,
-        # Middle band styling
-        middle_line_color: str = "#2196F3",  # TradingView blue
-        middle_line_style: LineStyle = LineStyle.SOLID,
-        middle_line_width: int = 2,
-        middle_line_visible: bool = True,
-        # Lower band styling
-        lower_line_color: str = "#F44336",  # TradingView red
-        lower_line_style: LineStyle = LineStyle.SOLID,
-        lower_line_width: int = 2,
-        lower_line_visible: bool = True,
-        # Fill colors
-        upper_fill_color: str = "rgba(76, 175, 80, 0.1)",  # Green with transparency
-        lower_fill_color: str = "rgba(244, 67, 54, 0.1)",  # Red with transparency
-        # Line type
-        line_type: LineType = LineType.SIMPLE,
-        # Crosshair markers
-        crosshair_marker_visible: bool = True,
-        crosshair_marker_radius: int = 4,
-        crosshair_marker_border_color: str = "",
-        crosshair_marker_background_color: str = "",
-        crosshair_marker_border_width: int = 2,
-        # Animation
-        last_price_animation: LastPriceAnimationMode = LastPriceAnimationMode.DISABLED,
+        data,
+        column_mapping=None,
+        visible=True,
+        price_scale_id="right",
+        price_line_visible=False,
+        base_line_visible=False,
+        price_line_width=1,
+        price_line_color="#2196F3",
+        price_line_style="solid",
+        base_line_width=1,
+        base_line_color="#FF9800",
+        base_line_style="solid",
+        price_format=None,
+        markers=None,
+        pane_id=0,
+        height=None,
+        overlay=True,
+        **kwargs,
     ):
-        """Initialize band series."""
-        # Store column mapping first
-        self.column_mapping = column_mapping
-
-        # Band-specific styling options
-        # Upper band
-        self.upper_line_color = upper_line_color
-        self.upper_line_style = upper_line_style
-        self.upper_line_width = upper_line_width
-        self.upper_line_visible = upper_line_visible
-
-        # Middle band
-        self.middle_line_color = middle_line_color
-        self.middle_line_style = middle_line_style
-        self.middle_line_width = middle_line_width
-        self.middle_line_visible = middle_line_visible
-
-        # Lower band
-        self.lower_line_color = lower_line_color
-        self.lower_line_style = lower_line_style
-        self.lower_line_width = lower_line_width
-        self.lower_line_visible = lower_line_visible
-
-        # Fill colors
-        self.upper_fill_color = upper_fill_color
-        self.lower_fill_color = lower_fill_color
-
-        # Line type
-        self.line_type = line_type
-
-        # Crosshair markers
-        self.crosshair_marker_visible = crosshair_marker_visible
-        self.crosshair_marker_radius = crosshair_marker_radius
-        self.crosshair_marker_border_color = crosshair_marker_border_color
-        self.crosshair_marker_background_color = crosshair_marker_background_color
-        self.crosshair_marker_border_width = crosshair_marker_border_width
-
-        # Animation
-        self.last_price_animation = last_price_animation
-
-        # Call parent constructor after setting column_mapping
+        # Pop band-specific options before calling super().__init__
+        band_kwargs = {}
+        band_kwargs['upper_line_color'] = kwargs.pop("upper_line_color", "#4CAF50")
+        band_kwargs['middle_line_color'] = kwargs.pop("middle_line_color", "#2196F3")
+        band_kwargs['lower_line_color'] = kwargs.pop("lower_line_color", "#F44336")
+        band_kwargs['upper_line_width'] = kwargs.pop("upper_line_width", 2)
+        band_kwargs['middle_line_width'] = kwargs.pop("middle_line_width", 2)
+        band_kwargs['lower_line_width'] = kwargs.pop("lower_line_width", 2)
+        band_kwargs['upper_line_style'] = kwargs.pop("upper_line_style", LineStyle.SOLID)
+        band_kwargs['middle_line_style'] = kwargs.pop("middle_line_style", LineStyle.SOLID)
+        band_kwargs['lower_line_style'] = kwargs.pop("lower_line_style", LineStyle.SOLID)
+        band_kwargs['upper_line_visible'] = kwargs.pop("upper_line_visible", True)
+        band_kwargs['middle_line_visible'] = kwargs.pop("middle_line_visible", True)
+        band_kwargs['lower_line_visible'] = kwargs.pop("lower_line_visible", True)
+        band_kwargs['upper_fill_color'] = kwargs.pop("upper_fill_color", "rgba(76, 175, 80, 0.1)")
+        band_kwargs['lower_fill_color'] = kwargs.pop("lower_fill_color", "rgba(244, 67, 54, 0.1)")
+        band_kwargs['line_type'] = kwargs.pop("line_type", LineType.SIMPLE)
+        band_kwargs['crosshair_marker_visible'] = kwargs.pop("crosshair_marker_visible", False)
+        band_kwargs['crosshair_marker_radius'] = kwargs.pop("crosshair_marker_radius", 4)
+        band_kwargs['crosshair_marker_border_color'] = kwargs.pop("crosshair_marker_border_color", "#2196F3")
+        band_kwargs['crosshair_marker_background_color'] = kwargs.pop("crosshair_marker_background_color", "#fff")
+        band_kwargs['crosshair_marker_border_width'] = kwargs.pop("crosshair_marker_border_width", 1)
+        band_kwargs['last_price_animation'] = kwargs.pop("last_price_animation", LastPriceAnimationMode.DISABLED)
         super().__init__(
             data=data,
+            column_mapping=column_mapping,
             visible=visible,
             price_scale_id=price_scale_id,
             price_line_visible=price_line_visible,
@@ -119,13 +106,48 @@ class BandSeries(Series):
             base_line_style=base_line_style,
             price_format=price_format,
             markers=markers,
-            price_scale_config=price_scale_config,
+            pane_id=pane_id,
+            height=height,
+            overlay=overlay,
+            **kwargs,
         )
+        self.upper_line_color = band_kwargs['upper_line_color']
+        self.middle_line_color = band_kwargs['middle_line_color']
+        self.lower_line_color = band_kwargs['lower_line_color']
+        self.upper_line_width = band_kwargs['upper_line_width']
+        self.middle_line_width = band_kwargs['middle_line_width']
+        self.lower_line_width = band_kwargs['lower_line_width']
+        self.upper_line_style = band_kwargs['upper_line_style']
+        self.middle_line_style = band_kwargs['middle_line_style']
+        self.lower_line_style = band_kwargs['lower_line_style']
+        self.upper_line_visible = band_kwargs['upper_line_visible']
+        self.middle_line_visible = band_kwargs['middle_line_visible']
+        self.lower_line_visible = band_kwargs['lower_line_visible']
+        self.upper_fill_color = band_kwargs['upper_fill_color']
+        self.lower_fill_color = band_kwargs['lower_fill_color']
+        self.line_type = band_kwargs['line_type']
+        self.crosshair_marker_visible = band_kwargs['crosshair_marker_visible']
+        self.crosshair_marker_radius = band_kwargs['crosshair_marker_radius']
+        self.crosshair_marker_border_color = band_kwargs['crosshair_marker_border_color']
+        self.crosshair_marker_background_color = band_kwargs['crosshair_marker_background_color']
+        self.crosshair_marker_border_width = band_kwargs['crosshair_marker_border_width']
+        self.last_price_animation = band_kwargs['last_price_animation']
 
     @property
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.BAND
+
+    def _get_columns(self) -> Dict[str, str]:
+        """
+        Return the column mapping for band series, using self.column_mapping if set.
+        """
+        return self.column_mapping or {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            "upper": "upper",
+            "middle": "middle",
+            "lower": "lower",
+        }
 
     def _process_dataframe(self, df: pd.DataFrame) -> List[BandData]:
         """
@@ -144,15 +166,10 @@ class BandSeries(Series):
         Raises:
             ValueError: If required columns are missing from the DataFrame.
         """
-        # Use default column mapping if none provided
-        column_mapping = self.column_mapping or {
-            "time": "datetime",
-            "upper": "upper",
-            "middle": "middle",
-            "lower": "lower",
-        }
+        # Use _get_columns for column mapping
+        column_mapping = self._get_columns()
 
-        time_col = column_mapping.get("time", "datetime")
+        time_col = column_mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
         upper_col = column_mapping.get("upper", "upper")
         middle_col = column_mapping.get("middle", "middle")
         lower_col = column_mapping.get("lower", "lower")
@@ -165,36 +182,35 @@ class BandSeries(Series):
 
         # Create a working copy with only the required columns
         working_df = df[[time_col, upper_col, middle_col, lower_col]].copy()
-        
+
         # Rename columns for easier processing
-        working_df.columns = ['time', 'upper', 'middle', 'lower']
-        
+        working_df.columns = ["time", "upper", "middle", "lower"]
+
         # Remove rows with any NaN values using vectorized operations
         working_df = working_df.dropna()
-        
+
         # Convert time column to string format
-        working_df['time'] = working_df['time'].astype(str)
-        
+        working_df["time"] = working_df["time"].astype(str)
+
         # Convert numeric columns to float
-        working_df[['upper', 'middle', 'lower']] = working_df[['upper', 'middle', 'lower']].astype(float)
-        
+        working_df[["upper", "middle", "lower"]] = working_df[["upper", "middle", "lower"]].astype(
+            float
+        )
+
         # Create BandData objects using vectorized operations
         # Use apply() for better performance than list comprehension with zip
         valid_data = working_df.apply(
             lambda row: BandData(
-                time=row['time'],
-                upper=row['upper'],
-                middle=row['middle'],
-                lower=row['lower']
+                time=row["time"], upper=row["upper"], middle=row["middle"], lower=row["lower"]
             ),
-            axis=1
+            axis=1,
         ).tolist()
 
         return valid_data
 
-    def to_frontend_config(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
-        Convert series to frontend-compatible configuration.
+        Convert series to dictionary representation.
 
         This method creates a dictionary representation of the band series
         that can be consumed by the frontend React component.
@@ -202,6 +218,9 @@ class BandSeries(Series):
         Returns:
             Dict[str, Any]: Dictionary containing series configuration for the frontend.
         """
+        # Validate pane configuration
+        self._validate_pane_config()
+        
         # Get base configuration
         config = {
             "type": "band",
@@ -213,6 +232,10 @@ class BandSeries(Series):
         if self.markers:
             config["markers"] = [marker.to_dict() for marker in self.markers]
 
+        # Add height and pane_id
+        if self.height is not None:
+            config["height"] = self.height
+        config["pane_id"] = self.pane_id
         return config
 
     def _get_options_dict(self) -> Dict[str, Any]:

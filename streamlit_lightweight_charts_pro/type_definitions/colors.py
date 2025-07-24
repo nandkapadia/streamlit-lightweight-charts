@@ -210,4 +210,8 @@ class Background:
         Returns:
             Dictionary containing the background color configuration.
         """
-        return self.color.to_dict()
+        # Fix: If self.color is a string, wrap it as SolidColor
+        color = self.color
+        if isinstance(color, str):
+            color = SolidColor(color=color)
+        return color.to_dict()

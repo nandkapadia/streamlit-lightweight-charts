@@ -12,7 +12,12 @@ visual representations that can be rendered by the charting library.
 
 from typing import Any, Dict, List, Optional
 
-from streamlit_lightweight_charts_pro.data import Trade, TradeVisualization, TradeVisualizationOptions
+from streamlit_lightweight_charts_pro.data import (
+    Trade,
+    TradeVisualization,
+    TradeVisualizationOptions,
+)
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 def trades_to_visual_elements(
@@ -283,23 +288,39 @@ def create_trade_zone(
     if chart_data and options.zone_extend_bars > 0:
         # Convert chart data timestamps to integers for comparison
         from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
-        
+
         # Extend the zone by the specified number of bars
         for i, bar in enumerate(chart_data):
-            bar_time = to_utc_timestamp(bar["time"]) if isinstance(bar["time"], str) else bar["time"]
+            bar_time = (
+                to_utc_timestamp(bar[ColumnNames.TIME])
+                if isinstance(bar[ColumnNames.TIME], str)
+                else bar[ColumnNames.TIME]
+            )
             if bar_time >= trade.entry_timestamp:
                 if i >= options.zone_extend_bars:
-                    prev_bar_time = chart_data[i - options.zone_extend_bars]["time"]
-                    time1 = to_utc_timestamp(prev_bar_time) if isinstance(prev_bar_time, str) else prev_bar_time
+                    prev_bar_time = chart_data[i - options.zone_extend_bars][ColumnNames.TIME]
+                    time1 = (
+                        to_utc_timestamp(prev_bar_time)
+                        if isinstance(prev_bar_time, str)
+                        else prev_bar_time
+                    )
                 break
 
         for i, bar in enumerate(reversed(chart_data)):
-            bar_time = to_utc_timestamp(bar["time"]) if isinstance(bar["time"], str) else bar["time"]
+            bar_time = (
+                to_utc_timestamp(bar[ColumnNames.TIME])
+                if isinstance(bar[ColumnNames.TIME], str)
+                else bar[ColumnNames.TIME]
+            )
             if bar_time <= trade.exit_timestamp:
                 idx = len(chart_data) - i - 1
                 if idx + options.zone_extend_bars < len(chart_data):
-                    next_bar_time = chart_data[idx + options.zone_extend_bars]["time"]
-                    time2 = to_utc_timestamp(next_bar_time) if isinstance(next_bar_time, str) else next_bar_time
+                    next_bar_time = chart_data[idx + options.zone_extend_bars][ColumnNames.TIME]
+                    time2 = (
+                        to_utc_timestamp(next_bar_time)
+                        if isinstance(next_bar_time, str)
+                        else next_bar_time
+                    )
                 break
 
     # Calculate zone height with some padding
@@ -373,7 +394,7 @@ def create_trade_annotation(trade: Trade, options: TradeVisualizationOptions) ->
 
     return {
         "type": "text",
-        "time": mid_time,
+        ColumnNames.TIME: mid_time,
         "price": mid_price,
         "text": " | ".join(text_parts),
         "fontSize": options.annotation_font_size,

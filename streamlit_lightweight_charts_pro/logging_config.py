@@ -53,19 +53,19 @@ def setup_logging(
     return logger
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: Optional[str] = None, level: int = logging.ERROR) -> logging.Logger:
     """
     Get a logger instance for the package.
 
     Args:
         name: Optional logger name (will be prefixed with package name)
-
+        level: Logging level (default: ERROR)
     Returns:
         Logger instance
     """
-    if name:
-        return logging.getLogger(f"streamlit_lightweight_charts_pro.{name}")
-    return logging.getLogger("streamlit_lightweight_charts_pro")
+    logger = logging.getLogger(f"streamlit_lightweight_charts_pro.{name}")
+    logger.setLevel(level)
+    return logger
 
 
 # Initialize default logging

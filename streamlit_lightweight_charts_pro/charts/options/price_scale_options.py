@@ -1,9 +1,9 @@
 """Price scale option classes for streamlit-lightweight-charts."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict
 
-from streamlit_lightweight_charts_pro.type_definitions import PriceScaleMode
+from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
 
 
 @dataclass
@@ -18,7 +18,6 @@ class PriceScaleMargins:
         return {"top": self.top, "bottom": self.bottom}
 
 
-@dataclass
 class PriceScaleOptions:
     """Price scale configuration for lightweight-charts v5.x."""
 
@@ -32,31 +31,84 @@ class PriceScaleOptions:
     border_visible: bool = True
     border_color: str = "rgba(197, 203, 206, 0.8)"
     text_color: str = "#131722"  # TradingView dark gray text
-    font_size: int = 11
-    font_weight: str = "400"
 
     # Tick and label configuration
     ticks_visible: bool = True
-    draw_ticks: bool = True
     ensure_edge_tick_marks_visible: bool = False
     align_labels: bool = True
     entire_text_only: bool = False
 
     # Size and positioning
     minimum_width: int = 72
-    scale_margins: PriceScaleMargins = field(default_factory=PriceScaleMargins)
-
-    # Interaction
-    handle_scale: bool = False
-    handle_size: int = 20
+    scale_margins: PriceScaleMargins = None
 
     # Identification
     price_scale_id: str = ""
 
+    def __init__(
+        self,
+        visible: bool = True,
+        auto_scale: bool = True,
+        mode: PriceScaleMode = PriceScaleMode.NORMAL,
+        invert_scale: bool = False,
+        border_visible: bool = True,
+        border_color: str = "rgba(197, 203, 206, 0.8)",
+        text_color: str = "#131722",
+        ticks_visible: bool = True,
+        ensure_edge_tick_marks_visible: bool = False,
+        align_labels: bool = True,
+        entire_text_only: bool = False,
+        minimum_width: int = 72,
+        scale_margins: PriceScaleMargins = None,
+        price_scale_id: str = "",
+    ):
+        self.visible = visible
+        self.auto_scale = auto_scale
+        self.mode = mode
+        self.invert_scale = invert_scale
+        self.border_visible = border_visible
+        self.border_color = border_color
+        self.text_color = text_color
+        self.ticks_visible = ticks_visible
+        self.ensure_edge_tick_marks_visible = ensure_edge_tick_marks_visible
+        self.align_labels = align_labels
+        self.entire_text_only = entire_text_only
+        self.minimum_width = minimum_width
+        self.scale_margins = scale_margins or PriceScaleMargins()
+        self.price_scale_id = price_scale_id
+
+    def __getitem__(self, key):
+        # Only allow snake_case keys for attribute access
+        allowed_keys = {
+            "visible": "visible",
+            "auto_scale": "auto_scale",
+            "mode": "mode",
+            "invert_scale": "invert_scale",
+            "border_visible": "border_visible",
+            "border_color": "border_color",
+            "text_color": "text_color",
+            "font_size": "font_size",
+            "font_weight": "font_weight",
+            "ticks_visible": "ticks_visible",
+            "draw_ticks": "draw_ticks",
+            "ensure_edge_tick_marks_visible": "ensure_edge_tick_marks_visible",
+            "align_labels": "align_labels",
+            "entire_text_only": "entire_text_only",
+            "minimum_width": "minimum_width",
+            "scale_margins": "scale_margins",
+            "handle_scale": "handle_scale",
+            "handle_size": "handle_size",
+            "price_scale_id": "price_scale_id",
+        }
+        if key not in allowed_keys:
+            raise KeyError(f"Only snake_case keys are allowed: {key}")
+        attr = allowed_keys[key]
+        return getattr(self, attr)
+
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation for lightweight-charts v5.x."""
-        # Ensure minimumWidth is never 0 to prevent invisible Y-axis labels
-        safe_minimum_width = max(self.minimum_width, 72) if self.visible else 0
+        # Defensive conversion: always output a plain dict for scaleMargins
+        scale_margins_dict = self.scale_margins
+        scale_margins_dict = dict(self.scale_margins.to_dict())
 
         result = {
             "visible": self.visible,
@@ -66,57 +118,65 @@ class PriceScaleOptions:
             "borderVisible": self.border_visible,
             "borderColor": self.border_color,
             "textColor": self.text_color,
-            "fontSize": self.font_size,
-            "fontWeight": self.font_weight,
             "ticksVisible": self.ticks_visible,
-            "drawTicks": self.draw_ticks,
             "ensureEdgeTickMarksVisible": self.ensure_edge_tick_marks_visible,
             "alignLabels": self.align_labels,
             "entireTextOnly": self.entire_text_only,
-            "minimumWidth": safe_minimum_width,
-            "scaleMargins": self.scale_margins.to_dict(),
-            "handleScale": self.handle_scale,
-            "handleSize": self.handle_size,
+            "minimumWidth": self.minimum_width,
+            "scaleMargins": scale_margins_dict,
         }
-
         if self.price_scale_id:
             result["priceScaleId"] = self.price_scale_id
-
         return result
 
+    def __eq__(self, other):
+        if not isinstance(other, PriceScaleOptions):
+            return False
+        # Compare all attributes
+        return all(
+            getattr(self, attr) == getattr(other, attr)
+            for attr in [
+                "visible",
+                "auto_scale",
+                "mode",
+                "invert_scale",
+                "border_visible",
+                "border_color",
+                "text_color",
+                "font_size",
+                "font_weight",
+                "ticks_visible",
+                "draw_ticks",
+                "ensure_edge_tick_marks_visible",
+                "align_labels",
+                "entire_text_only",
+                "minimum_width",
+                "scale_margins",
+                "handle_scale",
+                "handle_size",
+                "price_scale_id",
+            ]
+        )
 
-@dataclass
-class RightPriceScaleOptions(PriceScaleOptions):
-    """Right price scale configuration."""
+    def __hash__(self):
+        # Not hashable due to mutable fields, so raise TypeError
+        raise TypeError("PriceScaleOptions is not hashable")
 
-    def __post_init__(self):
-        """Set default values specific to right price scale."""
-        if not self.price_scale_id:
-            self.price_scale_id = "right"
-
-
-@dataclass
-class LeftPriceScaleOptions(PriceScaleOptions):
-    """Left price scale configuration."""
-
-    def __post_init__(self):
-        """Set default values specific to left price scale."""
-        if not self.price_scale_id:
-            self.price_scale_id = "left"
-
-
-@dataclass
-class OverlayPriceScaleOptions(PriceScaleOptions):
-    """Overlay price scale configuration."""
-
-    def __post_init__(self):
-        """Ensure overlay price scale has a unique ID."""
-        if not self.price_scale_id:
-            raise ValueError("Overlay price scale must have a unique price_scale_id")
-
-
-# Backward compatibility aliases
-PriceScale = PriceScaleOptions
-RightPriceScale = RightPriceScaleOptions
-LeftPriceScale = LeftPriceScaleOptions
-OverlayPriceScale = OverlayPriceScaleOptions
+    def __repr__(self):
+        attrs = [
+            f"visible={self.visible!r}",
+            f"auto_scale={self.auto_scale!r}",
+            f"mode={self.mode!r}",
+            f"invert_scale={self.invert_scale!r}",
+            f"border_visible={self.border_visible!r}",
+            f"border_color={self.border_color!r}",
+            f"text_color={self.text_color!r}",
+            f"ticks_visible={self.ticks_visible!r}",
+            f"ensure_edge_tick_marks_visible={self.ensure_edge_tick_marks_visible!r}",
+            f"align_labels={self.align_labels!r}",
+            f"entire_text_only={self.entire_text_only!r}",
+            f"minimum_width={self.minimum_width!r}",
+            f"scale_margins={self.scale_margins!r}",
+            f"price_scale_id={self.price_scale_id!r}",
+        ]
+        return f"PriceScaleOptions({', '.join(attrs)})"

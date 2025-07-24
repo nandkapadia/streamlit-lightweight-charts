@@ -1,15 +1,22 @@
 """
-Base data utilities for streamlit-lightweight-charts.
+Base data classes and utilities for streamlit-lightweight-charts.
 
-This module provides utility functions for time format conversion and
-data validation. It handles various time input formats and provides
-consistent output formats for internal use.
+This module provides the base data class and utility functions for time format conversion
+used throughout the library for representing financial data points.
 """
 
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Union
+from typing import Any, Dict, Optional, Union
+import math
 
 import pandas as pd
+
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
+
+# Initialize logger
+logger = get_logger("data.base")
 
 
 def to_utc_timestamp(
@@ -40,7 +47,7 @@ def to_utc_timestamp(
     Example:
         ```python
         # String date
-        to_utc_timestamp("2024-01-01")  # Returns "2024-01-01"
+        to_utc_timestamp("2024-01-01")  # Returns 1545436800
 
         # Unix timestamp
         to_utc_timestamp(1704067200)  # Returns 1704067200
@@ -71,7 +78,7 @@ def to_utc_timestamp(
         raise ValueError(f"Unsupported time type: {type(time_value)}")
 
 
-def from_utc_timestamp(time_value: Union[str, int]) -> pd.Timestamp:
+def from_utc_timestamp(time_value: Optional[Union[str, int]]) -> pd.Timestamp:
     """
     Convert UTC timestamp or date string to pandas Timestamp.
 
@@ -104,3 +111,77 @@ def from_utc_timestamp(time_value: Union[str, int]) -> pd.Timestamp:
         return pd.to_datetime(time_value, unit="s")
     else:
         raise ValueError(f"Unsupported time type: {type(time_value)}")
+
+
+@dataclass
+class BaseData:
+    """
+    Base class for all data points in charts.
+
+    This abstract base class provides common functionality for all data point
+    types, including time handling and dictionary conversion. It enforces
+    that all data points must have a time component.
+
+    Attributes:
+        _time: Internal time representation (UTC timestamp or date string).
+    """
+
+    _time: Optional[Union[str, int]] = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        """
+        Validate that time is provided after initialization.
+
+        Raises:
+            ValueError: If time is not set during initialization.
+        """
+        if self._time is None:
+            raise ValueError("time must be provided")
+
+    @property
+    def time(self) -> pd.Timestamp:
+        """
+        Get time as pandas Timestamp.
+
+        Returns:
+            Pandas Timestamp object representing the data point time.
+        """
+        return from_utc_timestamp(self._time)
+
+    @time.setter
+    def time(self, value: Union[str, int, float, datetime, pd.Timestamp]) -> None:
+        """
+        Set time from various formats.
+
+        Args:
+            value: Time value in various formats:
+                - str: Date string (e.g., "2024-01-01")
+                - int/float: Unix timestamp in seconds
+                - datetime: Python datetime object
+                - pd.Timestamp: Pandas Timestamp object
+        """
+        self._time = to_utc_timestamp(value)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert data point to dictionary representation.
+
+        This method creates a dictionary representation of the data point
+        suitable for serialization or frontend consumption.
+
+        Returns:
+            Dictionary containing the data point's attributes, excluding
+            private fields (those starting with '_').
+        """
+        result = {}
+        # Add time as the first field
+        result[ColumnNames.TIME] = self._time
+        # Add all other non-private fields
+        for key, value in self.__dict__.items():
+            if not key.startswith("_") and value is not None:
+                # Replace NaN or pd.NA with 0
+                if (isinstance(value, float) and math.isnan(value)) or value is pd.NA:
+                    result[key] = 0
+                else:
+                    result[key] = value
+        return result

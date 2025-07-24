@@ -10,7 +10,6 @@ width, style, and animation effects. It also supports markers and price
 line configurations.
 
 Example:
-    ```python
     from streamlit_lightweight_charts_pro.charts.series import LineSeries
     from streamlit_lightweight_charts_pro.data import SingleValueData
 
@@ -28,16 +27,21 @@ Example:
         line_width=2,
         line_style=LineStyle.SOLID
     )
-    ```
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List
 
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.data import SingleValueData
-from streamlit_lightweight_charts_pro.type_definitions import ChartType, LastPriceAnimationMode, LineStyle, LineType
+from streamlit_lightweight_charts_pro.type_definitions import (
+    ChartType,
+    LastPriceAnimationMode,
+    LineStyle,
+    LineType,
+)
 from streamlit_lightweight_charts_pro.charts.series.base import Series, _get_enum_value
+from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 
 
 class LineSeries(Series):
@@ -70,63 +74,58 @@ class LineSeries(Series):
 
     def __init__(
         self,
-        data: Union[List[SingleValueData], pd.DataFrame],
-        column_mapping: Optional[Dict[str, str]] = None,
-        color: str = "#2196F3",
-        line_style: Union[LineStyle, str] = LineStyle.SOLID,
-        line_width: int = 3,
-        line_type: Union[LineType, str] = LineType.SIMPLE,
-        line_visible: bool = True,
-        point_markers_visible: bool = False,
-        point_markers_radius: Optional[int] = None,
-        crosshair_marker_visible: bool = True,
-        crosshair_marker_radius: int = 4,
-        crosshair_marker_border_color: str = "",
-        crosshair_marker_background_color: str = "",
-        crosshair_marker_border_width: int = 2,
-        last_price_animation: Union[LastPriceAnimationMode, str] = LastPriceAnimationMode.DISABLED,
+        data,
+        column_mapping=None,
+        color="#2196F3",
+        visible=True,
+        price_scale_id="right",
+        price_line_visible=False,
+        base_line_visible=False,
+        price_line_width=1,
+        price_line_color="#2196F3",
+        price_line_style="solid",
+        base_line_width=1,
+        base_line_color="#FF9800",
+        base_line_style="solid",
+        price_format=None,
+        markers=None,
+        pane_id=0,
+        height=None,
+        overlay=True,
+        line_style=LineStyle.SOLID,
+        line_width=2,
+        line_type=LineType.SIMPLE,
+        line_visible=True,
+        point_markers_visible=False,
+        point_markers_radius=None,
+        crosshair_marker_visible=False,
+        crosshair_marker_radius=4,
+        crosshair_marker_border_color="#2196F3",
+        crosshair_marker_background_color="#fff",
+        crosshair_marker_border_width=1,
+        last_price_animation=LastPriceAnimationMode.DISABLED,
         **kwargs,
     ):
-        """
-        Initialize line series with data and styling options.
-
-        Args:
-            data: Series data as a list of SingleValueData objects or pandas DataFrame.
-            column_mapping: Optional mapping for DataFrame column names.
-            color: Color of the line. Defaults to "#2196F3".
-            line_style: Style of the line. Defaults to LineStyle.SOLID.
-            line_width: Width of the line in pixels. Defaults to 3.
-            line_type: Type of line. Defaults to LineType.SIMPLE.
-            line_visible: Whether the line is visible. Defaults to True.
-            point_markers_visible: Whether to show point markers. Defaults to False.
-            point_markers_radius: Radius of point markers in pixels. Defaults to None.
-            crosshair_marker_visible: Whether to show crosshair markers. Defaults to True.
-            crosshair_marker_radius: Radius of crosshair markers. Defaults to 4.
-            crosshair_marker_border_color: Border color of crosshair markers. Defaults to "".
-            crosshair_marker_background_color: Background color of crosshair markers.
-                Defaults to "".
-            crosshair_marker_border_width: Border width of crosshair markers. Defaults to 2.
-            last_price_animation: Animation mode for the last price. Defaults to DISABLED.
-            **kwargs: Additional series configuration options.
-
-        Example:
-            ```python
-            # Basic line series
-            series = LineSeries(data=line_data)
-
-            # With custom styling
-            series = LineSeries(
-                data=line_data,
-                color="#ff0000",
-                line_width=2,
-                line_style=LineStyle.DASHED
-            )
-            ```
-        """
-        # Store column mapping first
-        self.column_mapping = column_mapping
-
-        # Line-specific styling options
+        super().__init__(
+            data=data,
+            column_mapping=column_mapping,
+            visible=visible,
+            price_scale_id=price_scale_id,
+            price_line_visible=price_line_visible,
+            base_line_visible=base_line_visible,
+            price_line_width=price_line_width,
+            price_line_color=price_line_color,
+            price_line_style=price_line_style,
+            base_line_width=base_line_width,
+            base_line_color=base_line_color,
+            base_line_style=base_line_style,
+            price_format=price_format,
+            markers=markers,
+            pane_id=pane_id,
+            height=height,
+            overlay=overlay,
+            **kwargs,
+        )
         self.color = color
         self.line_style = line_style
         self.line_width = line_width
@@ -141,13 +140,19 @@ class LineSeries(Series):
         self.crosshair_marker_border_width = crosshair_marker_border_width
         self.last_price_animation = last_price_animation
 
-        # Initialize base class
-        super().__init__(data=data, **kwargs)
-
     @property
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.LINE
+
+    def _get_columns(self) -> Dict[str, str]:
+        """
+        Return the column mapping for line series, using self.column_mapping if set.
+        """
+        return self.column_mapping or {
+            ColumnNames.TIME: ColumnNames.DATETIME,
+            ColumnNames.VALUE: ColumnNames.CLOSE,
+        }
 
     def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
         """
@@ -175,13 +180,10 @@ class LineSeries(Series):
             series = LineSeries(data=df)
             ```
         """
-        # Use the stored column_mapping if available, otherwise default
-        mapping = (
-            self.column_mapping if self.column_mapping else {"time": "datetime", "value": "close"}
-        )
-
-        time_col = mapping.get("time", "datetime")
-        value_col = mapping.get("value", "close")
+        # Use _get_columns for column mapping
+        mapping = self._get_columns()
+        time_col = mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
+        value_col = mapping.get(ColumnNames.VALUE, ColumnNames.CLOSE)
 
         if time_col not in df.columns or value_col not in df.columns:
             raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")
@@ -206,12 +208,12 @@ class LineSeries(Series):
             "baseLineColor": self.base_line_color,
             "baseLineStyle": self.base_line_style,
             "priceFormat": self.price_format,
+            "color": self.color,
         }
 
         # Add line-specific options
         options.update(
             {
-                "color": self.color,
                 "lineStyle": _get_enum_value(self.line_style, LineStyle),
                 "lineWidth": self.line_width,
                 "lineType": _get_enum_value(self.line_type, LineType),
@@ -237,35 +239,16 @@ class LineSeries(Series):
         """
         Convert line series to dictionary representation.
 
-        Returns:
-            Dict[str, Any]: Dictionary representation of the line series.
-        """
-        result = {
-            "type": "line",
-            "data": [item.to_dict() for item in self.data],
-            "options": self._get_options_dict(),
-        }
-
-        # Add markers if present
-        if self.markers:
-            result["markers"] = [marker.to_dict() for marker in self.markers]
-
-        return result
-
-    def to_frontend_config(self) -> Dict[str, Any]:
-        """
-        Convert line series to frontend-compatible configuration.
-
         Creates a dictionary representation of the line series suitable
         for consumption by the frontend React component.
 
         Returns:
-            Dict[str, Any]: Frontend-compatible configuration dictionary
+            Dict[str, Any]: Dictionary representation of the line series
                 containing series type, data, and styling options.
 
         Example:
             ```python
-            config = series.to_frontend_config()
+            config = series.to_dict()
             # Returns: {
             #     "type": "line",
             #     "data": [...],
@@ -273,6 +256,9 @@ class LineSeries(Series):
             # }
             ```
         """
+        # Validate pane configuration
+        self._validate_pane_config()
+
         # Base configuration
         config = {
             "type": "line",
@@ -314,7 +300,10 @@ class LineSeries(Series):
         if self.markers:
             config["markers"] = [marker.to_dict() for marker in self.markers]
 
-        if self.price_scale_config:
-            config["priceScale"] = self.price_scale_config
+        # Remove price_scale_config from to_dict
 
+        # Add height and pane_id
+        if self.height is not None:
+            config["height"] = self.height
+        config["pane_id"] = self.pane_id
         return config
