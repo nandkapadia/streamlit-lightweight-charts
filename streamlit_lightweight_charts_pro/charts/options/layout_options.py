@@ -92,6 +92,7 @@ class LayoutOptions(Options):
     font_size: int = 11
     font_family: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     pane_options: Optional[PaneOptions] = None
+    attribution_logo: bool = False
 
     def __post_init__(self):
         super().__post_init__()
@@ -107,6 +108,9 @@ class LayoutOptions(Options):
                 f"pane_options must be a PaneOptions instance or None, "
                 f"got {type(self.pane_options)}"
             )
+        # Validate attribution_logo
+        if not isinstance(self.attribution_logo, bool):
+            raise TypeError(f"attribution_logo must be a bool, got {type(self.attribution_logo)}")
 
 
 @dataclass

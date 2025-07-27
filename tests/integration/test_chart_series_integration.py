@@ -7,7 +7,6 @@ ensuring they work together correctly in real-world scenarios.
 
 import json
 from typing import List
-from unittest.mock import Mock
 
 import numpy as np
 import pandas as pd
@@ -91,7 +90,9 @@ class TestChartSeriesIntegration:
 
         # Create volume series on right scale
         volume_series = HistogramSeries.create_volume_series(
-            candlestick_data, column_mapping={}, price_scale_id="right"
+            candlestick_data,
+            column_mapping={"time": "time", "volume": "volume"},
+            price_scale_id="right",
         )
 
         # Create chart with both series
@@ -666,11 +667,12 @@ class TestChartSeriesErrorHandlingIntegration:
 
     def test_chart_with_series_returning_invalid_config(self):
         """Test chart with series returning invalid configuration."""
+
         # Create a real series that returns invalid config by overriding to_dict
         class InvalidConfigSeries(LineSeries):
             def to_dict(self):
                 return "not_a_dict"
-        
+
         invalid_series = InvalidConfigSeries(
             data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
         )
@@ -684,11 +686,12 @@ class TestChartSeriesErrorHandlingIntegration:
 
     def test_chart_with_series_missing_required_fields(self):
         """Test chart with series missing required fields."""
+
         # Create a real series that returns incomplete config by overriding to_dict
         class IncompleteConfigSeries(LineSeries):
             def to_dict(self):
                 return {}  # Empty dict with missing required fields
-        
+
         incomplete_series = IncompleteConfigSeries(
             data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
         )

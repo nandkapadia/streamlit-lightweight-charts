@@ -10,7 +10,6 @@ This module contains comprehensive tests for the remaining option classes:
 - TradeVisualizationOptions
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions

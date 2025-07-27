@@ -144,7 +144,7 @@ class TestHistogramChartIntegration:
         # Create volume series manually
         volume_series = HistogramSeries.create_volume_series(
             candlestick_data,
-            column_mapping={},
+            column_mapping={"time": "time", "volume": "volume"},
             up_color="rgba(76,175,80,0.5)",
             down_color="rgba(244,67,54,0.5)",
         )

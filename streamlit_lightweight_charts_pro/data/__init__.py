@@ -45,6 +45,7 @@ from streamlit_lightweight_charts_pro.data.line_data import LineData
 # Import marker classes
 from streamlit_lightweight_charts_pro.data.marker import Marker
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
+from streamlit_lightweight_charts_pro.data.single_value_data import SingleValueData
 
 # Import trade classes
 from streamlit_lightweight_charts_pro.data.trade import (
@@ -58,6 +59,7 @@ __all__ = [
     # Base data classes
     "Data",
     # Single value data classes
+    "SingleValueData",
     "LineData",
     "HistogramData",
     # Area and bar data classes

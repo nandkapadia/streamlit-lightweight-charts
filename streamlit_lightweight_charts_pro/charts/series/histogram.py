@@ -79,73 +79,71 @@ class HistogramSeries(Series):
         or bearish (close < open).
 
         Args:
-            data: OHLCV data as DataFrame or list of OhlcvData objects
-            column_mapping: Column mapping for DataFrame input
-            up_color: Color for bullish candles (close >= open), default teal
-            down_color: Color for bearish candles (close < open), default red
-            **kwargs: Additional arguments passed to HistogramSeries constructor
+            data: OHLCV data as DataFrame or sequence of OhlcvData objects
+            column_mapping: Mapping of required fields to column names
+            up_color: Color for bullish candles (close >= open)
+            down_color: Color for bearish candles (close < open)
+            **kwargs: Additional arguments for HistogramSeries
 
         Returns:
-            HistogramSeries: Configured histogram series with colored volume data
-
-        Example:
-            ```python
-            # From DataFrame
-            volume_series = HistogramSeries.create_volume_series(
-                df,
-                column_mapping={'time': 'datetime', 'volume': 'vol', 'open': 'o', 'close': 'c'},
-                up_color="rgba(76,175,80,0.5)",
-                down_color="rgba(244,67,54,0.5)"
-            )
-
-            # From OHLCV data list
-            volume_series = HistogramSeries.create_volume_series(ohlcv_list, {})
-            ```
+            HistogramSeries: Configured histogram series for volume visualization
         """
-        volume_data = []
-
-        # Handle None or empty data
-        if data is None:
-            return cls(data=volume_data, **kwargs)
-
         if isinstance(data, pd.DataFrame):
-            # Handle DataFrame input - ultra-optimized vectorized approach
-            time_col = column_mapping.get("time", "time")
-            volume_col = column_mapping.get("volume", "volume")
+            # Use vectorized operations for color assignment
+            df = data.copy()
+
+            # Get open and close columns
             open_col = column_mapping.get("open", "open")
             close_col = column_mapping.get("close", "close")
 
-            # Extract columns as numpy arrays for maximum speed
-            # Convert pandas timestamps to seconds (not nanoseconds)
-            if hasattr(data[time_col], "dt"):
-                times = data[time_col].apply(lambda x: x.timestamp()).values
-            else:
-                times = data[time_col].values
-            volumes = data[volume_col].values
-            opens = data[open_col].values
-            closes = data[close_col].values
+            # Vectorized color assignment based on price movement
+            colors = np.where(df[close_col] >= df[open_col], up_color, down_color)
 
-            # Ultra-fast color assignment using boolean indexing
-            is_bullish = closes >= opens
-            colors = np.full(len(data), down_color, dtype=object)
-            colors[is_bullish] = up_color
+            # Add color column to DataFrame
+            df["color"] = colors
 
-            # Bulk create HistogramData objects using map for maximum speed
-            volume_data = list(
-                map(
-                    lambda args: HistogramData(time=args[0], value=args[1], color=args[2]),
-                    zip(times, volumes, colors),
-                )
-            )
+            # Update column mapping to include color
+            volume_col = column_mapping.get("volume", "volume")
+            updated_mapping = column_mapping.copy()
+            updated_mapping["color"] = "color"
+            # Map volume to value for HistogramSeries
+            updated_mapping["value"] = volume_col
+            # Use from_dataframe factory method
+            return cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
         else:
-            # Handle list of OHLCV data objects
-            for item in data:
-                # All items should be OhlcvData with volume
-                color = up_color if item.close >= item.open else down_color
-                volume_data.append(HistogramData(time=item.time, value=item.volume, color=color))
+            # For sequence of OhlcvData objects, process each item
+            if data is None:
+                # Return empty series for None data
+                return cls(data=[])
 
-        # Create and return the histogram series
-        return cls(data=volume_data, **kwargs)
+            processed_data = []
+            for item in data:
+                if isinstance(item, dict):
+                    # Determine color based on price movement
+                    color = up_color if item.get("close", 0) >= item.get("open", 0) else down_color
+                    processed_item = item.copy()
+                    processed_item["color"] = color
+                    processed_data.append(processed_item)
+                else:
+                    # For OhlcvData objects, convert to dict and add color
+                    item_dict = item.to_dict() if hasattr(item, "to_dict") else item.__dict__
+                    color = (
+                        up_color
+                        if item_dict.get("close", 0) >= item_dict.get("open", 0)
+                        else down_color
+                    )
+                    item_dict["color"] = color
+                    processed_data.append(item_dict)
+
+            # Convert to DataFrame and use from_dataframe factory method
+            df = pd.DataFrame(processed_data)
+            updated_mapping = column_mapping.copy()
+            updated_mapping["color"] = "color"
+            # Map volume to value for HistogramSeries
+            volume_col = column_mapping.get("volume", "volume")
+            updated_mapping["value"] = volume_col
+
+            return cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
 
     def __init__(
         self,

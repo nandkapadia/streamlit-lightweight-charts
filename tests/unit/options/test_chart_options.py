@@ -5,7 +5,6 @@ This module contains comprehensive tests for the ChartOptions class,
 ensuring proper construction, validation, and serialization.
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.chart_options import ChartOptions

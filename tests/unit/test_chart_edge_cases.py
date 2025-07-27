@@ -5,11 +5,11 @@ This module tests edge cases and error conditions for the Chart class,
 addressing the 52% coverage gap in chart.py.
 """
 
-import pandas as pd
-import pytest
-
 from datetime import datetime
 from unittest.mock import Mock, patch
+
+import pandas as pd
+import pytest
 
 from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
@@ -304,7 +304,10 @@ class TestChartPriceScaleManagementEdgeCases:
     def test_add_overlay_price_scale_with_duplicate_scale_id(self):
         """Test adding overlay price scale with duplicate scale ID."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+            PriceScaleOptions,
+        )
+
         options = PriceScaleOptions()
 
         # Add first scale
@@ -332,9 +335,7 @@ class TestChartPriceVolumeSeriesEdgeCases:
         chart = Chart()
 
         with pytest.raises(ValueError):
-            chart._create_price_volume_series(
-                data=[], column_mapping={}, price_type="candlestick"
-            )
+            chart._create_price_volume_series(data=[], column_mapping={}, price_type="candlestick")
 
     def test_create_price_volume_series_with_empty_dataframe(self):
         """Test creating price-volume series with empty DataFrame."""
@@ -474,19 +475,19 @@ class TestChartTradeVisualizationEdgeCases:
     def test_add_trade_visualization_with_series_without_markers(self):
         """Test adding trade visualization to series without markers support."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Use real series that doesn't have markers
         series_without_markers = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
         )
         chart.add_series(series_without_markers)
 
         from streamlit_lightweight_charts_pro.data.trade import Trade
         from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType
+
         trade = Trade(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
@@ -517,17 +518,14 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_without_to_dict(self):
         """Test to_frontend_config with series without to_dict method."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Add real series
-        series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
-        )
+        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
         chart.add_series(series)
-        
+
         # Test to_frontend_config method
         config = chart.to_frontend_config()
         assert "charts" in config
@@ -536,17 +534,14 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_returning_invalid_dict(self):
         """Test to_frontend_config with series returning invalid dict."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Add real series
-        series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
-        )
+        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
         chart.add_series(series)
-        
+
         # Test to_frontend_config method
         config = chart.to_frontend_config()
         assert "charts" in config
@@ -555,17 +550,14 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_without_required_fields(self):
         """Test to_frontend_config with series without required fields."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Add real series
-        series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
-        )
+        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
         chart.add_series(series)
-        
+
         # Test to_frontend_config method
         config = chart.to_frontend_config()
         assert "charts" in config
@@ -574,17 +566,14 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_with_invalid_height(self):
         """Test to_frontend_config with series with invalid height."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Add real series
-        series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
-        )
+        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
         chart.add_series(series)
-        
+
         # Test to_frontend_config method
         config = chart.to_frontend_config()
         assert "charts" in config
@@ -592,17 +581,14 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_with_none_pane_id(self):
         """Test to_frontend_config with series with None pane_id."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
-        
+
         # Add real series
-        series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], 
-            line_options=LineOptions()
-        )
+        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
         chart.add_series(series)
-        
+
         # Test to_frontend_config method
         config = chart.to_frontend_config()
         assert "charts" in config

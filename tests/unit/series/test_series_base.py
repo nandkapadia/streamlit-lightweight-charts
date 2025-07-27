@@ -439,7 +439,7 @@ class TestSeriesBase:
         """Test error handling with missing required columns."""
         df = pd.DataFrame({"value": [100, 110]})  # Missing 'time' column
 
-        with pytest.raises(ValueError, match="DataFrame is missing required column"):
+        with pytest.raises(ValueError, match="Time column 'time' not found"):
             ConcreteSeries.from_dataframe(df=df, column_mapping={"time": "time", "value": "value"})
 
     def test_error_handling_invalid_data_type(self):
@@ -477,8 +477,8 @@ class TestSeriesBaseAdvanced:
 
     def test_get_enum_value_helper_function(self):
         """Test the _get_enum_value helper function."""
-        from streamlit_lightweight_charts_pro.charts.series.base import _get_enum_value
         from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
+        from tests.unit.utils import _get_enum_value
 
         # Test with enum object
         result = _get_enum_value(LineStyle.SOLID, LineStyle)
@@ -642,7 +642,7 @@ class TestSeriesBaseAdvanced:
             )
 
         # Test missing column in DataFrame
-        with pytest.raises(ValueError, match="DataFrame is missing required column"):
+        with pytest.raises(ValueError, match="Time column 'missing_column' not found"):
             ConcreteSeries.from_dataframe(
                 df=df, column_mapping={"time": "missing_column", "value": "value"}
             )

@@ -9,7 +9,6 @@ This module contains comprehensive tests for interaction-related option classes:
 - TrackingModeOptions
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.interaction_options import (

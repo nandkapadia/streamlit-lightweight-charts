@@ -5,12 +5,12 @@ This module tests the BaselineData class functionality including
 construction, validation, serialization, and edge cases.
 """
 
+from dataclasses import fields
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import pytest
-
-from dataclasses import fields
-from datetime import datetime
 
 from streamlit_lightweight_charts_pro.data.baseline_data import BaselineData
 from streamlit_lightweight_charts_pro.data.single_value_data import SingleValueData

@@ -435,9 +435,7 @@ class TestCreateTradeZone:
 
     def test_custom_zone_colors(self, sample_trade):
         """Test custom zone colors."""
-        options = TradeVisualizationOptions(
-            zone_color_long="rgba(0,255,0,1)"
-        )
+        options = TradeVisualizationOptions(zone_color_long="rgba(0,255,0,1)")
 
         zone = create_trade_zone(sample_trade, options)
 

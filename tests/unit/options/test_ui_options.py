@@ -7,7 +7,6 @@ This module contains comprehensive tests for UI-related option classes:
 - LegendOptions
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.ui_options import (

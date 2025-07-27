@@ -28,7 +28,7 @@ logger = get_logger(__name__)
 class classproperty(property):
     """
     Descriptor to create class-level properties.
-    
+
     This pattern is correct, but pylint may not recognize it and will warn about missing 'self'.
     """
 

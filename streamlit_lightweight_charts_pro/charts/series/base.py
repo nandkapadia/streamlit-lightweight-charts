@@ -38,44 +38,6 @@ from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 logger = get_logger(__name__)
 
 
-def _get_enum_value(value, enum_class):
-    """
-    Helper function to get enum value, handling both enum objects and strings.
-
-    This function safely converts enum values to their string representations,
-    handling cases where the value might already be a string or an enum object.
-    It provides robust conversion for enum values used throughout the series
-    configuration system.
-
-    Args:
-        value: The value to convert (can be enum object or string).
-        enum_class: The enum class to use for conversion.
-
-    Returns:
-        str: The string value of the enum.
-
-    Example:
-        ```python
-        # With enum object
-        _get_enum_value(LineStyle.SOLID, LineStyle)  # Returns "solid"
-
-        # With string
-        _get_enum_value("solid", LineStyle)  # Returns "solid"
-        ```
-    """
-    if isinstance(value, enum_class):
-        return value.value
-    elif isinstance(value, str):
-        # Try to convert string to enum
-        try:
-            return enum_class(value).value
-        except ValueError:
-            # If conversion fails, return the string as-is
-            return value
-    else:
-        return value
-
-
 # pylint: disable=no-member, invalid-name
 class Series(ABC):
     """
@@ -154,13 +116,13 @@ class Series(ABC):
 
             # Series with DataFrame
             series = LineSeries(
-                data=df, 
+                data=df,
                 column_mapping={'time': 'datetime', 'value': 'close'}
             )
 
             # Series with Series
             series = LineSeries(
-                data=series_data, 
+                data=series_data,
                 column_mapping={'time': 'index', 'value': 'values'}
             )
 
@@ -205,6 +167,133 @@ class Series(ABC):
         self.overlay = overlay
         self.column_mapping = column_mapping
 
+    @staticmethod
+    def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:
+        """
+        Prepare index for column mapping.
+
+        Handles all index-related column mapping cases:
+        - Time column mapping with DatetimeIndex
+        - Level position mapping (e.g., "0", "1")
+        - "index" mapping (first unnamed level or level 0)
+        - Named level mapping (e.g., "date", "symbol")
+        - Single index reset for non-time columns
+
+        Args:
+            df: DataFrame to prepare
+            column_mapping: Mapping of required fields to column names
+
+        Returns:
+            DataFrame with prepared index
+
+        Raises:
+            ValueError: If time column is not found and no DatetimeIndex is available
+        """
+        # Handle time column mapping first (special case for DatetimeIndex)
+        if "time" in column_mapping:
+            time_col = column_mapping["time"]
+            if time_col not in df.columns:
+                # Handle single DatetimeIndex
+                if isinstance(df.index, pd.DatetimeIndex):
+                    if df.index.name is None:
+                        # Set name and reset index to make it a regular column
+                        df.index.name = time_col
+                        df = df.reset_index()
+                    elif df.index.name == time_col:
+                        # Index name already matches, just reset to make it a regular column
+                        df = df.reset_index()
+
+                # Handle MultiIndex with DatetimeIndex level
+                elif isinstance(df.index, pd.MultiIndex):
+                    for i, level in enumerate(df.index.levels):
+                        if isinstance(level, pd.DatetimeIndex):
+                            if df.index.names[i] is None:
+                                # Set name for this level and reset it
+                                new_names = list(df.index.names)
+                                new_names[i] = time_col
+                                df.index.names = new_names
+                                df = df.reset_index(level=time_col)
+                                break
+                            elif df.index.names[i] == time_col:
+                                # Level name already matches, reset this level
+                                df = df.reset_index(level=time_col)
+                                break
+                    else:
+                        # No DatetimeIndex level found, check if any level name matches
+                        if time_col in df.index.names:
+                            # Reset the matching level
+                            df = df.reset_index(level=time_col)
+                        else:
+                            # No matching level found
+                            raise ValueError(
+                                f"Time column '{time_col}' not found in DataFrame columns and no "
+                                f"DatetimeIndex available in the index"
+                            )
+                else:
+                    # No DatetimeIndex found
+                    # Check if time_col is "index" and we have a regular index to reset
+                    if time_col == "index" and df.index.name is None:
+                        # Reset the index to make it a regular column
+                        df = df.reset_index()
+                    else:
+                        raise ValueError(
+                            f"Time column '{time_col}' not found in DataFrame columns and no "
+                            f"DatetimeIndex available in the index"
+                        )
+
+        # Handle other index columns
+        for field, col_name in column_mapping.items():
+            if field == "time":
+                continue  # Already handled above
+
+            if col_name not in df.columns:
+                if isinstance(df.index, pd.MultiIndex):
+                    level_names = list(df.index.names)
+
+                    # Integer string or int: treat as level position
+                    try:
+                        level_idx = int(col_name)
+                        if 0 <= level_idx < len(df.index.levels):
+                            df = df.reset_index(level=level_idx)
+                            level_name = level_names[level_idx]
+                            # Update column mapping to use actual column name
+                            new_col_name = (
+                                level_name if level_name is not None else f"level_{level_idx}"
+                            )
+                            column_mapping[field] = new_col_name
+                            continue
+                    except (ValueError, IndexError):
+                        pass
+
+                    # 'index': use first unnamed level if any, else first level
+                    if col_name == "index":
+                        unnamed_levels = [i for i, name in enumerate(level_names) if name is None]
+                        level_idx = unnamed_levels[0] if unnamed_levels else 0
+                        df = df.reset_index(level=level_idx)
+                        level_name = level_names[level_idx]
+                        new_col_name = (
+                            level_name if level_name is not None else f"level_{level_idx}"
+                        )
+                        column_mapping[field] = new_col_name
+                        continue
+
+                    # Named level
+                    if col_name in level_names:
+                        level_idx = level_names.index(col_name)
+                        df = df.reset_index(level=level_idx)
+                        continue
+
+                else:
+                    # Single index
+                    if col_name == "index" or col_name == df.index.name:
+                        idx_name = df.index.name
+                        df = df.reset_index()
+                        new_col_name = idx_name if idx_name is not None else "index"
+                        column_mapping[field] = new_col_name
+                        continue
+
+        return df
+
     def _process_dataframe_input(
         self, data: Union[pd.DataFrame, pd.Series], column_mapping: Dict[str, str]
     ) -> List[Data]:
@@ -226,12 +315,13 @@ class Series(ABC):
         Raises:
             ValueError: If required columns are missing from the DataFrame/Series.
             ValueError: If the data structure is invalid for the series type.
+            ValueError: If time column is not found and no DatetimeIndex is available.
 
         Note:
             This method uses the data_class property to determine the appropriate
             Data class for conversion.
         """
-        # Convert Series to DataFrame if needed
+        # Convert Series to DataFrame if needed (do this first)
         if isinstance(data, pd.Series):
             data = data.to_frame()
 
@@ -244,33 +334,14 @@ class Series(ABC):
         if missing_required:
             raise ValueError(f"DataFrame is missing required column mapping: {missing_required}")
 
-        # Process index columns if they're referenced in column_mapping
-        df = data.copy()
-        updated_mapping = column_mapping.copy()
-
-        # Handle index columns that are referenced in column_mapping
-        for field, col_name in column_mapping.items():
-            if col_name == "index" or col_name in df.index.names or col_name == df.index.name:
-                # Reset the index level to make it a regular column
-                if isinstance(df.index, pd.MultiIndex):
-                    # For MultiIndex, find the level with this name
-                    level_names = list(df.index.names)
-                    if col_name in level_names:
-                        level_idx = level_names.index(col_name)
-                        df = df.reset_index(level=level_idx)
-                        # Update column mapping to use the actual column name
-                        updated_mapping[field] = col_name
-                else:
-                    # For single index, reset it
-                    df = df.reset_index()
-                    # Update column mapping to use the actual column name
-                    # When index name is None, reset_index() creates a column named 'index'
-                    updated_mapping[field] = "index"
+        # Prepare index for all column mappings
+        df = self.prepare_index(data, column_mapping)
 
         # Check if all required columns are present in the DataFrame
-        mapped_columns = set(updated_mapping.values())
+        mapped_columns = set(column_mapping.values())
         available_columns = set(df.columns.tolist())
         missing_columns = mapped_columns - available_columns
+
         if missing_columns:
             raise ValueError(f"DataFrame is missing required column: {missing_columns}")
 
@@ -278,12 +349,16 @@ class Series(ABC):
         result = []
         for _, row in df.iterrows():
             kwargs = {}
-            for field, col_name in updated_mapping.items():
-                value = row[col_name]
-                kwargs[field] = value
+            # Process both required and optional columns
+            for key in required.union(optional):
+                if key in column_mapping:
+                    col_name = column_mapping[key]
+                    if col_name in df.columns:
+                        value = row[col_name]
+                        kwargs[key] = value
             data_obj = data_class(**kwargs)
             result.append(data_obj)
-        
+
         return result
 
     @property
@@ -304,7 +379,7 @@ class Series(ABC):
             ```python
             # Get data as dictionaries
             data_dicts = series.data_dict
-            
+
             # Access individual data points
             for data_point in data_dicts:
                 print(f"Time: {data_point['time']}, Value: {data_point['value']}")
@@ -687,7 +762,7 @@ class Series(ABC):
 
         Args:
             df (Union[pd.DataFrame, pd.Series]): The input DataFrame or Series.
-            column_mapping (dict): Mapping of required fields 
+            column_mapping (dict): Mapping of required fields
                 (e.g., {'time': 'datetime', 'value': 'close', ...}).
             price_scale_id (str): Price scale ID (default 'right').
             **kwargs: Additional arguments for the Series constructor.
@@ -708,9 +783,6 @@ class Series(ABC):
         required = data_class.required_columns
         optional = data_class.optional_columns
 
-        # Get index names for normalization
-        index_names = df.index.names if hasattr(df.index, "names") else [df.index.name]
-
         # Check required columns in column_mapping
         missing_mapping = [col for col in required if col not in column_mapping]
         if missing_mapping:
@@ -719,44 +791,19 @@ class Series(ABC):
                 f"Required columns: {required}\n"
                 f"Column mapping: {column_mapping}"
             )
+        else:
+            pass  # Removed print
 
-        # Normalize index as column if needed (do this before checking columns)
-        df = df.copy()
-        for key, col in column_mapping.items():
-            # Skip if column is already in DataFrame
-            if col in df.columns:
-                continue
-
-            # Handle DatetimeIndex with no name
-            if isinstance(df.index, pd.DatetimeIndex) and df.index.name is None:
-                df.index.name = col
-                df = df.reset_index()
-            # Handle MultiIndex with unnamed DatetimeIndex level
-            elif isinstance(df.index, pd.MultiIndex):
-                # Find the level index that matches the column name
-                for i, name in enumerate(df.index.names):
-                    if name is None and i < len(df.index.levels):
-                        # Check if this level is a DatetimeIndex
-                        if isinstance(df.index.levels[i], pd.DatetimeIndex):
-                            # Set the name for this level
-                            new_names = list(df.index.names)
-                            new_names[i] = col
-                            df.index.names = new_names
-                            df = df.reset_index(level=col)
-                            break
-                # If not found as unnamed DatetimeIndex, check if it's a named level
-                else:
-                    if col in df.index.names:
-                        df = df.reset_index(level=col)
-            # Handle regular index with matching name
-            elif col in index_names:
-                df = df.reset_index()
+        # Prepare index for all column mappings
+        df = cls.prepare_index(df, column_mapping)
 
         # Check required columns in DataFrame (including index) - after processing
         for key in required:
             col = column_mapping[key]
             if col not in df.columns:
                 raise ValueError(f"DataFrame is missing required column: {col}")
+            else:
+                pass  # Removed print
 
         # Build data objects
         data = []
@@ -768,6 +815,13 @@ class Series(ABC):
                     if col in df.columns:
                         value = df.iloc[i][col]
                         kwargs_data[key] = value
+                    else:
+                        raise ValueError(f"DataFrame is missing required column: {col}")
+                else:
+                    # Skip optional columns that are not in column_mapping
+                    continue
+
             data.append(data_class(**kwargs_data))
 
-        return cls(data=data, price_scale_id=price_scale_id, **kwargs)
+        result = cls(data=data, price_scale_id=price_scale_id, **kwargs)
+        return result

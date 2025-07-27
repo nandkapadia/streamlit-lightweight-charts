@@ -9,7 +9,6 @@ This module contains comprehensive tests for layout-related option classes:
 - WatermarkOptions
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.layout_options import (

@@ -627,15 +627,19 @@ class TestOhlcvDataPerformance:
         print(f"  After processing: {memory_after_processing:.2f} MB")
         print(f"  After cleanup: {memory_after_cleanup:.2f} MB")
         print(f"  Memory recovered: {memory_after_processing - memory_after_cleanup:.2f} MB")
-        
+
         # Calculate cleanup efficiency safely
         memory_allocated = memory_after_processing - start_memory
         if memory_allocated > 0:
-            cleanup_efficiency = ((memory_after_processing - memory_after_cleanup) / memory_allocated) * 100
+            cleanup_efficiency = (
+                (memory_after_processing - memory_after_cleanup) / memory_allocated
+            ) * 100
             print(f"  Cleanup efficiency: {cleanup_efficiency:.1f}%")
         else:
             print(f"  Cleanup efficiency: N/A (no memory allocated during processing)")
 
         # Memory cleanup assertions
         assert memory_after_cleanup <= start_memory + 100  # Should clean up properly
-        assert memory_after_processing - memory_after_cleanup >= 0  # Should not use more memory after cleanup
+        assert (
+            memory_after_processing - memory_after_cleanup >= 0
+        )  # Should not use more memory after cleanup

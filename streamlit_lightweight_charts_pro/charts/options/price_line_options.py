@@ -9,7 +9,7 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @dataclass
 class PriceLineOptions(Options):
     """
-    Encapsulates style and configuration options for a price line, 
+    Encapsulates style and configuration options for a price line,
     matching TradingView's PriceLineOptions.
 
     See: https://tradingview.github.io/lightweight-charts/docs/api/interfaces/PriceLineOptions

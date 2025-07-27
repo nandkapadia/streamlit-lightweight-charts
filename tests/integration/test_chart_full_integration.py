@@ -1,18 +1,17 @@
 import pandas as pd
-import pytest
+
 from streamlit_lightweight_charts_pro.charts import Chart
-from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
-from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries
-from streamlit_lightweight_charts_pro.charts.series.histogram import HistogramSeries
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
-from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
-from streamlit_lightweight_charts_pro.data.line_data import LineData
-from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
-from streamlit_lightweight_charts_pro.data.annotation import Annotation
-from streamlit_lightweight_charts_pro.data.trade import Trade
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries
+from streamlit_lightweight_charts_pro.charts.series.histogram import HistogramSeries
+from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
+from streamlit_lightweight_charts_pro.data.annotation import Annotation
+from streamlit_lightweight_charts_pro.data.line_data import LineData
+from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
+from streamlit_lightweight_charts_pro.data.trade import Trade
 
 
 def create_sample_ohlcv_data(n=10):
@@ -30,9 +29,7 @@ def create_sample_ohlcv_data(n=10):
 
 
 def create_sample_line_data(n=10):
-    return [
-        LineData(time=1640995200 + i * 60 * 60, value=100 + i) for i in range(n)
-    ]
+    return [LineData(time=1640995200 + i * 60 * 60, value=100 + i) for i in range(n)]
 
 
 def test_multi_series_chart_with_price_scales():
@@ -42,12 +39,8 @@ def test_multi_series_chart_with_price_scales():
         line_options=LineOptions(color="#2196f3"),
         price_scale_id="left",
     )
-    candle_series = CandlestickSeries(
-        data=create_sample_ohlcv_data(), price_scale_id="right"
-    )
-    volume_series = HistogramSeries(
-        data=create_sample_ohlcv_data(), price_scale_id="overlay1"
-    )
+    candle_series = CandlestickSeries(data=create_sample_ohlcv_data(), price_scale_id="right")
+    volume_series = HistogramSeries(data=create_sample_ohlcv_data(), price_scale_id="overlay1")
     chart = Chart(series=[line_series, candle_series, volume_series])
     config = chart.to_frontend_config()
     assert len(config["charts"][0]["series"]) == 3
@@ -88,9 +81,7 @@ def test_dataframe_to_chart_pipeline():
 
 def test_chart_with_annotations_and_trades():
     """Test chart with annotations and trade visualization integration."""
-    line_series = LineSeries(
-        data=create_sample_line_data(), line_options=LineOptions()
-    )
+    line_series = LineSeries(data=create_sample_line_data(), line_options=LineOptions())
     chart = Chart(series=[line_series])
     # Add annotation
     annotation = Annotation(
@@ -115,17 +106,14 @@ def test_chart_with_annotations_and_trades():
     assert len(config["charts"][0]["annotations"]) >= 1
     # Check that trade visualization markers were added to series
     series_with_markers = [
-        s for s in config["charts"][0]["series"] 
-        if "markers" in s and len(s["markers"]) > 0
+        s for s in config["charts"][0]["series"] if "markers" in s and len(s["markers"]) > 0
     ]
     assert len(series_with_markers) > 0
 
 
 def test_serialization_idempotency():
     """Test that serialization is idempotent and matches frontend expectations."""
-    line_series = LineSeries(
-        data=create_sample_line_data(), line_options=LineOptions()
-    )
+    line_series = LineSeries(data=create_sample_line_data(), line_options=LineOptions())
     chart = Chart(series=[line_series])
     config1 = chart.to_frontend_config()
     config2 = chart.to_frontend_config()
@@ -133,4 +121,4 @@ def test_serialization_idempotency():
     assert "charts" in config1
     assert isinstance(config1["charts"], list)
     assert "series" in config1["charts"][0]
-    assert isinstance(config1["charts"][0]["series"], list) 
+    assert isinstance(config1["charts"][0]["series"], list)

@@ -143,8 +143,7 @@ class Chart:
             for item in series:
                 if not isinstance(item, Series):
                     raise TypeError(
-                        f"All items in series list must be Series instances, "
-                        f"got {type(item)}"
+                        f"All items in series list must be Series instances, " f"got {type(item)}"
                     )
             self.series = series
         else:
@@ -281,13 +280,13 @@ class Chart:
             raise TypeError("annotation cannot be None")
         if not isinstance(annotation, Annotation):
             raise TypeError(f"annotation must be an Annotation instance, got {type(annotation)}")
-        
+
         # Use default layer name if None is provided
         if layer_name is None:
             layer_name = "default"
         elif not layer_name or not isinstance(layer_name, str):
             raise ValueError("layer_name must be a non-empty string")
-        
+
         self.annotation_manager.add_annotation(annotation, layer_name)
         return self
 
@@ -329,7 +328,7 @@ class Chart:
             raise TypeError(f"annotations must be a list, got {type(annotations)}")
         if not layer_name or not isinstance(layer_name, str):
             raise ValueError("layer_name must be a non-empty string")
-        
+
         for annotation in annotations:
             if not isinstance(annotation, Annotation):
                 raise TypeError(
@@ -480,7 +479,9 @@ class Chart:
 
         Example:
             ```python
-            from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+            from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+                PriceScaleOptions,
+            )
 
             # Add volume overlay price scale
             volume_scale = PriceScaleOptions(
@@ -503,11 +504,11 @@ class Chart:
             raise TypeError("options cannot be None")
         if not isinstance(options, PriceScaleOptions):
             raise ValueError("options must be a PriceScaleOptions instance")
-        
+
         # Check for duplicate scale_id
         if scale_id in self.options.overlay_price_scales:
             raise ValueError(f"Price scale with id '{scale_id}' already exists")
-        
+
         self.options.overlay_price_scales[scale_id] = options
         return self
 
@@ -556,17 +557,17 @@ class Chart:
             isinstance(data, list) and len(data) == 0
         ):
             raise ValueError("data must be a non-empty list or DataFrame")
-        
+
         if column_mapping is None:
             raise TypeError("column_mapping cannot be None")
         if not isinstance(column_mapping, dict):
             raise TypeError("column_mapping must be a dict")
-        
+
         if price_pane_id < 0:
             raise ValueError("price_pane_id must be non-negative")
         if volume_pane_id is not None and volume_pane_id < 0:
             raise ValueError("volume_pane_id must be non-negative")
-        
+
         price_kwargs = price_kwargs or {}
         volume_kwargs = volume_kwargs or {}
 
@@ -588,6 +589,7 @@ class Chart:
                 price_scale_id="right",
                 **price_kwargs,
             )
+
         elif price_type == "line":
             price_series = LineSeries(
                 data=data,
@@ -605,6 +607,7 @@ class Chart:
         volume_down_color = volume_kwargs.get("down_color", "rgba(239,83,80,0.5)")
         volume_base = volume_kwargs.get("base", 0)
 
+        # Add overlay price scale
         volume_price_scale = PriceScaleOptions(
             visible=False,
             auto_scale=True,
@@ -615,7 +618,11 @@ class Chart:
         )
         self.add_overlay_price_scale(ColumnNames.VOLUME, volume_price_scale)
 
-        # Create volume series using factory method
+        # The volume series histogram expects a column called 'value'
+        if "value" not in column_mapping:
+            column_mapping["value"] = column_mapping["volume"]
+
+        # Create histogram series
         volume_series = HistogramSeries.create_volume_series(
             data=data,
             column_mapping=column_mapping,
@@ -749,7 +756,7 @@ class Chart:
             raise TypeError("data cannot be None")
         if not isinstance(data, (list, pd.DataFrame)):
             raise TypeError(f"data must be a list or DataFrame, got {type(data)}")
-        
+
         chart = cls()
         price_series, volume_series = chart._create_price_volume_series(
             data=data,
@@ -810,7 +817,7 @@ class Chart:
             raise TypeError("trades cannot be None")
         if not isinstance(trades, list):
             raise TypeError(f"trades must be a list, got {type(trades)}")
-        
+
         # Validate that all items are Trade objects
         for trade in trades:
             if not isinstance(trade, Trade):
@@ -860,7 +867,7 @@ class Chart:
             ```python
             # Get frontend configuration
             config = chart.to_frontend_config()
-            
+
             # Access chart configuration
             chart_config = config['charts'][0]
             series_config = chart_config['series']
@@ -941,6 +948,8 @@ class Chart:
         config = self.to_frontend_config()
         component_func = get_component_func()
         kwargs = {"config": config}
-        if key is not None and isinstance(key, str) and key.strip():  # Only add key if it's a non-empty string
+        if (
+            key is not None and isinstance(key, str) and key.strip()
+        ):  # Only add key if it's a non-empty string
             kwargs["key"] = key
         return component_func(**kwargs)

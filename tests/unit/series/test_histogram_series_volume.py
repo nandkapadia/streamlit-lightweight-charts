@@ -99,7 +99,7 @@ class TestHistogramSeriesCreateVolumeSeries:
 
         volume_series = HistogramSeries.create_volume_series(
             ohlcv_data,
-            column_mapping={},
+            column_mapping={"time": "time", "volume": "volume"},
             up_color="rgba(76,175,80,0.5)",
             down_color="rgba(244,67,54,0.5)",
         )
@@ -277,7 +277,7 @@ class TestHistogramSeriesCreateVolumeSeries:
         """Test handling of None data."""
         volume_series = HistogramSeries.create_volume_series(
             None,
-            column_mapping={},
+            column_mapping={"time": "time", "volume": "volume"},
             up_color="rgba(76,175,80,0.5)",
             down_color="rgba(244,67,54,0.5)",
         )

@@ -6,7 +6,6 @@ This module contains comprehensive tests for price scale-related option classes:
 - PriceScaleMargins
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (

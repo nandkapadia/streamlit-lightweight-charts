@@ -55,7 +55,7 @@ class ChartOptions(Options):
         tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and tooltips.
         localization (Optional[LocalizationOptions]): Localization settings for date/time formatting.
         add_default_pane (bool): Whether to add a default pane to the chart.
-        trade_visualization (Optional[TradeVisualizationOptions]): Trade visualization configuration 
+        trade_visualization (Optional[TradeVisualizationOptions]): Trade visualization configuration
             options.
 
     Raises:

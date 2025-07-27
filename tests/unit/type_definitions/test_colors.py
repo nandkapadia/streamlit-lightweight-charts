@@ -4,7 +4,6 @@ Unit tests for colors module.
 This module tests the color validation and background classes in the colors module.
 """
 
-
 import pytest
 
 from streamlit_lightweight_charts_pro.type_definitions.colors import (

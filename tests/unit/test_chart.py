@@ -686,9 +686,7 @@ class TestChartEdgeCases:
         chart = Chart()
         # This should raise TypeError since None data is not allowed
         with pytest.raises(TypeError):
-            chart._create_price_volume_series(
-                data=None, column_mapping={}
-            )
+            chart._create_price_volume_series(data=None, column_mapping={})
 
     def test_create_price_volume_series_with_empty_data(self):
         """Test creating price-volume series with empty data."""

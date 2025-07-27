@@ -30,7 +30,7 @@ class LineOptions(Options):
         crosshair_marker_border_color (str): Crosshair marker border color. Default: ''.
         crosshair_marker_background_color (str): Crosshair marker background color. Default: ''.
         crosshair_marker_border_width (int): Crosshair marker border width in pixels. Default: 2.
-        last_price_animation (LastPriceAnimationMode): Last price animation mode. 
+        last_price_animation (LastPriceAnimationMode): Last price animation mode.
             Default: LastPriceAnimationMode.DISABLED.
     """
 

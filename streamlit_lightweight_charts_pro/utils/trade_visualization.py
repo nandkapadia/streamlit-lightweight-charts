@@ -73,7 +73,7 @@ def trades_to_visual_elements(
         raise ValueError("trades cannot be None")
     if options is None:
         raise ValueError("options cannot be None")
-    
+
     result = {"markers": [], "shapes": [], "annotations": []}
 
     # Validate that all trades are Trade objects
@@ -122,8 +122,9 @@ def trades_to_visual_elements(
             result["shapes"].append(zone)
 
         # Only add annotations if we're using BOTH style and annotation options are enabled
-        if (options.style == TradeVisualization.BOTH and
-            any([options.show_trade_id, options.show_quantity, options.show_trade_type])):
+        if options.style == TradeVisualization.BOTH and any(
+            [options.show_trade_id, options.show_quantity, options.show_trade_type]
+        ):
             annotation = create_trade_annotation(trade, options)
             result["annotations"].append(annotation)
 
@@ -164,7 +165,7 @@ def create_trade_rectangle(trade: "Trade", options: "TradeVisualizationOptions")
         raise ValueError("trade cannot be None")
     if options is None:
         raise ValueError("options cannot be None")
-    
+
     # Determine colors based on trade profitability
     if trade.is_profitable:
         fill_color = options.rectangle_fill_color_profit
@@ -176,7 +177,12 @@ def create_trade_rectangle(trade: "Trade", options: "TradeVisualizationOptions")
     return {
         "type": "rectangle",
         "time": trade.entry_timestamp,
-        "width": trade.exit_timestamp - trade.entry_timestamp if isinstance(trade.exit_timestamp, (int, float)) and isinstance(trade.entry_timestamp, (int, float)) else 0,
+        "width": (
+            trade.exit_timestamp - trade.entry_timestamp
+            if isinstance(trade.exit_timestamp, (int, float))
+            and isinstance(trade.entry_timestamp, (int, float))
+            else 0
+        ),
         "price1": trade.entry_price,
         "price2": trade.exit_price,
         "fillColor": fill_color,
@@ -221,7 +227,7 @@ def create_trade_line(trade: "Trade", options: "TradeVisualizationOptions") -> D
         raise ValueError("trade cannot be None")
     if options is None:
         raise ValueError("options cannot be None")
-    
+
     # Determine color based on trade profitability
     color = options.line_color_profit if trade.is_profitable else options.line_color_loss
 
@@ -279,7 +285,12 @@ def create_trade_arrow(trade: "Trade", options: "TradeVisualizationOptions") -> 
         "price": trade.entry_price,
         "color": color,
         "size": options.arrow_size,
-        "width": trade.exit_timestamp - trade.entry_timestamp if isinstance(trade.exit_timestamp, (int, float)) and isinstance(trade.entry_timestamp, (int, float)) else 0,
+        "width": (
+            trade.exit_timestamp - trade.entry_timestamp
+            if isinstance(trade.exit_timestamp, (int, float))
+            and isinstance(trade.entry_timestamp, (int, float))
+            else 0
+        ),
         "text": f"{trade.pnl_percentage:+.1f}%",
     }
 
@@ -375,10 +386,18 @@ def create_trade_zone(
     return {
         "type": "zone",
         "time": time1,
-        "width": time2 - time1 if isinstance(time2, (int, float)) and isinstance(time1, (int, float)) else 0,
+        "width": (
+            time2 - time1
+            if isinstance(time2, (int, float)) and isinstance(time1, (int, float))
+            else 0
+        ),
         "price1": bottom_price,
         "price2": top_price,
-        "fillColor": f"{color}{int(options.zone_opacity * 255):02x}" if not color.startswith("rgba") else color.replace("1)", f"{options.zone_opacity})"),
+        "fillColor": (
+            f"{color}{int(options.zone_opacity * 255):02x}"
+            if not color.startswith("rgba")
+            else color.replace("1)", f"{options.zone_opacity})")
+        ),
         "borderColor": color,
         "borderWidth": 0,
     }
@@ -449,13 +468,13 @@ def create_trade_annotation(trade: "Trade", options: "TradeVisualizationOptions"
 def get_line_style_value(style: str) -> int:
     """
     Convert line style string to numeric value.
-    
+
     Args:
         style: Line style string (solid, dotted, dashed, etc.)
-        
+
     Returns:
         int: Numeric value for the line style
-        
+
     Raises:
         ValueError: If style is not recognized
     """
@@ -466,10 +485,10 @@ def get_line_style_value(style: str) -> int:
         "large_dashed": 3,
         "sparse_dotted": 4,
     }
-    
+
     if style.lower() not in style_map:
         raise ValueError(f"Invalid line style: {style}")
-    
+
     return style_map[style.lower()]
 
 
@@ -532,7 +551,7 @@ def add_trades_to_series(
     if any([options.show_trade_id, options.show_quantity, options.show_trade_type]):
         if "annotations" not in series_config:
             series_config["annotations"] = []
-        
+
         # Create annotations for each trade
         for trade in trades:
             annotation = create_trade_annotation(trade, options)
