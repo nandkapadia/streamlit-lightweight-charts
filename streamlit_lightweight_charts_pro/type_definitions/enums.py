@@ -26,6 +26,7 @@ class ChartType(str, Enum):
         LINE: Line chart - simple line connecting data points.
         BAR: Bar chart - OHLC bars for price data.
         CANDLESTICK: Candlestick chart - traditional Japanese candlesticks.
+        BACKGROUND: Background chart - shaded background based on indicator values.
     """
 
     AREA = "area"
@@ -35,6 +36,7 @@ class ChartType(str, Enum):
     LINE = "line"
     BAR = "bar"
     CANDLESTICK = "candlestick"
+    BACKGROUND = "background"
 
 
 class ColorType(str, Enum):

@@ -16,6 +16,7 @@ import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualiza
 import { createTradeVisualElements, TradeRectanglePlugin } from './tradeVisualization'
 import { createAnnotationVisualElements } from './annotationSystem'
 import { createBandSeries, BandData } from './bandSeriesPlugin'
+import { BackgroundSeries, BackgroundData } from './backgroundSeriesPlugin'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -608,6 +609,27 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         series = chart.addSeries(CandlestickSeries, candlestickOptions, pane_id)
         break
+      case 'background':
+        try {
+          // Create background series using the custom plugin
+          const backgroundSeries = new BackgroundSeries()
+          const backgroundOptions = {
+            opacity: otherOptions.opacity || 0.2,
+            ...otherOptions
+          }
+          
+          series = chart.addCustomSeries(backgroundSeries, backgroundOptions)
+          
+          // Set data for background series
+          if (data && data.length > 0) {
+            series.setData(data as BackgroundData[])
+          }
+          
+          return series
+        } catch (error) {
+          console.error('Failed to create background series:', error)
+          return null
+        }
       default:
 
         // Unknown series type - handled silently in production

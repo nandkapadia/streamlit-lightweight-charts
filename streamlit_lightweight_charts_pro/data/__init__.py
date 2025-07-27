@@ -27,6 +27,9 @@ from streamlit_lightweight_charts_pro.data.annotation import (
 # Import area and bar data classes
 from streamlit_lightweight_charts_pro.data.area_data import AreaData
 
+# Import background data classes
+from streamlit_lightweight_charts_pro.data.background_data import BackgroundData
+
 # Import band data classes
 from streamlit_lightweight_charts_pro.data.band import BandData
 from streamlit_lightweight_charts_pro.data.bar_data import BarData
@@ -64,6 +67,8 @@ __all__ = [
     "AreaData",
     "BarData",
     "BaselineData",
+    # Background data classes
+    "BackgroundData",
     # OHLC data classes
     "CandlestickData",
     "OhlcvData",
