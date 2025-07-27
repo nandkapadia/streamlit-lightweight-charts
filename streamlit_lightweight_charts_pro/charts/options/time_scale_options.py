@@ -1,11 +1,13 @@
 """Scale option classes for streamlit-lightweight-charts."""
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Optional
+
+from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 
 
 @dataclass
-class TimeScaleOptions:
+class TimeScaleOptions(Options):
     """Time scale configuration."""
 
     right_offset: int = 0
@@ -24,33 +26,6 @@ class TimeScaleOptions:
     shift_visible_range_on_new_bar: bool = False
     allow_shift_visible_range_on_whitespace_access: bool = False
     tick_mark_formatter: Optional[Callable] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        result = {
-            "rightOffset": self.right_offset,
-            "leftOffset": self.left_offset,
-            "barSpacing": self.bar_spacing,
-            "minBarSpacing": self.min_bar_spacing,
-            "visible": self.visible,
-            "timeVisible": self.time_visible,
-            "secondsVisible": self.seconds_visible,
-            "borderVisible": self.border_visible,
-            "borderColor": self.border_color,
-            "fixLeftEdge": self.fix_left_edge,
-            "fixRightEdge": self.fix_right_edge,
-            "lockVisibleTimeRangeOnResize": self.lock_visible_time_range_on_resize,
-            "rightBarStaysOnScroll": self.right_bar_stays_on_scroll,
-            "shiftVisibleRangeOnNewBar": self.shift_visible_range_on_new_bar,
-            "allowShiftVisibleRangeOnWhitespaceAccess": (
-                self.allow_shift_visible_range_on_whitespace_access
-            ),
-        }
-
-        if self.tick_mark_formatter is not None:
-            result["tickMarkFormatter"] = self.tick_mark_formatter
-
-        return result
 
     def __getitem__(self, key):
         return self.to_dict()[key]

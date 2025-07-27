@@ -28,13 +28,13 @@ class ChartType(str, Enum):
         CANDLESTICK: Candlestick chart - traditional Japanese candlesticks.
     """
 
-    AREA = "Area"
-    BAND = "Band"
-    BASELINE = "Baseline"
-    HISTOGRAM = "Histogram"
-    LINE = "Line"
-    BAR = "Bar"
-    CANDLESTICK = "Candlestick"
+    AREA = "area"
+    BAND = "band"
+    BASELINE = "baseline"
+    HISTOGRAM = "histogram"
+    LINE = "line"
+    BAR = "bar"
+    CANDLESTICK = "candlestick"
 
 
 class ColorType(str, Enum):
@@ -273,3 +273,26 @@ class ColumnNames(str, Enum):
     VOLUME = "volume"
     DATETIME = "datetime"
     VALUE = "value"
+
+
+class TradeType(str, Enum):
+    """Trade type enumeration."""
+
+    LONG = "long"
+    SHORT = "short"
+
+
+class TradeVisualization(str, Enum):
+    """Trade visualization style options."""
+
+    MARKERS = "markers"  # Just entry/exit markers
+    RECTANGLES = "rectangles"  # Rectangle from entry to exit
+    BOTH = "both"  # Both markers and rectangles
+    LINES = "lines"  # Lines connecting entry to exit
+    ARROWS = "arrows"  # Arrows from entry to exit
+    ZONES = "zones"  # Colored zones with transparency
+
+
+class BackgroundStyle(str, Enum):
+    SOLID = "solid"
+    VERTICAL_GRADIENT = "gradient"

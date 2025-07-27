@@ -457,10 +457,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     switch (normalizedType) {
       case 'area':
         const areaOptions = {
-          lineColor: '#2196F3',  // TradingView blue
-          topColor: 'rgba(33, 150, 243, 0.4)',
-          bottomColor: 'rgba(33, 150, 243, 0.0)',
-          lineWidth: 2,
+          lineColor: otherOptions.lineColor || '#2196F3',  // Fallback to default
+          topColor: otherOptions.topColor || 'rgba(33, 150, 243, 0.4)',  // Fallback to default
+          bottomColor: otherOptions.bottomColor || 'rgba(33, 150, 243, 0.0)',  // Fallback to default
+          lineWidth: otherOptions.lineWidth || 2,  // Fallback to default
           ...otherOptions
         }
         if (priceFormat) {
@@ -534,14 +534,14 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
       case 'baseline':
         const baselineOptions = {
-          baseValue: { price: 0 },
-          topLineColor: 'rgba(76, 175, 80, 0.4)',
-          topFillColor1: 'rgba(76, 175, 80, 0.0)',
-          topFillColor2: 'rgba(76, 175, 80, 0.4)',
-          bottomLineColor: 'rgba(255, 82, 82, 0.4)',
-          bottomFillColor1: 'rgba(255, 82, 82, 0.4)',
-          bottomFillColor2: 'rgba(255, 82, 82, 0.0)',
-          lineWidth: 2,
+          baseValue: otherOptions.baseValue || { price: 0 },  // Fallback to default
+          topLineColor: otherOptions.topLineColor || 'rgba(76, 175, 80, 0.4)',  // Fallback to default
+          topFillColor1: otherOptions.topFillColor1 || 'rgba(76, 175, 80, 0.0)',  // Fallback to default
+          topFillColor2: otherOptions.topFillColor2 || 'rgba(76, 175, 80, 0.4)',  // Fallback to default
+          bottomLineColor: otherOptions.bottomLineColor || 'rgba(255, 82, 82, 0.4)',  // Fallback to default
+          bottomFillColor1: otherOptions.bottomFillColor1 || 'rgba(255, 82, 82, 0.4)',  // Fallback to default
+          bottomFillColor2: otherOptions.bottomFillColor2 || 'rgba(255, 82, 82, 0.0)',  // Fallback to default
+          lineWidth: otherOptions.lineWidth || 2,  // Fallback to default
           ...otherOptions
         }
         if (priceFormat) {
@@ -552,7 +552,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'histogram':
         const histogramOptions = {
-          color: '#2196F3',  // TradingView light blue/teal for volume
           priceFormat: priceFormat || {
             type: 'volume',
           },
@@ -561,15 +560,16 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             top: 0.75,
             bottom: 0,
           },
-          ...otherOptions
+          ...otherOptions,
+          color: otherOptions.color || '#2196F3'  // Fallback color only if not provided in otherOptions
         }
 
         series = chart.addSeries(HistogramSeries, histogramOptions, pane_id)
         break
       case 'line':
         const lineOptions = {
-          color: '#2196F3',  // TradingView blue
-          lineWidth: 2,
+          color: otherOptions.color || '#2196F3',  // Fallback to default
+          lineWidth: otherOptions.lineWidth || 2,  // Fallback to default
           ...otherOptions
         }
         if (priceFormat) {
@@ -580,11 +580,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'bar':
         const barOptions = {
-          upColor: '#4CAF50',  // TradingView vibrant green
-          downColor: '#F44336',  // TradingView vibrant red
-          borderVisible: true,  // TradingView shows borders
-          wickUpColor: '#4CAF50',  // TradingView vibrant green
-          wickDownColor: '#F44336',  // TradingView vibrant red
+          upColor: otherOptions.upColor || '#4CAF50',  // Fallback to default
+          downColor: otherOptions.downColor || '#F44336',  // Fallback to default
+          borderVisible: otherOptions.borderVisible !== false,  // Fallback to default
+          wickUpColor: otherOptions.wickUpColor || '#4CAF50',  // Fallback to default
+          wickDownColor: otherOptions.wickDownColor || '#F44336',  // Fallback to default
           ...otherOptions
         }
         if (priceFormat) {
@@ -595,11 +595,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         break
       case 'candlestick':
         const candlestickOptions = {
-          upColor: '#4CAF50',  // TradingView vibrant green
-          downColor: '#F44336',  // TradingView vibrant red
-          borderVisible: true,  // TradingView shows borders
-          wickUpColor: '#4CAF50',  // TradingView vibrant green
-          wickDownColor: '#F44336',  // TradingView vibrant red
+          upColor: otherOptions.upColor || '#4CAF50',  // Fallback to default
+          downColor: otherOptions.downColor || '#F44336',  // Fallback to default
+          borderVisible: otherOptions.borderVisible !== false,  // Fallback to default
+          wickUpColor: otherOptions.wickUpColor || '#4CAF50',  // Fallback to default
+          wickDownColor: otherOptions.wickDownColor || '#F44336',  // Fallback to default
           ...otherOptions
         }
         if (priceFormat) {
@@ -642,6 +642,47 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           }
         }, 100)
       }
+    }
+
+    // Add price lines attached to this series
+    if (seriesConfig.priceLines && Array.isArray(seriesConfig.priceLines)) {
+      console.log('💰 Creating price lines for series:', seriesConfig.priceLines)
+      seriesConfig.priceLines.forEach((priceLine: any, index: number) => {
+        try {
+          console.log(`💰 Creating price line ${index + 1}:`, priceLine)
+          series.createPriceLine(priceLine)
+          console.log(`✅ Successfully created price line ${index + 1}`)
+        } catch (error) {
+          console.warn(`❌ Failed to create price line ${index + 1} for series:`, error)
+        }
+      })
+    } else {
+      console.log('ℹ️ No price lines found in series config:', seriesConfig.priceLines)
+    }
+
+    // Add markers attached to this series
+    if (seriesConfig.markers && Array.isArray(seriesConfig.markers)) {
+      console.log('🎯 Creating markers for series:', seriesConfig.markers)
+      
+      // Set markers immediately after data is set
+      try {
+        // Use createSeriesMarkers as per TradingView documentation
+        createSeriesMarkers(series, seriesConfig.markers)
+        console.log('✅ Successfully created markers using createSeriesMarkers()')
+      } catch (error) {
+        console.warn('❌ Failed to create markers for series:', error)
+        // Try again after a delay as fallback
+        setTimeout(() => {
+          try {
+            createSeriesMarkers(series, seriesConfig.markers)
+            console.log('✅ Successfully created markers using createSeriesMarkers() (delayed)')
+          } catch (error2) {
+            console.warn('❌ Failed to create markers for series (delayed):', error2)
+          }
+        }, 500)
+      }
+    } else {
+      console.log('ℹ️ No markers found in series config:', seriesConfig.markers)
     }
 
     return series

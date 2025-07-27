@@ -1,27 +1,9 @@
 """Utilities for streamlit-lightweight-charts."""
 
-from streamlit_lightweight_charts_pro.utils.dataframe_converter import (
-    df_to_data,
-    df_to_line_data,
-    df_to_ohlc_data,
-    df_to_ohlcv_data,
-    resample_df_for_charts,
-)
-from streamlit_lightweight_charts_pro.utils.trade_visualization import (
-    add_trades_to_series,
-    create_trade_shapes_series,
-    trades_to_visual_elements,
-)
+# Note: trade_visualization functions are imported directly where needed
+# to avoid circular imports with the options module
 
 __all__ = [
-    # DataFrame converters
-    "df_to_line_data",
-    "df_to_ohlc_data",
-    "df_to_data",
-    "df_to_ohlcv_data",
-    "resample_df_for_charts",
-    # Trade visualization
-    "trades_to_visual_elements",
-    "create_trade_shapes_series",
-    "add_trades_to_series",
+    # Trade visualization functions are available directly from the module
+    # when needed, avoiding circular imports
 ]

@@ -1,1 +1,1 @@
-# Performance tests package
+"""Performance tests for streamlit-lightweight-charts-pro."""

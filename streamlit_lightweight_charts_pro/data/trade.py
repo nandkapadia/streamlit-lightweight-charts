@@ -2,33 +2,17 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data.base import from_utc_timestamp, to_utc_timestamp
 from streamlit_lightweight_charts_pro.data import Marker
-from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
-
-
-class TradeType(str, Enum):
-    """Trade type enumeration."""
-
-    LONG = "long"
-    SHORT = "short"
-
-
-class TradeVisualization(str, Enum):
-    """Trade visualization style options."""
-
-    MARKERS = "markers"  # Just entry/exit markers
-    RECTANGLES = "rectangles"  # Rectangle from entry to exit
-    BOTH = "both"  # Both markers and rectangles
-    LINES = "lines"  # Lines connecting entry to exit
-    ARROWS = "arrows"  # Arrows from entry to exit
-    ZONES = "zones"  # Colored zones with transparency
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    MarkerPosition,
+    MarkerShape,
+    TradeType,
+)
+from streamlit_lightweight_charts_pro.utils.data_utils import from_utc_timestamp, to_utc_timestamp
 
 
 @dataclass
@@ -228,88 +212,4 @@ class Trade:
             "pnl": self.pnl,
             "pnlPercentage": self.pnl_percentage,
             "isProfitable": self.is_profitable,
-        }
-
-
-@dataclass
-class TradeVisualizationOptions:
-    """Options for trade visualization."""
-
-    style: TradeVisualization = TradeVisualization.BOTH
-
-    # Marker options
-    entry_marker_color_long: str = "#2196F3"
-    entry_marker_color_short: str = "#FF9800"
-    exit_marker_color_profit: str = "#4CAF50"
-    exit_marker_color_loss: str = "#F44336"
-    marker_size: int = 20
-    show_pnl_in_markers: bool = True
-
-    # Rectangle options
-    rectangle_fill_opacity: float = 0.2
-    rectangle_border_width: int = 1
-    rectangle_color_profit: str = "#4CAF50"
-    rectangle_color_loss: str = "#F44336"
-
-    # Line options
-    line_width: int = 2
-    line_style: str = "dashed"
-    line_color_profit: str = "#4CAF50"
-    line_color_loss: str = "#F44336"
-
-    # Arrow options
-    arrow_size: int = 10
-    arrow_color_profit: str = "#4CAF50"
-    arrow_color_loss: str = "#F44336"
-
-    # Zone options
-    zone_opacity: float = 0.1
-    zone_color_long: str = "#2196F3"
-    zone_color_short: str = "#FF9800"
-    zone_extend_bars: int = 2  # Extend zone by this many bars
-
-    # Annotation options
-    show_trade_id: bool = True
-    show_quantity: bool = True
-    show_trade_type: bool = True
-    annotation_font_size: int = 12
-    annotation_background: str = "rgba(255, 255, 255, 0.8)"
-
-    def __post_init__(self):
-        """Post-initialization processing."""
-        # Convert style to enum if it's a string
-        if isinstance(self.style, str):
-            self.style = TradeVisualization(self.style.lower())
-
-    def to_dict(self) -> dict:
-        """Convert options to dictionary."""
-        return {
-            "style": self.style.value,
-            "entryMarkerColorLong": self.entry_marker_color_long,
-            "entryMarkerColorShort": self.entry_marker_color_short,
-            "exitMarkerColorProfit": self.exit_marker_color_profit,
-            "exitMarkerColorLoss": self.exit_marker_color_loss,
-            "markerSize": self.marker_size,
-            "showPnlInMarkers": self.show_pnl_in_markers,
-            "rectangleFillOpacity": self.rectangle_fill_opacity,
-            "rectangleBorderWidth": self.rectangle_border_width,
-            "rectangleColorProfit": self.rectangle_color_profit,
-            "rectangleColorLoss": self.rectangle_color_loss,
-            "lineWidth": self.line_width,
-            "lineStyle": self.line_style,
-            "lineColorProfit": self.line_color_profit,
-            "lineColorLoss": self.line_color_loss,
-            "arrowSize": self.arrow_size,
-            "arrowColorProfit": self.arrow_color_profit,
-            "arrowColorLoss": self.arrow_color_loss,
-            "zoneOpacity": self.zone_opacity,
-            "zoneColorLong": self.zone_color_long,
-            "zoneColorShort": self.zone_color_short,
-            "zoneExtendBars": self.zone_extend_bars,
-            "showTradeId": self.show_trade_id,
-            "showQuantity": self.show_quantity,
-            "showTradeType": self.show_trade_type,
-            "showAnnotations": True,  # Default to True for annotations
-            "annotationFontSize": self.annotation_font_size,
-            "annotationBackground": self.annotation_background,
         }

@@ -1,99 +1,67 @@
 """UI option classes for streamlit-lightweight-charts."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import List
+
+from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 
 
 @dataclass
-class RangeConfig:
+class RangeConfig(Options):
     """Range configuration for range switcher."""
 
-    label: str
-    seconds: Optional[int] = None  # None for "ALL" range
+    text: str = ""
+    tooltip: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "label": self.label,
-            "seconds": self.seconds,
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        # Handle None values gracefully
+        if self.text is None:
+            self.text = ""
+        elif not isinstance(self.text, str):
+            raise TypeError(f"text must be a string, got {type(self.text)}")
+
+        if self.tooltip is None:
+            self.tooltip = ""
+        elif not isinstance(self.tooltip, str):
+            raise TypeError(f"tooltip must be a string, got {type(self.tooltip)}")
 
 
 @dataclass
-class RangeSwitcherOptions:
+class RangeSwitcherOptions(Options):
     """Range switcher configuration."""
 
-    visible: bool = False
-    ranges: List[RangeConfig] = field(
-        default_factory=lambda: [
-            RangeConfig("1D", 86400),
-            RangeConfig("1W", 604800),
-            RangeConfig("1M", 2592000),
-            RangeConfig("3M", 7776000),
-            RangeConfig("6M", 15552000),
-            RangeConfig("1Y", 31536000),
-            RangeConfig("ALL", None),
-        ]
-    )
-    position: str = "top-right"  # "top-left", "top-right", "bottom-left", "bottom-right"
-    default_range: str = "1M"
+    visible: bool = True
+    ranges: List[RangeConfig] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "visible": self.visible,
-            "ranges": [range_config.to_dict() for range_config in self.ranges],
-            "position": self.position,
-            "defaultRange": self.default_range,
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.visible, bool):
+            raise TypeError(f"visible must be a boolean, got {type(self.visible)}")
+
+        # Handle None ranges gracefully
+        if self.ranges is None:
+            self.ranges = []
+        elif not isinstance(self.ranges, list):
+            raise TypeError(f"ranges must be a list, got {type(self.ranges)}")
+
+        for i, range_config in enumerate(self.ranges):
+            if not isinstance(range_config, RangeConfig):
+                raise TypeError(
+                    f"ranges[{i}] must be a RangeConfig instance, got {type(range_config)}"
+                )
 
 
 @dataclass
-class LegendOptions:
+class LegendOptions(Options):
     """Legend configuration."""
 
-    visible: bool = False
-    type: str = "simple"  # "simple" or "3line"
-    position: str = "top-left"  # "top-left", "top-right", "bottom-left", "bottom-right"
-    symbol_name: str = ""
-    font_size: int = 14
-    font_family: str = "sans-serif"
-    font_weight: str = "300"
-    color: str = "black"
-    background_color: str = "transparent"
-    border_color: str = "transparent"
-    border_width: int = 0
-    border_radius: int = 0
-    padding: int = 8
-    margin: int = 12
-    z_index: int = 1
-    show_last_value: bool = True
-    show_time: bool = True
-    show_symbol: bool = True
-    price_format: str = "2"  # Number of decimal places
-    custom_template: Optional[str] = None  # Custom HTML template
+    visible: bool = True
+    position: str = "top"
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "visible": self.visible,
-            "type": self.type,
-            "position": self.position,
-            "symbolName": self.symbol_name,
-            "fontSize": self.font_size,
-            "fontFamily": self.font_family,
-            "fontWeight": self.font_weight,
-            "color": self.color,
-            "backgroundColor": self.background_color,
-            "borderColor": self.border_color,
-            "borderWidth": self.border_width,
-            "borderRadius": self.border_radius,
-            "padding": self.padding,
-            "margin": self.margin,
-            "zIndex": self.z_index,
-            "showLastValue": self.show_last_value,
-            "showTime": self.show_time,
-            "showSymbol": self.show_symbol,
-            "priceFormat": self.price_format,
-            "customTemplate": self.custom_template,
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.visible, bool):
+            raise TypeError(f"visible must be a boolean, got {type(self.visible)}")
+        if not isinstance(self.position, str):
+            raise TypeError(f"position must be a string, got {type(self.position)}")

@@ -7,25 +7,32 @@ data handling, configuration, and frontend integration.
 
 The Series class serves as the foundation for all series implementations,
 providing a consistent interface for series creation, configuration, and
-rendering. It supports method chaining for fluent API usage.
+rendering. It supports method chaining for fluent API usage and includes
+comprehensive data validation and conversion capabilities.
 
 Example:
+    ```python
     from streamlit_lightweight_charts_pro.charts.series.base import Series
 
     class MyCustomSeries(Series):
         def to_frontend_config(self):
             return {"type": "custom", "data": self.data}
+    ```
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import ABC
+from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data import BaseData, Marker
+from streamlit_lightweight_charts_pro.charts.options.price_format_options import PriceFormatOptions
+from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
+from streamlit_lightweight_charts_pro.data.data import Data, classproperty
+from streamlit_lightweight_charts_pro.data.marker import Marker
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames, MarkerShape
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -37,13 +44,15 @@ def _get_enum_value(value, enum_class):
 
     This function safely converts enum values to their string representations,
     handling cases where the value might already be a string or an enum object.
+    It provides robust conversion for enum values used throughout the series
+    configuration system.
 
     Args:
-        value: The value to convert (can be enum object or string)
-        enum_class: The enum class to use for conversion
+        value: The value to convert (can be enum object or string).
+        enum_class: The enum class to use for conversion.
 
     Returns:
-        str: The string value of the enum
+        str: The string value of the enum.
 
     Example:
         ```python
@@ -67,193 +76,239 @@ def _get_enum_value(value, enum_class):
         return value
 
 
+# pylint: disable=no-member, invalid-name
 class Series(ABC):
     """
     Abstract base class for all series types.
 
     This class defines the common interface and functionality that all series
     classes must implement. It provides core data handling, configuration
-    methods, and frontend integration capabilities.
+    methods, and frontend integration capabilities with comprehensive support
+    for pandas DataFrame integration, markers, price lines, and formatting.
 
     All series classes should inherit from this base class and implement
     the required abstract methods. The class supports method chaining for
-    fluent API usage.
+    fluent API usage and provides extensive customization options.
+
+    Key Features:
+        - DataFrame integration with column mapping
+        - Marker and price line management
+        - Price scale and pane configuration
+        - Visibility and formatting controls
+        - Comprehensive data validation
+        - Method chaining support
 
     Attributes:
-        data: List of data points for this series
-        visible: Whether the series is currently visible
-        price_scale_id: ID of the price scale this series is attached to
-        price_line_visible: Whether to show the price line for this series
-        base_line_visible: Whether to show the base line for this series
-        price_line_width: Width of the price line in pixels
-        price_line_color: Color of the price line
-        price_line_style: Style of the price line (solid, dashed, etc.)
-        base_line_width: Width of the base line in pixels
-        base_line_color: Color of the base line
-        base_line_style: Style of the base line
-        price_format: Price formatting configuration
-        markers: List of markers to display on this series
-        pane_id: The pane index this series belongs to.
+        data (List[Data]): List of data points for this series.
+        visible (bool): Whether the series is currently visible.
+        price_scale_id (str): ID of the price scale this series is attached to.
+        price_format (PriceFormatOptions): Price formatting configuration.
+        price_lines (List[PriceLineOptions]): List of price lines for this series.
+        markers (List[Marker]): List of markers to display on this series.
+        pane_id (int): The pane index this series belongs to.
+
+    Note:
+        Subclasses must define a class-level DATA_CLASS attribute for from_dataframe to work.
+        The data_class property will always pick the most-derived DATA_CLASS in the MRO.
     """
 
     def __init__(
         self,
-        data: Union[List[BaseData], pd.DataFrame],
+        data: Union[List[Data], pd.DataFrame, pd.Series],
+        column_mapping: Optional[dict] = None,
         visible: bool = True,
         price_scale_id: str = "right",
-        price_line_visible: bool = False,
-        base_line_visible: bool = False,
-        price_line_width: int = 1,
-        price_line_color: str = "#2196F3",
-        price_line_style: str = "solid",
-        base_line_width: int = 1,
-        base_line_color: str = "#FF9800",
-        base_line_style: str = "solid",
-        price_format: Optional[Dict[str, Any]] = None,
-        markers: Optional[List[Marker]] = None,
         pane_id: Optional[int] = 0,
-        height: Optional[int] = None,
         overlay: Optional[bool] = True,
-        column_mapping: Optional[dict] = None,
     ):
         """
         Initialize a series with data and configuration.
 
+        Creates a new series instance with the provided data and configuration options.
+        The constructor supports multiple data input types including lists of Data
+        objects, pandas DataFrames, and pandas Series with automatic validation
+        and conversion.
+
         Args:
-            data: Series data as a list of data objects or pandas DataFrame.
-            visible: Whether the series is visible. Defaults to True.
-            price_scale_id: ID of the price scale to attach to. Defaults to "right".
-            price_line_visible: Whether to show the price line. Defaults to False.
-            base_line_visible: Whether to show the base line. Defaults to False.
-            price_line_width: Width of the price line in pixels. Defaults to 1.
-            price_line_color: Color of the price line. Defaults to "#2196F3".
-            price_line_style: Style of the price line. Defaults to "solid".
-            base_line_width: Width of the base line in pixels. Defaults to 1.
-            base_line_color: Color of the base line. Defaults to "#FF9800".
-            base_line_style: Style of the base line. Defaults to "solid".
-            price_format: Price formatting configuration. Defaults to None.
-            markers: List of markers to display. Defaults to None.
-            pane_id: The pane index this series belongs to. Defaults to 0.
+            data (Union[List[Data], pd.DataFrame, pd.Series]): Series data as a list
+                of data objects, pandas DataFrame, or pandas Series.
+            column_mapping (Optional[dict]): Optional column mapping for DataFrame/Series
+                input. Required when providing DataFrame or Series data.
+            visible (bool, optional): Whether the series is visible. Defaults to True.
+            price_scale_id (str, optional): ID of the price scale to attach to.
+                Defaults to "right".
+            pane_id (Optional[int], optional): The pane index this series belongs to.
+                Defaults to 0.
+            overlay (Optional[bool], optional): Whether the series overlays another.
+                Defaults to True.
+
+        Raises:
+            ValueError: If data is not a valid type (list of Data objects, DataFrame, or Series).
+            ValueError: If DataFrame/Series is provided without column_mapping.
+            ValueError: If all items in data list are not instances of Data or its subclasses.
 
         Example:
             ```python
-            # Basic series
+            # Basic series with list of data objects
             series = LineSeries(data=line_data)
 
-            # With configuration
+            # Series with DataFrame
+            series = LineSeries(
+                data=df, 
+                column_mapping={'time': 'datetime', 'value': 'close'}
+            )
+
+            # Series with Series
+            series = LineSeries(
+                data=series_data, 
+                column_mapping={'time': 'index', 'value': 'values'}
+            )
+
+            # Series with custom configuration
             series = LineSeries(
                 data=line_data,
-                visible=True,
-                price_line_visible=True,
-                price_line_color="#ff0000",
+                visible=False,
+                price_scale_id="left",
                 pane_id=1
             )
             ```
         """
-        self.column_mapping = column_mapping
-
-        if isinstance(data, (pd.Series, pd.DataFrame)):
-            # Process data input
-            self.data = self._normalize_input_data(data)
-        else:
+        # Validate and process data
+        if data is None:
+            self.data = []
+        elif isinstance(data, (pd.DataFrame, pd.Series)):
+            if column_mapping is None:
+                raise ValueError(
+                    "column_mapping is required when providing DataFrame or Series data"
+                )
+            # Process DataFrame/Series using from_dataframe logic
+            self.data = self._process_dataframe_input(data, column_mapping)
+        elif isinstance(data, list):
+            # Validate that all items are Data instances
+            if data and not all(isinstance(item, Data) for item in data):
+                raise ValueError(
+                    "All items in data list must be instances of Data or its subclasses"
+                )
             self.data = data
+        else:
+            raise ValueError(
+                f"data must be a list of SingleValueData objects, DataFrame, or Series, "
+                f"got {type(data)}"
+            )
 
-        # Basic configuration
         self.visible = visible
         self.price_scale_id = price_scale_id
-
-        # Price line configuration
-        self.price_line_visible = price_line_visible
-        self.price_line_width = price_line_width
-        self.price_line_color = price_line_color
-        self.price_line_style = price_line_style
-
-        # Base line configuration
-        self.base_line_visible = base_line_visible
-        self.base_line_width = base_line_width
-        self.base_line_color = base_line_color
-        self.base_line_style = base_line_style
-
-        # Price formatting
-        self.price_format = price_format or {"type": "price", "precision": 2}
-
-        # Markers
-        self.markers = markers or []
-
-        # Price scale configuration
+        self._price_format = None
+        self._price_lines = []
+        self._markers = []
         self.pane_id = pane_id
-        self.height = height
         self.overlay = overlay
+        self.column_mapping = column_mapping
 
-    def _get_columns(self) -> Dict[str, str]:
+    def _process_dataframe_input(
+        self, data: Union[pd.DataFrame, pd.Series], column_mapping: Dict[str, str]
+    ) -> List[Data]:
         """
-        Get the columns to use for the series.
-        """
-        raise NotImplementedError("Subclasses must implement _get_columns")
+        Process DataFrame or Series input into a list of Data objects.
 
-    def _normalize_input_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Normalize input data to ensure consistent format.
-
-        This method ensures that the input data is in a consistent format
-        for processing. It handles cases where the data is a pandas Series
-        or a pandas DataFrame.
+        This method duplicates the logic from from_dataframe to handle
+        DataFrame/Series input in the constructor. It validates the input
+        data structure and converts it to the appropriate Data objects
+        based on the series type.
 
         Args:
-            data: Pandas DataFrame to normalize.
+            data (Union[pd.DataFrame, pd.Series]): DataFrame or Series to process.
+            column_mapping (Dict[str, str]): Mapping of required fields to column names.
 
         Returns:
-            pd.DataFrame: Normalized pandas DataFrame.
+            List[Data]: List of processed data objects suitable for the series type.
+
+        Raises:
+            ValueError: If required columns are missing from the DataFrame/Series.
+            ValueError: If the data structure is invalid for the series type.
+
+        Note:
+            This method uses the data_class property to determine the appropriate
+            Data class for conversion.
         """
+        # Convert Series to DataFrame if needed
         if isinstance(data, pd.Series):
             data = data.to_frame()
 
-        columns_mapping = self._get_columns()
+        data_class = self.data_class
+        required = data_class.required_columns
+        optional = data_class.optional_columns
 
-        data = self._process_index_columns(data, columns_mapping.values())
+        # Check if all required columns are mapped
+        missing_required = required - set(column_mapping.keys())
+        if missing_required:
+            raise ValueError(f"DataFrame is missing required column mapping: {missing_required}")
 
-        if not all(col in data.columns for col in columns_mapping.values()):
-            missing = [col for col in columns_mapping.values() if col not in data.columns]
-            raise ValueError(f"Columns {missing} are missing in the data")
+        # Process index columns if they're referenced in column_mapping
+        df = data.copy()
+        updated_mapping = column_mapping.copy()
 
-        data = self._process_dataframe(data)
+        # Handle index columns that are referenced in column_mapping
+        for field, col_name in column_mapping.items():
+            if col_name == "index" or col_name in df.index.names or col_name == df.index.name:
+                # Reset the index level to make it a regular column
+                if isinstance(df.index, pd.MultiIndex):
+                    # For MultiIndex, find the level with this name
+                    level_names = list(df.index.names)
+                    if col_name in level_names:
+                        level_idx = level_names.index(col_name)
+                        df = df.reset_index(level=level_idx)
+                        # Update column mapping to use the actual column name
+                        updated_mapping[field] = col_name
+                else:
+                    # For single index, reset it
+                    df = df.reset_index()
+                    # Update column mapping to use the actual column name
+                    # When index name is None, reset_index() creates a column named 'index'
+                    updated_mapping[field] = "index"
 
-        return data
+        # Check if all required columns are present in the DataFrame
+        mapped_columns = set(updated_mapping.values())
+        available_columns = set(df.columns.tolist())
+        missing_columns = mapped_columns - available_columns
+        if missing_columns:
+            raise ValueError(f"DataFrame is missing required column: {missing_columns}")
 
-    def _process_index_columns(self, data: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
-        """
-        Ensure that all columns in `columns` are available as regular columns,
-        even if they are currently part of the index.
-
-        Special handling:
-        - If the index is a DatetimeIndex and we need 'datetime',
-        assign that name and reset the index.
-        - If the index is a MultiIndex, reset it only if any desired column is in it.
-        """
-        if isinstance(data.index, pd.DatetimeIndex):
-            idx_name = data.index.name
-            if idx_name is None and ColumnNames.DATETIME in columns:
-                data.index.name = ColumnNames.DATETIME
-                data = data.reset_index()
-            elif idx_name in columns:
-                data = data.reset_index()
-
-        elif isinstance(data.index, pd.MultiIndex):
-            index_names = list(data.index.names)
-            if any(col in index_names for col in columns):
-                for i, name in enumerate(index_names):
-                    if name is None:
-                        index_names[i] = f"level_{i}"
-                data.index.names = index_names
-                data = data.reset_index()
-
-        return data
+        # Create data objects
+        result = []
+        for _, row in df.iterrows():
+            kwargs = {}
+            for field, col_name in updated_mapping.items():
+                value = row[col_name]
+                kwargs[field] = value
+            data_obj = data_class(**kwargs)
+            result.append(data_obj)
+        
+        return result
 
     @property
     def data_dict(self) -> List[Dict[str, Any]]:
         """
         Get the data in dictionary format.
-        Handles dict, list of dicts, or list of objects with to_dict.
+
+        Converts the series data to a list of dictionaries suitable for
+        frontend serialization. Handles various data formats including
+        dictionaries, lists of dictionaries, or lists of objects with
+        to_dict() methods.
+
+        Returns:
+            List[Dict[str, Any]]: List of data dictionaries ready for
+                frontend consumption.
+
+        Example:
+            ```python
+            # Get data as dictionaries
+            data_dicts = series.data_dict
+            
+            # Access individual data points
+            for data_point in data_dicts:
+                print(f"Time: {data_point['time']}, Value: {data_point['value']}")
+            ```
         """
         if isinstance(self.data, dict):
             return self.data
@@ -269,168 +324,32 @@ class Series(ABC):
         # Fallback: return as-is
         return self.data
 
-    @abstractmethod
-    def _process_dataframe(self, df: pd.DataFrame) -> List[BaseData]:
-        """
-        Process pandas DataFrame into series data format.
-
-        This method must be implemented by subclasses to convert pandas
-        DataFrames into the appropriate data format for the series type.
-
-        Args:
-            df: Pandas DataFrame to process.
-
-        Returns:
-            List[BaseData]: List of processed data objects.
-
-        Raises:
-            NotImplementedError: If the subclass doesn't implement this method.
-        """
-        raise NotImplementedError("Subclasses must implement _process_dataframe")
-
     def set_visible(self, visible: bool) -> "Series":
         """
         Set series visibility.
 
-        Shows or hides the series. Returns self for method chaining.
+        Shows or hides the series on the chart. This method provides a
+        convenient way to control series visibility with method chaining support.
 
         Args:
-            visible: Whether the series should be visible.
+            visible (bool): Whether the series should be visible on the chart.
 
         Returns:
             Series: Self for method chaining.
 
         Example:
             ```python
+            # Hide the series
             series.set_visible(False)
+
+            # Show the series
+            series.set_visible(True)
+
+            # Method chaining
+            series.set_visible(False).add_marker(marker)
             ```
         """
         self.visible = visible
-        return self
-
-    def set_price_scale(self, price_scale_id: str) -> "Series":
-        """
-        Set the price scale for this series.
-
-        Specifies which price scale (left or right) this series should
-        be attached to. Returns self for method chaining.
-
-        Args:
-            price_scale_id: ID of the price scale ("left" or "right").
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.set_price_scale("left")
-            ```
-        """
-        self.price_scale_id = price_scale_id
-        return self
-
-    def set_price_line(
-        self,
-        visible: bool = True,
-        width: Optional[int] = None,
-        color: Optional[str] = None,
-        style: Optional[str] = None,
-    ) -> "Series":
-        """
-        Configure the price line for this series.
-
-        Sets the price line configuration including visibility, width,
-        color, and style. Returns self for method chaining.
-
-        Args:
-            visible: Whether the price line should be visible.
-            width: Width of the price line in pixels.
-            color: Color of the price line.
-            style: Style of the price line ("solid", "dashed", "dotted").
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.set_price_line(visible=True, color="#ff0000", width=2)
-            ```
-        """
-        self.price_line_visible = visible
-        if width is not None:
-            self.price_line_width = width
-        if color is not None:
-            self.price_line_color = color
-        if style is not None:
-            self.price_line_style = style
-        return self
-
-    def set_base_line(
-        self,
-        visible: bool = True,
-        width: Optional[int] = None,
-        color: Optional[str] = None,
-        style: Optional[str] = None,
-    ) -> "Series":
-        """
-        Configure the base line for this series.
-
-        Sets the base line configuration including visibility, width,
-        color, and style. Returns self for method chaining.
-
-        Args:
-            visible: Whether the base line should be visible.
-            width: Width of the base line in pixels.
-            color: Color of the base line.
-            style: Style of the base line ("solid", "dashed", "dotted").
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.set_base_line(visible=True, color="#00ff00", width=1)
-            ```
-        """
-        self.base_line_visible = visible
-        if width is not None:
-            self.base_line_width = width
-        if color is not None:
-            self.base_line_color = color
-        if style is not None:
-            self.base_line_style = style
-        return self
-
-    def set_price_format(
-        self,
-        format_type: str = "price",
-        precision: int = 2,
-        min_move: float = 0.01,
-    ) -> "Series":
-        """
-        Set price formatting for this series.
-
-        Configures how prices are formatted and displayed. Returns self
-        for method chaining.
-
-        Args:
-            format_type: Type of price format ("price", ColumnNames.VOLUME, "percent").
-            precision: Number of decimal places to display.
-            min_move: Minimum price movement for formatting.
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.set_price_format(format_type="price", precision=4)
-            ```
-        """
-        self.price_format = {
-            "type": format_type,
-            "precision": precision,
-            "minMove": min_move,
-        }
         return self
 
     def add_marker(
@@ -445,29 +364,50 @@ class Series(ABC):
         """
         Add a marker to this series.
 
-        Creates and adds a marker to the series. Returns self for
-        method chaining.
+        Creates and adds a marker to the series for highlighting specific data points
+        or events. Markers can be positioned above, below, or on the data point and
+        support various shapes and colors.
 
         Args:
-            time: Time for the marker in various formats.
-            position: Position of the marker relative to the data point.
-            color: Color of the marker.
-            shape: Shape of the marker.
-            text: Optional text to display with the marker.
-            size: Optional size of the marker in pixels.
+            time (Union[str, int, float, pd.Timestamp]): Time for the marker in various
+                formats (timestamp, datetime string, or numeric).
+            position (MarkerPosition): Position of the marker relative to the data point
+                (e.g., above, below, on).
+            color (str): Color of the marker in CSS color format (hex, rgb, named).
+            shape (MarkerShape): Shape of the marker (circle, square, arrow, etc.).
+            text (Optional[str], optional): Optional text to display with the marker.
+                Defaults to None.
+            size (Optional[int], optional): Optional size of the marker in pixels.
+                Defaults to None.
 
         Returns:
             Series: Self for method chaining.
 
         Example:
             ```python
+            from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+            from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+
+            # Add a simple marker
             series.add_marker(
-                time="2024-01-01",
-                position=MarkerPosition.ABOVE_BAR,
-                color="#ff0000",
-                shape=MarkerShape.CIRCLE,
-                text="Buy Signal"
+                time="2024-01-01 10:00:00",
+                position=MarkerPosition.ABOVE,
+                color="red",
+                shape=MarkerShape.CIRCLE
             )
+
+            # Add a marker with text and size
+            series.add_marker(
+                time=1640995200,
+                position=MarkerPosition.BELOW,
+                color="#00ff00",
+                shape=MarkerShape.ARROW_UP,
+                text="Buy Signal",
+                size=12
+            )
+
+            # Method chaining
+            series.add_marker(marker1).add_marker(marker2)
             ```
         """
         marker = Marker(
@@ -478,50 +418,140 @@ class Series(ABC):
             text=text,
             size=size,
         )
-        self.markers.append(marker)
+        self._markers.append(marker)
         return self
 
     def add_markers(self, markers: List[Marker]) -> "Series":
         """
         Add multiple markers to this series.
 
-        Adds a list of markers to the series. Returns self for
-        method chaining.
+        Adds a list of markers to the series. Returns self for method chaining.
 
         Args:
             markers: List of marker objects to add.
 
         Returns:
             Series: Self for method chaining.
-
-        Example:
-            ```python
-            markers = [marker1, marker2, marker3]
-            series.add_markers(markers)
-            ```
         """
-        self.markers.extend(markers)
+        self._markers.extend(markers)
         return self
 
     def clear_markers(self) -> "Series":
         """
         Clear all markers from this series.
 
-        Removes all markers from the series. Returns self for
-        method chaining.
+        Removes all markers from the series. Returns self for method chaining.
 
         Returns:
             Series: Self for method chaining.
-
-        Example:
-            ```python
-            series.clear_markers()
-            ```
         """
-        self.markers.clear()
+        self._markers.clear()
         return self
 
-    def _validate_pane_config(self):
+    @property
+    def price_scale_id(self) -> str:
+        """
+        Get the price scale ID for this series.
+
+        Returns:
+            str: The price scale ID (e.g., "left" or "right").
+        """
+        return self._price_scale_id
+
+    @price_scale_id.setter
+    def price_scale_id(self, value: str) -> None:
+        """
+        Set the price scale ID for this series.
+
+        Args:
+            value (str): The price scale ID (e.g., "left" or "right").
+        """
+        self._price_scale_id = value
+
+    @property
+    def price_format(self) -> PriceFormatOptions:
+        """
+        Get the price format options for this series.
+
+        Returns:
+            PriceFormatOptions: The price format options.
+        """
+        return self._price_format
+
+    @price_format.setter
+    def price_format(self, value: PriceFormatOptions) -> None:
+        """
+        Set the price format options for this series.
+
+        Args:
+            value (PriceFormatOptions): The price format options.
+        """
+        self._price_format = value
+
+    @property
+    def price_lines(self) -> List[PriceLineOptions]:
+        """
+        Get the list of price line options for this series.
+
+        Returns:
+            List[PriceLineOptions]: The price line options.
+        """
+        return self._price_lines
+
+    @price_lines.setter
+    def price_lines(self, value: List[PriceLineOptions]) -> None:
+        """
+        Set the list of price line options for this series.
+
+        Args:
+            value (List[PriceLineOptions]): The price line options.
+        """
+        self._price_lines = value
+
+    def add_price_line(self, price_line: PriceLineOptions) -> "Series":
+        """
+        Add a price line option to this series.
+
+        Args:
+            price_line (PriceLineOptions): The price line option to add.
+
+        Returns:
+            Series: Self for method chaining.
+        """
+        self._price_lines.append(price_line)
+        return self
+
+    def clear_price_lines(self) -> "Series":
+        """
+        Remove all price line options from this series.
+
+        Returns:
+            Series: Self for method chaining.
+        """
+        self._price_lines.clear()
+        return self
+
+    @property
+    def markers(self) -> List[Marker]:
+        """
+        Get the list of markers for this series.
+
+        Returns:
+            List[Marker]: The markers for this series.
+        """
+        return self._markers
+
+    @markers.setter
+    def markers(self, value: List[Marker]) -> None:
+        """
+        Set the list of markers for this series.
+
+        Args:
+            value (List[Marker]): The markers for this series.
+        """
+        self._markers = value
+
+    def _validate_pane_config(self) -> None:
         """
         Validate pane configuration for the series.
 
@@ -529,78 +559,215 @@ class Series(ABC):
         It should be called by subclasses in their to_dict() method.
 
         Raises:
-            ValueError: If overlay is False and pane_id is None.
+            ValueError: If overlay is False and pane_id is None, or if pane_id is negative.
         """
+        if self.pane_id is not None and self.pane_id < 0:
+            raise ValueError("pane_id must be non-negative")
         if self.overlay is False and self.pane_id is None:
             raise ValueError("If overlay is False, pane_id must be defined for the series.")
         if self.overlay is True and self.pane_id is None:
             self.pane_id = 0
 
-    @abstractmethod
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert series to dictionary representation.
 
-        This method must be implemented by subclasses to convert the
-        series object into a format that can be consumed by the frontend
-        React component.
+        This method creates a dictionary representation of the series
+        that can be consumed by the frontend React component.
 
         Returns:
-            Dict[str, Any]: Dictionary representation of the series.
+            Dict[str, Any]: Dictionary containing series configuration for the frontend.
+        """
+        # Validate pane configuration
+        self._validate_pane_config()
+
+        # Get base configuration
+        config = {
+            "type": self.chart_type.value,
+            "data": self.data_dict,
+        }
+
+        # Add options from attributes that have to_dict() method
+        options = {}
+        for attr_name in dir(self):
+            if attr_name.startswith("_"):
+                continue
+            # Skip data attribute as it's handled separately
+            if attr_name == "data":
+                continue
+            # Skip class attributes (like DATA_CLASS)
+            if attr_name.isupper():
+                continue
+            # Skip class properties (like data_class)
+            if attr_name == "data_class":
+                continue
+
+            attr_value = getattr(self, attr_name)
+            # Only process instance attributes, not classes
+            if (
+                hasattr(attr_value, "to_dict")
+                and callable(getattr(attr_value, "to_dict"))
+                and not isinstance(attr_value, type)
+            ):
+                # For any options object, flatten the options instead of nesting
+                if attr_name.endswith("_options"):
+                    options.update(attr_value.to_dict())
+                else:
+                    # Convert snake_case to camelCase for the key
+                    key = snake_to_camel(attr_name)
+                    options[key] = attr_value.to_dict()
+
+            # Also include individual option attributes that are not None and not empty strings
+            elif (
+                not callable(attr_value)
+                and not isinstance(attr_value, type)
+                and attr_value is not None
+                and attr_value != ""
+                and attr_name
+                not in [
+                    "markers",
+                    "price_lines",
+                    "pane_id",
+                    "visible",
+                    "overlay",
+                    "data_dict",
+                    "chart_type",
+                    "data_class",
+                    "column_mapping",
+                    "required_columns",
+                    "optional_columns",
+                ]
+            ):
+                # Convert snake_case to camelCase for the key
+                key = snake_to_camel(attr_name)
+                options[key] = attr_value
+
+        if options:
+            config["options"] = options
+
+        # Add markers if present
+        if self.markers:
+            config["markers"] = [marker.to_dict() for marker in self.markers]
+
+        # Add price lines if present
+        if self.price_lines:
+            config["priceLines"] = [pl.to_dict() for pl in self.price_lines]
+
+        # Add pane_id
+        config["pane_id"] = self.pane_id
+
+        # Add visible property
+        config["visible"] = self.visible
+
+        # Add price_scale_id
+        config["priceScaleId"] = self.price_scale_id
+
+        return config
+
+    @classproperty
+    def data_class(cls) -> Type[Data]:  # pylint: disable=no-self-argument
+        """
+        Return the first DATA_CLASS found in the MRO (most-derived class wins).
+        """
+        for base in cls.__mro__:
+            if hasattr(base, "DATA_CLASS"):
+                return getattr(base, "DATA_CLASS")
+        raise NotImplementedError("No DATA_CLASS defined in the class hierarchy.")
+
+    @classmethod
+    def from_dataframe(
+        cls,
+        df: Union[pd.DataFrame, pd.Series],
+        column_mapping: Dict[str, str],
+        price_scale_id: str = "right",
+        **kwargs,
+    ) -> "Series":
+        """
+        Create a Series instance from a pandas DataFrame or Series.
+
+        Args:
+            df (Union[pd.DataFrame, pd.Series]): The input DataFrame or Series.
+            column_mapping (dict): Mapping of required fields 
+                (e.g., {'time': 'datetime', 'value': 'close', ...}).
+            price_scale_id (str): Price scale ID (default 'right').
+            **kwargs: Additional arguments for the Series constructor.
+
+        Returns:
+            Series: An instance of the Series (or subclass) with normalized data.
 
         Raises:
-            NotImplementedError: If the subclass doesn't implement this method.
+            NotImplementedError: If the subclass does not define DATA_CLASS.
+            ValueError: If required columns are missing in column_mapping or DataFrame.
+            AttributeError: If the data class does not define REQUIRED_COLUMNS.
         """
+        # Convert Series to DataFrame if needed
+        if isinstance(df, pd.Series):
+            df = df.to_frame()
 
-    def get_data_range(self) -> Optional[Dict[str, Union[float, str]]]:
-        """
-        Get the data range for this series.
+        data_class = cls.data_class
+        required = data_class.required_columns
+        optional = data_class.optional_columns
 
-        Returns the minimum and maximum values and times for the series data.
-        Useful for determining chart bounds and scaling.
+        # Get index names for normalization
+        index_names = df.index.names if hasattr(df.index, "names") else [df.index.name]
 
-        Returns:
-            Optional[Dict[str, Union[float, str]]]: Dictionary containing
-                min_value, max_value, min_time, max_time, or None if no data.
+        # Check required columns in column_mapping
+        missing_mapping = [col for col in required if col not in column_mapping]
+        if missing_mapping:
+            raise ValueError(
+                f"Missing required columns in column_mapping: {missing_mapping}\n"
+                f"Required columns: {required}\n"
+                f"Column mapping: {column_mapping}"
+            )
 
-        Example:
-            ```python
-            range_info = series.get_data_range()
-            if range_info:
-                logger.info(f"Value range: {range_info['min_value']} - {range_info['max_value']}")
-            ```
-        """
-        if not self.data:
-            return None
+        # Normalize index as column if needed (do this before checking columns)
+        df = df.copy()
+        for key, col in column_mapping.items():
+            # Skip if column is already in DataFrame
+            if col in df.columns:
+                continue
 
-        # Extract values and times
-        values = []
-        times = []
+            # Handle DatetimeIndex with no name
+            if isinstance(df.index, pd.DatetimeIndex) and df.index.name is None:
+                df.index.name = col
+                df = df.reset_index()
+            # Handle MultiIndex with unnamed DatetimeIndex level
+            elif isinstance(df.index, pd.MultiIndex):
+                # Find the level index that matches the column name
+                for i, name in enumerate(df.index.names):
+                    if name is None and i < len(df.index.levels):
+                        # Check if this level is a DatetimeIndex
+                        if isinstance(df.index.levels[i], pd.DatetimeIndex):
+                            # Set the name for this level
+                            new_names = list(df.index.names)
+                            new_names[i] = col
+                            df.index.names = new_names
+                            df = df.reset_index(level=col)
+                            break
+                # If not found as unnamed DatetimeIndex, check if it's a named level
+                else:
+                    if col in df.index.names:
+                        df = df.reset_index(level=col)
+            # Handle regular index with matching name
+            elif col in index_names:
+                df = df.reset_index()
 
-        for item in self.data:
-            if hasattr(item, ColumnNames.VALUE):
-                if item.value is not None:
-                    values.append(item.value)
-            elif hasattr(item, ColumnNames.CLOSE):
-                if item.close is not None:
-                    values.append(item.close)
-            elif hasattr(item, ColumnNames.HIGH):
-                if item.high is not None and item.low is not None:
-                    values.extend([item.high, item.low])
+        # Check required columns in DataFrame (including index) - after processing
+        for key in required:
+            col = column_mapping[key]
+            if col not in df.columns:
+                raise ValueError(f"DataFrame is missing required column: {col}")
 
-            times.append(item._time)  # pylint: disable=protected-access
+        # Build data objects
+        data = []
+        for i in range(len(df)):
+            kwargs_data = {}
+            for key in required.union(optional):
+                if key in column_mapping:
+                    col = column_mapping[key]
+                    if col in df.columns:
+                        value = df.iloc[i][col]
+                        kwargs_data[key] = value
+            data.append(data_class(**kwargs_data))
 
-        if not values:
-            return {
-                "min_value": None,
-                "max_value": None,
-                "min_time": min(times),
-                "max_time": max(times),
-            }
-
-        return {
-            "min_value": min(values),
-            "max_value": max(values),
-            "min_time": min(times),
-            "max_time": max(times),
-        }
+        return cls(data=data, price_scale_id=price_scale_id, **kwargs)

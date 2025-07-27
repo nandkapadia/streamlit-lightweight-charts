@@ -224,11 +224,17 @@ import pandas as pd
 # Load data
 df = pd.read_csv('stock_data.csv', index_col='date', parse_dates=True)
 
-# Convert to chart data
-from streamlit_lightweight_charts_pro.utils import df_to_ohlc_data
-
-ohlc_data = df_to_ohlc_data(df)
-chart = Chart(series=CandlestickSeries(ohlc_data))
+# Create chart directly from DataFrame
+chart = Chart(series=CandlestickSeries.from_dataframe(
+    df=df,
+    column_mapping={
+        'time': 'date',
+        'open': 'open',
+        'high': 'high',
+        'low': 'low',
+        'close': 'close'
+    }
+))
 ```
 
 ### From CSV Files

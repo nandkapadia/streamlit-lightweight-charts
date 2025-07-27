@@ -2,10 +2,12 @@
 
 from streamlit_lightweight_charts_pro.type_definitions.colors import (
     Background,
-    SolidColor,
-    VerticalGradientColor,
+    BackgroundGradient,
+    BackgroundSolid,
 )
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    AnnotationPosition,
+    AnnotationType,
     ChartType,
     ColorType,
     ColumnNames,
@@ -19,6 +21,8 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     PriceScaleMode,
     TrackingActivationMode,
     TrackingExitMode,
+    TradeType,
+    TradeVisualization,
     VertAlign,
 )
 from streamlit_lightweight_charts_pro.type_definitions.protocols import (
@@ -40,6 +44,8 @@ from streamlit_lightweight_charts_pro.type_definitions.protocols import (
 
 __all__ = [
     # Enums
+    "AnnotationPosition",
+    "AnnotationType",
     "ChartType",
     "ColorType",
     "LineStyle",
@@ -54,10 +60,12 @@ __all__ = [
     "TrackingExitMode",
     "TrackingActivationMode",
     "ColumnNames",
+    "TradeType",
+    "TradeVisualization",
     # Colors
     "Background",
-    "SolidColor",
-    "VerticalGradientColor",
+    "BackgroundSolid",
+    "BackgroundGradient",
     # Protocols
     "ChartDataProtocol",
     "TimeSeriesDataProtocol",

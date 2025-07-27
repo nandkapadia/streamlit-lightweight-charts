@@ -2,7 +2,7 @@
 
 from streamlit_lightweight_charts_pro.charts.series.area import AreaSeries
 from streamlit_lightweight_charts_pro.charts.series.band import BandSeries
-from streamlit_lightweight_charts_pro.charts.series.bar import BarSeries
+from streamlit_lightweight_charts_pro.charts.series.bar_series import BarSeries
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.charts.series.baseline import BaselineSeries
 from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries

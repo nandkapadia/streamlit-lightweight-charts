@@ -12,18 +12,18 @@ visual representations that can be rendered by the charting library.
 
 from typing import Any, Dict, List, Optional
 
-from streamlit_lightweight_charts_pro.data import (
-    Trade,
-    TradeVisualization,
+from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.data import Trade
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
-from streamlit_lightweight_charts_pro.data.base import to_utc_timestamp
+from streamlit_lightweight_charts_pro.type_definitions.enums import TradeVisualization
+from streamlit_lightweight_charts_pro.utils.data_utils import to_utc_timestamp
 
 
 def trades_to_visual_elements(
-    trades: List[Trade],
-    options: TradeVisualizationOptions,
+    trades: List["Trade"],
+    options: "TradeVisualizationOptions",
     chart_data: Optional[List[Dict]] = None,
 ) -> Dict[str, Any]:
     """
@@ -48,6 +48,10 @@ def trades_to_visual_elements(
             - shapes: List of shape configurations (rectangles, lines, arrows, zones)
             - annotations: List of text annotation configurations
 
+    Raises:
+        ValueError: If trades or options is None.
+        TypeError: If any item in trades is not a Trade object.
+
     Example:
         ```python
         trades = [
@@ -65,7 +69,17 @@ def trades_to_visual_elements(
         # Returns dict with markers, shapes, and annotations
         ```
     """
+    if trades is None:
+        raise ValueError("trades cannot be None")
+    if options is None:
+        raise ValueError("options cannot be None")
+    
     result = {"markers": [], "shapes": [], "annotations": []}
+
+    # Validate that all trades are Trade objects
+    for trade in trades:
+        if not isinstance(trade, Trade):
+            raise TypeError(f"All items in trades must be Trade objects, got {type(trade)}")
 
     for trade in trades:
         # Add markers if marker style is enabled
@@ -107,15 +121,16 @@ def trades_to_visual_elements(
             zone = create_trade_zone(trade, options, chart_data)
             result["shapes"].append(zone)
 
-        # Add trade annotation if any annotation options are enabled
-        if any([options.show_trade_id, options.show_quantity, options.show_trade_type]):
+        # Only add annotations if we're using BOTH style and annotation options are enabled
+        if (options.style == TradeVisualization.BOTH and
+            any([options.show_trade_id, options.show_quantity, options.show_trade_type])):
             annotation = create_trade_annotation(trade, options)
             result["annotations"].append(annotation)
 
     return result
 
 
-def create_trade_rectangle(trade: Trade, options: TradeVisualizationOptions) -> Dict[str, Any]:
+def create_trade_rectangle(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create rectangle shape for trade visualization.
 
@@ -128,6 +143,9 @@ def create_trade_rectangle(trade: Trade, options: TradeVisualizationOptions) -> 
 
     Returns:
         Dictionary containing rectangle shape configuration for the frontend.
+
+    Raises:
+        ValueError: If trade or options is None.
 
     Example:
         ```python
@@ -142,23 +160,34 @@ def create_trade_rectangle(trade: Trade, options: TradeVisualizationOptions) -> 
         rect = create_trade_rectangle(trade, options)
         ```
     """
-    # Determine color based on trade profitability
-    color = options.rectangle_color_profit if trade.is_profitable else options.rectangle_color_loss
+    if trade is None:
+        raise ValueError("trade cannot be None")
+    if options is None:
+        raise ValueError("options cannot be None")
+    
+    # Determine colors based on trade profitability
+    if trade.is_profitable:
+        fill_color = options.rectangle_fill_color_profit
+        border_color = options.rectangle_border_color_profit
+    else:
+        fill_color = options.rectangle_color_loss
+        border_color = options.rectangle_border_color_loss
 
     return {
         "type": "rectangle",
-        "time1": trade.entry_timestamp,
+        "time": trade.entry_timestamp,
+        "width": trade.exit_timestamp - trade.entry_timestamp if isinstance(trade.exit_timestamp, (int, float)) and isinstance(trade.entry_timestamp, (int, float)) else 0,
         "price1": trade.entry_price,
-        "time2": trade.exit_timestamp,
         "price2": trade.exit_price,
-        "fillColor": f"{color}{int(options.rectangle_fill_opacity * 255):02x}",
-        "borderColor": color,
+        "fillColor": fill_color,
+        "borderColor": border_color,
         "borderWidth": options.rectangle_border_width,
         "borderStyle": "solid",
+        "fillOpacity": options.rectangle_fill_opacity,
     }
 
 
-def create_trade_line(trade: Trade, options: TradeVisualizationOptions) -> Dict[str, Any]:
+def create_trade_line(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create line shape for trade visualization.
 
@@ -171,6 +200,9 @@ def create_trade_line(trade: Trade, options: TradeVisualizationOptions) -> Dict[
 
     Returns:
         Dictionary containing line shape configuration for the frontend.
+
+    Raises:
+        ValueError: If trade or options is None.
 
     Example:
         ```python
@@ -185,22 +217,26 @@ def create_trade_line(trade: Trade, options: TradeVisualizationOptions) -> Dict[
         line = create_trade_line(trade, options)
         ```
     """
+    if trade is None:
+        raise ValueError("trade cannot be None")
+    if options is None:
+        raise ValueError("options cannot be None")
+    
     # Determine color based on trade profitability
     color = options.line_color_profit if trade.is_profitable else options.line_color_loss
 
     return {
-        "type": "trendLine",
-        "time1": trade.entry_timestamp,
+        "type": "line",
+        "time": trade.entry_timestamp,
+        "width": options.line_width,
         "price1": trade.entry_price,
-        "time2": trade.exit_timestamp,
         "price2": trade.exit_price,
-        "lineColor": color,
-        "lineWidth": options.line_width,
-        "lineStyle": get_line_style_value(options.line_style),
+        "color": color,
+        "style": get_line_style_value(options.line_style),
     }
 
 
-def create_trade_arrow(trade: Trade, options: TradeVisualizationOptions) -> Dict[str, Any]:
+def create_trade_arrow(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create arrow shape for trade visualization.
 
@@ -214,6 +250,9 @@ def create_trade_arrow(trade: Trade, options: TradeVisualizationOptions) -> Dict
     Returns:
         Dictionary containing arrow shape configuration for the frontend.
 
+    Raises:
+        ValueError: If trade or options is None.
+
     Example:
         ```python
         trade = Trade("2024-01-01", 100, TradeType.LONG,
@@ -221,31 +260,33 @@ def create_trade_arrow(trade: Trade, options: TradeVisualizationOptions) -> Dict
         options = TradeVisualizationOptions(
             arrow_color_profit="#26a69a",
             arrow_color_loss="#ef5350",
-            arrow_size=8
+            arrow_size=10
         )
         arrow = create_trade_arrow(trade, options)
         ```
     """
+    if trade is None:
+        raise ValueError("trade cannot be None")
+    if options is None:
+        raise ValueError("options cannot be None")
     # Determine color based on trade profitability
     color = options.arrow_color_profit if trade.is_profitable else options.arrow_color_loss
 
     # Create arrow as a line with arrow head and PnL text
     return {
         "type": "arrow",
-        "time1": trade.entry_timestamp,
-        "price1": trade.entry_price,
-        "time2": trade.exit_timestamp,
-        "price2": trade.exit_price,
-        "lineColor": color,
-        "lineWidth": options.line_width,
-        "arrowSize": options.arrow_size,
+        "time": trade.entry_timestamp,
+        "price": trade.entry_price,
+        "color": color,
+        "size": options.arrow_size,
+        "width": trade.exit_timestamp - trade.entry_timestamp if isinstance(trade.exit_timestamp, (int, float)) and isinstance(trade.entry_timestamp, (int, float)) else 0,
         "text": f"{trade.pnl_percentage:+.1f}%",
     }
 
 
 def create_trade_zone(
-    trade: Trade,
-    options: TradeVisualizationOptions,
+    trade: "Trade",
+    options: "TradeVisualizationOptions",
     chart_data: Optional[List[Dict]] = None,
 ) -> Dict[str, Any]:
     """
@@ -332,18 +373,18 @@ def create_trade_zone(
         bottom_price = min(trade.entry_price, trade.exit_price) * 0.99
 
     return {
-        "type": "rectangle",
-        "time1": time1,
+        "type": "zone",
+        "time": time1,
+        "width": time2 - time1 if isinstance(time2, (int, float)) and isinstance(time1, (int, float)) else 0,
         "price1": bottom_price,
-        "time2": time2,
         "price2": top_price,
-        "fillColor": f"{color}{int(options.zone_opacity * 255):02x}",
-        "borderColor": "transparent",
+        "fillColor": f"{color}{int(options.zone_opacity * 255):02x}" if not color.startswith("rgba") else color.replace("1)", f"{options.zone_opacity})"),
+        "borderColor": color,
         "borderWidth": 0,
     }
 
 
-def create_trade_annotation(trade: Trade, options: TradeVisualizationOptions) -> Dict[str, Any]:
+def create_trade_annotation(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create annotation for trade visualization.
 
@@ -393,9 +434,10 @@ def create_trade_annotation(trade: Trade, options: TradeVisualizationOptions) ->
     mid_price = (trade.entry_price + trade.exit_price) / 2
 
     return {
-        "type": "text",
+        "type": "annotation",
         ColumnNames.TIME: mid_time,
         "price": mid_price,
+        "position": "inBar",
         "text": " | ".join(text_parts),
         "fontSize": options.annotation_font_size,
         "backgroundColor": options.annotation_background,
@@ -405,19 +447,34 @@ def create_trade_annotation(trade: Trade, options: TradeVisualizationOptions) ->
 
 
 def get_line_style_value(style: str) -> int:
-    """Convert line style string to numeric value."""
+    """
+    Convert line style string to numeric value.
+    
+    Args:
+        style: Line style string (solid, dotted, dashed, etc.)
+        
+    Returns:
+        int: Numeric value for the line style
+        
+    Raises:
+        ValueError: If style is not recognized
+    """
     style_map = {
         "solid": 0,
-        "dotted": 1,
-        "dashed": 2,
+        "dotted": 2,
+        "dashed": 1,
         "large_dashed": 3,
         "sparse_dotted": 4,
     }
-    return style_map.get(style, 2)  # Default to dashed
+    
+    if style.lower() not in style_map:
+        raise ValueError(f"Invalid line style: {style}")
+    
+    return style_map[style.lower()]
 
 
 def create_trade_shapes_series(
-    trades: List[Trade], options: TradeVisualizationOptions
+    trades: List["Trade"], options: "TradeVisualizationOptions"
 ) -> Dict[str, Any]:
     """
     Create a shapes series configuration for trades.
@@ -430,7 +487,7 @@ def create_trade_shapes_series(
     # Create a custom series for shapes
     return {
         "type": "Custom",
-        "data": [],  # No data points, just shapes
+        "data": visual_elements["shapes"],  # Return shapes as data
         "options": {
             "priceScaleId": "right",
             "lastValueVisible": False,
@@ -443,8 +500,8 @@ def create_trade_shapes_series(
 
 def add_trades_to_series(
     series_config: Dict[str, Any],
-    trades: List[Trade],
-    options: TradeVisualizationOptions,
+    trades: List["Trade"],
+    options: "TradeVisualizationOptions",
 ) -> Dict[str, Any]:
     """
     Add trade visualizations to an existing series configuration.
@@ -471,10 +528,14 @@ def add_trades_to_series(
             series_config["shapes"] = []
         series_config["shapes"].extend(visual_elements["shapes"])
 
-    # Add annotations if available
-    if visual_elements["annotations"]:
+    # Add annotations if annotation options are enabled (regardless of style)
+    if any([options.show_trade_id, options.show_quantity, options.show_trade_type]):
         if "annotations" not in series_config:
             series_config["annotations"] = []
-        series_config["annotations"].extend(visual_elements["annotations"])
+        
+        # Create annotations for each trade
+        for trade in trades:
+            annotation = create_trade_annotation(trade, options)
+            series_config["annotations"].append(annotation)
 
     return series_config

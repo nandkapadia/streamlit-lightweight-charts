@@ -1,4 +1,9 @@
-"""Type protocols for streamlit-lightweight-charts."""
+"""
+Protocol definitions for streamlit-lightweight-charts.
+
+This module contains protocol definitions that define the structure
+of various configuration objects used throughout the library.
+"""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, Union, runtime_checkable
@@ -132,3 +137,23 @@ ChartData = Union[ChartDataProtocol, Dict[str, Any]]
 ChartOptions = Union[ChartOptionsProtocol, Dict[str, Any]]
 TimeValue = Union[pd.Timestamp, datetime, str, int, float]
 NumericValue = Union[int, float]
+
+
+class BaseValuePrice(Protocol):
+    """
+    Protocol for baseline value price configuration.
+
+    Defines the structure for configuring the base value in baseline series.
+    Can be either a simple price value or a more complex configuration.
+
+    Attributes:
+        type (str): Type of base value, typically 'price'.
+        price (float): The price value to use as baseline.
+    """
+
+    type: str
+    price: float
+
+
+# Type alias for convenience
+BaselineValue = Union[float, Dict[str, Any], BaseValuePrice]

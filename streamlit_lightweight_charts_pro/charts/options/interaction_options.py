@@ -1,157 +1,105 @@
-"""Interaction option classes for streamlit-lightweight-charts."""
+"""
+Interaction options configuration for streamlit-lightweight-charts.
 
-from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+This module provides interaction-related option classes for configuring
+crosshair behavior, kinetic scrolling, and tracking modes.
+"""
 
+from dataclasses import dataclass, field
+
+from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     CrosshairMode,
     LineStyle,
-    TrackingActivationMode,
-    TrackingExitMode,
 )
 
 
-class CrosshairLineOptions:
+@dataclass
+class CrosshairLineOptions(Options):
     """Crosshair line configuration."""
 
-    def __init__(
-        self,
-        color: str = "#758696",
-        width: int = 1,
-        style: Union[int, LineStyle] = LineStyle.SOLID,
-        visible: bool = True,
-    ):
-        self.color = color
-        self.width = width
-        # Accept both int and Enum for style
-        if isinstance(style, int):
-            self.style = LineStyle(style)
-        else:
-            self.style = style
-        self.visible = visible
+    color: str = "#758696"
+    width: int = 1
+    style: LineStyle = LineStyle.SOLID
+    visible: bool = True
+    label_visible: bool = True
 
-    def __getitem__(self, key):
-        if key == "color":
-            return self.color
-        if key == "width":
-            return self.width
-        if key == "style":
-            return self.style.value
-        if key == "visible":
-            return self.visible
-        raise KeyError(key)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "color": self.color,
-            "width": self.width,
-            "style": self.style.value,
-            "visible": self.visible,
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.color, str):
+            raise TypeError(f"color must be a string, got {type(self.color)}")
+        if not isinstance(self.width, int):
+            raise TypeError(f"width must be an int, got {type(self.width)}")
+        if not isinstance(self.style, LineStyle):
+            raise TypeError(f"style must be a LineStyle enum, got {type(self.style)}")
+        if not isinstance(self.visible, bool):
+            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
+        if not isinstance(self.label_visible, bool):
+            raise TypeError(f"label_visible must be a bool, got {type(self.label_visible)}")
 
 
 @dataclass
-class CrosshairSyncOptions:
+class CrosshairSyncOptions(Options):
     """Crosshair synchronization configuration."""
 
-    group_id: str = "default"
-    suppress_crosshair_move: bool = False
-    suppress_mouse_move: bool = False
+    group_id: int = 1
+    suppress_series_animations: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "groupId": self.group_id,
-            "suppressCrosshairMove": self.suppress_crosshair_move,
-            "suppressMouseMove": self.suppress_mouse_move,
-        }
-
-
-class CrosshairOptions:
-    """Crosshair configuration for chart."""
-
-    def __init__(
-        self,
-        mode: Union[int, CrosshairMode] = 1,  # Default to magnetic (1) for test compatibility
-        vert_line: CrosshairLineOptions = None,
-        horz_line: CrosshairLineOptions = None,
-        sync: Optional["CrosshairSyncOptions"] = None,
-        group_id: Optional[str] = None,
-    ):
-        # Accept both int and Enum for mode
-        if isinstance(mode, int):
-            self.mode = CrosshairMode(mode)
-        else:
-            self.mode = mode
-        self.vert_line = vert_line or CrosshairLineOptions()
-        self.horz_line = horz_line or CrosshairLineOptions()
-        self.sync = sync
-        self.group_id = group_id
-
-    def __getitem__(self, key):
-        if key == "mode":
-            return self.mode.value
-        if key in ("vert_line", "vertLine"):
-            return self.vert_line
-        if key in ("horz_line", "horzLine"):
-            return self.horz_line
-        d = self.to_dict()
-        if key in d:
-            return d[key]
-        raise KeyError(key)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        result = {
-            "mode": self.mode.value,
-            "vertLine": self.vert_line.to_dict(),
-            "horzLine": self.horz_line.to_dict(),
-        }
-
-        if self.sync is not None:
-            result["sync"] = self.sync.to_dict()
-
-        if self.group_id is not None:
-            result["groupId"] = self.group_id
-
-        return result
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.group_id, int):
+            raise TypeError(f"group_id must be an integer, got {type(self.group_id)}")
+        if not isinstance(self.suppress_series_animations, bool):
+            raise TypeError(
+                f"suppress_series_animations must be a bool, "
+                f"got {type(self.suppress_series_animations)}"
+            )
 
 
 @dataclass
-class KineticScrollOptions:
+class CrosshairOptions(Options):
+    """Crosshair configuration for chart."""
+
+    mode: CrosshairMode = CrosshairMode.NORMAL
+    vert_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
+    horz_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
+
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.mode, CrosshairMode):
+            raise TypeError(f"mode must be a CrosshairMode enum, got {type(self.mode)}")
+        if not isinstance(self.vert_line, CrosshairLineOptions):
+            raise TypeError(
+                f"vert_line must be a CrosshairLineOptions instance, got {type(self.vert_line)}"
+            )
+        if not isinstance(self.horz_line, CrosshairLineOptions):
+            raise TypeError(
+                f"horz_line must be a CrosshairLineOptions instance, got {type(self.horz_line)}"
+            )
+
+
+@dataclass
+class KineticScrollOptions(Options):
     """Kinetic scroll configuration for chart."""
 
     touch: bool = True
     mouse: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "touch": self.touch,
-            "mouse": self.mouse,
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.touch, bool):
+            raise TypeError(f"touch must be a bool, got {type(self.touch)}")
+        if not isinstance(self.mouse, bool):
+            raise TypeError(f"mouse must be a bool, got {type(self.mouse)}")
 
 
-class TrackingModeOptions:
+@dataclass
+class TrackingModeOptions(Options):
     """Tracking mode configuration for chart."""
 
-    def __init__(
-        self,
-        exit_mode: Union[str, TrackingExitMode] = TrackingExitMode.EXIT_ON_MOVE,
-        activation_mode: Union[str, TrackingActivationMode] = TrackingActivationMode.ON_MOUSE_ENTER,
-    ):
-        # Accept both str and Enum for exit_mode
-        if isinstance(exit_mode, str):
-            self.exit_mode = TrackingExitMode(exit_mode)
-        else:
-            self.exit_mode = exit_mode
-        # Accept both str and Enum for activation_mode
-        if isinstance(activation_mode, str):
-            self.activation_mode = TrackingActivationMode(activation_mode)
-        else:
-            self.activation_mode = activation_mode
+    exit_on_escape: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {"exitMode": self.exit_mode.value, "activationMode": self.activation_mode.value}
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.exit_on_escape, bool):
+            raise TypeError(f"exit_on_escape must be a bool, got {type(self.exit_on_escape)}")

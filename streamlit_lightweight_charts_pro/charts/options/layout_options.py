@@ -1,213 +1,136 @@
 """
-Layout option classes for streamlit-lightweight-charts.
+Layout options configuration for streamlit-lightweight-charts.
 
-This module provides classes for configuring chart layout, grid, and pane options.
-It includes support for background color, text styling, grid lines, and pane separators.
-
-Example:
-    from streamlit_lightweight_charts_pro.charts.options.layout_options import LayoutOptions
-
-    layout = LayoutOptions()
-    layout.set_pane_options(separator_color="#f22c3d", enable_resize=False)
+This module provides layout-related option classes for configuring
+chart appearance, grid settings, panes, and watermarks.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Union
+from typing import Optional
 
-from streamlit_lightweight_charts_pro.type_definitions import Background
-from streamlit_lightweight_charts_pro.type_definitions.enums import HorzAlign, LineStyle, VertAlign
-
-
-class GridLineOptions:
-    """Grid line configuration."""
-
-    def __init__(
-        self,
-        color: str = "#e1e3e6",
-        style: Union[int, LineStyle] = LineStyle.SOLID,
-        visible: bool = False,
-    ):
-        self.color = color
-        # Accept both int and Enum for style
-        if isinstance(style, int):
-            self.style = LineStyle(style)
-        else:
-            self.style = style
-        self.visible = visible
-
-    def __getitem__(self, key):
-        if key == "color":
-            return self.color
-        if key == "style":
-            return self.style.value
-        if key == "visible":
-            return self.visible
-        raise KeyError(key)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {"color": self.color, "style": self.style.value, "visible": self.visible}
+from streamlit_lightweight_charts_pro.charts.options.base_options import Options
+from streamlit_lightweight_charts_pro.type_definitions.colors import (
+    BackgroundGradient,
+    BackgroundSolid,
+)
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    HorzAlign,
+    LineStyle,
+    VertAlign,
+)
 
 
 @dataclass
-class GridOptions:
+class GridLineOptions(Options):
+    """Grid line configuration."""
+
+    color: str = "#e1e3e6"
+    style: LineStyle = LineStyle.SOLID
+    visible: bool = False
+
+    def __post_init__(self):
+        super().__post_init__()
+        # Validate color
+        if not isinstance(self.color, str):
+            raise TypeError(f"color must be a string, got {type(self.color)}")
+        # Validate style
+        if not isinstance(self.style, LineStyle):
+            raise TypeError(f"style must be a LineStyle enum, got {type(self.style)}")
+        # Validate visible
+        if not isinstance(self.visible, bool):
+            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
+
+
+@dataclass
+class GridOptions(Options):
     """Grid configuration for chart."""
 
     vert_lines: GridLineOptions = field(default_factory=lambda: GridLineOptions(visible=False))
     horz_lines: GridLineOptions = field(default_factory=lambda: GridLineOptions(visible=True))
 
-    def __getitem__(self, key):
-        if key in ("vert_lines", "vertLines"):
-            return self.vert_lines
-        if key in ("horz_lines", "horzLines"):
-            return self.horz_lines
-        d = self.to_dict()
-        if key in d:
-            return d[key]
-        raise KeyError(key)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "vertLines": self.vert_lines.to_dict(),
-            "horzLines": self.horz_lines.to_dict(),
-            "vert_lines": self.vert_lines.to_dict(),
-            "horz_lines": self.horz_lines.to_dict(),
-        }
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.vert_lines, GridLineOptions):
+            raise TypeError(
+                f"vert_lines must be a GridLineOptions instance, " f"got {type(self.vert_lines)}"
+            )
+        if not isinstance(self.horz_lines, GridLineOptions):
+            raise TypeError(
+                f"horz_lines must be a GridLineOptions instance, " f"got {type(self.horz_lines)}"
+            )
 
 
 @dataclass
-class PaneOptions:
-    separator_color: Optional[str] = None
-    separator_hover_color: Optional[str] = None
-    enable_resize: Optional[bool] = None
+class PaneOptions(Options):
+    """Pane configuration for chart."""
 
-    def to_dict(self) -> Dict[str, Any]:
-        d = {}
-        if self.separator_color is not None:
-            d["separatorColor"] = self.separator_color
-        if self.separator_hover_color is not None:
-            d["separatorHoverColor"] = self.separator_hover_color
-        if self.enable_resize is not None:
-            d["enableResize"] = self.enable_resize
-        return d
+    separator_color: str = "#e1e3ea"
+    separator_hover_color: str = "#ffffff"
+    enable_resize: bool = True
+
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.separator_color, str):
+            raise TypeError(f"separator_color must be a string, got {type(self.separator_color)}")
+        if not isinstance(self.separator_hover_color, str):
+            raise TypeError(
+                f"separator_hover_color must be a string, "
+                f"got {type(self.separator_hover_color)}"
+            )
+        if not isinstance(self.enable_resize, bool):
+            raise TypeError(f"enable_resize must be a bool, got {type(self.enable_resize)}")
 
 
 @dataclass
-class LayoutOptions:
+class LayoutOptions(Options):
     """Layout configuration for chart."""
 
-    background: Background = field(default_factory=lambda: Background("white"))
+    background_options: BackgroundSolid = field(
+        default_factory=lambda: BackgroundSolid(color="#ffffff")
+    )
     text_color: str = "#131722"
     font_size: int = 11
     font_family: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-    panes: Optional[PaneOptions] = None
+    pane_options: Optional[PaneOptions] = None
 
-    def __setattr__(self, name, value):
-        if name == "background":
-            # Accept dicts and convert to Background
-            if isinstance(value, dict):
-                # If dict has 'color', treat as solid
-                if "color" in value:
-                    value = Background.solid(value["color"])
-                # If dict has 'topColor' and 'bottomColor', treat as gradient
-                elif "topColor" in value and "bottomColor" in value:
-                    value = Background.gradient(value["topColor"], value["bottomColor"])
-                # If dict has 'pattern', just store as solid with pattern (for test compatibility)
-                elif "pattern" in value:
-                    # Not natively supported, but wrap as solid for now
-                    value = Background.solid("#FFFFFF")
-                else:
-                    value = Background.solid("#FFFFFF")
-        super().__setattr__(name, value)
-
-    def __getitem__(self, key):
-        if key == "background_color":
-            return self.background.color
-        return self.to_dict()[key]
-
-    def to_dict(self) -> Dict[str, Any]:
-        d = {
-            "background": self.background.to_dict(),
-            "background_color": self.background.color,
-            "textColor": self.text_color,
-            "text_color": self.text_color,
-            "fontSize": self.font_size,
-            "fontFamily": self.font_family,
-        }
-        if self.panes is not None:
-            d["panes"] = self.panes.to_dict()
-        return d
-
-    @property
-    def background_color(self) -> str:
-        return self.background.color
-
-    @background_color.setter
-    def background_color(self, value: str):
-        self.background.color = value
-
-    def set_pane_options(self, **kwargs) -> "LayoutOptions":
-        """
-        Set pane options for the chart layout.
-
-        You can pass either a PaneOptions instance or keyword arguments for separator_color,
-        separator_hover_color, and enable_resize.
-        Example:
-            layout.set_pane_options(
-                separator_color="#f22c3d",
-                separator_hover_color="rgba(255, 0, 0, 0.1)",
-                enable_resize=False,
+    def __post_init__(self):
+        super().__post_init__()
+        # Validate background
+        if not isinstance(self.background_options, (BackgroundSolid, BackgroundGradient)):
+            raise TypeError(
+                f"background_options must be a BackgroundSolid or BackgroundGradient, "
+                f"got {type(self.background_options)}"
             )
-        """
-        if len(kwargs) == 1 and isinstance(list(kwargs.values())[0], PaneOptions):
-            self.panes = list(kwargs.values())[0]
-        else:
-            self.panes = PaneOptions(**kwargs)
-        return self
+        # Validate panes
+        if self.pane_options is not None and not isinstance(self.pane_options, PaneOptions):
+            raise TypeError(
+                f"pane_options must be a PaneOptions instance or None, "
+                f"got {type(self.pane_options)}"
+            )
 
 
-class WatermarkOptions:
+@dataclass
+class WatermarkOptions(Options):
     """Watermark configuration."""
 
-    def __init__(
-        self,
-        visible: bool = False,
-        text: str = "",
-        font_size: int = 48,
-        horz_align: Union[str, HorzAlign] = HorzAlign.CENTER,
-        vert_align: Union[str, VertAlign] = VertAlign.CENTER,
-        color: str = "rgba(171, 71, 188, 0.3)",
-    ):
-        self.visible = visible
-        self.text = text
-        self.font_size = font_size
-        # Accept both str and Enum for horz_align
-        if isinstance(horz_align, str):
-            self.horz_align = HorzAlign(horz_align)
-        else:
-            self.horz_align = horz_align
-        # Accept both str and Enum for vert_align
-        if isinstance(vert_align, str):
-            self.vert_align = VertAlign(vert_align)
-        else:
-            self.vert_align = vert_align
-        self.color = color
+    visible: bool = True
+    text: str = ""
+    font_size: int = 96
+    horz_align: HorzAlign = HorzAlign.CENTER
+    vert_align: VertAlign = VertAlign.CENTER
+    color: str = "rgba(255, 255, 255, 0.1)"
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            "visible": self.visible,
-            "text": self.text,
-            "fontSize": self.font_size,
-            "horzAlign": self.horz_align.value,
-            "vertAlign": self.vert_align.value,
-            "color": self.color,
-        }
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.text == other
-        if isinstance(other, WatermarkOptions):
-            return self.to_dict() == other.to_dict()
-        return False
+    def __post_init__(self):
+        super().__post_init__()
+        if not isinstance(self.visible, bool):
+            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
+        if not isinstance(self.text, str):
+            raise TypeError(f"text must be a string, got {type(self.text)}")
+        if not isinstance(self.font_size, int):
+            raise TypeError(f"font_size must be an int, got {type(self.font_size)}")
+        if not isinstance(self.horz_align, HorzAlign):
+            raise TypeError(f"horz_align must be a HorzAlign enum, got {type(self.horz_align)}")
+        if not isinstance(self.vert_align, VertAlign):
+            raise TypeError(f"vert_align must be a VertAlign enum, got {type(self.vert_align)}")
+        if not isinstance(self.color, str):
+            raise TypeError(f"color must be a string, got {type(self.color)}")

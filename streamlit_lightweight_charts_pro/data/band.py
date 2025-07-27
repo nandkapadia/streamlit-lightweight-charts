@@ -5,15 +5,14 @@ This module provides data classes for band data points used in
 band charts such as Bollinger Bands and other envelope indicators.
 """
 
-from datetime import datetime
-from typing import Union
+import math
+from dataclasses import dataclass
 
-import pandas as pd
-
-from streamlit_lightweight_charts_pro.data.base import BaseData
+from streamlit_lightweight_charts_pro.data.data import Data
 
 
-class BandData(BaseData):
+@dataclass
+class BandData(Data):
     """
     Data point for band charts (e.g., Bollinger Bands).
 
@@ -27,36 +26,26 @@ class BandData(BaseData):
         lower: The lower band value.
     """
 
+    REQUIRED_COLUMNS = {"upper", "middle", "lower"}
+    OPTIONAL_COLUMNS = set()
+
     upper: float
     middle: float
     lower: float
 
-    def __init__(
-        self,
-        time: Union[str, int, float, datetime, pd.Timestamp],
-        upper: float,
-        middle: float,
-        lower: float,
-    ):
-        """
-        Initialize a band data point.
-
-        Args:
-            time: Time for this data point in various formats.
-            upper: Upper band value.
-            middle: Middle band value (main line).
-            lower: Lower band value.
-
-        Example:
-            ```python
-            # Create band data point (Bollinger Bands example)
-            band = BandData("2024-01-01", 105.0, 100.0, 95.0)
-
-            # Access band values
-            logger.info(f"Upper: {band.upper}, Middle: {band.middle}, Lower: {band.lower}")
-            ```
-        """
-        self.time = time
-        self.upper = upper
-        self.middle = middle
-        self.lower = lower
+    def __post_init__(self):
+        # Normalize time
+        super().__post_init__()  # Call parent's __post_init__
+        # Handle NaN in value
+        if isinstance(self.upper, float) and math.isnan(self.upper):
+            self.upper = 0.0
+        elif self.upper is None:
+            raise ValueError("upper must not be None")
+        if isinstance(self.middle, float) and math.isnan(self.middle):
+            self.middle = 0.0
+        elif self.middle is None:
+            raise ValueError("middle must not be None")
+        if isinstance(self.lower, float) and math.isnan(self.lower):
+            self.lower = 0.0
+        elif self.lower is None:
+            raise ValueError("lower must not be None")

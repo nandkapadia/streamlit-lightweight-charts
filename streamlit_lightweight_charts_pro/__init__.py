@@ -1,10 +1,12 @@
 """
-Streamlit Lightweight Charts Pro - Enhanced Financial Charting Library.
+Streamlit Lightweight Charts Pro - Professional Financial Charting Library.
 
-This package provides a comprehensive set of tools for creating interactive
-financial charts in Streamlit applications with method chaining support.
+A comprehensive Python library for creating interactive financial charts in Streamlit
+applications. Built on top of TradingView's Lightweight Charts library, this package
+provides a fluent API for building sophisticated financial visualizations with
+method chaining support.
 
-The library offers a fluent API for building complex financial visualizations
+The library offers enterprise-grade features for financial data visualization
 including candlestick charts, line charts, area charts, volume charts, and more.
 It supports advanced features like annotations, trade visualization, multi-pane
 charts, and seamless pandas DataFrame integration.
@@ -13,10 +15,12 @@ Key Features:
     - Fluent API with method chaining for intuitive chart creation
     - Support for all major chart types (candlestick, line, area, bar, histogram)
     - Advanced annotation system with layers and styling
-    - Trade visualization with buy/sell markers
-    - Multi-pane synchronized charts
+    - Trade visualization with buy/sell markers and PnL display
+    - Multi-pane synchronized charts with overlay price scales
     - Responsive design with auto-sizing options
-    - Comprehensive customization options
+    - Comprehensive customization options for all chart elements
+    - Seamless pandas DataFrame integration
+    - Type-safe API with comprehensive type hints
 
 Example Usage:
     ```python
@@ -41,6 +45,8 @@ Example Usage:
     chart.render(key="my_chart")
     ```
 
+For detailed documentation and examples, visit the project repository.
+
 Version: 0.1.0
 Author: Streamlit Lightweight Charts Contributors
 License: MIT
@@ -48,10 +54,7 @@ License: MIT
 
 # TODO: Need to implement tooltips for the chart
 # TODO: Need to implement legend for the chart
-# TODO: Need to implement line chart with color change
-# TODO: Need to fix the display of trade rectangles Y positions
-# TODO: Need to implement background shadding
-# TODO: Need to implement bands as a series type so we can implmenent Bollinger Bands etc
+# TODO: Need to implement background shadding series
 
 # Import core components
 from streamlit_lightweight_charts_pro.charts import (
@@ -60,6 +63,9 @@ from streamlit_lightweight_charts_pro.charts import (
     create_chart,
 )
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
+from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
+    TradeVisualizationOptions,
+)
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
@@ -72,9 +78,6 @@ from streamlit_lightweight_charts_pro.charts.series import (
 from streamlit_lightweight_charts_pro.data import (
     Annotation,
     Marker,
-    OhlcData,
-    OhlcvData,
-    SingleValueData,
 )
 from streamlit_lightweight_charts_pro.data.annotation import (
     AnnotationLayer,
@@ -86,14 +89,16 @@ from streamlit_lightweight_charts_pro.data.annotation import (
 from streamlit_lightweight_charts_pro.data.trade import (
     Trade,
     TradeType,
-    TradeVisualization,
-    TradeVisualizationOptions,
 )
 
 # Import logging configuration
 from streamlit_lightweight_charts_pro.logging_config import get_logger, setup_logging
 from streamlit_lightweight_charts_pro.type_definitions import ChartType, LineStyle, MarkerPosition
-from streamlit_lightweight_charts_pro.type_definitions.enums import ColumnNames, MarkerShape
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    ColumnNames,
+    MarkerShape,
+    TradeVisualization,
+)
 
 # Version information
 __version__ = "0.1.0"
@@ -120,9 +125,6 @@ __all__ = [
     # Data models
     "Annotation",
     "Marker",
-    "OhlcData",
-    "OhlcvData",
-    "SingleValueData",
     # Annotation system
     "AnnotationManager",
     "AnnotationLayer",

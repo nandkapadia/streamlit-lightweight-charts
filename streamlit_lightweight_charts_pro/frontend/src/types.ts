@@ -95,6 +95,7 @@ export interface SeriesConfig {
   name?: string
   priceScale?: any
   markers?: SeriesMarker<Time>[]
+  priceLines?: any[]  // Add price lines to series
   trades?: TradeConfig[]  // Add trades to series
   tradeVisualizationOptions?: TradeVisualizationOptions
   annotations?: Annotation[]  // Add annotations to series

@@ -19,204 +19,229 @@ Example:
     ]
 
     # Create histogram series with styling
-    series = HistogramSeries(
-        data=data,
-        color="#2196F3",
-        base=0
-    )
+    series = HistogramSeries(data=data)
+    series.color = "#2196F3"
+    series.base = 0
 """
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
+import numpy as np
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.charts.series.base import Series
-from streamlit_lightweight_charts_pro.data import SingleValueData
-from streamlit_lightweight_charts_pro.type_definitions import ChartType, ColumnNames
+from streamlit_lightweight_charts_pro.data import Data
+from streamlit_lightweight_charts_pro.data.histogram_data import HistogramData
+from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
+from streamlit_lightweight_charts_pro.type_definitions import ChartType
 
 
 class HistogramSeries(Series):
-    """Histogram series for lightweight charts."""
+    """
+    Histogram series for lightweight charts.
 
-    def __init__(
-        self,
-        data: Union[Sequence[SingleValueData], pd.DataFrame],
-        column_mapping: Optional[Dict[str, str]] = None,
-        color: str = "#2196F3",
-        visible: bool = True,
-        price_scale_id: str = "right",
-        price_line_visible: bool = False,
-        base_line_visible: bool = False,
-        price_line_width: int = 1,
-        price_line_color: str = "#2196F3",
-        price_line_style: str = "solid",
-        base_line_width: int = 1,
-        base_line_color: str = "#FF9800",
-        base_line_style: str = "solid",
-        price_format: Optional[Dict[str, Any]] = None,
-        markers: Optional[List[Any]] = None,
-        pane_id: int = 0,
-        height: Optional[int] = None,
-        up_color: Optional[str] = None,
-        down_color: Optional[str] = None,
-        base: Optional[float] = 0.0,
-    ):
-        """
-        Histogram series for lightweight charts.
+    This class represents a histogram series that displays data as bars.
+    It's commonly used for volume overlays, technical indicators, and other
+    bar-based visualizations.
 
-        Args:
-            data: Data for the histogram series.
-            column_mapping: Optional dict mapping expected columns to user columns.
-            visible: Whether the series is visible.
-            price_scale_id: ID of the price scale to which this series belongs.
-            price_line_visible: Whether to show the price line.
-            base_line_visible: Whether to show the base line.
-            price_line_width: Width of the price line.
-            price_line_color: Color of the price line.
-            price_line_style: Style of the price line.
-            base_line_width: Width of the base line.
-            base_line_color: Color of the base line.
-            base_line_style: Style of the base line.
-            price_format: Optional dictionary for price formatting.
-            markers: Optional list of marker configurations.
-            pane_id: ID of the pane to which this series belongs.
-            height: Optional height for the series.
-            up_color: Color for up bars.
-            down_color: Color for down bars.
-        """
-        self.color = color
-        self.up_color = up_color
-        self.down_color = down_color
-        self.base = base
+    The HistogramSeries supports various styling options including bar color,
+    base value, and animation effects.
 
-        super().__init__(
-            data=data,
-            column_mapping=column_mapping,
-            visible=visible,
-            price_scale_id=price_scale_id,
-            price_line_visible=price_line_visible,
-            base_line_visible=base_line_visible,
-            price_line_width=price_line_width,
-            price_line_color=price_line_color,
-            price_line_style=price_line_style,
-            base_line_width=base_line_width,
-            base_line_color=base_line_color,
-            base_line_style=base_line_style,
-            price_format=price_format,
-            markers=markers,
-            pane_id=pane_id,
-            height=height,
-        )
+    Attributes:
+        color: Color of the bars (set via property).
+        base: Base value for the bars (set via property).
+        price_lines: List of PriceLineOptions for price lines (set after construction)
+        price_format: PriceFormatOptions for price formatting (set after construction)
+        markers: List of markers to display on this series (set after construction)
+    """
+
+    DATA_CLASS = HistogramData
 
     @property
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.HISTOGRAM
 
-    def _get_columns(self) -> Dict[str, str]:
+    @classmethod
+    def create_volume_series(
+        cls,
+        data: Union[Sequence[OhlcvData], pd.DataFrame],
+        column_mapping: dict,
+        up_color: str = "rgba(38,166,154,0.5)",
+        down_color: str = "rgba(239,83,80,0.5)",
+        **kwargs,
+    ) -> "HistogramSeries":
         """
-        Return the column mapping for histogram series, using self.column_mapping if set.
-        """
-        # Use self.column_mapping if provided, else default mapping
-        if self.column_mapping:
-            return self.column_mapping
-        return {
-            ColumnNames.TIME: ColumnNames.DATETIME,
-            ColumnNames.VALUE: ColumnNames.CLOSE,
-        }
+        Create a histogram series for volume data with colors based on price movement.
 
-    def _process_dataframe(self, df: pd.DataFrame) -> List[SingleValueData]:
-        """
-        Process pandas DataFrame into SingleValueData format.
-
-        This method converts a pandas DataFrame into a list of SingleValueData
-        objects for histogram chart visualization.
+        This factory method processes OHLCV data and creates a HistogramSeries
+        with volume bars colored based on whether the candle is bullish (close >= open)
+        or bearish (close < open).
 
         Args:
-            df: Pandas DataFrame to process.
+            data: OHLCV data as DataFrame or list of OhlcvData objects
+            column_mapping: Column mapping for DataFrame input
+            up_color: Color for bullish candles (close >= open), default teal
+            down_color: Color for bearish candles (close < open), default red
+            **kwargs: Additional arguments passed to HistogramSeries constructor
 
         Returns:
-            List[SingleValueData]: List of processed data objects.
+            HistogramSeries: Configured histogram series with colored volume data
+
+        Example:
+            ```python
+            # From DataFrame
+            volume_series = HistogramSeries.create_volume_series(
+                df,
+                column_mapping={'time': 'datetime', 'volume': 'vol', 'open': 'o', 'close': 'c'},
+                up_color="rgba(76,175,80,0.5)",
+                down_color="rgba(244,67,54,0.5)"
+            )
+
+            # From OHLCV data list
+            volume_series = HistogramSeries.create_volume_series(ohlcv_list, {})
+            ```
+        """
+        volume_data = []
+
+        # Handle None or empty data
+        if data is None:
+            return cls(data=volume_data, **kwargs)
+
+        if isinstance(data, pd.DataFrame):
+            # Handle DataFrame input - ultra-optimized vectorized approach
+            time_col = column_mapping.get("time", "time")
+            volume_col = column_mapping.get("volume", "volume")
+            open_col = column_mapping.get("open", "open")
+            close_col = column_mapping.get("close", "close")
+
+            # Extract columns as numpy arrays for maximum speed
+            # Convert pandas timestamps to seconds (not nanoseconds)
+            if hasattr(data[time_col], "dt"):
+                times = data[time_col].apply(lambda x: x.timestamp()).values
+            else:
+                times = data[time_col].values
+            volumes = data[volume_col].values
+            opens = data[open_col].values
+            closes = data[close_col].values
+
+            # Ultra-fast color assignment using boolean indexing
+            is_bullish = closes >= opens
+            colors = np.full(len(data), down_color, dtype=object)
+            colors[is_bullish] = up_color
+
+            # Bulk create HistogramData objects using map for maximum speed
+            volume_data = list(
+                map(
+                    lambda args: HistogramData(time=args[0], value=args[1], color=args[2]),
+                    zip(times, volumes, colors),
+                )
+            )
+        else:
+            # Handle list of OHLCV data objects
+            for item in data:
+                # All items should be OhlcvData with volume
+                color = up_color if item.close >= item.open else down_color
+                volume_data.append(HistogramData(time=item.time, value=item.volume, color=color))
+
+        # Create and return the histogram series
+        return cls(data=volume_data, **kwargs)
+
+    def __init__(
+        self,
+        data: Union[List[Data], pd.DataFrame, pd.Series],
+        column_mapping: Optional[dict] = None,
+        visible: bool = True,
+        price_scale_id: str = "right",
+        pane_id: Optional[int] = 0,
+        overlay: Optional[bool] = True,
+    ):
+        """
+        Initialize a histogram series with data and configuration.
+
+        Args:
+            data: Series data as a list of data objects, pandas DataFrame, or pandas Series.
+            column_mapping: Optional column mapping for DataFrame/Series input.
+            visible: Whether the series is visible. Defaults to True.
+            price_scale_id: ID of the price scale to attach to. Defaults to "right".
+            pane_id: The pane index this series belongs to. Defaults to 0.
+            overlay: Whether the series overlays another. Defaults to True.
 
         Raises:
-            ValueError: If required columns are missing from the DataFrame.
+            ValueError: If data is not a valid type (list of Data, DataFrame, or Series).
+            ValueError: If DataFrame/Series is provided without column_mapping.
+
+        Example:
+            ```python
+            # Basic series with list of data objects
+            series = HistogramSeries(data=histogram_data)
+
+            # Series with DataFrame
+            series = HistogramSeries(
+                data=df,
+                column_mapping={'time': 'datetime', 'value': 'volume'}
+            )
+
+            # Series with Series
+            series = HistogramSeries(
+                data=series_data,
+                column_mapping={'time': 'index', 'value': 'values'}
+            )
+            ```
         """
-        # Use _get_columns for column mapping
-        column_mapping = self._get_columns()
+        super().__init__(
+            data=data,
+            column_mapping=column_mapping,
+            visible=visible,
+            price_scale_id=price_scale_id,
+            pane_id=pane_id,
+            overlay=overlay,
+        )
 
-        time_col = column_mapping.get(ColumnNames.TIME, ColumnNames.DATETIME)
-        value_col = column_mapping.get(ColumnNames.VALUE, ColumnNames.CLOSE)
+        # Initialize properties with default values
+        self._color = "#26a69a"
+        self._base = 0
 
-        column_mapping.get(ColumnNames.OPEN, ColumnNames.OPEN)
-        column_mapping.get(ColumnNames.CLOSE, ColumnNames.CLOSE)
-
-        if time_col not in df.columns or value_col not in df.columns:
-            raise ValueError(f"DataFrame must contain columns: {time_col} and {value_col}")
-
-        if self.up_color and self.down_color:
-            if ColumnNames.OPEN.value in df.columns and ColumnNames.CLOSE.value in df.columns:
-                df["color"] = [
-                    self.up_color if close >= open_ else self.down_color
-                    for open_, close in zip(df[ColumnNames.OPEN.value], df[ColumnNames.CLOSE.value])
-                ]
-        else:
-            df["color"] = None  # Optional fallback if color is needed
-
-        # Build SingleValueData
-        return [
-            SingleValueData(time=t, value=v, color=c)
-            for t, v, c in zip(df[time_col], df[value_col], df["color"])
-        ]
-
-    def to_dict(self) -> Dict[str, Any]:
+    @property
+    def color(self) -> str:
         """
-        Convert series to dictionary representation.
-
-        This method creates a dictionary representation of the histogram series
-        that can be consumed by the frontend React component.
+        Get the color of the bars.
 
         Returns:
-            Dict[str, Any]: Dictionary containing series configuration for the frontend.
+            str: The bar color value.
         """
-        # Validate pane configuration
-        self._validate_pane_config()
+        return self._color
 
-        # Get base configuration
-        config = {
-            "type": "histogram",
-            "data": self.data_dict,
-            "options": self._get_options_dict(),
-        }
+    @color.setter
+    def color(self, value: str) -> None:
+        """
+        Set the color of the bars.
 
-        # Add markers if present
-        if self.markers:
-            config["markers"] = [marker.to_dict() for marker in self.markers]
+        Args:
+            value (str): The bar color value.
+        """
+        if not isinstance(value, str):
+            raise TypeError("color must be a string")
+        self._color = value
 
-        # Add height and pane_id
-        if self.height is not None:
-            config["height"] = self.height
-        config["pane_id"] = self.pane_id
-        return config
+    @property
+    def base(self) -> float:
+        """
+        Get the base value for the bars.
 
-    def _get_options_dict(self) -> Dict[str, Any]:
-        """Get options dictionary for histogram series."""
-        options = {
-            "visible": self.visible,
-            "priceScaleId": self.price_scale_id,
-            "priceLineVisible": self.price_line_visible,
-            "priceLineWidth": self.price_line_width,
-            "priceLineColor": self.price_line_color,
-            "priceLineStyle": self.price_line_style,
-            "baseLineVisible": self.base_line_visible,
-            "baseLineWidth": self.base_line_width,
-            "baseLineColor": self.base_line_color,
-            "baseLineStyle": self.base_line_style,
-            "priceFormat": self.price_format,
-            "color": self.color,
-            "base": self.base,
-        }
+        Returns:
+            float: The base value.
+        """
+        return self._base
 
-        # Add price scale configuration if present
-        # price_scale_config removed
+    @base.setter
+    def base(self, value: float) -> None:
+        """
+        Set the base value for the bars.
 
-        return options
+        Args:
+            value (float): The base value.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("base must be a number")
+        self._base = float(value)
