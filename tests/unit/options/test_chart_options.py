@@ -241,7 +241,7 @@ class TestChartOptionsSerialization:
             handle_scale=False,
             add_default_pane=False,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["width"] == 800
         assert result["height"] == 600
@@ -253,14 +253,14 @@ class TestChartOptionsSerialization:
     def test_to_dict_omits_none_width(self):
         """Test that None width is omitted from output."""
         options = ChartOptions(width=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "width" not in result
 
     def test_to_dict_includes_nested_objects(self):
         """Test that nested option objects are serialized."""
         options = ChartOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "layout" in result
         assert "rightPriceScale" in result
@@ -276,7 +276,7 @@ class TestChartOptionsSerialization:
     def test_to_dict_nested_object_serialization(self):
         """Test that nested objects are properly serialized."""
         options = ChartOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         # Check that nested objects are dictionaries (serialized)
         assert isinstance(result["layout"], dict)
@@ -296,26 +296,26 @@ class TestChartOptionsSerialization:
         """Test overlay price scales serialization."""
         overlay_scale = PriceScaleOptions(visible=True, border_color="#ff0000")
         options = ChartOptions(overlay_price_scales={"overlay1": overlay_scale})
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "overlayPriceScales" in result
         assert "overlay1" in result["overlayPriceScales"]
         # Fix: convert the nested PriceScaleOptions object to dict first
-        overlay_dict = result["overlayPriceScales"]["overlay1"].to_dict()
+        overlay_dict = result["overlayPriceScales"]["overlay1"].asdict()
         assert overlay_dict["visible"] is True
         assert overlay_dict["borderColor"] == "#ff0000"
 
     def test_to_dict_empty_overlay_price_scales(self):
         """Test empty overlay price scales are omitted from output."""
         options = ChartOptions(overlay_price_scales={})
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "overlayPriceScales" not in result
 
     def test_to_dict_complete_structure(self):
         """Test complete serialization structure."""
         options = ChartOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         # Check all expected top-level keys (None fields should be omitted)
         expected_keys = {
@@ -359,7 +359,7 @@ class TestChartOptionsSerialization:
             localization=None,
             trade_visualization=None,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         # None fields should be omitted even when explicitly set
         assert "leftPriceScale" not in result
@@ -398,7 +398,7 @@ class TestChartOptionsSerialization:
             localization=local,
             trade_visualization=trade_viz,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         # Explicitly set fields should be included
         assert "leftPriceScale" in result
@@ -426,7 +426,7 @@ class TestChartOptionsIntegration:
         )
 
         options = ChartOptions(layout=custom_layout)
-        result = options.to_dict()
+        result = options.asdict()
         # Fix: expect flattened background properties instead of nested backgroundOptions
         assert result["layout"]["color"] == "#000000"  # Flattened from background_options
         assert result["layout"]["textColor"] == "#ffffff"
@@ -450,7 +450,7 @@ class TestChartOptionsIntegration:
         options = ChartOptions(
             left_price_scale=custom_left_scale, right_price_scale=custom_right_scale
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["leftPriceScale"]["visible"] is True
         assert result["leftPriceScale"]["borderColor"] == "#ff0000"
@@ -468,7 +468,7 @@ class TestChartOptionsIntegration:
         )
 
         options = ChartOptions(time_scale=custom_time_scale)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["timeScale"]["timeVisible"] is True
         assert result["timeScale"]["secondsVisible"] is False
@@ -481,7 +481,7 @@ class TestChartOptionsIntegration:
         custom_crosshair = CrosshairOptions(mode=CrosshairMode.NORMAL)
 
         options = ChartOptions(crosshair=custom_crosshair)
-        result = options.to_dict()
+        result = options.asdict()
         # Fix: expect 0 for CrosshairMode.NORMAL
         assert result["crosshair"]["mode"] == 0  # CrosshairMode.NORMAL.value
 
@@ -494,7 +494,7 @@ class TestChartOptionsIntegration:
         )
 
         options = ChartOptions(grid=custom_grid)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["grid"]["vertLines"]["color"] == "#ff0000"
         assert result["grid"]["vertLines"]["style"] == 0  # LineStyle.SOLID.value
@@ -508,21 +508,21 @@ class TestChartOptionsEdgeCases:
     def test_chart_options_with_zero_height(self):
         """Test ChartOptions with zero height."""
         options = ChartOptions(height=0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["height"] == 0
 
     def test_chart_options_with_negative_height(self):
         """Test ChartOptions with negative height."""
         options = ChartOptions(height=-100)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["height"] == -100
 
     def test_chart_options_with_large_values(self):
         """Test ChartOptions with large values."""
         options = ChartOptions(width=9999, height=9999)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["width"] == 9999
         assert result["height"] == 9999

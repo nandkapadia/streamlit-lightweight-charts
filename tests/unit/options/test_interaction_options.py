@@ -71,7 +71,7 @@ class TestCrosshairOptions:
         options = CrosshairOptions(
             mode=CrosshairMode.MAGNET, vert_line=vert_line, horz_line=horz_line
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["mode"] == 1  # CrosshairMode.MAGNET.value
         assert "vertLine" in result
@@ -136,7 +136,7 @@ class TestCrosshairLineOptions:
         options = CrosshairLineOptions(
             color="#ff0000", width=3, style=LineStyle.DOTTED, visible=False, label_visible=False
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["color"] == "#ff0000"
         assert result["width"] == 3
@@ -147,13 +147,13 @@ class TestCrosshairLineOptions:
     def test_to_dict_omits_false_visible(self):
         """Test that visible=False is included in output."""
         options = CrosshairLineOptions(visible=False)
-        result = options.to_dict()
+        result = options.asdict()
         assert result["visible"] is False
 
     def test_to_dict_omits_false_label_visible(self):
         """Test that label_visible=False is included in output."""
         options = CrosshairLineOptions(label_visible=False)
-        result = options.to_dict()
+        result = options.asdict()
         assert result["labelVisible"] is False
 
 
@@ -187,7 +187,7 @@ class TestCrosshairSyncOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = CrosshairSyncOptions(group_id=42, suppress_series_animations=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["groupId"] == 42
         assert result["suppressSeriesAnimations"] is False
@@ -223,7 +223,7 @@ class TestKineticScrollOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = KineticScrollOptions(touch=False, mouse=True)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["touch"] is False
         assert result["mouse"] is True
@@ -252,7 +252,7 @@ class TestTrackingModeOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = TrackingModeOptions(exit_on_escape=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["exitOnEscape"] is False
 
@@ -273,7 +273,7 @@ class TestInteractionOptionsIntegration:
         options = CrosshairOptions(
             mode=CrosshairMode.MAGNET, vert_line=vert_line, horz_line=horz_line
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["mode"] == 1  # CrosshairMode.MAGNET.value
         assert result["vertLine"]["color"] == "#ff0000"
@@ -291,8 +291,8 @@ class TestInteractionOptionsIntegration:
         kinetic_scroll = KineticScrollOptions(touch=True, mouse=True)
         tracking_mode = TrackingModeOptions(exit_on_escape=True)
 
-        kinetic_result = kinetic_scroll.to_dict()
-        tracking_result = tracking_mode.to_dict()
+        kinetic_result = kinetic_scroll.asdict()
+        tracking_result = tracking_mode.asdict()
 
         assert kinetic_result["touch"] is True
         assert kinetic_result["mouse"] is True
@@ -301,7 +301,7 @@ class TestInteractionOptionsIntegration:
     def test_crosshair_sync_with_multiple_charts(self):
         """Test CrosshairSyncOptions for multiple chart synchronization."""
         sync_options = CrosshairSyncOptions(group_id=123, suppress_series_animations=True)
-        result = sync_options.to_dict()
+        result = sync_options.asdict()
 
         assert result["groupId"] == 123
         assert result["suppressSeriesAnimations"] is True
@@ -313,28 +313,28 @@ class TestInteractionOptionsEdgeCases:
     def test_crosshair_line_options_with_zero_width(self):
         """Test CrosshairLineOptions with zero width."""
         options = CrosshairLineOptions(width=0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["width"] == 0
 
     def test_crosshair_line_options_with_large_width(self):
         """Test CrosshairLineOptions with large width."""
         options = CrosshairLineOptions(width=999)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["width"] == 999
 
     def test_crosshair_sync_options_with_zero_group_id(self):
         """Test CrosshairSyncOptions with zero group_id."""
         options = CrosshairSyncOptions(group_id=0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["groupId"] == 0
 
     def test_crosshair_sync_options_with_negative_group_id(self):
         """Test CrosshairSyncOptions with negative group_id."""
         options = CrosshairSyncOptions(group_id=-1)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["groupId"] == -1
 

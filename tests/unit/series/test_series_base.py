@@ -71,13 +71,13 @@ class ConcreteSeries(Series):
 
         super().__init__(data=data, **kwargs)
 
-    def to_dict(self):
+    def asdict(self):
         return {
             "type": "test",
-            "data": [d.to_dict() for d in self.data],
+            "data": [d.asdict() for d in self.data],
             "options": {},
-            "priceLines": [pl.to_dict() for pl in self.price_lines],
-            "markers": [marker.to_dict() for marker in self.markers],
+            "priceLines": [pl.asdict() for pl in self.price_lines],
+            "markers": [marker.asdict() for marker in self.markers],
         }
 
     def _process_dataframe(self, df):
@@ -107,7 +107,6 @@ class TestSeriesBase:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
 
     def test_construction_with_dataframe(self):
         """Test Series construction with DataFrame."""
@@ -123,13 +122,12 @@ class TestSeriesBase:
         data = [LineData(time=1640995200, value=100)]
 
         series = ConcreteSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1, overlay=False
+            data=data, visible=False, price_scale_id="left", pane_id=1
         )
 
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
 
     def test_data_dict_property(self):
         """Test the data_dict property."""
@@ -511,7 +509,7 @@ class TestSeriesBaseAdvanced:
             shape=MarkerShape.CIRCLE,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "type" in result
         assert "data" in result
@@ -527,7 +525,7 @@ class TestSeriesBaseAdvanced:
         # Set price_format to None
         series.price_format = None
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Should not include price_format in options
         assert "type" in result
@@ -544,7 +542,7 @@ class TestSeriesBaseAdvanced:
         series.markers = []
         series.price_format = None
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "type" in result
         assert "data" in result
@@ -559,21 +557,19 @@ class TestSeriesBaseAdvanced:
         """Test _validate_pane_config with edge cases."""
         data = [LineData(time=1640995200, value=100)]
 
-        # Test with overlay=True and pane_id=None (should set pane_id to 0)
-        series = ConcreteSeries(data=data, overlay=True, pane_id=None)
+        # Test with pane_id=None (should set pane_id to 0)
+        series = ConcreteSeries(data=data, pane_id=None)
         series._validate_pane_config()
         assert series.pane_id == 0
 
-        # Test with overlay=False and pane_id=None (should raise error)
-        series = ConcreteSeries(data=data, overlay=False, pane_id=None)
-        with pytest.raises(
-            ValueError, match="If overlay is False, pane_id must be defined for the series."
-        ):
-            series._validate_pane_config()
+        # Test with pane_id=None (should set pane_id to 0)
+series = ConcreteSeries(data=data, pane_id=None)
+series._validate_pane_config()  # Should not raise, sets pane_id to 0
+assert series.pane_id == 0
 
-        # Test with overlay=False and pane_id=0 (should not raise error)
-        series = ConcreteSeries(data=data, overlay=False, pane_id=0)
-        series._validate_pane_config()  # Should not raise
+# Test with pane_id=0 (should not raise error)
+series = ConcreteSeries(data=data, pane_id=0)
+series._validate_pane_config()  # Should not raise
 
     def test_data_class_property_inheritance(self):
         """Test data_class property with inheritance."""
@@ -722,7 +718,7 @@ class TestSeriesBaseAdvanced:
         series = LineSeries(data=data, line_options=LineOptions(), price_scale_id="left")
 
         # Convert to dict
-        result = series.to_dict()
+        result = series.asdict()
 
         # Verify priceScaleId is included
         assert "priceScaleId" in result["options"]
@@ -730,7 +726,7 @@ class TestSeriesBaseAdvanced:
 
         # Test with default price_scale_id
         series_default = LineSeries(data=data, line_options=LineOptions())  # Default is "right"
-        result_default = series_default.to_dict()
+        result_default = series_default.asdict()
 
         assert "priceScaleId" in result_default["options"]
         assert result_default["options"]["priceScaleId"] == "right"

@@ -43,12 +43,125 @@ class Options(ABC):
             is_visible: bool = True
 
         options = MyOptions()
-        result = options.to_dict()
+        result = options.asdict()
         # Returns: {"backgroundColor": "#ffffff", "textColor": "#000000", "isVisible": True}
         ```
     """
 
-    def to_dict(self) -> Dict[str, Any]:
+    def update(self, updates: Dict[str, Any]) -> "Options":
+        """
+        Update options with a dictionary of values.
+
+        This method provides a flexible way to update option properties using a dictionary.
+        It handles both simple properties and nested objects, automatically creating
+        nested Options instances when needed.
+
+        Args:
+            updates: Dictionary of updates to apply. Keys can be in snake_case or camelCase.
+                Values can be simple types or dictionaries for nested objects.
+
+        Returns:
+            Options: Self for method chaining.
+
+        Raises:
+            ValueError: If an update key doesn't correspond to a valid field.
+            TypeError: If a value type is incompatible with the field type.
+
+        Example:
+            ```python
+            options = MyOptions()
+            
+            # Update simple properties
+            options.update({
+                "background_color": "#ff0000",
+                "is_visible": False
+            })
+            
+            # Update nested objects
+            options.update({
+                "line_options": {
+                    "color": "#00ff00",
+                    "line_width": 3
+                }
+            })
+            
+            # Method chaining
+            options.update({"color": "red"}).update({"width": 100})
+            ```
+        """
+        for key, value in updates.items():
+            if value is None:
+                continue  # Skip None values for method chaining
+            
+            # Convert camelCase to snake_case for field lookup
+            field_name = self._camel_to_snake(key)
+            
+            # Check if field exists
+            if not hasattr(self, field_name):
+                # Try the original key in case it's already snake_case
+                if hasattr(self, key):
+                    field_name = key
+                else:
+                    raise ValueError(f"Invalid option field: {key}")
+            
+            # Get field info for type checking
+            field_info = None
+            for field in fields(self):
+                if field.name == field_name:
+                    field_info = field
+                    break
+            
+            if field_info is None:
+                raise ValueError(f"Field {field_name} not found in {self.__class__.__name__}")
+            
+            # Handle nested Options objects
+            if isinstance(value, dict) and hasattr(field_info.type, "__origin__"):
+                # Check if field type is a nested Options class
+                field_type = field_info.type
+                if hasattr(field_type, "__origin__") and field_type.__origin__ is not None:
+                    # Handle Optional[Options] or similar
+                    if hasattr(field_type, "__args__"):
+                        for arg in field_type.__args__:
+                            if isinstance(arg, type) and issubclass(arg, Options):
+                                # Create new instance of nested Options
+                                current_value = getattr(self, field_name)
+                                if current_value is None:
+                                    current_value = arg()
+                                current_value.update(value)
+                                setattr(self, field_name, current_value)
+                                break
+                        else:
+                            # Not a nested Options, set directly
+                            setattr(self, field_name, value)
+                else:
+                    # Direct Options type
+                    current_value = getattr(self, field_name)
+                    if current_value is None:
+                        # Create new instance
+                        setattr(self, field_name, field_type(**value))
+                    else:
+                        # Update existing instance
+                        current_value.update(value)
+            else:
+                # Simple value assignment
+                setattr(self, field_name, value)
+        
+        return self
+
+    def _camel_to_snake(self, camel_case: str) -> str:
+        """
+        Convert camelCase to snake_case.
+
+        Args:
+            camel_case: String in camelCase format.
+
+        Returns:
+            String in snake_case format.
+        """
+        import re
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case).lower()
+
+    def asdict(self) -> Dict[str, Any]:
         """
         Convert options to dictionary with camelCase keys for frontend.
 
@@ -102,10 +215,10 @@ class Options(ABC):
 
             # Handle nested Options objects
             if isinstance(value, Options):
-                value = value.to_dict()
+                value = value.asdict()
             elif isinstance(value, list):
                 # Handle lists of Options objects
-                value = [item.to_dict() if isinstance(item, Options) else item for item in value]
+                value = [item.asdict() if isinstance(item, Options) else item for item in value]
 
             # Convert to camelCase key
             key = snake_to_camel(name)

@@ -253,7 +253,7 @@ class TestOhlcvDataPerformance:
         start_time = time.time()
         start_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
-        serialized_data = [data.to_dict() for data in small_dataset]
+        serialized_data = [data.asdict() for data in small_dataset]
 
         end_time = time.time()
         end_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
@@ -290,7 +290,7 @@ class TestOhlcvDataPerformance:
         start_time = time.time()
         start_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
-        [data.to_dict() for data in medium_dataset]
+        [data.asdict() for data in medium_dataset]
 
         end_time = time.time()
         end_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
@@ -314,7 +314,7 @@ class TestOhlcvDataPerformance:
         start_time = time.time()
         start_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
-        [data.to_dict() for data in large_dataset]
+        [data.asdict() for data in large_dataset]
 
         end_time = time.time()
         end_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
@@ -344,7 +344,7 @@ class TestOhlcvDataPerformance:
 
         for i in range(0, len(very_large_dataset), chunk_size):
             chunk = very_large_dataset[i : i + chunk_size]
-            serialized_chunk = [data.to_dict() for data in chunk]
+            serialized_chunk = [data.asdict() for data in chunk]
             serialized_data.extend(serialized_chunk)
 
             # Force garbage collection to manage memory
@@ -380,7 +380,7 @@ class TestOhlcvDataPerformance:
         memory_after_creation = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
         # Serialize and measure memory
-        serialized = [item.to_dict() for item in data]
+        serialized = [item.asdict() for item in data]
         memory_after_serialization = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
         # Clear references and measure memory
@@ -415,7 +415,7 @@ class TestOhlcvDataPerformance:
         memory_after_creation = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
         # Serialize and measure memory
-        serialized = [item.to_dict() for item in data]
+        serialized = [item.asdict() for item in data]
         memory_after_serialization = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
         # Clear references and measure memory
@@ -496,7 +496,7 @@ class TestOhlcvDataPerformance:
 
         def process_data(data):
             """Process a single data point."""
-            serialized = data.to_dict()
+            serialized = data.asdict()
             # Simulate some processing
             processed = {
                 "timestamp": serialized["time"],
@@ -532,7 +532,7 @@ class TestOhlcvDataPerformance:
 
         def process_data(data):
             """Process a single data point."""
-            serialized = data.to_dict()
+            serialized = data.asdict()
             # Simulate some processing
             processed = {
                 "timestamp": serialized["time"],
@@ -574,7 +574,7 @@ class TestOhlcvDataPerformance:
         for batch in batches:
             batch_results = []
             for data in batch:
-                serialized = data.to_dict()
+                serialized = data.asdict()
                 # Simulate batch processing
                 processed = {
                     "timestamp": serialized["time"],
@@ -607,7 +607,7 @@ class TestOhlcvDataPerformance:
         start_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
 
         # Process large dataset
-        serialized_data = [data.to_dict() for data in large_dataset]
+        serialized_data = [data.asdict() for data in large_dataset]
 
         # Measure memory after processing
         memory_after_processing = psutil.Process().memory_info().rss / 1024 / 1024  # MB

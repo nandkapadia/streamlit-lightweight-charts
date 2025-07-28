@@ -80,7 +80,7 @@ class TestLayoutOptions:
     def test_to_dict_basic(self):
         """Test basic serialization."""
         options = LayoutOptions()
-        result = options.to_dict()
+        result = options.asdict()
         assert "backgroundOptions" not in result  # Should be flattened
         assert result["color"] == "#ffffff"  # Flattened from background_options
         assert result["style"] == "solid"  # Flattened from background_options
@@ -89,7 +89,7 @@ class TestLayoutOptions:
         """Test serialization with pane options."""
         pane_options = PaneOptions(separator_color="#ff0000")
         options = LayoutOptions(pane_options=pane_options)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "paneOptions" in result
         assert result["paneOptions"]["separatorColor"] == "#ff0000"
@@ -98,7 +98,7 @@ class TestLayoutOptions:
         """Test serialization with gradient background."""
         background = BackgroundGradient(top_color="#ffffff", bottom_color="#000000")
         options = LayoutOptions(background_options=background)
-        result = options.to_dict()
+        result = options.asdict()
         assert result["topColor"] == "#ffffff"  # Flattened from background_options
         assert result["bottomColor"] == "#000000"  # Flattened from background_options
         assert result["style"] == "gradient"  # Flattened from background_options
@@ -140,7 +140,7 @@ class TestGridOptions:
         horz_lines = GridLineOptions(color="#00ff00", style=LineStyle.DOTTED)
 
         options = GridOptions(vert_lines=vert_lines, horz_lines=horz_lines)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "vertLines" in result
         assert "horzLines" in result
@@ -186,7 +186,7 @@ class TestGridLineOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = GridLineOptions(color="#ff0000", style=LineStyle.DOTTED, visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["color"] == "#ff0000"
         assert result["style"] == 1  # LineStyle.DOTTED.value
@@ -195,7 +195,7 @@ class TestGridLineOptions:
     def test_to_dict_omits_false_visible(self):
         """Test that visible=False is included in output."""
         options = GridLineOptions(visible=False)
-        result = options.to_dict()
+        result = options.asdict()
         assert result["visible"] is False
 
 
@@ -240,7 +240,7 @@ class TestPaneOptions:
         options = PaneOptions(
             separator_color="#ff0000", separator_hover_color="#00ff00", enable_resize=False
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["separatorColor"] == "#ff0000"
         assert result["separatorHoverColor"] == "#00ff00"
@@ -319,7 +319,7 @@ class TestWatermarkOptions:
             vert_align=VertAlign.TOP,
             color="#ff0000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
         assert result["text"] == "Test Watermark"
@@ -331,7 +331,7 @@ class TestWatermarkOptions:
     def test_to_dict_omits_empty_text(self):
         """Test that empty text is omitted from output."""
         options = WatermarkOptions(text="")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "text" not in result
 
@@ -346,7 +346,7 @@ class TestLayoutOptionsIntegration:
 
         LayoutOptions()
         # Note: GridOptions is not part of LayoutOptions, but they work together
-        grid_result = grid.to_dict()
+        grid_result = grid.asdict()
 
         assert grid_result["vertLines"]["color"] == "#ff0000"
         assert grid_result["vertLines"]["style"] == 1  # LineStyle.DOTTED.value
@@ -358,7 +358,7 @@ class TestLayoutOptionsIntegration:
         )
 
         options = LayoutOptions(pane_options=pane_options)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["paneOptions"]["separatorColor"] == "#ff0000"
         assert result["paneOptions"]["separatorHoverColor"] == "#00ff00"
@@ -371,7 +371,7 @@ class TestLayoutOptionsIntegration:
         )
 
         # Watermark is typically part of layout options
-        watermark_result = watermark.to_dict()
+        watermark_result = watermark.asdict()
 
         assert watermark_result["text"] == "Custom Watermark"
         assert watermark_result["fontSize"] == 72
@@ -384,7 +384,7 @@ class TestLayoutOptionsEdgeCases:
     def test_grid_line_options_with_zero_font_size(self):
         """Test GridLineOptions with edge case values."""
         options = GridLineOptions(color="#000000", style=LineStyle.SOLID, visible=True)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["color"] == "#000000"
         assert result["style"] == 0  # LineStyle.SOLID.value
@@ -392,7 +392,7 @@ class TestLayoutOptionsEdgeCases:
     def test_watermark_options_with_large_font_size(self):
         """Test WatermarkOptions with large font size."""
         options = WatermarkOptions(font_size=999)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["fontSize"] == 999
 
@@ -401,7 +401,7 @@ class TestLayoutOptionsEdgeCases:
         options = PaneOptions(
             separator_color="rgba(255, 0, 0, 0.5)", separator_hover_color="hsl(120, 100%, 50%)"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["separatorColor"] == "rgba(255, 0, 0, 0.5)"
         assert result["separatorHoverColor"] == "hsl(120, 100%, 50%)"

@@ -179,7 +179,7 @@ class TestOhlcvData:
             time=timestamp, open=100.0, high=110.0, low=95.0, close=105.0, volume=1000.0
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == timestamp
         assert result["open"] == 100.0
@@ -200,7 +200,7 @@ class TestOhlcvData:
             volume=float("nan"),
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["open"] == 0.0
         assert result["volume"] == 0.0
@@ -275,8 +275,8 @@ class TestOhlcvData:
         assert hasattr(data, "volume")
 
         # Should have OHLC methods
-        assert hasattr(data, "to_dict")
-        assert callable(data.to_dict)
+        assert hasattr(data, "asdict")
+        assert callable(data.asdict)
 
     def test_edge_case_zero_ohlc_values(self):
         """Test edge case with zero OHLC values."""

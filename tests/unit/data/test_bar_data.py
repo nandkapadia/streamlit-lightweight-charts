@@ -213,7 +213,7 @@ class TestBarDataSerialization:
         """Test basic to_dict functionality."""
         data = BarData(time=1640995200, open=100.0, high=110.0, low=95.0, close=105.0)
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -228,7 +228,7 @@ class TestBarDataSerialization:
             time=1640995200, open=100.0, high=110.0, low=95.0, close=105.0, color="#FF0000"
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -241,7 +241,7 @@ class TestBarDataSerialization:
         """Test to_dict with empty color."""
         data = BarData(time=1640995200, open=100.0, high=110.0, low=95.0, close=105.0, color="")
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -254,7 +254,7 @@ class TestBarDataSerialization:
         """Test to_dict with NaN values."""
         data = BarData(time=1640995200, open=float("nan"), high=110.0, low=95.0, close=105.0)
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 0.0  # NaN should be converted to 0.0
@@ -354,7 +354,7 @@ class TestBarDataEdgeCases:
             time=1640995200, open=100.0, high=110.0, low=95.0, close=105.0, color="#FF0000"
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         # Should be JSON serializable
         json_str = json.dumps(result)
@@ -416,7 +416,7 @@ class TestBarDataIntegration:
         ]
 
         series = BarSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         assert len(result["data"]) == 2
         assert result["data"][0]["time"] == 1640995200

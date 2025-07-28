@@ -28,7 +28,6 @@ class TestHistogramSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
         assert series.color == "#26a69a"
         assert series.base == 0
 
@@ -36,14 +35,13 @@ class TestHistogramSeriesConstruction:
         """Test HistogramSeries construction with custom parameters."""
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1, overlay=False
+            data=data, visible=False, price_scale_id="left", pane_id=1
         )
 
         assert series.data == data
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
         assert series.color == "#26a69a"
         assert series.base == 0
 
@@ -144,7 +142,7 @@ class TestHistogramSeriesSerialization:
         """Test basic to_dict functionality."""
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "histogram"
         assert result["data"] == [{"time": 1640995200, "value": 100.5}]
@@ -159,7 +157,7 @@ class TestHistogramSeriesSerialization:
         series.color = "#FF0000"
         series.base = 10.5
 
-        result = series.to_dict()
+        result = series.asdict()
         assert result["options"]["color"] == "#FF0000"
         assert result["options"]["base"] == 10.5
 
@@ -175,7 +173,7 @@ class TestHistogramSeriesSerialization:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         assert len(result["markers"]) == 1
         assert result["markers"][0]["time"] == 1640995200
@@ -191,7 +189,7 @@ class TestHistogramSeriesSerialization:
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
         assert result["priceLines"][0]["price"] == 150.0
@@ -200,7 +198,7 @@ class TestHistogramSeriesSerialization:
     def test_to_dict_with_empty_data(self):
         """Test to_dict with empty data."""
         series = HistogramSeries(data=[])
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "histogram"
         assert result["data"] == []
@@ -357,7 +355,7 @@ class TestHistogramSeriesEdgeCases:
         series = HistogramSeries(data=[])
         assert series.data == []
 
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -403,7 +401,7 @@ class TestHistogramSeriesInheritance:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
 
-        assert hasattr(series, "to_dict")
+        assert hasattr(series, "asdict")
         assert hasattr(series, "add_marker")
         assert hasattr(series, "add_price_line")
         assert hasattr(series, "set_visible")
@@ -418,7 +416,6 @@ class TestHistogramSeriesInheritance:
         assert hasattr(series, "visible")
         assert hasattr(series, "price_scale_id")
         assert hasattr(series, "pane_id")
-        assert hasattr(series, "overlay")
 
 
 class TestHistogramSeriesJsonStructure:
@@ -428,7 +425,7 @@ class TestHistogramSeriesJsonStructure:
         """Test basic JSON structure."""
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         required_keys = {"type", "data", "options", "pane_id"}
         assert all(key in result for key in required_keys)
@@ -443,7 +440,7 @@ class TestHistogramSeriesJsonStructure:
         series.color = "#FF0000"
         series.base = 10.5
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         assert "color" in options
@@ -459,7 +456,7 @@ class TestHistogramSeriesJsonStructure:
             time=1640995200, position="aboveBar", color="#FF0000", shape="circle", text="Test"
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         assert isinstance(result["markers"], list)
         assert len(result["markers"]) == 1
@@ -475,7 +472,7 @@ class TestHistogramSeriesJsonStructure:
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         assert isinstance(result["priceLines"], list)
         assert len(result["priceLines"]) == 1
@@ -502,7 +499,7 @@ class TestHistogramSeriesJsonStructure:
         price_line = PriceLineOptions(price=150.0, color="#0000FF")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check all required keys
         required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
@@ -531,8 +528,8 @@ class TestHistogramSeriesJsonStructure:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
 
-        result1 = series.to_dict()
-        result2 = series.to_dict()
+        result1 = series.asdict()
+        result2 = series.asdict()
 
         assert result1 == result2
 
@@ -543,7 +540,7 @@ class TestHistogramSeriesJsonStructure:
         series.color = "#FF0000"
         series.base = 10.5
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Test JSON serialization
         json_str = json.dumps(result)
@@ -560,7 +557,7 @@ class TestHistogramSeriesJsonStructure:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         # Default options should be present
@@ -574,7 +571,7 @@ class TestHistogramSeriesJsonStructure:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Optional fields should not be present if not set
         assert "markers" not in result

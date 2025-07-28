@@ -28,7 +28,6 @@ class TestBaselineSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
         assert series.chart_type == ChartType.BASELINE
 
     def test_construction_with_baseline_options(self):
@@ -91,20 +90,18 @@ class TestBaselineSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
 
     def test_construction_with_custom_parameters(self):
         """Test BaselineSeries construction with custom parameters."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1, overlay=False
+            data=data, visible=False, price_scale_id="left", pane_id=1
         )
 
         assert series.data == data
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
 
 
 class TestBaselineSeriesProperties:
@@ -325,7 +322,7 @@ class TestBaselineSeriesValidation:
         series = BaselineSeries(data=data, pane_id=-1)
 
         with pytest.raises(ValueError, match="pane_id must be non-negative"):
-            series.to_dict()
+            series.asdict()
 
 
 class TestBaselineSeriesSerialization:
@@ -335,7 +332,7 @@ class TestBaselineSeriesSerialization:
         """Test basic to_dict functionality."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "baseline"
         assert result["data"] == [{"time": 1640995200, "value": 100.5}]
@@ -364,7 +361,7 @@ class TestBaselineSeriesSerialization:
         series.bottom_fill_color2 = "rgba(0,255,0,0.5)"
         series.bottom_line_color = "rgba(0,0,255,0.5)"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["options"]["baseValue"] == {"type": "price", "price": 150.0}
         assert result["options"]["relativeGradient"] is True
@@ -379,7 +376,7 @@ class TestBaselineSeriesSerialization:
         """Test that to_dict includes LineOptions properties."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check that LineOptions properties are included
         assert "color" in result["options"]
@@ -406,7 +403,7 @@ class TestBaselineSeriesSerialization:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         assert len(result["markers"]) == 1
         assert result["markers"][0]["time"] == 1640995200
@@ -423,7 +420,7 @@ class TestBaselineSeriesSerialization:
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
         assert result["priceLines"][0]["price"] == 150.0
@@ -433,7 +430,7 @@ class TestBaselineSeriesSerialization:
         """Test to_dict without markers or price lines (should not include empty arrays)."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         # Should not include empty markers or priceLines arrays
         assert "markers" not in result
@@ -525,7 +522,7 @@ class TestBaselineSeriesEdgeCases:
         """Test BaselineSeries with empty data list."""
         series = BaselineSeries(data=[])
         assert series.data == []
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -617,7 +614,7 @@ class TestBaselineSeriesIntegration:
             ),
         ]
         series = BaselineSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         assert len(result["data"]) == 2
         assert result["data"][0]["topFillColor1"] == "#FF0000"
@@ -660,7 +657,7 @@ class TestBaselineSeriesJsonStructure:
         """Test basic JSON structure."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         required_keys = {"type", "data", "options", "pane_id"}
         assert all(key in result for key in required_keys)
@@ -683,7 +680,7 @@ class TestBaselineSeriesJsonStructure:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         assert isinstance(result["markers"], list)
         assert len(result["markers"]) == 1
@@ -700,7 +697,7 @@ class TestBaselineSeriesJsonStructure:
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         assert isinstance(result["priceLines"], list)
         assert len(result["priceLines"]) == 1
@@ -732,7 +729,7 @@ class TestBaselineSeriesJsonStructure:
         series.relative_gradient = True
         series.top_fill_color1 = "#FF0000"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
         assert all(key in result for key in required_keys)

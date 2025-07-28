@@ -105,7 +105,7 @@ class Data(ABC):
         # Normalize time to ensure consistent format
         self.time = normalize_time(self.time)
 
-    def to_dict(self) -> Dict[str, object]:
+    def asdict(self) -> Dict[str, object]:
         """
         Serialize the data class to a dict with camelCase keys for frontend.
 

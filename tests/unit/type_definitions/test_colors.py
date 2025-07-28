@@ -210,14 +210,14 @@ class TestBackgroundSolid:
     def test_to_dict_method(self):
         """Test to_dict method."""
         background = BackgroundSolid(color="#ff0000")
-        result = background.to_dict()
+        result = background.asdict()
         expected = {"color": "#ff0000", "style": "solid"}
         assert result == expected
 
     def test_to_dict_with_default_values(self):
         """Test to_dict method with default values."""
         background = BackgroundSolid()
-        result = background.to_dict()
+        result = background.asdict()
         expected = {"color": "#ffffff", "style": "solid"}
         assert result == expected
 
@@ -307,14 +307,14 @@ class TestBackgroundGradient:
     def test_to_dict_method(self):
         """Test to_dict method."""
         background = BackgroundGradient(top_color="#ff0000", bottom_color="#00ff00")
-        result = background.to_dict()
+        result = background.asdict()
         expected = {"topColor": "#ff0000", "bottomColor": "#00ff00", "style": "gradient"}
         assert result == expected
 
     def test_to_dict_with_default_values(self):
         """Test to_dict method with default values."""
         background = BackgroundGradient()
-        result = background.to_dict()
+        result = background.asdict()
         expected = {"topColor": "#ffffff", "bottomColor": "#000000", "style": "gradient"}
         assert result == expected
 
@@ -401,14 +401,14 @@ class TestBackgroundIntegration:
     def test_background_solid_serialization_chain(self):
         """Test complete serialization chain for BackgroundSolid."""
         background = BackgroundSolid(color="#ff0000")
-        serialized = background.to_dict()
+        serialized = background.asdict()
         assert serialized["color"] == "#ff0000"
         assert serialized["style"] == "solid"
 
     def test_background_gradient_serialization_chain(self):
         """Test complete serialization chain for BackgroundGradient."""
         background = BackgroundGradient(top_color="#ff0000", bottom_color="#00ff00")
-        serialized = background.to_dict()
+        serialized = background.asdict()
         assert serialized["topColor"] == "#ff0000"
         assert serialized["bottomColor"] == "#00ff00"
         assert serialized["style"] == "gradient"
@@ -419,7 +419,7 @@ class TestBackgroundIntegration:
             BackgroundSolid(color="#ff0000"),
             BackgroundGradient(top_color="#00ff00", bottom_color="#0000ff"),
         ]
-        serialized_list = [bg.to_dict() for bg in backgrounds]
+        serialized_list = [bg.asdict() for bg in backgrounds]
         assert len(serialized_list) == 2
         assert serialized_list[0]["style"] == "solid"
         assert serialized_list[1]["style"] == "gradient"
@@ -430,7 +430,7 @@ class TestBackgroundIntegration:
             "solid": BackgroundSolid(color="#ff0000"),
             "gradient": BackgroundGradient(top_color="#00ff00", bottom_color="#0000ff"),
         }
-        serialized_dict = {key: bg.to_dict() for key, bg in background_dict.items()}
+        serialized_dict = {key: bg.asdict() for key, bg in background_dict.items()}
         assert serialized_dict["solid"]["style"] == "solid"
         assert serialized_dict["gradient"]["style"] == "gradient"
 

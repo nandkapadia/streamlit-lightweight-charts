@@ -42,7 +42,7 @@ def main():
     area2 = AreaSeries(
         data=area_data_2,
         pane_id=1,
-        overlay=False,
+        
         top_color="#ff6b6b",
         bottom_color="rgba(255, 107, 107, 0.2)",
         line_options=LineOptions(color="#ff6b6b", line_width=2),
@@ -82,7 +82,7 @@ def main():
     # Overlay area
     overlay_area = AreaSeries(
         data=area_data_2,
-        overlay=True,
+        
         top_color="rgba(255, 107, 107, 0.4)",
         bottom_color="rgba(255, 107, 107, 0.1)",
         line_options=LineOptions(

@@ -28,4 +28,4 @@ class TimeScaleOptions(Options):
     tick_mark_formatter: Optional[Callable] = None
 
     def __getitem__(self, key):
-        return self.to_dict()[key]
+        return self.asdict()[key]

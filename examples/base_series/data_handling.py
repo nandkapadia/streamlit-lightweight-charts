@@ -139,7 +139,7 @@ def main():
 
     # Access complete configuration
     st.write("**Complete Configuration:**")
-    config = series.to_dict()
+    config = series.asdict()
     st.write(f"Configuration keys: {list(config.keys())}")
     st.write(f"Data in config: {len(config.get('data', []))} points")
 

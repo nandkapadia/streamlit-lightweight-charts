@@ -98,7 +98,7 @@ def trades_to_visual_elements(
                 ),
                 show_pnl=options.show_pnl_in_markers,
             )
-            result["markers"].extend([m.to_dict() for m in markers])
+            result["markers"].extend([m.asdict() for m in markers])
 
         # Add shapes based on visualization style
         if options.style in [TradeVisualization.RECTANGLES, TradeVisualization.BOTH]:

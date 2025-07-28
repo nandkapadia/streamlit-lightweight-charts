@@ -130,7 +130,7 @@ class TestBandDataSerialization:
     def test_to_dict_basic(self, valid_time):
         """Test basic to_dict functionality."""
         data = BandData(time=valid_time, upper=110.0, middle=105.0, lower=100.0)
-        d = data.to_dict()
+        d = data.asdict()
         assert d["time"] == valid_time
         assert d["upper"] == 110.0
         assert d["middle"] == 105.0
@@ -139,14 +139,14 @@ class TestBandDataSerialization:
     def test_to_dict_keys_are_camel_case(self, valid_time):
         """Test that to_dict keys are in camelCase."""
         data = BandData(time=valid_time, upper=110.0, middle=105.0, lower=100.0)
-        d = data.to_dict()
+        d = data.asdict()
         expected_keys = {"time", "upper", "middle", "lower"}
         assert set(d.keys()) == expected_keys
 
     def test_to_dict_with_nan_values(self, valid_time):
         """Test to_dict with NaN values converted to 0.0."""
         data = BandData(time=valid_time, upper=math.nan, middle=105.0, lower=math.nan)
-        d = data.to_dict()
+        d = data.asdict()
         assert d["upper"] == 0.0
         assert d["middle"] == 105.0
         assert d["lower"] == 0.0
@@ -156,8 +156,8 @@ class TestBandDataSerialization:
         data1 = BandData(time=valid_time, upper=110.0, middle=105.0, lower=100.0)
         data2 = BandData(time="2024-01-01", upper=110.0, middle=105.0, lower=100.0)
 
-        d1 = data1.to_dict()
-        d2 = data2.to_dict()
+        d1 = data1.asdict()
+        d2 = data2.asdict()
 
         assert d1["upper"] == d2["upper"]
         assert d1["middle"] == d2["middle"]
@@ -221,12 +221,12 @@ class TestBandDataInheritance:
         assert hasattr(data, "upper")
         assert hasattr(data, "middle")
         assert hasattr(data, "lower")
-        assert hasattr(data, "to_dict")
+        assert hasattr(data, "asdict")
 
     def test_has_required_methods(self, valid_time):
         """Test that BandData has required methods."""
         data = BandData(time=valid_time, upper=110.0, middle=105.0, lower=100.0)
-        assert callable(getattr(data, "to_dict"))
+        assert callable(getattr(data, "asdict"))
 
 
 class TestBandDataIntegration:
@@ -251,7 +251,7 @@ class TestBandDataIntegration:
     def test_serialization_round_trip(self, valid_time):
         """Test serialization and deserialization round trip."""
         original_data = BandData(time=valid_time, upper=110.0, middle=105.0, lower=100.0)
-        serialized = original_data.to_dict()
+        serialized = original_data.asdict()
 
         # Simulate reconstruction from serialized data
         reconstructed_data = BandData(

@@ -29,7 +29,6 @@ class TestBarSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
         assert series.up_color == "#26a69a"
         assert series.down_color == "#ef5350"
         assert series.open_visible is True
@@ -43,13 +42,11 @@ class TestBarSeriesConstruction:
             visible=False,
             price_scale_id="left",
             pane_id=1,
-            overlay=False,
         )
 
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
 
     def test_construction_with_dataframe(self):
         """Test BarSeries construction with DataFrame."""
@@ -168,10 +165,10 @@ class TestBarSeriesSerialization:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "bar"
-        assert result["data"] == [data[0].to_dict()]
+        assert result["data"] == [data[0].asdict()]
         assert "options" in result
         assert result["options"]["upColor"] == "#26a69a"
         assert result["options"]["downColor"] == "#ef5350"
@@ -185,7 +182,7 @@ class TestBarSeriesSerialization:
         series.up_color = "#FF0000"
         series.down_color = "#00FF00"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["options"]["upColor"] == "#FF0000"
         assert result["options"]["downColor"] == "#00FF00"
@@ -197,7 +194,7 @@ class TestBarSeriesSerialization:
         series.open_visible = False
         series.thin_bars = False
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["options"]["openVisible"] is False
         assert result["options"]["thinBars"] is False
@@ -214,7 +211,7 @@ class TestBarSeriesSerialization:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "markers" in result
         assert len(result["markers"]) == 1
@@ -227,7 +224,7 @@ class TestBarSeriesSerialization:
         series = BarSeries(data=data)
         series.add_price_line(PriceLineOptions(None, 100, "#FF0000"))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
@@ -403,7 +400,7 @@ class TestBarSeriesEdgeCases:
         series = BarSeries(data=[])
 
         assert series.data == []
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -412,7 +409,7 @@ class TestBarSeriesEdgeCases:
         series = BarSeries(data=data)
 
         assert len(series.data) == 1
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1
 
     def test_large_dataset(self):
@@ -424,7 +421,7 @@ class TestBarSeriesEdgeCases:
         series = BarSeries(data=data)
 
         assert len(series.data) == 1000
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1000
 
     def test_empty_string_colors(self):
@@ -434,7 +431,7 @@ class TestBarSeriesEdgeCases:
         series.up_color = ""
         series.down_color = ""
 
-        result = series.to_dict()
+        result = series.asdict()
         # Empty strings should be omitted from output
         assert "upColor" not in result["options"]
         assert "downColor" not in result["options"]
@@ -457,7 +454,7 @@ class TestBarSeriesInheritance:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        assert hasattr(series, "to_dict")
+        assert hasattr(series, "asdict")
         assert hasattr(series, "add_marker")
         assert hasattr(series, "add_price_line")
         assert hasattr(series, "set_visible")
@@ -472,7 +469,6 @@ class TestBarSeriesInheritance:
         assert hasattr(series, "visible")
         assert hasattr(series, "price_scale_id")
         assert hasattr(series, "pane_id")
-        assert hasattr(series, "overlay")
 
 
 class TestBarSeriesJsonStructure:
@@ -483,7 +479,7 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check required top-level keys
         assert "type" in result
@@ -507,7 +503,7 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         # Check required options
@@ -534,7 +530,7 @@ class TestBarSeriesJsonStructure:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "markers" in result
         assert isinstance(result["markers"], list)
@@ -553,7 +549,7 @@ class TestBarSeriesJsonStructure:
         series = BarSeries(data=data)
         series.add_price_line(PriceLineOptions(None, 100, "#FF0000", line_style=LineStyle.DASHED))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "priceLines" in result
         assert isinstance(result["priceLines"], list)
@@ -580,7 +576,7 @@ class TestBarSeriesJsonStructure:
         series.add_marker(time=1640995200, position="aboveBar", color="#FF0000", shape="circle")
         series.add_price_line(PriceLineOptions(None, 100, "#FF0000"))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Verify all components are present
         assert "type" in result
@@ -600,8 +596,8 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result1 = series.to_dict()
-        result2 = series.to_dict()
+        result1 = series.asdict()
+        result2 = series.asdict()
 
         # Results should be identical
         assert result1 == result2
@@ -619,7 +615,7 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check that the structure matches frontend expectations
         # Based on the frontend types.ts file
@@ -644,7 +640,7 @@ class TestBarSeriesJsonStructure:
         series.up_color = ""
         series.down_color = ""
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         # Empty strings should be omitted
@@ -660,7 +656,7 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Required fields should always be present
         assert "type" in result

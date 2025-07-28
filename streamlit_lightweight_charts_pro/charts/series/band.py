@@ -69,7 +69,6 @@ class BandSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         """
         Initialize BandSeries.
@@ -80,7 +79,6 @@ class BandSeries(Series):
             visible: Whether the series is visible
             price_scale_id: ID of the price scale
             pane_id: The pane index this series belongs to
-            overlay: Whether this series overlays others
         """
         super().__init__(
             data=data,
@@ -88,7 +86,6 @@ class BandSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
 
         # Initialize line options with default values

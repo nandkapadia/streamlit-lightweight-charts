@@ -253,7 +253,7 @@ class TestBaselineDataSerialization:
     def test_to_dict_basic(self):
         """Test basic to_dict functionality."""
         data = BaselineData(time=1640995200, value=100.5)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_top_colors(self):
@@ -265,7 +265,7 @@ class TestBaselineDataSerialization:
             top_fill_color2="#00FF00",
             top_line_color="#0000FF",
         )
-        result = data.to_dict()
+        result = data.asdict()
         expected = {
             "time": 1640995200,
             "value": 100.5,
@@ -284,7 +284,7 @@ class TestBaselineDataSerialization:
             bottom_fill_color2="rgba(0,255,0,0.5)",
             bottom_line_color="rgba(0,0,255,0.5)",
         )
-        result = data.to_dict()
+        result = data.asdict()
         expected = {
             "time": 1640995200,
             "value": 100.5,
@@ -306,7 +306,7 @@ class TestBaselineDataSerialization:
             bottom_fill_color2="rgba(0,255,0,0.5)",
             bottom_line_color="rgba(0,0,255,0.5)",
         )
-        result = data.to_dict()
+        result = data.asdict()
         expected = {
             "time": 1640995200,
             "value": 100.5,
@@ -324,43 +324,43 @@ class TestBaselineDataSerialization:
         data = BaselineData(
             time=1640995200, value=100.5, top_fill_color1=None, bottom_fill_color1=None
         )
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_empty_colors(self):
         """Test to_dict with empty color strings (should be omitted)."""
         data = BaselineData(time=1640995200, value=100.5, top_fill_color1="", bottom_fill_color1="")
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_nan_value(self):
         """Test to_dict with NaN value (should be converted to 0.0)."""
         data = BaselineData(time=1640995200, value=float("nan"))
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 0.0}
 
     def test_to_dict_with_zero_value(self):
         """Test to_dict with zero value."""
         data = BaselineData(time=1640995200, value=0.0)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 0.0}
 
     def test_to_dict_with_negative_value(self):
         """Test to_dict with negative value."""
         data = BaselineData(time=1640995200, value=-50.0)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": -50.0}
 
     def test_to_dict_with_infinity_value(self):
         """Test to_dict with infinity value."""
         data = BaselineData(time=1640995200, value=float("inf"))
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": float("inf")}
 
     def test_to_dict_with_negative_infinity_value(self):
         """Test to_dict with negative infinity value."""
         data = BaselineData(time=1640995200, value=float("-inf"))
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": float("-inf")}
 
 
@@ -587,7 +587,7 @@ class TestBaselineDataColorHandling:
         colors = ["#2196F3", "rgba(33,150,243,1)", "#FF0000"]
         for color in colors:
             data = BaselineData(time=1640995200, value=100.5, top_fill_color1=color)
-            result = data.to_dict()
+            result = data.asdict()
             assert result["topFillColor1"] == color
 
     def test_all_color_properties_serialization(self):
@@ -602,7 +602,7 @@ class TestBaselineDataColorHandling:
             bottom_fill_color2="rgba(0,255,0,0.5)",
             bottom_line_color="rgba(0,0,255,0.5)",
         )
-        result = data.to_dict()
+        result = data.asdict()
 
         # Check that all color properties are present and correctly named
         assert "topFillColor1" in result
@@ -630,7 +630,7 @@ class TestBaselineDataColorHandling:
             bottom_fill_color1=None,
             bottom_fill_color2="",
         )
-        result = data.to_dict()
+        result = data.asdict()
 
         # Only time and value should be present
         assert result == {"time": 1640995200, "value": 100.5}

@@ -33,7 +33,6 @@ class TestAreaSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
         assert series.top_color == "#2196F3"
         assert series.bottom_color == "rgba(33, 150, 243, 0.0)"
         assert series.relative_gradient is False
@@ -49,7 +48,6 @@ class TestAreaSeriesConstruction:
             visible=False,
             price_scale_id="left",
             pane_id=1,
-            overlay=True,
         )
         series.line_options = line_options
         series.top_color = "#ff0000"
@@ -61,7 +59,6 @@ class TestAreaSeriesConstruction:
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is True
         assert series.top_color == "#ff0000"
         assert series.bottom_color == "#00ff00"
         assert series.relative_gradient is True
@@ -140,7 +137,7 @@ class TestAreaSeriesSerialization:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "area"
         assert result["data"] == [{"time": 1640995200, "value": 100}]
@@ -154,7 +151,7 @@ class TestAreaSeriesSerialization:
         series = AreaSeries(data=data)
         series.line_options = line_options
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "area"
         assert "options" in result
@@ -169,7 +166,7 @@ class TestAreaSeriesSerialization:
         series.top_color = "#ff0000"
         series.bottom_color = "#00ff00"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         options = result["options"]
         assert options["topColor"] == "#ff0000"
@@ -182,7 +179,7 @@ class TestAreaSeriesSerialization:
         series.relative_gradient = True
         series.invert_filled_area = True
 
-        result = series.to_dict()
+        result = series.asdict()
 
         options = result["options"]
         assert options["relativeGradient"] is True
@@ -199,7 +196,7 @@ class TestAreaSeriesSerialization:
         series.relative_gradient = True
         series.invert_filled_area = True
 
-        result = series.to_dict()
+        result = series.asdict()
 
         options = result["options"]
         assert options["color"] == "#ff0000"
@@ -223,7 +220,7 @@ class TestAreaSeriesSerialization:
             size=10,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "markers" in result
         assert len(result["markers"]) == 1
@@ -245,7 +242,7 @@ class TestAreaSeriesSerialization:
         )
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
@@ -340,7 +337,7 @@ class TestAreaSeriesDataHandling:
         df = pd.DataFrame({"value": [100, 105]}, index=[1640995200, 1641081600])
         df.index.name = "time"  # Name the index
 
-        series = AreaSeries.from_dataframe(df, column_mapping={"time": "time", "value": "value"})
+        series = AreaSeries.from_dataframe(df, column_mapping={"time": "index", "value": "value"})
 
         assert len(series.data) == 2
         assert series.data[0].time == 1640995200
@@ -415,7 +412,7 @@ class TestAreaSeriesEdgeCases:
         series = AreaSeries(data=[])
 
         assert series.data == []
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -423,7 +420,7 @@ class TestAreaSeriesEdgeCases:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1
         assert result["data"][0]["time"] == 1640995200
         assert result["data"][0]["value"] == 100
@@ -434,7 +431,7 @@ class TestAreaSeriesEdgeCases:
         series = AreaSeries(data=data)
 
         assert len(series.data) == 1000
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1000
 
     def test_none_line_options(self):
@@ -444,7 +441,7 @@ class TestAreaSeriesEdgeCases:
         series.line_options = None
 
         assert series.line_options is None
-        result = series.to_dict()
+        result = series.asdict()
         assert "options" in result
 
     def test_empty_string_colors(self):
@@ -454,7 +451,7 @@ class TestAreaSeriesEdgeCases:
         series.top_color = ""
         series.bottom_color = ""
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # Empty strings should be omitted
         assert "topColor" not in options
@@ -477,7 +474,7 @@ class TestAreaSeriesInheritance:
         series = AreaSeries(data=data)
 
         # Test that required methods exist
-        assert hasattr(series, "to_dict")
+        assert hasattr(series, "asdict")
         assert hasattr(series, "add_marker")
         assert hasattr(series, "add_price_line")
 
@@ -504,7 +501,7 @@ class TestAreaSeriesJsonStructure:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check required fields from SeriesConfig interface
         assert "type" in result
@@ -531,7 +528,7 @@ class TestAreaSeriesJsonStructure:
         series.relative_gradient = True
         series.invert_filled_area = True
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check options structure
         assert "options" in result
@@ -567,7 +564,7 @@ class TestAreaSeriesJsonStructure:
             size=10,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check markers structure
         assert "markers" in result
@@ -598,7 +595,7 @@ class TestAreaSeriesJsonStructure:
         )
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check price lines structure
         assert "priceLines" in result
@@ -640,7 +637,7 @@ class TestAreaSeriesJsonStructure:
         )
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check complete structure
         assert "type" in result
@@ -683,7 +680,7 @@ class TestAreaSeriesJsonStructure:
         series.top_color = "#ff0000"
         series.bottom_color = "#00ff00"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Test that the result can be serialized to JSON
         json_str = json.dumps(result)
@@ -701,7 +698,7 @@ class TestAreaSeriesJsonStructure:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Frontend expects these fields in SeriesConfig
         assert "type" in result
@@ -726,7 +723,7 @@ class TestAreaSeriesJsonStructure:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Should still have options object even if empty
         assert "options" in result
@@ -742,7 +739,7 @@ class TestAreaSeriesJsonStructure:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Should not have markers or priceLines if none were added
         assert "markers" not in result
@@ -814,8 +811,8 @@ class TestAreaSeriesPropertyValidation:
         assert series.invert_filled_area is True
 
 
-class TestAreaSeriesDataHandling:
-    """Test data handling edge cases for AreaSeries."""
+class TestAreaSeriesConstructorEdgeCases:
+    """Test constructor edge cases for AreaSeries."""
 
     def test_constructor_with_none_data(self):
         """Test AreaSeries constructor with None data."""

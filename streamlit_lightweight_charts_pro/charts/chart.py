@@ -877,27 +877,27 @@ class Chart:
         series_configs = []
         pane_heights = {}
         for series in self.series:
-            series_config = series.to_dict()
+            series_config = series.asdict()
             series_configs.append(series_config)
             if hasattr(series, "height") and series.height is not None:
                 pane_id = getattr(series, "pane_id", 0)
                 if pane_id not in pane_heights:
                     pane_heights[pane_id] = series.height
         chart_config = (
-            self.options.to_dict() if self.options is not None else ChartOptions().to_dict()
+            self.options.asdict() if self.options is not None else ChartOptions().asdict()
         )
         # Ensure rightPriceScale, PriceScaleOptions, PriceScaleOptionss are present and dicts
         if self.options and self.options.right_price_scale is not None:
-            chart_config["rightPriceScale"] = self.options.right_price_scale.to_dict()
+            chart_config["rightPriceScale"] = self.options.right_price_scale.asdict()
         if self.options and self.options.left_price_scale is not None:
-            chart_config["leftPriceScale"] = self.options.left_price_scale.to_dict()
+            chart_config["leftPriceScale"] = self.options.left_price_scale.asdict()
 
         if self.options and self.options.overlay_price_scales is not None:
             chart_config["overlayPriceScales"] = {
-                k: (v.to_dict() if hasattr(v, "to_dict") else v)
+                k: (v.asdict() if hasattr(v, "asdict") else v)
                 for k, v in self.options.overlay_price_scales.items()
             }
-        annotations_config = self.annotation_manager.to_dict()
+        annotations_config = self.annotation_manager.asdict()
         chart_obj = {
             "chartId": f"chart-{id(self)}",
             "chart": chart_config,

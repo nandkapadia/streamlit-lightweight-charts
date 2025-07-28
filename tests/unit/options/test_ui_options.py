@@ -46,7 +46,7 @@ class TestRangeConfig:
     def test_to_dict(self):
         """Test serialization."""
         config = RangeConfig(text="1D", tooltip="One Day")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert result["text"] == "1D"
         assert result["tooltip"] == "One Day"
@@ -54,7 +54,7 @@ class TestRangeConfig:
     def test_to_dict_omits_empty_text(self):
         """Test that empty text is omitted from output."""
         config = RangeConfig(text="", tooltip="One Day")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert "text" not in result
         assert result["tooltip"] == "One Day"
@@ -62,7 +62,7 @@ class TestRangeConfig:
     def test_to_dict_omits_empty_tooltip(self):
         """Test that empty tooltip is omitted from output."""
         config = RangeConfig(text="1D", tooltip="")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert result["text"] == "1D"
         assert "tooltip" not in result
@@ -109,7 +109,7 @@ class TestRangeSwitcherOptions:
     def test_to_dict_basic(self):
         """Test basic serialization."""
         options = RangeSwitcherOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["ranges"] == []
@@ -122,7 +122,7 @@ class TestRangeSwitcherOptions:
         ]
 
         options = RangeSwitcherOptions(ranges=ranges)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert len(result["ranges"]) == 2
@@ -134,7 +134,7 @@ class TestRangeSwitcherOptions:
     def test_to_dict_omits_false_visible(self):
         """Test that visible=False is included in output."""
         options = RangeSwitcherOptions(visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
 
@@ -169,7 +169,7 @@ class TestLegendOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = LegendOptions(visible=False, position="bottom")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
         assert result["position"] == "bottom"
@@ -177,7 +177,7 @@ class TestLegendOptions:
     def test_to_dict_omits_false_visible(self):
         """Test that visible=False is included in output."""
         options = LegendOptions(visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
 
@@ -197,7 +197,7 @@ class TestUIOptionsIntegration:
         ]
 
         options = RangeSwitcherOptions(visible=True, ranges=ranges)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert len(result["ranges"]) == 6
@@ -208,7 +208,7 @@ class TestUIOptionsIntegration:
     def test_range_switcher_with_empty_ranges(self):
         """Test RangeSwitcherOptions with empty ranges list."""
         options = RangeSwitcherOptions(ranges=[])
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["ranges"] == []
 
@@ -218,14 +218,14 @@ class TestUIOptionsIntegration:
 
         for position in positions:
             options = LegendOptions(position=position)
-            result = options.to_dict()
+            result = options.asdict()
 
             assert result["position"] == position
 
     def test_range_config_with_special_characters(self):
         """Test RangeConfig with special characters in text and tooltip."""
         config = RangeConfig(text="1D & 1W", tooltip="One Day & One Week (24h + 168h)")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert result["text"] == "1D & 1W"
         assert result["tooltip"] == "One Day & One Week (24h + 168h)"
@@ -237,14 +237,14 @@ class TestUIOptionsEdgeCases:
     def test_range_config_with_empty_strings(self):
         """Test RangeConfig with empty strings."""
         config = RangeConfig(text="", tooltip="")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert result == {}  # Both fields should be omitted
 
     def test_range_config_with_whitespace_only(self):
         """Test RangeConfig with whitespace-only strings."""
         config = RangeConfig(text="   ", tooltip="  ")
-        result = config.to_dict()
+        result = config.asdict()
 
         assert result["text"] == "   "
         assert result["tooltip"] == "  "
@@ -254,7 +254,7 @@ class TestUIOptionsEdgeCases:
         ranges = [RangeConfig(text=f"R{i}", tooltip=f"Range {i}") for i in range(100)]
 
         options = RangeSwitcherOptions(ranges=ranges)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert len(result["ranges"]) == 100
         assert result["ranges"][0]["text"] == "R0"
@@ -264,7 +264,7 @@ class TestUIOptionsEdgeCases:
         """Test LegendOptions with long position string."""
         long_position = "top" * 100
         options = LegendOptions(position=long_position)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["position"] == long_position
 
@@ -326,7 +326,7 @@ class TestUIOptionsEdgeCases:
         # This test ensures that None values don't cause issues
         # The dataclass should handle None values appropriately
         config = RangeConfig(text=None, tooltip=None)
-        result = config.to_dict()
+        result = config.asdict()
 
         # None values should be omitted from the output
         assert result == {}

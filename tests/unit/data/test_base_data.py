@@ -31,7 +31,7 @@ class TestSingleValueData:
     def test_concrete_subclass_to_dict(self):
         """Test concrete subclass to_dict method."""
         data = LineData(time=1640995200, value=100)
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -147,7 +147,7 @@ class TestSerialization:
     def test_line_data_to_dict_basic(self):
         """Test LineData to_dict with basic data."""
         data = LineData(time=1640995200, value=100)
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -156,7 +156,7 @@ class TestSerialization:
     def test_line_data_to_dict_with_color(self):
         """Test LineData to_dict with color."""
         data = LineData(time=1640995200, value=100, color="#ff0000")
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -165,7 +165,7 @@ class TestSerialization:
     def test_line_data_to_dict_with_empty_color(self):
         """Test LineData to_dict with empty color."""
         data = LineData(time=1640995200, value=100, color="")
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -174,7 +174,7 @@ class TestSerialization:
     def test_line_data_to_dict_with_none_color(self):
         """Test LineData to_dict with None color."""
         data = LineData(time=1640995200, value=100, color=None)
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
