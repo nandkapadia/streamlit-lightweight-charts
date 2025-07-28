@@ -1468,8 +1468,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           border: 'none',
           borderRadius: '0px',
           padding: '0px',
-          width: shouldAutoSize || width === null ? '100%' : width || '100%', // Use 100% if auto-sizing or width is null
-          height: shouldAutoSize ? '100%' : height || '100%', // Use height if available, otherwise 100%
+          width: shouldAutoSize || width === null ? '100%' : (typeof width === 'number' ? `${width}px` : width || '100%'), // Use 100% if auto-sizing or width is null
+          height: shouldAutoSize ? '100%' : (typeof height === 'number' ? `${height}px` : height || '100%'), // Use height if available, otherwise 100%
           minWidth: chartOptions.minWidth || chartConfig.minWidth || (shouldAutoSize ? 200 : undefined),
           minHeight: chartOptions.minHeight || chartConfig.minHeight || (shouldAutoSize ? 200 : undefined),
           maxWidth: chartOptions.maxWidth || chartConfig.maxWidth,
@@ -1477,8 +1477,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
         
         const chartContainerStyle: React.CSSProperties = {
-          width: shouldAutoSize || width === null ? '100%' : width || '100%', // Use 100% if auto-sizing or width is null
-          height: shouldAutoSize ? '100%' : height || '100%', // Use height if available, otherwise 100%
+          width: shouldAutoSize || width === null ? '100%' : (typeof width === 'number' ? `${width}px` : width || '100%'), // Use 100% if auto-sizing or width is null
+          height: shouldAutoSize ? '100%' : (typeof height === 'number' ? `${height}px` : height || '100%'), // Use height if available, otherwise 100%
           position: 'relative',
         }
         

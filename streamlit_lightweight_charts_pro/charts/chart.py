@@ -947,6 +947,14 @@ class Chart:
         config = self.to_frontend_config()
         component_func = get_component_func()
         kwargs = {"config": config}
+        
+        # Extract height and width from chart options and pass to frontend
+        if self.options:
+            if hasattr(self.options, 'height') and self.options.height is not None:
+                kwargs["height"] = self.options.height
+            if hasattr(self.options, 'width') and self.options.width is not None:
+                kwargs["width"] = self.options.width
+                
         if (
             key is not None and isinstance(key, str) and key.strip()
         ):  # Only add key if it's a non-empty string
