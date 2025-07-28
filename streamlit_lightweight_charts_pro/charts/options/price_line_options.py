@@ -1,3 +1,9 @@
+"""Price line options configuration for streamlit-lightweight-charts.
+
+This module provides price line option classes for configuring
+horizontal price lines on charts.
+"""
+
 from dataclasses import dataclass
 from typing import Optional
 
@@ -59,9 +65,7 @@ class PriceLineOptions(Options):
     axis_label_color: Optional[str] = None
     axis_label_text_color: Optional[str] = None
 
-    def __post_init__(self):
-        """Post-initialization validation."""
-        super().__post_init__()
+
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

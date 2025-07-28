@@ -213,8 +213,6 @@ class TradeVisualizationOptions(Options):
 
     def __post_init__(self):
         """Post-initialization processing."""
-        super().__post_init__()
-
         # Convert style to enum if it's a string
         if isinstance(self.style, str):
             self.style = TradeVisualization(self.style.lower())

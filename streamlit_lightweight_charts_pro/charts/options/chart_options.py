@@ -121,15 +121,3 @@ class ChartOptions(Options):
 
     # Trade visualization options
     trade_visualization: Optional[TradeVisualizationOptions] = None
-
-    def __post_init__(self):
-        """
-        Post-initialization validation of all chart options.
-
-        Validates that all attributes have the correct types and raises
-        TypeError for any invalid assignments.
-
-        Raises:
-            TypeError: If any attribute has an invalid type.
-        """
-        super().__post_init__()

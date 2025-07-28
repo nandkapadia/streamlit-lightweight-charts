@@ -16,9 +16,6 @@ class RangeConfig(Options):
     text: str = ""
     tooltip: str = ""
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("visible", bool)
@@ -29,9 +26,6 @@ class RangeSwitcherOptions(Options):
     visible: bool = True
     ranges: List[RangeConfig] = field(default_factory=list)
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("visible", bool)
@@ -41,6 +35,3 @@ class LegendOptions(Options):
 
     visible: bool = True
     position: str = "top"
-
-    def __post_init__(self):
-        super().__post_init__()

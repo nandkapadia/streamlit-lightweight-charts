@@ -107,7 +107,7 @@ class Options(ABC):
                     field_name = key
                 else:
                     # Ignore invalid fields instead of raising an error
-                    logger.debug(f"Ignoring invalid option field: {key}")
+                    logger.debug("Ignoring invalid option field: %s", key)
                     continue
 
             # Get field info for type checking
@@ -119,7 +119,7 @@ class Options(ABC):
 
             if field_info is None:
                 # Ignore fields not found in dataclass fields
-                logger.debug(f"Ignoring field {field_name} not found in {self.__class__.__name__}")
+                logger.debug("Ignoring field %s not found in %s", field_name, self.__class__.__name__)
                 continue
 
             # Handle nested Options objects
@@ -245,20 +245,3 @@ class Options(ABC):
                 result[key] = value
 
         return result
-
-    def __post_init__(self):
-        """
-        Post-initialization processing.
-
-        Subclasses can override this method to add custom validation and processing
-        after the dataclass is initialized. This is the recommended place to add
-        type validation, value normalization, and other initialization logic.
-
-        Example:
-            ```python
-            def __post_init__(self):
-                super().__post_init__()
-                if self.width < 0:
-                    raise ValueError("Width must be non-negative")
-            ```
-        """

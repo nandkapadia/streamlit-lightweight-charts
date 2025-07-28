@@ -96,7 +96,7 @@ class CandlestickSeries(Series):
         self._up_color = "#26a69a"
         self._down_color = "#ef5350"
         self._wick_visible = True
-        self._border_visible = True
+        self._border_visible = False
         self._border_color = "#378658"
         self._border_up_color = "#26a69a"
         self._border_down_color = "#ef5350"

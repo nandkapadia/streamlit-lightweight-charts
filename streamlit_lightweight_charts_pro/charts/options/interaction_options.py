@@ -33,9 +33,6 @@ class CrosshairLineOptions(Options):
     visible: bool = True
     label_visible: bool = True
 
-    def __post_init__(self):
-        super().__post_init__()
-
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""
@@ -55,9 +52,6 @@ class CrosshairSyncOptions(Options):
     group_id: int = 1
     suppress_series_animations: bool = True
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("mode", CrosshairMode)
@@ -70,9 +64,6 @@ class CrosshairOptions(Options):
     vert_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
     horz_line: CrosshairLineOptions = field(default_factory=CrosshairLineOptions)
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("touch", bool)
@@ -83,9 +74,6 @@ class KineticScrollOptions(Options):
     touch: bool = True
     mouse: bool = False
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("exit_on_escape", bool)
@@ -93,6 +81,3 @@ class TrackingModeOptions(Options):
     """Tracking mode configuration for chart."""
 
     exit_on_escape: bool = True
-
-    def __post_init__(self):
-        super().__post_init__()

@@ -1,3 +1,9 @@
+"""Price format options configuration for streamlit-lightweight-charts.
+
+This module provides price formatting option classes for configuring
+how price values are displayed on charts.
+"""
+
 from dataclasses import dataclass
 from typing import Optional
 
@@ -30,9 +36,7 @@ class PriceFormatOptions(Options):
     min_move: float = 0.01
     formatter: Optional[str] = None
 
-    def __post_init__(self):
-        """Post-initialization validation."""
-        super().__post_init__()
+
 
     @staticmethod
     def _validate_type_static(type_value: str) -> str:

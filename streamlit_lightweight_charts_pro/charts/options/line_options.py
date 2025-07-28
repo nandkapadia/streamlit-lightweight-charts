@@ -1,3 +1,9 @@
+"""Line options configuration for streamlit-lightweight-charts.
+
+This module provides line styling option classes for configuring
+the appearance of line series on charts.
+"""
+
 from dataclasses import dataclass
 from typing import Optional
 
@@ -70,9 +76,7 @@ class LineOptions(Options):
     crosshair_marker_border_width: int = 2
     last_price_animation: LastPriceAnimationMode = LastPriceAnimationMode.DISABLED
 
-    def __post_init__(self):
-        """Post-initialization validation."""
-        super().__post_init__()
+
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

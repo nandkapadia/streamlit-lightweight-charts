@@ -35,9 +35,6 @@ class GridLineOptions(Options):
     style: LineStyle = LineStyle.SOLID
     visible: bool = False
 
-    def __post_init__(self):
-        super().__post_init__()
-
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""
@@ -56,9 +53,6 @@ class GridOptions(Options):
 
     vert_lines: GridLineOptions = field(default_factory=lambda: GridLineOptions(visible=False))
     horz_lines: GridLineOptions = field(default_factory=lambda: GridLineOptions(visible=True))
-
-    def __post_init__(self):
-        super().__post_init__()
 
 
 @dataclass
@@ -79,9 +73,6 @@ class PaneOptions(Options):
     separator_color: str = "#e1e3ea"
     separator_hover_color: str = "#ffffff"
     enable_resize: bool = True
-
-    def __post_init__(self):
-        super().__post_init__()
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
@@ -114,9 +105,6 @@ class LayoutOptions(Options):
     pane_options: Optional[PaneOptions] = None
     attribution_logo: bool = False
 
-    def __post_init__(self):
-        super().__post_init__()
-
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""
@@ -145,9 +133,6 @@ class WatermarkOptions(Options):
     horz_align: HorzAlign = HorzAlign.CENTER
     vert_align: VertAlign = VertAlign.CENTER
     color: str = "rgba(255, 255, 255, 0.1)"
-
-    def __post_init__(self):
-        super().__post_init__()
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

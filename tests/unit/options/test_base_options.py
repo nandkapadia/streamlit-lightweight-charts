@@ -55,20 +55,20 @@ class TestOptionsInheritance:
         assert isinstance(options, Options)
 
     def test_post_init_default(self):
-        """Test that __post_init__ can be called without error."""
+        """Test that Options works without __post_init__ method."""
         options = MockOptions()
-        options.__post_init__()
-        # Should not raise any exception
+        # Should not raise any exception when creating options
+        assert isinstance(options, Options)
 
     def test_post_init_override(self):
-        """Test that __post_init__ can be overridden."""
+        """Test that Options works with custom __post_init__ if needed."""
 
         @dataclass
         class CustomOptions(Options):
             value: int = 0
 
             def __post_init__(self):
-                super().__post_init__()
+                # Custom post-init logic without calling super()
                 self.value = 42
 
         options = CustomOptions()
@@ -408,7 +408,7 @@ class TestOptionsIntegration:
             computed_field: str = None
 
             def __post_init__(self):
-                super().__post_init__()
+                # Custom post-init logic without calling super()
                 self.computed_field = f"computed_{self.required_field}"
 
         options = StandardOptions(required_field="test")

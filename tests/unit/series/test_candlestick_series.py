@@ -155,11 +155,11 @@ class TestCandlestickSeriesProperties:
         series = CandlestickSeries(data=data)
 
         # Test default value
-        assert series.border_visible is True
+        assert series.border_visible is False
 
         # Test setting value
-        series.border_visible = False
-        assert series.border_visible is False
+        series.border_visible = True
+        assert series.border_visible is True
 
     def test_border_color_property(self):
         """Test border_color property."""

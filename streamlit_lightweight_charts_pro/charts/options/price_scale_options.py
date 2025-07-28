@@ -17,9 +17,6 @@ class PriceScaleMargins(Options):
     top: float = 0.1
     bottom: float = 0.1
 
-    def __post_init__(self):
-        super().__post_init__()
-
 
 @dataclass
 @chainable_field("visible", bool)
@@ -68,9 +65,6 @@ class PriceScaleOptions(Options):
 
     # Identification
     price_scale_id: str = ""
-
-    def __post_init__(self):
-        super().__post_init__()
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

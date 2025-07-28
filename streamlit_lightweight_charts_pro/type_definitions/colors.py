@@ -83,7 +83,6 @@ class BackgroundSolid(Options, ABC):
 
     def __post_init__(self):
         """Post-initialization validation."""
-        super().__post_init__()
         if not _is_valid_color(self.color):
             raise ValueError(
                 f"Invalid color format: {self.color!r}. Must be hex, rgba, or named color."
@@ -107,7 +106,6 @@ class BackgroundGradient(Options, ABC):
 
     def __post_init__(self):
         """Post-initialization validation."""
-        super().__post_init__()
         if not _is_valid_color(self.top_color):
             raise ValueError(
                 f"Invalid top_color format: {self.top_color!r}. Must be hex, rgba, or named color."
