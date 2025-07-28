@@ -24,7 +24,7 @@ def main():
     st.write("Create a series with data and basic configuration:")
 
     # Basic series creation
-    series = LineSeries(data=data, visible=True, price_scale_id="right", pane_id=0, overlay=True)
+    series = LineSeries(data=data, visible=True, price_scale_id="right", pane_id=0)
 
     chart = Chart(series=series)
     chart.render()
@@ -94,7 +94,7 @@ def main():
     st.write(f"First data point: {data_dict[0] if data_dict else 'No data'}")
 
     st.write("**Series Configuration (to_dict):**")
-    config = series.to_dict()
+    config = series.asdict()
     st.write(f"Configuration keys: {list(config.keys())}")
     st.write(f"Options keys: {list(config.get('options', {}).keys())}")
 

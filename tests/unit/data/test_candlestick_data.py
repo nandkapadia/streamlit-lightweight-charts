@@ -162,7 +162,7 @@ class TestCandlestickDataSerialization:
         """Test basic to_dict serialization."""
         data = CandlestickData(time=1640995200, open=100.0, high=105.0, low=98.0, close=103.0)
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -186,7 +186,7 @@ class TestCandlestickDataSerialization:
             wick_color="#0000FF",
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -210,7 +210,7 @@ class TestCandlestickDataSerialization:
             wick_color="",
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["time"] == 1640995200
         assert result["open"] == 100.0
@@ -227,7 +227,7 @@ class TestCandlestickDataSerialization:
             time=1640995200, open=float("nan"), high=105.0, low=98.0, close=103.0
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert result["open"] == 0.0
         assert result["high"] == 105.0
@@ -396,7 +396,7 @@ class TestCandlestickDataColorHandling:
             wick_color=None,
         )
 
-        result = data.to_dict()
+        result = data.asdict()
 
         assert "color" not in result
         assert "border_color" not in result

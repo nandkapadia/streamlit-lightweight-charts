@@ -106,7 +106,7 @@ class TestTimeScaleOptions:
             border_visible=False,
             border_color="#ff0000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["timeVisible"] is False
         assert result["secondsVisible"] is True
@@ -128,7 +128,7 @@ class TestTimeScaleOptions:
             shift_visible_range_on_new_bar=False,
             allow_shift_visible_range_on_whitespace_access=False,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         # False values should be included
         assert result["timeVisible"] is False
@@ -149,7 +149,7 @@ class TestTimeScaleOptions:
             visible=False,
             tick_mark_formatter=lambda x: f"formatted_{x}",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["leftOffset"] == 15
         assert result["minBarSpacing"] == 0.5
@@ -184,7 +184,7 @@ class TestTimeScaleOptions:
             shift_visible_range_on_new_bar=True,
             allow_shift_visible_range_on_whitespace_access=True,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rightOffset"] == 10
         assert result["leftOffset"] == 5
@@ -208,7 +208,7 @@ class TestTimeScaleOptions:
         options = TimeScaleOptions(
             right_offset=0, left_offset=0, bar_spacing=0, min_bar_spacing=0.0
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rightOffset"] == 0
         assert result["leftOffset"] == 0
@@ -219,7 +219,7 @@ class TestTimeScaleOptions:
         options = TimeScaleOptions(
             right_offset=1000, left_offset=1000, bar_spacing=100, min_bar_spacing=1.0
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rightOffset"] == 1000
         assert result["leftOffset"] == 1000
@@ -275,7 +275,7 @@ class TestLocalizationOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = LocalizationOptions(locale="de-DE", date_format="dd.MM.yyyy")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["locale"] == "de-DE"
         assert result["dateFormat"] == "dd.MM.yyyy"
@@ -318,7 +318,7 @@ class TestPriceFormatOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = PriceFormatOptions(type="volume", precision=4, min_move=0.0001)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["type"] == "volume"
         assert result["precision"] == 4
@@ -398,7 +398,7 @@ class TestPriceLineOptions:
             axis_label_visible=False,
             title="Support Level",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["price"] == 100.0
         assert result["color"] == "#ff0000"
@@ -410,14 +410,14 @@ class TestPriceLineOptions:
     def test_to_dict_omits_empty_title(self):
         """Test that empty title is omitted from output."""
         options = PriceLineOptions(title="")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "title" not in result
 
     def test_to_dict_omits_false_axis_label_visible(self):
         """Test that axis_label_visible=False is included in output."""
         options = PriceLineOptions(axis_label_visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["axisLabelVisible"] is False
 
@@ -483,7 +483,7 @@ class TestLineOptions:
             crosshair_marker_border_color="#00ff00",
             crosshair_marker_background_color="#000000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["color"] == "#ff0000"
         assert result["lineWidth"] == 3
@@ -496,7 +496,7 @@ class TestLineOptions:
     def test_to_dict_omits_false_values(self):
         """Test that False values are included in output."""
         options = LineOptions(crosshair_marker_visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["crosshairMarkerVisible"] is False
 
@@ -524,14 +524,14 @@ class TestTradeVisualizationOptions:
     def test_to_dict(self):
         """Test serialization."""
         options = TradeVisualizationOptions(style=TradeVisualization.RECTANGLES)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["style"] == "rectangles"
 
     def test_to_dict_with_string_style(self):
         """Test serialization with string style input."""
         options = TradeVisualizationOptions(style="markers")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["style"] == "markers"
 
@@ -545,7 +545,7 @@ class TestTradeVisualizationOptions:
             marker_size=30,
             show_pnl_in_markers=False,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["entryMarkerColorLong"] == "#0000FF"
         assert result["entryMarkerColorShort"] == "#FF0000"
@@ -562,7 +562,7 @@ class TestTradeVisualizationOptions:
             rectangle_color_profit="#00FF00",
             rectangle_color_loss="#FF0000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleFillOpacity"] == 0.5
         assert result["rectangleBorderWidth"] == 3
@@ -574,7 +574,7 @@ class TestTradeVisualizationOptions:
         options = TradeVisualizationOptions(
             line_width=5, line_style="solid", line_color_profit="#00FF00", line_color_loss="#FF0000"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["lineWidth"] == 5
         assert result["lineStyle"] == "solid"
@@ -586,7 +586,7 @@ class TestTradeVisualizationOptions:
         options = TradeVisualizationOptions(
             arrow_size=15, arrow_color_profit="#00FF00", arrow_color_loss="#FF0000"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["arrowSize"] == 15
         assert result["arrowColorProfit"] == "#00FF00"
@@ -600,7 +600,7 @@ class TestTradeVisualizationOptions:
             zone_color_short="#FF0000",
             zone_extend_bars=5,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["zoneOpacity"] == 0.3
         assert result["zoneColorLong"] == "#0000FF"
@@ -616,7 +616,7 @@ class TestTradeVisualizationOptions:
             annotation_font_size=16,
             annotation_background="rgba(0, 0, 0, 0.9)",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showTradeId"] is False
         assert result["showQuantity"] is False
@@ -655,7 +655,7 @@ class TestTradeVisualizationOptions:
             annotation_font_size=14,
             annotation_background="rgba(255, 255, 255, 0.9)",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         # Verify all fields are serialized correctly
         assert result["style"] == "markers"
@@ -705,7 +705,7 @@ class TestTradeVisualizationOptions:
             zone_extend_bars=0,
             annotation_font_size=0,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["markerSize"] == 0
         assert result["rectangleBorderWidth"] == 0
@@ -716,7 +716,7 @@ class TestTradeVisualizationOptions:
 
         # Test with extreme opacity values
         options = TradeVisualizationOptions(rectangle_fill_opacity=0.0, zone_opacity=1.0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleFillOpacity"] == 0.0
         assert result["zoneOpacity"] == 1.0
@@ -758,8 +758,8 @@ class TestOtherOptionsIntegration:
         )
         localization = LocalizationOptions(locale="de-DE", date_format="dd.MM.yyyy")
 
-        time_result = time_scale.to_dict()
-        local_result = localization.to_dict()
+        time_result = time_scale.asdict()
+        local_result = localization.asdict()
 
         assert time_result["timeVisible"] is True
         assert time_result["secondsVisible"] is False
@@ -780,8 +780,8 @@ class TestOtherOptionsIntegration:
         )
         line_options = LineOptions(color="#00ff00", line_width=2, line_style=LineStyle.DOTTED)
 
-        price_result = price_line.to_dict()
-        line_result = line_options.to_dict()
+        price_result = price_line.asdict()
+        line_result = line_options.asdict()
 
         assert price_result["price"] == 100.0
         assert price_result["color"] == "#ff0000"
@@ -800,7 +800,7 @@ class TestOtherOptionsEdgeCases:
     def test_time_scale_with_negative_values(self):
         """Test TimeScaleOptions with negative values."""
         options = TimeScaleOptions(right_offset=-10, bar_spacing=-5)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rightOffset"] == -10
         assert result["barSpacing"] == -5
@@ -808,7 +808,7 @@ class TestOtherOptionsEdgeCases:
     def test_price_format_with_zero_precision(self):
         """Test PriceFormatOptions with zero precision."""
         options = PriceFormatOptions(precision=0, min_move=1.0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["precision"] == 0
         assert result["minMove"] == 1.0
@@ -816,7 +816,7 @@ class TestOtherOptionsEdgeCases:
     def test_price_line_with_zero_price(self):
         """Test PriceLineOptions with zero price."""
         options = PriceLineOptions(price=0.0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["price"] == 0.0
 

@@ -1,7 +1,7 @@
 """
 Unit tests for LineSeries JSON format validation.
 
-This module tests that the LineSeries.to_dict() method produces JSON
+This module tests that the LineSeries.asdict() method produces JSON
 in the exact format expected by the frontend React component.
 """
 
@@ -35,7 +35,7 @@ class TestLineSeriesJsonFormat:
         line_options = LineOptions(color="#2196f3", line_width=2)
         series = LineSeries(data=data, line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check required fields from SeriesConfig interface
         assert "type" in result
@@ -84,7 +84,7 @@ class TestLineSeriesJsonFormat:
         )
 
         series = LineSeries(data=data, line_options=line_options)
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check options structure
         options = result["options"]
@@ -121,7 +121,7 @@ class TestLineSeriesJsonFormat:
         )
         series.add_price_line(resistance).add_price_line(support)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check price lines structure
         assert "priceLines" in result
@@ -168,7 +168,7 @@ class TestLineSeriesJsonFormat:
             size=8,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check markers structure
         assert "markers" in result
@@ -198,7 +198,7 @@ class TestLineSeriesJsonFormat:
         line_options = LineOptions(color="#2196f3")
         series = LineSeries(data=data, line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Test JSON serialization
         json_str = json.dumps(result)
@@ -217,7 +217,7 @@ class TestLineSeriesJsonFormat:
         line_options = LineOptions(color="#2196f3")
         series = LineSeries(data=data, line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Frontend expects these fields in SeriesConfig
         assert "type" in result
@@ -242,7 +242,7 @@ class TestLineSeriesJsonFormat:
         line_options = LineOptions(color="#2196f3")
         series = LineSeries(data=[], line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "line"
         assert result["data"] == []
@@ -260,7 +260,7 @@ class TestLineSeriesJsonFormat:
         line_options = LineOptions()
         series = LineSeries(data=data, line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # NaN should be converted to 0.0 in SingleValueData.__post_init__
         assert result["data"][0]["value"] == 100.0
@@ -309,7 +309,7 @@ class TestLineSeriesJsonFormat:
         series.add_price_line(price_line)
 
         # Get JSON representation
-        result = series.to_dict()
+        result = series.asdict()
 
         # Print the actual JSON for inspection
         json_str = json.dumps(result, indent=2)

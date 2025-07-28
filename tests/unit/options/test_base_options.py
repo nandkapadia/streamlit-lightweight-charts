@@ -83,7 +83,7 @@ class TestOptionsSerialization:
         options = TestOptions(
             string_field="hello", int_field=123, float_field=2.718, bool_field=False
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["stringField"] == "hello"
         assert result["intField"] == 123
@@ -93,7 +93,7 @@ class TestOptionsSerialization:
     def test_to_dict_enum_conversion(self):
         """Test that enums are converted to their values."""
         options = TestOptions(enum_field=TestEnum.VALUE_2)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["enumField"] == "value2"
 
@@ -106,7 +106,7 @@ class TestOptionsSerialization:
 
         enum_like = TestEnumLike.TEST_VALUE
         options = TestOptions(enum_like_field=enum_like)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["enumLikeField"] == "test_value"
 
@@ -126,7 +126,7 @@ class TestOptionsSerialization:
 
         non_enum_like = NonEnumLike("test_value")
         options = TestOptions(enum_like_field=non_enum_like)
-        result = options.to_dict()
+        result = options.asdict()
 
         # Should not convert to value since it's not enum-like
         assert result["enumLikeField"] == non_enum_like
@@ -134,14 +134,14 @@ class TestOptionsSerialization:
     def test_to_dict_omits_none_values(self):
         """Test that None values are omitted from output."""
         options = TestOptions(none_field=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "noneField" not in result
 
     def test_to_dict_omits_empty_strings(self):
         """Test that empty strings are omitted from output."""
         options = TestOptions(empty_string_field="")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "emptyStringField" not in result
 
@@ -149,7 +149,7 @@ class TestOptionsSerialization:
         """Test that nested Options objects are serialized."""
         nested = TestOptions(string_field="nested")
         options = TestOptions(nested_options=nested)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "nestedOptions" in result
         assert result["nestedOptions"]["stringField"] == "nested"
@@ -157,7 +157,7 @@ class TestOptionsSerialization:
     def test_to_dict_nested_none_options(self):
         """Test that None nested options are omitted."""
         options = TestOptions(nested_options=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "nestedOptions" not in result
 
@@ -166,7 +166,7 @@ class TestOptionsSerialization:
         nested1 = TestOptions(string_field="nested1")
         nested2 = TestOptions(string_field="nested2")
         options = TestOptions(list_field=[nested1, nested2])
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "listField" in result
         assert len(result["listField"]) == 2
@@ -177,7 +177,7 @@ class TestOptionsSerialization:
         """Test that lists with mixed content are handled correctly."""
         nested = TestOptions(string_field="nested")
         options = TestOptions(list_field=["string", nested, 42])
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "listField" in result
         assert len(result["listField"]) == 3
@@ -189,7 +189,7 @@ class TestOptionsSerialization:
         """Test that background_options are flattened into parent result."""
         background_opts = {"color": "#ffffff", "style": "solid"}
         options = TestOptions(background_options=background_opts)
-        result = options.to_dict()
+        result = options.asdict()
 
         # background_options should be flattened, not nested
         assert "backgroundOptions" not in result
@@ -200,7 +200,7 @@ class TestOptionsSerialization:
         """Test that other _options fields are kept nested."""
         other_opts = {"setting": "value", "config": "test"}
         options = TestOptions(other_options=other_opts)
-        result = options.to_dict()
+        result = options.asdict()
 
         # other_options should be nested with camelCase key
         assert "otherOptions" in result
@@ -210,7 +210,7 @@ class TestOptionsSerialization:
     def test_to_dict_camel_case_conversion(self):
         """Test that snake_case field names are converted to camelCase."""
         options = TestOptions(string_field="test")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "stringField" in result
         assert "string_field" not in result
@@ -221,7 +221,7 @@ class TestOptionsSerialization:
         middle = TestOptions(string_field="middle", nested_options=inner)
         outer = TestOptions(string_field="outer", nested_options=middle)
 
-        result = outer.to_dict()
+        result = outer.asdict()
 
         assert result["stringField"] == "outer"
         assert result["nestedOptions"]["stringField"] == "middle"
@@ -241,7 +241,7 @@ class TestOptionsSerialization:
             nested_options=TestOptions(string_field="nested"),
         )
 
-        result = options.to_dict()
+        result = options.asdict()
 
         # Check that all non-None, non-empty fields are present
         assert result["stringField"] == "test_string"
@@ -272,7 +272,7 @@ class TestOptionsEdgeCases:
 
         # This should cause infinite recursion
         with pytest.raises(RecursionError):
-            options.to_dict()
+            options.asdict()
 
     def test_to_dict_with_complex_enum(self):
         """Test with complex enum values."""
@@ -285,14 +285,14 @@ class TestOptionsEdgeCases:
             enum_field: ComplexEnum = ComplexEnum.COMPLEX_VALUE
 
         options = ComplexOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["enumField"] == {"key": "value", "number": 42}
 
     def test_to_dict_with_zero_values(self):
         """Test that zero values are not omitted."""
         options = TestOptions(int_field=0, float_field=0.0, bool_field=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["intField"] == 0
         assert result["floatField"] == 0.0
@@ -301,14 +301,14 @@ class TestOptionsEdgeCases:
     def test_to_dict_with_false_boolean(self):
         """Test that False boolean values are included."""
         options = TestOptions(bool_field=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["boolField"] is False
 
     def test_to_dict_with_empty_list(self):
         """Test that empty lists are included."""
         options = TestOptions(list_field=[])
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "listField" in result
         assert result["listField"] == []
@@ -316,14 +316,14 @@ class TestOptionsEdgeCases:
     def test_to_dict_with_none_list(self):
         """Test that None lists are omitted."""
         options = TestOptions(list_field=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "listField" not in result
 
     def test_to_dict_with_empty_dict(self):
         """Test that empty dicts are handled correctly."""
         options = TestOptions(background_options={})
-        result = options.to_dict()
+        result = options.asdict()
 
         # background_options should be flattened, but since it's empty,
         # it shouldn't add any fields to the result
@@ -338,7 +338,7 @@ class TestOptionsEdgeCases:
     def test_to_dict_with_none_dict(self):
         """Test that None dicts are omitted."""
         options = TestOptions(background_options=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "backgroundOptions" not in result
 
@@ -358,7 +358,7 @@ class TestOptionsEdgeCases:
 
         no_value_enum_like = NoValueEnumLike()
         options = TestOptions(enum_like_field=no_value_enum_like)
-        result = options.to_dict()
+        result = options.asdict()
 
         # Should not convert since no value attribute
         assert result["enumLikeField"] == no_value_enum_like
@@ -372,7 +372,7 @@ class TestOptionsEdgeCases:
 
         no_class_enum_like = NoClassEnumLike("test")
         options = TestOptions(enum_like_field=no_class_enum_like)
-        result = options.to_dict()
+        result = options.asdict()
 
         # Should not convert since no __class__ attribute
         assert result["enumLikeField"] == no_class_enum_like
@@ -389,7 +389,7 @@ class TestOptionsEdgeCases:
 
         no_bases_enum_like = NoBasesEnumLike("test")
         options = TestOptions(enum_like_field=no_bases_enum_like)
-        result = options.to_dict()
+        result = options.asdict()
 
         # Should not convert since no __bases__ attribute
         assert result["enumLikeField"] == no_bases_enum_like
@@ -412,7 +412,7 @@ class TestOptionsIntegration:
                 self.computed_field = f"computed_{self.required_field}"
 
         options = StandardOptions(required_field="test")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["requiredField"] == "test"
         assert result["optionalField"] == "default"
@@ -434,7 +434,7 @@ class TestOptionsIntegration:
             level3_field: str = "level3"
 
         options = Level3Options()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["level1Field"] == "level1"
         assert result["level2Field"] == "level2"
@@ -455,7 +455,7 @@ class TestOptionsIntegration:
 
         background_opts = BackgroundOptions(color="#f0f0f0", style="gradient")
         layout_opts = LayoutOptions(background_options=background_opts)
-        result = layout_opts.to_dict()
+        result = layout_opts.asdict()
 
         # background_options should be flattened
         assert "backgroundOptions" not in result
@@ -482,7 +482,7 @@ class TestOptionsIntegration:
         complex_opts = ComplexOptions(
             background_options=background_opts, layout_options=layout_opts
         )
-        result = complex_opts.to_dict()
+        result = complex_opts.asdict()
 
         # background_options should be flattened
         assert "backgroundOptions" not in result

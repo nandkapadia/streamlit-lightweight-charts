@@ -34,7 +34,6 @@ class TestBandSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
         assert series.upper_fill_color == "rgba(76, 175, 80, 0.1)"
         assert series.lower_fill_color == "rgba(244, 67, 54, 0.1)"
         assert isinstance(series.upper_line_options, LineOptions)
@@ -49,14 +48,13 @@ class TestBandSeriesConstruction:
             visible=False,
             price_scale_id="left",
             pane_id=1,
-            overlay=True,
+            
         )
 
         assert series.data == data
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is True
 
     def test_construction_with_dataframe(self):
         """Test BandSeries construction with DataFrame."""
@@ -210,7 +208,7 @@ class TestBandSeriesSerialization:
         """Test basic to_dict functionality."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "band"
         assert len(result["data"]) == 1
@@ -232,7 +230,7 @@ class TestBandSeriesSerialization:
         series.lower_line_options.color = "#0000FF"
         series.upper_line_options.line_type = LineType.CURVED
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # The base class to_dict flattens options, so check for flat keys
         assert options["color"] == "#FF0000"
@@ -248,7 +246,7 @@ class TestBandSeriesSerialization:
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # The base class to_dict uses camelCase keys
         assert options["upperFillColor"] == "rgba(255, 0, 0, 0.5)"
@@ -267,7 +265,7 @@ class TestBandSeriesSerialization:
             text="Test Marker",
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         assert len(result["markers"]) == 1
         assert result["markers"][0]["time"] == 1640995200
@@ -284,7 +282,7 @@ class TestBandSeriesSerialization:
         price_line = PriceLineOptions(price=105.0, color="#FF0000")
         series.add_price_line(price_line)
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
         assert result["priceLines"][0]["price"] == 105.0
@@ -302,7 +300,7 @@ class TestBandSeriesSerialization:
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
 
-        result = series.to_dict()
+        result = series.asdict()
         # Check basic structure
         assert "type" in result
         assert "data" in result
@@ -444,7 +442,7 @@ class TestBandSeriesEdgeCases:
         """Test handling of empty data."""
         series = BandSeries(data=[])
         assert len(series.data) == 0
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -452,7 +450,7 @@ class TestBandSeriesEdgeCases:
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
         assert len(series.data) == 1
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1
 
     def test_large_dataset(self):
@@ -465,7 +463,7 @@ class TestBandSeriesEdgeCases:
         ]
         series = BandSeries(data=data)
         assert len(series.data) == 100
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 100
 
     def test_empty_string_colors(self):
@@ -477,7 +475,7 @@ class TestBandSeriesEdgeCases:
         series.upper_fill_color = ""
         series.lower_fill_color = ""
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # Empty strings are omitted by base class to_dict
         assert "upperFillColor" not in options
@@ -499,7 +497,7 @@ class TestBandSeriesInheritance:
         series = BandSeries(data=data)
 
         required_methods = [
-            "to_dict",
+            "asdict",
             "add_marker",
             "add_price_line",
             "clear_markers",
@@ -522,7 +520,7 @@ class TestBandSeriesInheritance:
             "visible",
             "price_scale_id",
             "pane_id",
-            "overlay",
+            
             "markers",
             "price_lines",
             "price_format",
@@ -544,7 +542,7 @@ class TestBandSeriesJsonStructure:
         """Test basic JSON structure."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check basic structure
         assert "type" in result
@@ -567,7 +565,7 @@ class TestBandSeriesJsonStructure:
         """Test band series options structure."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # Check for camelCase keys
         for key in ["color", "lineWidth", "lineStyle", "upperFillColor", "lowerFillColor"]:
@@ -587,7 +585,7 @@ class TestBandSeriesJsonStructure:
             size=10,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "markers" in result
         markers = result["markers"]
         assert isinstance(markers, list)
@@ -604,7 +602,7 @@ class TestBandSeriesJsonStructure:
 
         series.add_price_line(PriceLineOptions(price=105.0, color="#FF0000", line_width=2))
 
-        result = series.to_dict()
+        result = series.asdict()
         assert "priceLines" in result
         price_lines = result["priceLines"]
         assert isinstance(price_lines, list)
@@ -629,7 +627,7 @@ class TestBandSeriesJsonStructure:
         series.lower_line_options.color = "#0000FF"
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
-        result = series.to_dict()
+        result = series.asdict()
         # Check all expected keys
         assert "type" in result
         assert "data" in result
@@ -646,12 +644,12 @@ class TestBandSeriesJsonStructure:
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
         # Serialize multiple times
-        result1 = series.to_dict()
-        result2 = series.to_dict()
+        result1 = series.asdict()
+        result2 = series.asdict()
         assert result1 == result2
         # Modify options and serialize again
         series.upper_line_options.color = "#FF0000"
-        result3 = series.to_dict()
+        result3 = series.asdict()
         assert result1 != result3
         assert result3["options"]["color"] == "#FF0000"
 
@@ -659,7 +657,7 @@ class TestBandSeriesJsonStructure:
         """Test frontend compatibility of JSON structure."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
         # Check that all option keys are camelCase
         for key in result["options"].keys():
             assert key[0].islower() and not "_" in key, f"Key {key} is not camelCase"
@@ -671,7 +669,7 @@ class TestBandSeriesJsonStructure:
         # Set empty strings for colors
         series.upper_fill_color = ""
         series.lower_fill_color = ""
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
         # Empty strings are omitted by base class to_dict
         assert "upperFillColor" not in options
@@ -681,7 +679,7 @@ class TestBandSeriesJsonStructure:
         """Test handling of missing optional fields."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
-        result = series.to_dict()
+        result = series.asdict()
         # Should not include markers or price lines if not present
         assert "markers" not in result
         assert "priceLines" not in result

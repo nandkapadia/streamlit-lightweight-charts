@@ -352,7 +352,7 @@ chart = Chart.from_price_volume_dataframe(
 )
 
 # Apply chart options after creation
-chart.update_options(**chart_options.to_dict())
+chart.update_options(**chart_options.asdict())
 
 # Add trade visualization
 chart.add_trade_visualization(trades)

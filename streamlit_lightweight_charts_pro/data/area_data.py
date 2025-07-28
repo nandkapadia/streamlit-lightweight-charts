@@ -66,14 +66,14 @@ class AreaData(SingleValueData):
         ):
             raise ValueError(f"Invalid bottomColor format: {self.bottomColor}")
 
-    def to_dict(self):
+    def asdict(self):
         """
         Convert the AreaData to a dictionary for frontend consumption.
 
         Returns:
             dict: Dictionary representation with camelCase keys and validated data.
         """
-        result = super().to_dict()
+        result = super().asdict()
 
         # Remove None, empty, and whitespace-only color values that were added by parent
         for color_key in ["lineColor", "topColor", "bottomColor"]:

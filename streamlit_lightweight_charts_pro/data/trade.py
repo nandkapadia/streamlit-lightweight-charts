@@ -197,7 +197,7 @@ class Trade:
 
         return markers
 
-    def to_dict(self) -> dict:
+    def asdict(self) -> dict:
         """Convert trade to dictionary for serialization."""
         return {
             "entryTime": self.entry_timestamp,

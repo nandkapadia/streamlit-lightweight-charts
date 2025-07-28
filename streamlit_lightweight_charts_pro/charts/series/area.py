@@ -73,7 +73,6 @@ class AreaSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         """
         Initialize AreaSeries.
@@ -84,7 +83,7 @@ class AreaSeries(Series):
             visible: Whether the series is visible
             price_scale_id: ID of the price scale
             pane_id: The pane index this series belongs to
-            overlay: Whether this series overlays others
+
             top_color: Color of the top part of the area
             bottom_color: Color of the bottom part of the area
             relative_gradient: Gradient is relative to base value
@@ -96,7 +95,6 @@ class AreaSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
 
         # Initialize properties before using setters

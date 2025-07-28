@@ -136,7 +136,7 @@ class TestAreaDataSerialization:
     def test_to_dict_basic(self):
         """Test AreaData to_dict with basic data."""
         data = AreaData(time=1640995200, value=100)
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -153,7 +153,7 @@ class TestAreaDataSerialization:
             topColor="#00ff00",
             bottomColor="#0000ff",
         )
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -164,7 +164,7 @@ class TestAreaDataSerialization:
     def test_to_dict_with_partial_colors(self):
         """Test AreaData to_dict with some color properties."""
         data = AreaData(time=1640995200, value=100, lineColor="#ff0000", topColor="#00ff00")
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -175,7 +175,7 @@ class TestAreaDataSerialization:
     def test_to_dict_with_empty_colors(self):
         """Test AreaData to_dict with empty color strings."""
         data = AreaData(time=1640995200, value=100, lineColor="", topColor="", bottomColor="")
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -188,7 +188,7 @@ class TestAreaDataSerialization:
         data = AreaData(
             time=1640995200, value=100, lineColor="   ", topColor="   ", bottomColor="   "
         )
-        data_dict = data.to_dict()
+        data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
         assert data_dict["value"] == 100
@@ -220,7 +220,7 @@ class TestAreaDataInheritance:
         data = AreaData(time=1640995200, value=100)
 
         # Test that it has SingleValueData methods
-        assert hasattr(data, "to_dict")
+        assert hasattr(data, "asdict")
         assert hasattr(data, "time")
         assert hasattr(data, "value")
 

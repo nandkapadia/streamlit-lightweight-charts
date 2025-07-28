@@ -17,7 +17,7 @@ def test_standard_construction(valid_time):
     assert data.time == valid_time
     assert data.value == 123.45
     assert data.color == "#2196F3"
-    d = data.to_dict()
+    d = data.asdict()
     assert d["time"] == valid_time
     assert d["value"] == 123.45
     assert d["color"] == "#2196F3"
@@ -26,7 +26,7 @@ def test_standard_construction(valid_time):
 def test_nan_value(valid_time):
     data = LineData(time=valid_time, value=math.nan, color="#2196F3")
     assert data.value == 0.0
-    d = data.to_dict()
+    d = data.asdict()
     assert d["value"] == 0.0
 
 
@@ -47,10 +47,10 @@ def test_color_invalid(valid_time):
 
 def test_color_omitted_in_dict(valid_time):
     data = LineData(time=valid_time, value=1.0)
-    d = data.to_dict()
+    d = data.asdict()
     assert "color" not in d
     data2 = LineData(time=valid_time, value=1.0, color="")
-    d2 = data2.to_dict()
+    d2 = data2.asdict()
     assert "color" not in d2
 
 
@@ -89,7 +89,7 @@ def test_error_on_invalid_time():
 
 def test_to_dict_keys_are_camel_case(valid_time):
     data = LineData(time=valid_time, value=1.0, color="#2196F3")
-    d = data.to_dict()
+    d = data.asdict()
     assert set(d.keys()) == {"time", "value", "color"}
 
 
@@ -97,5 +97,5 @@ def test_cross_type_dict_vs_dataclass(valid_time):
     # Simulate dict input and dataclass input producing same output
     data1 = LineData(time=valid_time, value=2.0, color="#2196F3")
     data2 = LineData(time="2024-01-01", value=2.0, color="#2196F3")
-    assert data1.to_dict()["value"] == data2.to_dict()["value"]
-    assert data1.to_dict()["color"] == data2.to_dict()["color"]
+    assert data1.asdict()["value"] == data2.asdict()["value"]
+    assert data1.asdict()["color"] == data2.asdict()["color"]

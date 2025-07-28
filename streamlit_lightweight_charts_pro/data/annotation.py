@@ -180,7 +180,7 @@ class Annotation:
         """
         return from_utc_timestamp(self._timestamp)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def asdict(self) -> Dict[str, Any]:
         """
         Convert annotation to dictionary for serialization.
 
@@ -426,7 +426,7 @@ class AnnotationLayer:
             if min_price <= annotation.price <= max_price
         ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def asdict(self) -> Dict[str, Any]:
         """
         Convert layer to dictionary for serialization.
 
@@ -440,7 +440,7 @@ class AnnotationLayer:
             "name": self.name,
             "visible": self.visible,
             "opacity": self.opacity,
-            "annotations": [annotation.to_dict() for annotation in self.annotations],
+            "annotations": [annotation.asdict() for annotation in self.annotations],
         }
 
 
@@ -706,7 +706,7 @@ class AnnotationManager:
             layer.show()
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def asdict(self) -> Dict[str, Any]:
         """
         Convert manager to dictionary for serialization.
 
@@ -718,7 +718,7 @@ class AnnotationManager:
                 layer names as keys.
         """
         return {
-            "layers": {layer_name: layer.to_dict() for layer_name, layer in self.layers.items()}
+            "layers": {layer_name: layer.asdict() for layer_name, layer in self.layers.items()}
         }
 
 

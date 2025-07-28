@@ -81,7 +81,6 @@ class Series(ABC):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         """
         Initialize a series with data and configuration.
@@ -101,8 +100,6 @@ class Series(ABC):
                 Defaults to "right".
             pane_id (Optional[int], optional): The pane index this series belongs to.
                 Defaults to 0.
-            overlay (Optional[bool], optional): Whether the series overlays another.
-                Defaults to True.
 
         Raises:
             ValueError: If data is not a valid type (list of Data objects, DataFrame, or Series).
@@ -164,7 +161,6 @@ class Series(ABC):
         self._price_lines = []
         self._markers = []
         self.pane_id = pane_id
-        self.overlay = overlay
         self.column_mapping = column_mapping
 
     @staticmethod
@@ -232,9 +228,12 @@ class Series(ABC):
                 else:
                     # No DatetimeIndex found
                     # Check if time_col is "index" and we have a regular index to reset
-                    if time_col == "index" and df.index.name is None:
+                    if time_col == "index":
                         # Reset the index to make it a regular column
+                        idx_name = df.index.name
                         df = df.reset_index()
+                        new_col_name = idx_name if idx_name is not None else "index"
+                        column_mapping["time"] = new_col_name
                     else:
                         raise ValueError(
                             f"Time column '{time_col}' not found in DataFrame columns and no "
@@ -369,7 +368,7 @@ class Series(ABC):
         Converts the series data to a list of dictionaries suitable for
         frontend serialization. Handles various data formats including
         dictionaries, lists of dictionaries, or lists of objects with
-        to_dict() methods.
+        asdict() methods.
 
         Returns:
             List[Dict[str, Any]]: List of data dictionaries ready for
@@ -393,9 +392,9 @@ class Series(ABC):
             # If already list of dicts
             if isinstance(self.data[0], dict):
                 return self.data
-            # If list of objects with to_dict
-            if hasattr(self.data[0], "to_dict"):
-                return [item.to_dict() for item in self.data]
+                    # If list of objects with asdict
+        if hasattr(self.data[0], "asdict"):
+            return [item.asdict() for item in self.data]
         # Fallback: return as-is
         return self.data
 
@@ -630,20 +629,123 @@ class Series(ABC):
         """
         Validate pane configuration for the series.
 
-        This method ensures that pane_id is properly set based on the overlay setting.
-        It should be called by subclasses in their to_dict() method.
+        This method ensures that pane_id is properly set.
+        It should be called by subclasses in their asdict() method.
 
         Raises:
-            ValueError: If overlay is False and pane_id is None, or if pane_id is negative.
+            ValueError: If pane_id is negative.
         """
         if self.pane_id is not None and self.pane_id < 0:
             raise ValueError("pane_id must be non-negative")
-        if self.overlay is False and self.pane_id is None:
-            raise ValueError("If overlay is False, pane_id must be defined for the series.")
-        if self.overlay is True and self.pane_id is None:
+        if self.pane_id is None:
             self.pane_id = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def update(self, updates: Dict[str, Any]) -> "Series":
+        """
+        Update series configuration with a dictionary of values.
+
+        This method provides a flexible way to update series properties using a dictionary.
+        It handles both simple properties and nested objects, automatically creating
+        nested Options instances when needed.
+
+        Args:
+            updates: Dictionary of updates to apply. Keys can be in snake_case or camelCase.
+                Values can be simple types or dictionaries for nested objects.
+
+        Returns:
+            Series: Self for method chaining.
+
+        Raises:
+            ValueError: If an update key doesn't correspond to a valid attribute.
+            TypeError: If a value type is incompatible with the attribute type.
+
+        Example:
+            ```python
+            series = LineSeries(data=data)
+            
+            # Update simple properties
+            series.update({
+                "visible": False,
+                "price_scale_id": "left"
+            })
+            
+            # Update nested options
+            series.update({
+                "line_options": {
+                    "color": "#ff0000",
+                    "line_width": 3
+                }
+            })
+            
+            # Method chaining
+            series.update({"visible": True}).update({"pane_id": 1})
+            ```
+        """
+        for key, value in updates.items():
+            if value is None:
+                continue  # Skip None values for method chaining
+            
+            # Convert camelCase to snake_case for attribute lookup
+            attr_name = self._camel_to_snake(key)
+            
+            # Check if attribute exists
+            if not hasattr(self, attr_name):
+                # Try the original key in case it's already snake_case
+                if hasattr(self, key):
+                    attr_name = key
+                else:
+                    raise ValueError(f"Invalid series attribute: {key}")
+            
+            # Handle nested Options objects
+            current_value = getattr(self, attr_name)
+            if isinstance(value, dict) and hasattr(current_value, "update"):
+                # Update existing Options object
+                current_value.update(value)
+            elif isinstance(value, dict) and current_value is None:
+                # Create new Options object if current is None
+                # This requires knowing the type, so we'll need to handle specific cases
+                if attr_name.endswith("_options"):
+                    # Try to create appropriate Options class
+                    options_class_name = attr_name.replace("_", " ").title().replace(" ", "")
+                    try:
+                        # Import and create the options class
+                        from streamlit_lightweight_charts_pro.charts.options import (
+                            LineOptions, PriceFormatOptions, PriceLineOptions
+                        )
+                        options_classes = {
+                            "line_options": LineOptions,
+                            "price_format": PriceFormatOptions,
+                        }
+                        if attr_name in options_classes:
+                            setattr(self, attr_name, options_classes[attr_name](**value))
+                        else:
+                            # Fallback to direct assignment
+                            setattr(self, attr_name, value)
+                    except (ImportError, TypeError):
+                        # Fallback to direct assignment
+                        setattr(self, attr_name, value)
+                else:
+                    setattr(self, attr_name, value)
+            else:
+                # Simple value assignment
+                setattr(self, attr_name, value)
+        
+        return self
+
+    def _camel_to_snake(self, camel_case: str) -> str:
+        """
+        Convert camelCase to snake_case.
+
+        Args:
+            camel_case: String in camelCase format.
+
+        Returns:
+            String in snake_case format.
+        """
+        import re
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case).lower()
+
+    def asdict(self) -> Dict[str, Any]:
         """
         Convert series to dictionary representation.
 
@@ -662,7 +764,7 @@ class Series(ABC):
             "data": self.data_dict,
         }
 
-        # Add options from attributes that have to_dict() method
+        # Add options from attributes that have asdict() method
         options = {}
         for attr_name in dir(self):
             if attr_name.startswith("_"):
@@ -680,17 +782,17 @@ class Series(ABC):
             attr_value = getattr(self, attr_name)
             # Only process instance attributes, not classes
             if (
-                hasattr(attr_value, "to_dict")
-                and callable(getattr(attr_value, "to_dict"))
+                hasattr(attr_value, "asdict")
+                and callable(getattr(attr_value, "asdict"))
                 and not isinstance(attr_value, type)
             ):
                 # For any options object, flatten the options instead of nesting
                 if attr_name.endswith("_options"):
-                    options.update(attr_value.to_dict())
+                    options.update(attr_value.asdict())
                 else:
                     # Convert snake_case to camelCase for the key
                     key = snake_to_camel(attr_name)
-                    options[key] = attr_value.to_dict()
+                    options[key] = attr_value.asdict()
 
             # Also include individual option attributes that are not None and not empty strings
             elif (
@@ -704,7 +806,6 @@ class Series(ABC):
                     "price_lines",
                     "pane_id",
                     "visible",
-                    "overlay",
                     "data_dict",
                     "chart_type",
                     "data_class",
@@ -722,11 +823,11 @@ class Series(ABC):
 
         # Add markers if present
         if self.markers:
-            config["markers"] = [marker.to_dict() for marker in self.markers]
+            config["markers"] = [marker.asdict() for marker in self.markers]
 
         # Add price lines if present
         if self.price_lines:
-            config["priceLines"] = [pl.to_dict() for pl in self.price_lines]
+            config["priceLines"] = [pl.asdict() for pl in self.price_lines]
 
         # Add pane_id
         config["pane_id"] = self.pane_id

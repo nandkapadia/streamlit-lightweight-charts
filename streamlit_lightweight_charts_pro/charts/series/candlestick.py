@@ -46,7 +46,6 @@ class CandlestickSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         super().__init__(
             data=data,
@@ -54,7 +53,6 @@ class CandlestickSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
 
         # Initialize candlestick-specific properties with default values

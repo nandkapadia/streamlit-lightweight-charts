@@ -42,7 +42,7 @@ with col1:
 
 with col2:
     st.write("**Sample Data:**")
-    st.write(df.head().to_dict("records"))
+    st.write(df.head().asdict("records"))
 
 # Define column mapping
 column_mapping = {
@@ -97,7 +97,7 @@ st.write("**Advanced DataFrame with additional columns:**")
 st.write(f"**Shape:** {advanced_df.shape}")
 st.write(f"**Columns:** {list(advanced_df.columns)}")
 st.write(f"**Sample Data:**")
-st.write(advanced_df.head().to_dict("records"))
+st.write(advanced_df.head().asdict("records"))
 
 # Create line series with color mapping
 advanced_column_mapping = {

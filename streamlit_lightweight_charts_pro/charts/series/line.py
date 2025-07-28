@@ -72,7 +72,6 @@ class LineSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         super().__init__(
             data=data,
@@ -80,7 +79,6 @@ class LineSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
         self._line_options = None  # Initialize before using setter
         self.line_options = line_options

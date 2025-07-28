@@ -31,19 +31,17 @@ class TestCandlestickSeriesConstruction:
         assert series.visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
-        assert series.overlay is True
 
     def test_construction_with_custom_parameters(self):
         """Test construction with custom parameters."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1, overlay=False
+            data=data, visible=False, price_scale_id="left", pane_id=1
         )
 
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
 
     def test_construction_with_dataframe(self):
         """Test construction with pandas DataFrame."""
@@ -97,17 +95,16 @@ class TestCandlestickSeriesConstruction:
         assert len(series.data) == 0
         assert series.visible is True
 
-    def test_construction_with_custom_parameters(self):
+    def test_construction_with_custom_parameters_duplicate(self):
         """Test construction with custom parameters."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1, overlay=False
+            data=data, visible=False, price_scale_id="left", pane_id=1
         )
 
         assert series.visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
-        assert series.overlay is False
 
 
 class TestCandlestickSeriesProperties:
@@ -275,12 +272,12 @@ class TestCandlestickSeriesProperties:
 class TestCandlestickSeriesSerialization:
     """Test CandlestickSeries serialization."""
 
-    def test_to_dict_basic(self):
-        """Test basic to_dict serialization."""
+    def test_asdict_basic(self):
+        """Test basic asdict serialization."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "candlestick"
         assert len(result["data"]) == 1
@@ -292,8 +289,8 @@ class TestCandlestickSeriesSerialization:
         assert "options" in result
         assert "pane_id" in result
 
-    def test_to_dict_with_candlestick_options(self):
-        """Test to_dict with candlestick styling options."""
+    def test_asdict_with_candlestick_options(self):
+        """Test asdict with candlestick styling options."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
         series.up_color = "#FF0000"
@@ -301,15 +298,15 @@ class TestCandlestickSeriesSerialization:
         series.wick_visible = False
         series.border_visible = False
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["options"]["upColor"] == "#FF0000"
         assert result["options"]["downColor"] == "#00FF00"
         assert result["options"]["wickVisible"] is False
         assert result["options"]["borderVisible"] is False
 
-    def test_to_dict_with_all_options(self):
-        """Test to_dict with all candlestick options."""
+    def test_asdict_with_all_options(self):
+        """Test asdict with all candlestick options."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
@@ -325,7 +322,7 @@ class TestCandlestickSeriesSerialization:
         series.wick_up_color = "#FF0000"
         series.wick_down_color = "#00FF00"
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         assert options["upColor"] == "#FF0000"
@@ -339,25 +336,25 @@ class TestCandlestickSeriesSerialization:
         assert options["wickUpColor"] == "#FF0000"
         assert options["wickDownColor"] == "#00FF00"
 
-    def test_to_dict_with_markers(self):
-        """Test to_dict with markers."""
+    def test_asdict_with_markers(self):
+        """Test asdict with markers."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
         series.add_marker(1640995200, MarkerPosition.BELOW_BAR, "#FF0000", MarkerShape.CIRCLE)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "markers" in result
         assert len(result["markers"]) == 1
         assert result["markers"][0]["time"] == 1640995200
 
-    def test_to_dict_with_price_lines(self):
-        """Test to_dict with price lines."""
+    def test_asdict_with_price_lines(self):
+        """Test asdict with price lines."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
         series.add_price_line(PriceLineOptions(price=100, color="#FF0000"))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "priceLines" in result
         assert len(result["priceLines"]) == 1
@@ -561,7 +558,7 @@ class TestCandlestickSeriesEdgeCases:
         series = CandlestickSeries(data=[])
 
         assert len(series.data) == 0
-        result = series.to_dict()
+        result = series.asdict()
         assert result["data"] == []
 
     def test_single_data_point(self):
@@ -570,7 +567,7 @@ class TestCandlestickSeriesEdgeCases:
         series = CandlestickSeries(data=data)
 
         assert len(series.data) == 1
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1
 
     def test_large_dataset(self):
@@ -584,7 +581,7 @@ class TestCandlestickSeriesEdgeCases:
         series = CandlestickSeries(data=data)
 
         assert len(series.data) == 1000
-        result = series.to_dict()
+        result = series.asdict()
         assert len(result["data"]) == 1000
 
     def test_none_data(self):
@@ -652,7 +649,7 @@ class TestCandlestickSeriesInheritance:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        assert hasattr(series, "to_dict")
+        assert hasattr(series, "asdict")
         assert hasattr(series, "add_marker")
         assert hasattr(series, "add_price_line")
         assert hasattr(series, "from_dataframe")
@@ -677,7 +674,7 @@ class TestCandlestickSeriesJsonStructure:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         required_keys = {"type", "data", "options", "pane_id"}
         assert all(key in result for key in required_keys)
@@ -692,7 +689,7 @@ class TestCandlestickSeriesJsonStructure:
         series.up_color = "#FF0000"
         series.down_color = "#00FF00"
 
-        result = series.to_dict()
+        result = series.asdict()
         options = result["options"]
 
         assert "upColor" in options
@@ -706,7 +703,7 @@ class TestCandlestickSeriesJsonStructure:
         series = CandlestickSeries(data=data)
         series.add_marker(1640995200, MarkerPosition.BELOW_BAR, "#FF0000", MarkerShape.CIRCLE)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "markers" in result
         assert isinstance(result["markers"], list)
@@ -723,7 +720,7 @@ class TestCandlestickSeriesJsonStructure:
         series = CandlestickSeries(data=data)
         series.add_price_line(PriceLineOptions(price=100, color="#FF0000"))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert "priceLines" in result
         assert isinstance(result["priceLines"], list)
@@ -747,7 +744,7 @@ class TestCandlestickSeriesJsonStructure:
         series.add_marker(1640995200, MarkerPosition.BELOW_BAR, "#FF0000", MarkerShape.CIRCLE)
         series.add_price_line(PriceLineOptions(price=100, color="#FF0000"))
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check all required keys
         required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
@@ -771,8 +768,8 @@ class TestCandlestickSeriesJsonStructure:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        result1 = series.to_dict()
-        result2 = series.to_dict()
+        result1 = series.asdict()
+        result2 = series.asdict()
 
         assert result1 == result2
 
@@ -783,7 +780,7 @@ class TestCandlestickSeriesJsonStructure:
         series.up_color = "#FF0000"
         series.down_color = "#00FF00"
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Check that the structure matches frontend expectations
         assert result["type"] == "candlestick"
@@ -805,7 +802,7 @@ class TestCandlestickSeriesJsonStructure:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Default options should be present
         assert "options" in result
@@ -816,7 +813,7 @@ class TestCandlestickSeriesJsonStructure:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         # Should not have markers or price lines if not added
         assert "markers" not in result

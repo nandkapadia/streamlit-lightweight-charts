@@ -30,7 +30,7 @@ class TestFrontendPriceLines:
         series.add_price_line(price_line)
 
         # Get series configuration
-        series_config = series.to_dict()
+        series_config = series.asdict()
 
         # Verify price lines are included
         assert "priceLines" in series_config
@@ -132,7 +132,7 @@ class TestFrontendPriceLines:
         series.add_price_line(price_line)
 
         # Get series configuration
-        series_config = series.to_dict()
+        series_config = series.asdict()
 
         # Verify price line is properly serialized
         assert "priceLines" in series_config
@@ -165,7 +165,7 @@ class TestFrontendPriceLines:
         series = LineSeries(data=data, line_options=line_options)
 
         # Get series configuration
-        series_config = series.to_dict()
+        series_config = series.asdict()
 
         # Should not include priceLines when none are added
         assert "priceLines" not in series_config
@@ -190,7 +190,7 @@ class TestFrontendPriceLines:
         series.add_price_line(price_line)
 
         # Get series configuration
-        series_config = series.to_dict()
+        series_config = series.asdict()
 
         # Verify all properties are included
         price_line_config = series_config["priceLines"][0]

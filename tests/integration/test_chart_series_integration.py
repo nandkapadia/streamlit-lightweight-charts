@@ -668,9 +668,9 @@ class TestChartSeriesErrorHandlingIntegration:
     def test_chart_with_series_returning_invalid_config(self):
         """Test chart with series returning invalid configuration."""
 
-        # Create a real series that returns invalid config by overriding to_dict
+        # Create a real series that returns invalid config by overriding asdict
         class InvalidConfigSeries(LineSeries):
-            def to_dict(self):
+            def asdict(self):
                 return "not_a_dict"
 
         invalid_series = InvalidConfigSeries(
@@ -687,9 +687,9 @@ class TestChartSeriesErrorHandlingIntegration:
     def test_chart_with_series_missing_required_fields(self):
         """Test chart with series missing required fields."""
 
-        # Create a real series that returns incomplete config by overriding to_dict
+        # Create a real series that returns incomplete config by overriding asdict
         class IncompleteConfigSeries(LineSeries):
-            def to_dict(self):
+            def asdict(self):
                 return {}  # Empty dict with missing required fields
 
         incomplete_series = IncompleteConfigSeries(

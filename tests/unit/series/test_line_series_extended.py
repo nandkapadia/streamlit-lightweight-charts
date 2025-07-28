@@ -54,7 +54,7 @@ class TestLineSeriesExtended:
             shape=MarkerShape.CIRCLE,
         )
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "line"
         assert len(result["data"]) == 1
@@ -69,7 +69,7 @@ class TestLineSeriesExtended:
         line_options = LineOptions()
         series = LineSeries(data=[], line_options=line_options)
 
-        result = series.to_dict()
+        result = series.asdict()
 
         assert result["type"] == "line"
         assert result["data"] == []
@@ -214,8 +214,8 @@ class TestLineSeriesExtended:
         )
 
         # Get serialized form multiple times
-        result1 = series.to_dict()
-        result2 = series.to_dict()
+        result1 = series.asdict()
+        result2 = series.asdict()
 
         # Should be identical
         assert result1 == result2

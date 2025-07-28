@@ -92,7 +92,7 @@ def main():
             area2 = AreaSeries(
                 data=dynamic_data_2,
                 pane_id=1 if show_data_1 else 0,
-                overlay=False,
+                
                 top_color=color_2,
                 bottom_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency})",
                 line_options=LineOptions(color=color_2, line_width=line_width),
@@ -118,7 +118,7 @@ def main():
         if show_data_2:
             area2 = AreaSeries(
                 data=dynamic_data_2,
-                overlay=True,
+                
                 top_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency + 0.2})",
                 bottom_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency * 0.5})",
                 line_options=LineOptions(

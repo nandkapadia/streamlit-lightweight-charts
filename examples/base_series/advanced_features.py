@@ -66,7 +66,7 @@ def main():
 
     # Create series with full configuration
     config_series = LineSeries(
-        data=data, visible=True, price_scale_id="right", pane_id=0, overlay=True
+        data=data, visible=True, price_scale_id="right", pane_id=0
     )
 
     # Add markers and price lines
@@ -98,7 +98,7 @@ def main():
     series.add_price_line(PriceLineOptions(price=30.0, color="#FF0000", title="Resistance"))
 
     # Serialize to dictionary
-    config_dict = series.to_dict()
+    config_dict = series.asdict()
 
     st.write("**Serialized Configuration:**")
     st.write("Configuration keys:", list(config_dict.keys()))

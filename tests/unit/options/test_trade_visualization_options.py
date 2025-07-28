@@ -152,7 +152,7 @@ class TestTradeVisualizationOptionsSerialization:
     def test_to_dict_default_values(self):
         """Test serialization with default values."""
         options = TradeVisualizationOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["style"] == "both"
         assert result["entryMarkerColorLong"] == "#2196F3"
@@ -213,7 +213,7 @@ class TestTradeVisualizationOptionsSerialization:
             annotation_font_size=16,
             annotation_background="rgba(0, 0, 0, 0.9)",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["style"] == "markers"
         assert result["entryMarkerColorLong"] == "#0000FF"
@@ -256,17 +256,17 @@ class TestTradeVisualizationOptionsSerialization:
 
         for style in styles:
             options = TradeVisualizationOptions(style=style)
-            result = options.to_dict()
+            result = options.asdict()
             assert result["style"] == style.value
 
     def test_to_dict_string_style_conversion(self):
         """Test that string styles are properly converted in serialization."""
         options = TradeVisualizationOptions(style="markers")
-        result = options.to_dict()
+        result = options.asdict()
         assert result["style"] == "markers"
 
         options = TradeVisualizationOptions(style="RECTANGLES")
-        result = options.to_dict()
+        result = options.asdict()
         assert result["style"] == "rectangles"
 
 
@@ -281,7 +281,7 @@ class TestTradeVisualizationOptionsMarkerOptions:
             exit_marker_color_profit="#00FF00",
             exit_marker_color_loss="#FF00FF",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["entryMarkerColorLong"] == "#0000FF"
         assert result["entryMarkerColorShort"] == "#FF0000"
@@ -291,14 +291,14 @@ class TestTradeVisualizationOptionsMarkerOptions:
     def test_marker_size(self):
         """Test marker size option."""
         options = TradeVisualizationOptions(marker_size=25)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["markerSize"] == 25
 
     def test_show_pnl_in_markers(self):
         """Test show P&L in markers option."""
         options = TradeVisualizationOptions(show_pnl_in_markers=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showPnlInMarkers"] is False
 
@@ -312,7 +312,7 @@ class TestTradeVisualizationOptionsMarkerOptions:
             marker_size=30,
             show_pnl_in_markers=True,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["entryMarkerColorLong"] == "#0000FF"
         assert result["entryMarkerColorShort"] == "#FF0000"
@@ -328,14 +328,14 @@ class TestTradeVisualizationOptionsRectangleOptions:
     def test_rectangle_fill_opacity(self):
         """Test rectangle fill opacity option."""
         options = TradeVisualizationOptions(rectangle_fill_opacity=0.5)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleFillOpacity"] == 0.5
 
     def test_rectangle_border_width(self):
         """Test rectangle border width option."""
         options = TradeVisualizationOptions(rectangle_border_width=3)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleBorderWidth"] == 3
 
@@ -344,7 +344,7 @@ class TestTradeVisualizationOptionsRectangleOptions:
         options = TradeVisualizationOptions(
             rectangle_color_profit="#00FF00", rectangle_color_loss="#FF0000"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleColorProfit"] == "#00FF00"
         assert result["rectangleColorLoss"] == "#FF0000"
@@ -357,7 +357,7 @@ class TestTradeVisualizationOptionsRectangleOptions:
             rectangle_color_profit="#00FF00",
             rectangle_color_loss="#FF0000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleFillOpacity"] == 0.4
         assert result["rectangleBorderWidth"] == 2
@@ -371,21 +371,21 @@ class TestTradeVisualizationOptionsLineOptions:
     def test_line_width(self):
         """Test line width option."""
         options = TradeVisualizationOptions(line_width=5)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["lineWidth"] == 5
 
     def test_line_style(self):
         """Test line style option."""
         options = TradeVisualizationOptions(line_style="solid")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["lineStyle"] == "solid"
 
     def test_line_colors(self):
         """Test line color options."""
         options = TradeVisualizationOptions(line_color_profit="#00FF00", line_color_loss="#FF0000")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["lineColorProfit"] == "#00FF00"
         assert result["lineColorLoss"] == "#FF0000"
@@ -398,7 +398,7 @@ class TestTradeVisualizationOptionsLineOptions:
             line_color_profit="#00FF00",
             line_color_loss="#FF0000",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["lineWidth"] == 4
         assert result["lineStyle"] == "dotted"
@@ -412,7 +412,7 @@ class TestTradeVisualizationOptionsArrowOptions:
     def test_arrow_size(self):
         """Test arrow size option."""
         options = TradeVisualizationOptions(arrow_size=15)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["arrowSize"] == 15
 
@@ -421,7 +421,7 @@ class TestTradeVisualizationOptionsArrowOptions:
         options = TradeVisualizationOptions(
             arrow_color_profit="#00FF00", arrow_color_loss="#FF0000"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["arrowColorProfit"] == "#00FF00"
         assert result["arrowColorLoss"] == "#FF0000"
@@ -431,7 +431,7 @@ class TestTradeVisualizationOptionsArrowOptions:
         options = TradeVisualizationOptions(
             arrow_size=12, arrow_color_profit="#00FF00", arrow_color_loss="#FF0000"
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["arrowSize"] == 12
         assert result["arrowColorProfit"] == "#00FF00"
@@ -444,14 +444,14 @@ class TestTradeVisualizationOptionsZoneOptions:
     def test_zone_opacity(self):
         """Test zone opacity option."""
         options = TradeVisualizationOptions(zone_opacity=0.3)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["zoneOpacity"] == 0.3
 
     def test_zone_colors(self):
         """Test zone color options."""
         options = TradeVisualizationOptions(zone_color_long="#0000FF", zone_color_short="#FF0000")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["zoneColorLong"] == "#0000FF"
         assert result["zoneColorShort"] == "#FF0000"
@@ -459,7 +459,7 @@ class TestTradeVisualizationOptionsZoneOptions:
     def test_zone_extend_bars(self):
         """Test zone extend bars option."""
         options = TradeVisualizationOptions(zone_extend_bars=5)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["zoneExtendBars"] == 5
 
@@ -471,7 +471,7 @@ class TestTradeVisualizationOptionsZoneOptions:
             zone_color_short="#FF0000",
             zone_extend_bars=3,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["zoneOpacity"] == 0.2
         assert result["zoneColorLong"] == "#0000FF"
@@ -485,35 +485,35 @@ class TestTradeVisualizationOptionsAnnotationOptions:
     def test_show_trade_id(self):
         """Test show trade ID option."""
         options = TradeVisualizationOptions(show_trade_id=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showTradeId"] is False
 
     def test_show_quantity(self):
         """Test show quantity option."""
         options = TradeVisualizationOptions(show_quantity=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showQuantity"] is False
 
     def test_show_trade_type(self):
         """Test show trade type option."""
         options = TradeVisualizationOptions(show_trade_type=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showTradeType"] is False
 
     def test_annotation_font_size(self):
         """Test annotation font size option."""
         options = TradeVisualizationOptions(annotation_font_size=16)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["annotationFontSize"] == 16
 
     def test_annotation_background(self):
         """Test annotation background option."""
         options = TradeVisualizationOptions(annotation_background="rgba(0, 0, 0, 0.9)")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["annotationBackground"] == "rgba(0, 0, 0, 0.9)"
 
@@ -526,7 +526,7 @@ class TestTradeVisualizationOptionsAnnotationOptions:
             annotation_font_size=14,
             annotation_background="rgba(255, 255, 255, 0.9)",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["showTradeId"] is False
         assert result["showQuantity"] is False
@@ -548,7 +548,7 @@ class TestTradeVisualizationOptionsEdgeCases:
             zone_extend_bars=0,
             annotation_font_size=0,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["markerSize"] == 0
         assert result["rectangleBorderWidth"] == 0
@@ -560,7 +560,7 @@ class TestTradeVisualizationOptionsEdgeCases:
     def test_extreme_opacity_values(self):
         """Test with extreme opacity values."""
         options = TradeVisualizationOptions(rectangle_fill_opacity=0.0, zone_opacity=1.0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["rectangleFillOpacity"] == 0.0
         assert result["zoneOpacity"] == 1.0
@@ -575,7 +575,7 @@ class TestTradeVisualizationOptionsEdgeCases:
             zone_extend_bars=100,
             annotation_font_size=50,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["markerSize"] == 100
         assert result["rectangleBorderWidth"] == 10
@@ -592,7 +592,7 @@ class TestTradeVisualizationOptionsEdgeCases:
             exit_marker_color_profit="hsl(120, 100%, 50%)",
             exit_marker_color_loss="transparent",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["entryMarkerColorLong"] == "rgb(255, 0, 0)"
         assert result["entryMarkerColorShort"] == "rgba(0, 255, 0, 0.5)"
@@ -604,7 +604,7 @@ class TestTradeVisualizationOptionsEdgeCases:
         options = TradeVisualizationOptions(
             entry_marker_color_long="", line_style="", annotation_background=""
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         # Empty strings should be omitted from the result
         assert "entryMarkerColorLong" not in result
@@ -706,7 +706,7 @@ class TestTradeVisualizationOptionsIntegration:
 
         chart_options = ChartOptions(height=500, trade_visualization=trade_viz_options)
 
-        result = chart_options.to_dict()
+        result = chart_options.asdict()
 
         assert "tradeVisualization" in result
         assert result["tradeVisualization"]["style"] == "markers"
@@ -729,7 +729,7 @@ class TestTradeVisualizationOptionsIntegration:
         for style in styles:
             trade_viz_options = TradeVisualizationOptions(style=style)
             chart_options = ChartOptions(trade_visualization=trade_viz_options)
-            result = chart_options.to_dict()
+            result = chart_options.asdict()
 
             assert result["tradeVisualization"]["style"] == style.value
 
@@ -756,7 +756,7 @@ class TestTradeVisualizationOptionsPerformance:
         options = TradeVisualizationOptions()
         start_time = time.time()
         for _ in range(1000):
-            options.to_dict()
+            options.asdict()
         end_time = time.time()
 
         # Should complete in reasonable time (less than 1 second)
@@ -821,7 +821,7 @@ class TestTradeVisualizationOptionsComprehensive:
             annotation_background="rgba(255, 255, 255, 0.9)",
         )
 
-        result = options.to_dict()
+        result = options.asdict()
 
         # Verify all fields are present and correct
         assert result["style"] == "both"
@@ -888,7 +888,7 @@ class TestTradeVisualizationOptionsComprehensive:
 
         for style, config in style_configs.items():
             options = TradeVisualizationOptions(style=style, **config)
-            result = options.to_dict()
+            result = options.asdict()
 
             assert result["style"] == style.value
             for key, value in config.items():

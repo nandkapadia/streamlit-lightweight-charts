@@ -449,7 +449,7 @@ class TestHistogramSeriesCreateVolumeSeries:
         )
 
         # Test JSON serialization
-        series_dict = volume_series.to_dict()
+        series_dict = volume_series.asdict()
         json.dumps(series_dict)
 
         # Verify JSON structure

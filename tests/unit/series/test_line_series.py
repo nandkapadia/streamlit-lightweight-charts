@@ -67,7 +67,7 @@ def test_missing_required_column_in_dataframe(line_options):
 
 def test_to_dict_structure(line_data, line_options):
     series = LineSeries(data=line_data, line_options=line_options)
-    d = series.to_dict()
+    d = series.asdict()
     assert d["type"] == "line"
     assert isinstance(d["data"], list)
     assert "options" in d
@@ -95,7 +95,7 @@ def test_set_markers(line_data, line_options):
 def test_empty_data(line_options):
     series = LineSeries(data=[], line_options=line_options)
     assert series.data == []
-    d = series.to_dict()
+    d = series.asdict()
     assert d["data"] == []
 
 

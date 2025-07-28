@@ -25,22 +25,7 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     TradeVisualization,
     VertAlign,
 )
-from streamlit_lightweight_charts_pro.type_definitions.protocols import (
-    AnnotationProtocol,
-    ChartData,
-    ChartDataProtocol,
-    ChartOptions,
-    ChartOptionsProtocol,
-    ChartProtocol,
-    MarkerProtocol,
-    NumericValue,
-    SeriesProtocol,
-    TimeSeriesDataProtocol,
-    TimeValue,
-    TooltipProtocol,
-    TradeProtocol,
-    VisualizationOptionsProtocol,
-)
+
 
 __all__ = [
     # Enums
@@ -66,20 +51,5 @@ __all__ = [
     "Background",
     "BackgroundSolid",
     "BackgroundGradient",
-    # Protocols
-    "ChartDataProtocol",
-    "TimeSeriesDataProtocol",
-    "ChartOptionsProtocol",
-    "SeriesProtocol",
-    "ChartProtocol",
-    "MarkerProtocol",
-    "TradeProtocol",
-    "AnnotationProtocol",
-    "TooltipProtocol",
-    "VisualizationOptionsProtocol",
-    # Type aliases
-    "ChartData",
-    "ChartOptions",
-    "TimeValue",
-    "NumericValue",
+
 ]

@@ -126,7 +126,7 @@ class HistogramSeries(Series):
                     processed_data.append(processed_item)
                 else:
                     # For OhlcvData objects, convert to dict and add color
-                    item_dict = item.to_dict() if hasattr(item, "to_dict") else item.__dict__
+                    item_dict = item.asdict() if hasattr(item, "asdict") else item.__dict__
                     color = (
                         up_color
                         if item_dict.get("close", 0) >= item_dict.get("open", 0)
@@ -152,7 +152,6 @@ class HistogramSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         """
         Initialize a histogram series with data and configuration.
@@ -163,7 +162,7 @@ class HistogramSeries(Series):
             visible: Whether the series is visible. Defaults to True.
             price_scale_id: ID of the price scale to attach to. Defaults to "right".
             pane_id: The pane index this series belongs to. Defaults to 0.
-            overlay: Whether the series overlays another. Defaults to True.
+
 
         Raises:
             ValueError: If data is not a valid type (list of Data, DataFrame, or Series).
@@ -193,7 +192,6 @@ class HistogramSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
 
         # Initialize properties with default values

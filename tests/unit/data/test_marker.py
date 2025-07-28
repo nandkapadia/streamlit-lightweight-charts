@@ -261,7 +261,7 @@ class TestMarkerSerialization:
             shape=MarkerShape.CIRCLE,
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
 
         assert isinstance(marker_dict["time"], int)  # UNIX timestamp
         assert marker_dict["time"] == 1640995200  # UNIX timestamp for 2022-01-01
@@ -275,7 +275,7 @@ class TestMarkerSerialization:
         """Test Marker to_dict with only time (using all defaults)."""
         marker = Marker(time=1640995200)
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
 
         assert isinstance(marker_dict["time"], int)  # UNIX timestamp
         assert marker_dict["time"] == 1640995200  # UNIX timestamp for 2022-01-01
@@ -296,7 +296,7 @@ class TestMarkerSerialization:
             size=10,
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
 
         assert isinstance(marker_dict["time"], int)  # UNIX timestamp
         assert marker_dict["time"] == 1640995200  # UNIX timestamp for 2022-01-01
@@ -318,7 +318,7 @@ class TestMarkerSerialization:
             marker = Marker(
                 time=1640995200, position=position, color="#ff0000", shape=MarkerShape.CIRCLE
             )
-            marker_dict = marker.to_dict()
+            marker_dict = marker.asdict()
             assert marker_dict["position"] == expected_value
 
     def test_to_dict_with_different_shapes(self):
@@ -334,7 +334,7 @@ class TestMarkerSerialization:
             marker = Marker(
                 time=1640995200, position=MarkerPosition.ABOVE_BAR, color="#ff0000", shape=shape
             )
-            marker_dict = marker.to_dict()
+            marker_dict = marker.asdict()
             assert marker_dict["shape"] == expected_value
 
     def test_to_dict_omits_empty_text(self):
@@ -347,7 +347,7 @@ class TestMarkerSerialization:
             text="",
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
         assert "text" not in marker_dict
 
     def test_to_dict_omits_none_text(self):
@@ -360,7 +360,7 @@ class TestMarkerSerialization:
             text=None,
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
         assert "text" not in marker_dict
 
     def test_to_dict_camel_case_keys(self):
@@ -374,7 +374,7 @@ class TestMarkerSerialization:
             size=10,
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
         expected_keys = {"time", "position", "color", "shape", "text", "size"}
         assert set(marker_dict.keys()) == expected_keys
 
@@ -734,7 +734,7 @@ class TestMarkerDataHandling:
             ),
         ]
 
-        marker_dicts = [marker.to_dict() for marker in markers]
+        marker_dicts = [marker.asdict() for marker in markers]
 
         assert len(marker_dicts) == 2
         assert marker_dicts[0]["time"] == 1640995200
@@ -803,7 +803,7 @@ class TestMarkerIntegration:
             size=10,
         )
 
-        marker_dict = marker.to_dict()
+        marker_dict = marker.asdict()
 
         # Verify JSON structure matches frontend expectations
         assert "time" in marker_dict

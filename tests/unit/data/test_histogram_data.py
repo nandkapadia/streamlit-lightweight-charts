@@ -136,49 +136,49 @@ class TestHistogramDataSerialization:
     def test_to_dict_basic(self):
         """Test basic to_dict functionality."""
         data = HistogramData(time=1640995200, value=100.5)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_color(self):
         """Test to_dict with color."""
         data = HistogramData(time=1640995200, value=100.5, color="#2196F3")
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5, "color": "#2196F3"}
 
     def test_to_dict_with_rgba_color(self):
         """Test to_dict with rgba color."""
         data = HistogramData(time=1640995200, value=100.5, color="rgba(33,150,243,1)")
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5, "color": "rgba(33,150,243,1)"}
 
     def test_to_dict_with_none_color(self):
         """Test to_dict with None color (should be omitted)."""
         data = HistogramData(time=1640995200, value=100.5, color=None)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_empty_color(self):
         """Test to_dict with empty color string (should be omitted)."""
         data = HistogramData(time=1640995200, value=100.5, color="")
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 100.5}
 
     def test_to_dict_with_nan_value(self):
         """Test to_dict with NaN value (should be converted to 0.0)."""
         data = HistogramData(time=1640995200, value=float("nan"))
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 0.0}
 
     def test_to_dict_with_zero_value(self):
         """Test to_dict with zero value."""
         data = HistogramData(time=1640995200, value=0.0)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": 0.0}
 
     def test_to_dict_with_negative_value(self):
         """Test to_dict with negative value."""
         data = HistogramData(time=1640995200, value=-50.0)
-        result = data.to_dict()
+        result = data.asdict()
         assert result == {"time": 1640995200, "value": -50.0}
 
 
@@ -345,5 +345,5 @@ class TestHistogramDataColorHandling:
         colors = ["#2196F3", "rgba(33,150,243,1)", "#FF0000"]
         for color in colors:
             data = HistogramData(time=1640995200, value=100.5, color=color)
-            result = data.to_dict()
+            result = data.asdict()
             assert result["color"] == color

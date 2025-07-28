@@ -35,7 +35,7 @@ from streamlit_lightweight_charts_pro.data.baseline_data import BaselineData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
 )
-from streamlit_lightweight_charts_pro.type_definitions.protocols import BaselineValue
+from typing import Union
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
@@ -51,7 +51,6 @@ class BaselineSeries(Series):
         visible: bool = True,
         price_scale_id: str = "right",
         pane_id: Optional[int] = 0,
-        overlay: Optional[bool] = True,
     ):
         super().__init__(
             data=data,
@@ -59,7 +58,6 @@ class BaselineSeries(Series):
             visible=visible,
             price_scale_id=price_scale_id,
             pane_id=pane_id,
-            overlay=overlay,
         )
 
         # Initialize LineOptions for common line properties
@@ -75,7 +73,7 @@ class BaselineSeries(Series):
         self._bottom_fill_color2 = "rgba(239, 83, 80, 0.28)"
         self._bottom_line_color = "rgba(239, 83, 80, 1)"
 
-    def _validate_base_value(self, base_value: BaselineValue) -> Dict[str, Any]:
+    def _validate_base_value(self, base_value: Union[int, float, Dict[str, Any]]) -> Dict[str, Any]:
         """Validate and normalize base_value."""
         if isinstance(base_value, (int, float)):
             return {"type": "price", "price": float(base_value)}
@@ -100,7 +98,7 @@ class BaselineSeries(Series):
         return self._base_value
 
     @base_value.setter
-    def base_value(self, value: BaselineValue):
+    def base_value(self, value: Union[int, float, Dict[str, Any]]):
         """Set the base value configuration."""
         self._base_value = self._validate_base_value(value)
 

@@ -45,7 +45,7 @@ class TestPriceScaleMargins:
     def test_to_dict(self):
         """Test serialization."""
         margins = PriceScaleMargins(top=0.2, bottom=0.3)
-        result = margins.to_dict()
+        result = margins.asdict()
 
         assert result["top"] == 0.2
         assert result["bottom"] == 0.3
@@ -53,7 +53,7 @@ class TestPriceScaleMargins:
     def test_to_dict_with_defaults(self):
         """Test serialization with default values."""
         margins = PriceScaleMargins()
-        result = margins.to_dict()
+        result = margins.asdict()
 
         assert result["top"] == 0.1
         assert result["bottom"] == 0.1
@@ -171,7 +171,7 @@ class TestPriceScaleOptions:
     def test_to_dict_basic(self):
         """Test basic serialization."""
         options = PriceScaleOptions()
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["autoScale"] is True
@@ -184,7 +184,7 @@ class TestPriceScaleOptions:
         """Test serialization with scale margins."""
         scale_margins = PriceScaleMargins(top=0.2, bottom=0.3)
         options = PriceScaleOptions(scale_margins=scale_margins)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "scaleMargins" in result
         assert result["scaleMargins"]["top"] == 0.2
@@ -193,35 +193,35 @@ class TestPriceScaleOptions:
     def test_to_dict_without_scale_margins(self):
         """Test serialization without scale margins."""
         options = PriceScaleOptions(scale_margins=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "scaleMargins" not in result
 
     def test_to_dict_omits_false_visible(self):
         """Test that visible=False is included in output."""
         options = PriceScaleOptions(visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
 
     def test_to_dict_omits_false_auto_scale(self):
         """Test that auto_scale=False is included in output."""
         options = PriceScaleOptions(auto_scale=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["autoScale"] is False
 
     def test_to_dict_omits_false_border_visible(self):
         """Test that border_visible=False is included in output."""
         options = PriceScaleOptions(border_visible=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["borderVisible"] is False
 
     def test_to_dict_omits_false_entire_text_only(self):
         """Test that entire_text_only=False is included in output."""
         options = PriceScaleOptions(entire_text_only=False)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["entireTextOnly"] is False
 
@@ -244,7 +244,7 @@ class TestPriceScaleOptions:
             scale_margins=scale_margins,
             price_scale_id="custom_scale",
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["autoScale"] is True
@@ -279,7 +279,7 @@ class TestPriceScaleOptionsIntegration:
             entire_text_only=True,
             mode=PriceScaleMode.LOGARITHMIC,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["autoScale"] is True
@@ -301,7 +301,7 @@ class TestPriceScaleOptionsIntegration:
             entire_text_only=False,
             mode=PriceScaleMode.NORMAL,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["autoScale"] is False
@@ -318,7 +318,7 @@ class TestPriceScaleOptionsEdgeCases:
     def test_price_scale_margins_with_zero_values(self):
         """Test PriceScaleMargins with zero values."""
         margins = PriceScaleMargins(top=0.0, bottom=0.0)
-        result = margins.to_dict()
+        result = margins.asdict()
 
         assert result["top"] == 0.0
         assert result["bottom"] == 0.0
@@ -326,7 +326,7 @@ class TestPriceScaleOptionsEdgeCases:
     def test_price_scale_margins_with_one_values(self):
         """Test PriceScaleMargins with one values."""
         margins = PriceScaleMargins(top=1.0, bottom=1.0)
-        result = margins.to_dict()
+        result = margins.asdict()
 
         assert result["top"] == 1.0
         assert result["bottom"] == 1.0
@@ -334,7 +334,7 @@ class TestPriceScaleOptionsEdgeCases:
     def test_price_scale_margins_with_negative_values(self):
         """Test PriceScaleMargins with negative values."""
         margins = PriceScaleMargins(top=-0.1, bottom=-0.2)
-        result = margins.to_dict()
+        result = margins.asdict()
 
         assert result["top"] == -0.1
         assert result["bottom"] == -0.2
@@ -342,14 +342,14 @@ class TestPriceScaleOptionsEdgeCases:
     def test_price_scale_options_with_special_characters_in_color(self):
         """Test PriceScaleOptions with special characters in border color."""
         options = PriceScaleOptions(border_color="rgba(255, 0, 0, 0.5)")
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["borderColor"] == "rgba(255, 0, 0, 0.5)"
 
     def test_price_scale_options_with_empty_string_id(self):
         """Test PriceScaleOptions with empty string price_scale_id."""
         options = PriceScaleOptions(price_scale_id="")
-        result = options.to_dict()
+        result = options.asdict()
 
         # Empty strings should be omitted from to_dict() output
         assert "priceScaleId" not in result
@@ -358,7 +358,7 @@ class TestPriceScaleOptionsEdgeCases:
         """Test PriceScaleOptions with long string price_scale_id."""
         long_id = "a" * 1000
         options = PriceScaleOptions(price_scale_id=long_id)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["priceScaleId"] == long_id
 
@@ -366,28 +366,28 @@ class TestPriceScaleOptionsEdgeCases:
         """Test PriceScaleOptions with special characters in price_scale_id."""
         special_id = "scale_123!@#$%^&*()"
         options = PriceScaleOptions(price_scale_id=special_id)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["priceScaleId"] == special_id
 
     def test_price_scale_options_with_zero_minimum_width(self):
         """Test PriceScaleOptions with zero minimum_width."""
         options = PriceScaleOptions(minimum_width=0)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["minimumWidth"] == 0
 
     def test_price_scale_options_with_large_minimum_width(self):
         """Test PriceScaleOptions with large minimum_width."""
         options = PriceScaleOptions(minimum_width=10000)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["minimumWidth"] == 10000
 
     def test_price_scale_options_with_negative_minimum_width(self):
         """Test PriceScaleOptions with negative minimum_width."""
         options = PriceScaleOptions(minimum_width=-100)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["minimumWidth"] == -100
 
@@ -459,7 +459,7 @@ class TestPriceScaleOptionsEdgeCases:
             align_labels=False,
             entire_text_only=False,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is False
         assert result["autoScale"] is False
@@ -482,7 +482,7 @@ class TestPriceScaleOptionsEdgeCases:
             align_labels=True,
             entire_text_only=True,
         )
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["visible"] is True
         assert result["autoScale"] is True
@@ -497,14 +497,14 @@ class TestPriceScaleOptionsEdgeCases:
         """Test PriceScaleOptions with all PriceScaleMode values."""
         for mode in PriceScaleMode:
             options = PriceScaleOptions(mode=mode)
-            result = options.to_dict()
+            result = options.asdict()
             assert result["mode"] == mode.value
 
     def test_price_scale_options_with_unicode_colors(self):
         """Test PriceScaleOptions with unicode characters in colors."""
         unicode_color = "rgba(255, 0, 0, 0.5) 🎨"
         options = PriceScaleOptions(border_color=unicode_color, text_color=unicode_color)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["borderColor"] == unicode_color
         assert result["textColor"] == unicode_color
@@ -513,7 +513,7 @@ class TestPriceScaleOptionsEdgeCases:
         """Test PriceScaleOptions with very long color strings."""
         long_color = "rgba(" + "255," * 1000 + " 0.5)"
         options = PriceScaleOptions(border_color=long_color, text_color=long_color)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert result["borderColor"] == long_color
         assert result["textColor"] == long_color
@@ -521,7 +521,7 @@ class TestPriceScaleOptionsEdgeCases:
     def test_price_scale_options_with_none_scale_margins(self):
         """Test PriceScaleOptions with None scale_margins."""
         options = PriceScaleOptions(scale_margins=None)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "scaleMargins" not in result
 
@@ -529,7 +529,7 @@ class TestPriceScaleOptionsEdgeCases:
         """Test PriceScaleOptions with custom PriceScaleMargins instance."""
         custom_margins = PriceScaleMargins(top=0.5, bottom=0.5)
         options = PriceScaleOptions(scale_margins=custom_margins)
-        result = options.to_dict()
+        result = options.asdict()
 
         assert "scaleMargins" in result
         assert result["scaleMargins"]["top"] == 0.5
