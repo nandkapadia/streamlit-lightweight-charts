@@ -14,33 +14,33 @@ import pytest
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 
 
-class TestEnum(Enum):
-    """Test enum for testing enum conversion."""
+class MockEnum(Enum):
+    """Mock enum for testing enum conversion."""
 
     VALUE_1 = "value1"
     VALUE_2 = "value2"
 
 
-class TestEnumLike:
-    """Test enum-like class for testing enum-like object conversion."""
+class MockEnumLike:
+    """Mock enum-like class for testing enum-like object conversion."""
 
     def __init__(self, value):
         self.value = value
 
 
 @dataclass
-class TestOptions(Options):
-    """Test options class for testing base Options functionality."""
+class MockOptions(Options):
+    """Mock options class for testing base Options functionality."""
 
     string_field: str = "test"
     int_field: int = 42
     float_field: float = 3.14
     bool_field: bool = True
-    enum_field: TestEnum = TestEnum.VALUE_1
-    enum_like_field: TestEnumLike = None
+    enum_field: MockEnum = MockEnum.VALUE_1
+    enum_like_field: MockEnumLike = None
     none_field: str = None
     empty_string_field: str = ""
-    nested_options: "TestOptions" = None
+    nested_options: "MockOptions" = None
     list_field: List[str] = None
     background_options: Dict[str, Any] = None
     other_options: Dict[str, Any] = None
@@ -51,12 +51,12 @@ class TestOptionsInheritance:
 
     def test_options_inheritance(self):
         """Test that Options can be inherited from."""
-        options = TestOptions()
+        options = MockOptions()
         assert isinstance(options, Options)
 
     def test_post_init_default(self):
         """Test that __post_init__ can be called without error."""
-        options = TestOptions()
+        options = MockOptions()
         options.__post_init__()
         # Should not raise any exception
 
@@ -80,7 +80,7 @@ class TestOptionsSerialization:
 
     def test_to_dict_basic_fields(self):
         """Test basic field serialization."""
-        options = TestOptions(
+        options = MockOptions(
             string_field="hello", int_field=123, float_field=2.718, bool_field=False
         )
         result = options.asdict()
@@ -92,7 +92,7 @@ class TestOptionsSerialization:
 
     def test_to_dict_enum_conversion(self):
         """Test that enums are converted to their values."""
-        options = TestOptions(enum_field=TestEnum.VALUE_2)
+        options = MockOptions(enum_field=MockEnum.VALUE_2)
         result = options.asdict()
 
         assert result["enumField"] == "value2"
@@ -101,11 +101,11 @@ class TestOptionsSerialization:
         """Test that enum-like objects are converted to their values."""
 
         # Use a real enum for testing
-        class TestEnumLike(Enum):
+        class LocalTestEnumLike(Enum):
             TEST_VALUE = "test_value"
 
-        enum_like = TestEnumLike.TEST_VALUE
-        options = TestOptions(enum_like_field=enum_like)
+        enum_like = LocalTestEnumLike.TEST_VALUE
+        options = MockOptions(enum_like_field=enum_like)
         result = options.asdict()
 
         assert result["enumLikeField"] == "test_value"
@@ -125,7 +125,7 @@ class TestOptionsSerialization:
             )
 
         non_enum_like = NonEnumLike("test_value")
-        options = TestOptions(enum_like_field=non_enum_like)
+        options = MockOptions(enum_like_field=non_enum_like)
         result = options.asdict()
 
         # Should not convert to value since it's not enum-like
@@ -133,22 +133,22 @@ class TestOptionsSerialization:
 
     def test_to_dict_omits_none_values(self):
         """Test that None values are omitted from output."""
-        options = TestOptions(none_field=None)
+        options = MockOptions(none_field=None)
         result = options.asdict()
 
         assert "noneField" not in result
 
     def test_to_dict_omits_empty_strings(self):
         """Test that empty strings are omitted from output."""
-        options = TestOptions(empty_string_field="")
+        options = MockOptions(empty_string_field="")
         result = options.asdict()
 
         assert "emptyStringField" not in result
 
     def test_to_dict_nested_options(self):
         """Test that nested Options objects are serialized."""
-        nested = TestOptions(string_field="nested")
-        options = TestOptions(nested_options=nested)
+        nested = MockOptions(string_field="nested")
+        options = MockOptions(nested_options=nested)
         result = options.asdict()
 
         assert "nestedOptions" in result
@@ -156,16 +156,16 @@ class TestOptionsSerialization:
 
     def test_to_dict_nested_none_options(self):
         """Test that None nested options are omitted."""
-        options = TestOptions(nested_options=None)
+        options = MockOptions(nested_options=None)
         result = options.asdict()
 
         assert "nestedOptions" not in result
 
     def test_to_dict_list_of_options(self):
         """Test that lists of Options objects are serialized."""
-        nested1 = TestOptions(string_field="nested1")
-        nested2 = TestOptions(string_field="nested2")
-        options = TestOptions(list_field=[nested1, nested2])
+        nested1 = MockOptions(string_field="nested1")
+        nested2 = MockOptions(string_field="nested2")
+        options = MockOptions(list_field=[nested1, nested2])
         result = options.asdict()
 
         assert "listField" in result
@@ -175,8 +175,8 @@ class TestOptionsSerialization:
 
     def test_to_dict_list_mixed_content(self):
         """Test that lists with mixed content are handled correctly."""
-        nested = TestOptions(string_field="nested")
-        options = TestOptions(list_field=["string", nested, 42])
+        nested = MockOptions(string_field="nested")
+        options = MockOptions(list_field=["string", nested, 42])
         result = options.asdict()
 
         assert "listField" in result
@@ -188,7 +188,7 @@ class TestOptionsSerialization:
     def test_to_dict_background_options_flattening(self):
         """Test that background_options are flattened into parent result."""
         background_opts = {"color": "#ffffff", "style": "solid"}
-        options = TestOptions(background_options=background_opts)
+        options = MockOptions(background_options=background_opts)
         result = options.asdict()
 
         # background_options should be flattened, not nested
@@ -199,7 +199,7 @@ class TestOptionsSerialization:
     def test_to_dict_other_options_nested(self):
         """Test that other _options fields are kept nested."""
         other_opts = {"setting": "value", "config": "test"}
-        options = TestOptions(other_options=other_opts)
+        options = MockOptions(other_options=other_opts)
         result = options.asdict()
 
         # other_options should be nested with camelCase key
@@ -209,7 +209,7 @@ class TestOptionsSerialization:
 
     def test_to_dict_camel_case_conversion(self):
         """Test that snake_case field names are converted to camelCase."""
-        options = TestOptions(string_field="test")
+        options = MockOptions(string_field="test")
         result = options.asdict()
 
         assert "stringField" in result
@@ -217,9 +217,9 @@ class TestOptionsSerialization:
 
     def test_to_dict_complex_nested_structure(self):
         """Test complex nested structure serialization."""
-        inner = TestOptions(string_field="inner", int_field=999)
-        middle = TestOptions(string_field="middle", nested_options=inner)
-        outer = TestOptions(string_field="outer", nested_options=middle)
+        inner = MockOptions(string_field="inner", int_field=999)
+        middle = MockOptions(string_field="middle", nested_options=inner)
+        outer = MockOptions(string_field="outer", nested_options=middle)
 
         result = outer.asdict()
 
@@ -230,15 +230,15 @@ class TestOptionsSerialization:
 
     def test_to_dict_with_all_field_types(self):
         """Test serialization with all field types."""
-        options = TestOptions(
+        options = MockOptions(
             string_field="test_string",
             int_field=42,
             float_field=3.14159,
             bool_field=True,
-            enum_field=TestEnum.VALUE_1,
+            enum_field=MockEnum.VALUE_1,
             none_field=None,
             empty_string_field="",
-            nested_options=TestOptions(string_field="nested"),
+            nested_options=MockOptions(string_field="nested"),
         )
 
         result = options.asdict()
@@ -291,7 +291,7 @@ class TestOptionsEdgeCases:
 
     def test_to_dict_with_zero_values(self):
         """Test that zero values are not omitted."""
-        options = TestOptions(int_field=0, float_field=0.0, bool_field=False)
+        options = MockOptions(int_field=0, float_field=0.0, bool_field=False)
         result = options.asdict()
 
         assert result["intField"] == 0
@@ -300,14 +300,14 @@ class TestOptionsEdgeCases:
 
     def test_to_dict_with_false_boolean(self):
         """Test that False boolean values are included."""
-        options = TestOptions(bool_field=False)
+        options = MockOptions(bool_field=False)
         result = options.asdict()
 
         assert result["boolField"] is False
 
     def test_to_dict_with_empty_list(self):
         """Test that empty lists are included."""
-        options = TestOptions(list_field=[])
+        options = MockOptions(list_field=[])
         result = options.asdict()
 
         assert "listField" in result
@@ -315,20 +315,20 @@ class TestOptionsEdgeCases:
 
     def test_to_dict_with_none_list(self):
         """Test that None lists are omitted."""
-        options = TestOptions(list_field=None)
+        options = MockOptions(list_field=None)
         result = options.asdict()
 
         assert "listField" not in result
 
     def test_to_dict_with_empty_dict(self):
         """Test that empty dicts are handled correctly."""
-        options = TestOptions(background_options={})
+        options = MockOptions(background_options={})
         result = options.asdict()
 
         # background_options should be flattened, but since it's empty,
         # it shouldn't add any fields to the result
         assert "backgroundOptions" not in result  # Should be flattened
-        # The result should contain the default fields from TestOptions
+        # The result should contain the default fields from MockOptions
         assert "stringField" in result
         assert "intField" in result
         assert "floatField" in result
@@ -337,7 +337,7 @@ class TestOptionsEdgeCases:
 
     def test_to_dict_with_none_dict(self):
         """Test that None dicts are omitted."""
-        options = TestOptions(background_options=None)
+        options = MockOptions(background_options=None)
         result = options.asdict()
 
         assert "backgroundOptions" not in result
@@ -357,7 +357,7 @@ class TestOptionsEdgeCases:
             )
 
         no_value_enum_like = NoValueEnumLike()
-        options = TestOptions(enum_like_field=no_value_enum_like)
+        options = MockOptions(enum_like_field=no_value_enum_like)
         result = options.asdict()
 
         # Should not convert since no value attribute
@@ -371,7 +371,7 @@ class TestOptionsEdgeCases:
                 self.value = value
 
         no_class_enum_like = NoClassEnumLike("test")
-        options = TestOptions(enum_like_field=no_class_enum_like)
+        options = MockOptions(enum_like_field=no_class_enum_like)
         result = options.asdict()
 
         # Should not convert since no __class__ attribute
@@ -388,7 +388,7 @@ class TestOptionsEdgeCases:
             __class__ = type("MockNoBasesEnumLike", (), {})
 
         no_bases_enum_like = NoBasesEnumLike("test")
-        options = TestOptions(enum_like_field=no_bases_enum_like)
+        options = MockOptions(enum_like_field=no_bases_enum_like)
         result = options.asdict()
 
         # Should not convert since no __bases__ attribute

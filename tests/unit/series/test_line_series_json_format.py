@@ -34,6 +34,7 @@ class TestLineSeriesJsonFormat:
 
         line_options = LineOptions(color="#2196f3", line_width=2)
         series = LineSeries(data=data)
+        series.line_options = line_options
 
         result = series.asdict()
 
@@ -84,6 +85,7 @@ class TestLineSeriesJsonFormat:
         )
 
         series = LineSeries(data=data)
+        series.line_options = line_options
         result = series.asdict()
 
         # Check options structure
@@ -107,6 +109,7 @@ class TestLineSeriesJsonFormat:
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
         series = LineSeries(data=data)
+        series.line_options = line_options
 
         # Add price lines
         resistance = PriceLineOptions(
@@ -295,6 +298,7 @@ class TestLineSeriesJsonFormat:
 
         # Create series
         series = LineSeries(data=data)
+        series.line_options = line_options
 
         # Add a price line
         price_line = PriceLineOptions(

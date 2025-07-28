@@ -708,7 +708,7 @@ class TestSeriesBaseAdvanced:
 
         # Create series with custom price_scale_id
         data = [LineData("2024-01-01", 100)]
-        series = LineSeries(data=data), price_scale_id="left")
+        series = LineSeries(data=data, price_scale_id="left")
 
         # Convert to dict
         result = series.asdict()

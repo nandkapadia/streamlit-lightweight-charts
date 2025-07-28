@@ -62,11 +62,8 @@ st.write("Column mapping configuration:")
 st.json(column_mapping)
 
 # Create line series from DataFrame
-from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
-
-line_options = LineOptions()
 line_series = LineSeries.from_dataframe(
-    df=df, column_mapping=column_mapping, line_options=line_options
+    df=df, column_mapping=column_mapping
 )
 
 # Create chart
@@ -118,7 +115,7 @@ st.json(advanced_column_mapping)
 
 # Create advanced line series
 advanced_line_series = LineSeries.from_dataframe(
-    df=advanced_df, column_mapping=advanced_column_mapping, line_options=line_options
+    df=advanced_df, column_mapping=advanced_column_mapping
 )
 
 # Add some price lines and markers

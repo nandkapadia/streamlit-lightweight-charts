@@ -36,6 +36,7 @@ class TestLineSeriesExtended:
         data = [LineData(time=1640995200, value=100)]
 
         series = LineSeries(data=data)
+        series.line_options = line_options
 
         # Add price lines and markers
         price_line = PriceLineOptions(price=100, color="#00ff00")
@@ -86,10 +87,8 @@ class TestLineSeriesExtended:
             }
         )
 
-        line_options = LineOptions()
         series = LineSeries.from_dataframe(
             df=df,
-            line_options=line_options,
             column_mapping={"time": "timestamp", "value": "price", "color": "line_color"},
         )
 
@@ -105,9 +104,8 @@ class TestLineSeriesExtended:
         """Test from_dataframe with time in index."""
         df = pd.DataFrame({"value": [100, 110]}, index=pd.to_datetime(["2022-01-01", "2022-01-02"]))
 
-        line_options = LineOptions()
         series = LineSeries.from_dataframe(
-            df=df, line_options=line_options, column_mapping={"time": "index", "value": "value"}
+            df=df, column_mapping={"time": "index", "value": "value"}
         )
 
         assert len(series.data) == 2
@@ -120,9 +118,8 @@ class TestLineSeriesExtended:
             [("2022-01-01", "A"), ("2022-01-02", "B")], names=["date", "symbol"]
         )
 
-        line_options = LineOptions()
         series = LineSeries.from_dataframe(
-            df=df, line_options=line_options, column_mapping={"time": "date", "value": "value"}
+            df=df, column_mapping={"time": "date", "value": "value"}
         )
 
         assert len(series.data) == 2
@@ -132,16 +129,18 @@ class TestLineSeriesExtended:
         """Test error handling when line_options is missing."""
         data = [LineData(time=1640995200, value=100)]
 
-        with pytest.raises(TypeError):
-            LineSeries(data=data)  # Missing line_options
+        # LineSeries now has default line_options, so this should not raise
+        series = LineSeries(data=data)
+        assert series.line_options is not None
 
     def test_error_handling_invalid_line_options(self):
         """Test error handling with invalid line_options."""
         data = [LineData(time=1640995200, value=100)]
+        series = LineSeries(data=data)
 
-        # This should raise TypeError as the constructor validates line_options type
+        # This should raise TypeError when setting invalid line_options
         with pytest.raises(TypeError, match="line_options must be an instance of LineOptions"):
-            series = LineSeries(data=data)
+            series.line_options = "invalid"
 
     def test_line_options_property(self):
         """Test the line_options property."""
@@ -149,6 +148,7 @@ class TestLineSeriesExtended:
         data = [LineData(time=1640995200, value=100)]
 
         series = LineSeries(data=data)
+        series.line_options = line_options
 
         assert series.line_options is line_options
 
@@ -230,9 +230,8 @@ class TestLineSeriesExtended:
         """Test handling of empty DataFrame."""
         df = pd.DataFrame(columns=["time", "value"])
 
-        line_options = LineOptions()
         series = LineSeries.from_dataframe(
-            df=df, line_options=line_options, column_mapping={"time": "time", "value": "value"}
+            df=df, column_mapping={"time": "time", "value": "value"}
         )
 
         assert len(series.data) == 0
@@ -241,9 +240,8 @@ class TestLineSeriesExtended:
         """Test handling of single row DataFrame."""
         df = pd.DataFrame({"time": [1640995200], "value": [100]})
 
-        line_options = LineOptions()
         series = LineSeries.from_dataframe(
-            df=df, line_options=line_options, column_mapping={"time": "time", "value": "value"}
+            df=df, column_mapping={"time": "time", "value": "value"}
         )
 
         assert len(series.data) == 1

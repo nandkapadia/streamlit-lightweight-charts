@@ -34,7 +34,8 @@ def create_sample_line_data(n=10):
 
 def test_multi_series_chart_with_price_scales():
     """Test chart with multiple series and different price scales."""
-    line_series = LineSeries(data=create_sample_line_data()),
+    line_series = LineSeries(
+        data=create_sample_line_data(),
         price_scale_id="left",
     )
     candle_series = CandlestickSeries(data=create_sample_ohlcv_data(), price_scale_id="right")
