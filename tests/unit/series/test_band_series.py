@@ -48,7 +48,6 @@ class TestBandSeriesConstruction:
             visible=False,
             price_scale_id="left",
             pane_id=1,
-            
         )
 
         assert series.data == data
@@ -184,14 +183,20 @@ class TestBandSeriesProperties:
         series = BandSeries(data=data)
 
         # Test invalid line options type
-        with pytest.raises(TypeError, match="upper_line_options must be an instance of LineOptions or None"):
+        with pytest.raises(
+            TypeError, match="upper_line_options must be an instance of LineOptions or None"
+        ):
             series.upper_line_options = "invalid"
 
         # Test invalid middle line options type
-        with pytest.raises(TypeError, match="middle_line_options must be an instance of LineOptions or None"):
+        with pytest.raises(
+            TypeError, match="middle_line_options must be an instance of LineOptions or None"
+        ):
             series.middle_line_options = "invalid"
 
-        with pytest.raises(TypeError, match="lower_line_options must be an instance of LineOptions or None"):
+        with pytest.raises(
+            TypeError, match="lower_line_options must be an instance of LineOptions or None"
+        ):
             series.lower_line_options = "invalid"
 
         # Test invalid fill color type
@@ -521,7 +526,6 @@ class TestBandSeriesInheritance:
             "visible",
             "price_scale_id",
             "pane_id",
-            
             "markers",
             "price_lines",
             "price_format",

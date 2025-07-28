@@ -7,8 +7,12 @@ from streamlit_lightweight_charts_pro.utils import chainable_field
 
 @dataclass
 @chainable_field("type", str, validator=lambda v: PriceFormatOptions._validate_type_static(v))
-@chainable_field("precision", int, validator=lambda v: PriceFormatOptions._validate_precision_static(v))
-@chainable_field("min_move", (int, float), validator=lambda v: PriceFormatOptions._validate_min_move_static(v))
+@chainable_field(
+    "precision", int, validator=lambda v: PriceFormatOptions._validate_precision_static(v)
+)
+@chainable_field(
+    "min_move", (int, float), validator=lambda v: PriceFormatOptions._validate_min_move_static(v)
+)
 @chainable_field("formatter", str)
 class PriceFormatOptions(Options):
     """
@@ -29,7 +33,7 @@ class PriceFormatOptions(Options):
     def __post_init__(self):
         """Post-initialization validation."""
         super().__post_init__()
-    
+
     @staticmethod
     def _validate_type_static(type_value: str) -> str:
         """Static version of type validator for decorator use."""
@@ -39,14 +43,14 @@ class PriceFormatOptions(Options):
                 f"'percent', 'custom'."
             )
         return type_value
-    
+
     @staticmethod
     def _validate_precision_static(precision: int) -> int:
         """Static version of precision validator for decorator use."""
         if not isinstance(precision, int) or precision < 0:
             raise ValueError(f"precision must be a non-negative integer, got {precision}")
         return precision
-    
+
     @staticmethod
     def _validate_min_move_static(min_move: float) -> float:
         """Static version of min_move validator for decorator use."""

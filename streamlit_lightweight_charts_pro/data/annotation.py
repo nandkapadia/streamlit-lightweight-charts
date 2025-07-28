@@ -717,9 +717,7 @@ class AnnotationManager:
             Dict[str, Any]: Dictionary representation of all layers with
                 layer names as keys.
         """
-        return {
-            "layers": {layer_name: layer.asdict() for layer_name, layer in self.layers.items()}
-        }
+        return {"layers": {layer_name: layer.asdict() for layer_name, layer in self.layers.items()}}
 
 
 def create_text_annotation(

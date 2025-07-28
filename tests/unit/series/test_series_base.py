@@ -121,9 +121,7 @@ class TestSeriesBase:
         """Test Series construction with custom parameters."""
         data = [LineData(time=1640995200, value=100)]
 
-        series = ConcreteSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1
-        )
+        series = ConcreteSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.visible is False
         assert series.price_scale_id == "left"
@@ -710,7 +708,7 @@ class TestSeriesBaseAdvanced:
 
         # Create series with custom price_scale_id
         data = [LineData("2024-01-01", 100)]
-        series = LineSeries(data=data, line_options=LineOptions(), price_scale_id="left")
+        series = LineSeries(data=data), price_scale_id="left")
 
         # Convert to dict
         result = series.asdict()
@@ -720,7 +718,7 @@ class TestSeriesBaseAdvanced:
         assert result["options"]["priceScaleId"] == "left"
 
         # Test with default price_scale_id
-        series_default = LineSeries(data=data, line_options=LineOptions())  # Default is "right"
+        series_default = LineSeries(data=data)  # Default is "right"
         result_default = series_default.asdict()
 
         assert "priceScaleId" in result_default["options"]

@@ -23,7 +23,7 @@ class TestFrontendPriceLines:
         # Create series with price lines
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add price line
         price_line = PriceLineOptions(price=108.0, color="#F44336", title="Resistance")
@@ -47,7 +47,7 @@ class TestFrontendPriceLines:
         # Create series with price lines
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add multiple price lines
         resistance = PriceLineOptions(price=108.0, color="#F44336", title="Resistance")
@@ -82,7 +82,7 @@ class TestFrontendPriceLines:
         # Create first series with price lines
         data1 = [LineData(time=1704067200, value=100.0)]
         line_options1 = LineOptions(color="#2196f3")
-        series1 = LineSeries(data=data1, line_options=line_options1)
+        series1 = LineSeries(data=data1)
 
         resistance = PriceLineOptions(price=108.0, color="#F44336", title="Resistance 1")
         series1.add_price_line(resistance)
@@ -90,7 +90,7 @@ class TestFrontendPriceLines:
         # Create second series with different price lines
         data2 = [LineData(time=1704067200, value=50.0)]
         line_options2 = LineOptions(color="#FF9800")
-        series2 = LineSeries(data=data2, line_options=line_options2)
+        series2 = LineSeries(data=data2)
 
         support = PriceLineOptions(price=45.0, color="#4CAF50", title="Support 2")
         series2.add_price_line(support)
@@ -118,7 +118,7 @@ class TestFrontendPriceLines:
         # Create series with price lines
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         price_line = PriceLineOptions(
             price=108.0,
@@ -162,7 +162,7 @@ class TestFrontendPriceLines:
         # Create series without price lines
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Get series configuration
         series_config = series.asdict()
@@ -175,7 +175,7 @@ class TestFrontendPriceLines:
         # Create series with comprehensive price line
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         price_line = PriceLineOptions(
             id="test_id",

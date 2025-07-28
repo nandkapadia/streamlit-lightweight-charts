@@ -114,7 +114,8 @@ class BackgroundGradient(Options, ABC):
             )
         if not _is_valid_color(self.bottom_color):
             raise ValueError(
-                f"Invalid bottom_color format: {self.bottom_color!r}. Must be hex, rgba, or named color."
+                f"Invalid bottom_color format: {self.bottom_color!r}. "
+                f"Must be hex, rgba, or named color."
             )
 
 

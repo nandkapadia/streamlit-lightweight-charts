@@ -69,7 +69,6 @@ class LineSeries(Series):
     def __init__(
         self,
         data: Union[List[LineData], pd.DataFrame, pd.Series],
-        line_options: LineOptions,
         column_mapping: Optional[dict] = None,
         visible: bool = True,
         price_scale_id: str = "right",
@@ -82,6 +81,5 @@ class LineSeries(Series):
             price_scale_id=price_scale_id,
             pane_id=pane_id,
         )
-        self.line_options = line_options
-
-
+        # Initialize line_options with default value
+        self._line_options = LineOptions()

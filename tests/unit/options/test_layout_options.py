@@ -68,22 +68,15 @@ class TestLayoutOptions:
     def test_validation_background_options(self):
         """Test validation of background_options field."""
         options = LayoutOptions()
-        with pytest.raises(
-            TypeError, match="background_options must be of type"
-        ):
+        with pytest.raises(TypeError, match="background_options must be of type"):
             options.set_background_options("invalid")
 
     def test_validation_pane_options(self):
-
-
         """Test validation of pane_options field."""
-
 
         options = LayoutOptions()
 
-
         with pytest.raises(TypeError, match="pane_options must be of type"):
-
 
             options.set_pane_options("invalid")
 
@@ -135,30 +128,20 @@ class TestGridOptions:
         assert options.horz_lines == horz_lines
 
     def test_validation_vert_lines(self):
-
-
         """Test validation of vert_lines field."""
-
 
         options = GridOptions()
 
-
         with pytest.raises(TypeError, match="vert_lines must be of type"):
-
 
             options.set_vert_lines("invalid")
 
     def test_validation_horz_lines(self):
-
-
         """Test validation of horz_lines field."""
-
 
         options = GridOptions()
 
-
         with pytest.raises(TypeError, match="horz_lines must be of type"):
-
 
             options.set_horz_lines("invalid")
 
@@ -203,30 +186,20 @@ class TestGridLineOptions:
             options.set_color(123)
 
     def test_validation_style(self):
-
-
         """Test validation of style field."""
-
 
         options = GridLineOptions()
 
-
         with pytest.raises(TypeError, match="style must be of type"):
-
 
             options.set_style("invalid")
 
     def test_validation_visible(self):
-
-
         """Test validation of visible field."""
-
 
         options = GridLineOptions()
 
-
         with pytest.raises(TypeError, match="visible must be of type"):
-
 
             options.set_visible("invalid")
 
@@ -280,16 +253,11 @@ class TestPaneOptions:
             options.set_separator_hover_color(123)
 
     def test_validation_enable_resize(self):
-
-
         """Test validation of enable_resize field."""
-
 
         options = PaneOptions()
 
-
         with pytest.raises(TypeError, match="enable_resize must be of type"):
-
 
             options.set_enable_resize("invalid")
 
@@ -338,16 +306,11 @@ class TestWatermarkOptions:
         assert options.color == "#ff0000"
 
     def test_validation_visible(self):
-
-
         """Test validation of visible field."""
-
 
         options = WatermarkOptions()
 
-
         with pytest.raises(TypeError, match="visible must be of type"):
-
 
             options.set_visible("invalid")
 
@@ -358,44 +321,29 @@ class TestWatermarkOptions:
             options.set_text(123)
 
     def test_validation_font_size(self):
-
-
         """Test validation of font_size field."""
-
 
         options = WatermarkOptions()
 
-
         with pytest.raises(TypeError, match="font_size must be of type"):
-
 
             options.set_font_size("invalid")
 
     def test_validation_horz_align(self):
-
-
         """Test validation of horz_align field."""
-
 
         options = WatermarkOptions()
 
-
         with pytest.raises(TypeError, match="horz_align must be of type"):
-
 
             options.set_horz_align("invalid")
 
     def test_validation_vert_align(self):
-
-
         """Test validation of vert_align field."""
-
 
         options = WatermarkOptions()
 
-
         with pytest.raises(TypeError, match="vert_align must be of type"):
-
 
             options.set_vert_align("invalid")
 

@@ -5,12 +5,13 @@ This launcher provides a simple interface to run different line chart examples.
 Users can select which example to run from a dropdown menu.
 """
 
-from pathlib import Path
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+from pathlib import Path
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 import streamlit as st

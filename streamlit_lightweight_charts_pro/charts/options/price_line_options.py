@@ -3,21 +3,31 @@ from typing import Optional
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 from streamlit_lightweight_charts_pro.utils import chainable_field
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
 @chainable_field("id", str)
 @chainable_field("price", (int, float))
-@chainable_field("color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "color"))
+@chainable_field(
+    "color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "color")
+)
 @chainable_field("line_width", int)
 @chainable_field("line_style", LineStyle)
 @chainable_field("line_visible", bool)
 @chainable_field("axis_label_visible", bool)
 @chainable_field("title", str)
-@chainable_field("axis_label_color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_color"))
-@chainable_field("axis_label_text_color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_text_color"))
+@chainable_field(
+    "axis_label_color",
+    str,
+    validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_color"),
+)
+@chainable_field(
+    "axis_label_text_color",
+    str,
+    validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_text_color"),
+)
 class PriceLineOptions(Options):
     """
     Encapsulates style and configuration options for a price line,
@@ -52,7 +62,7 @@ class PriceLineOptions(Options):
     def __post_init__(self):
         """Post-initialization validation."""
         super().__post_init__()
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""

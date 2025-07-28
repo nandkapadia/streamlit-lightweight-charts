@@ -43,7 +43,7 @@ class TestChartConstructionEdgeCases:
     def test_construction_with_mixed_valid_invalid_series(self):
         """Test Chart construction with mix of valid and invalid series."""
         valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         with pytest.raises(TypeError):
@@ -109,7 +109,7 @@ class TestChartSeriesManagementEdgeCases:
         """Test adding multiple invalid series."""
         chart = Chart()
         valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
         chart.add_series(valid_series)
 
@@ -481,7 +481,7 @@ class TestChartTradeVisualizationEdgeCases:
 
         # Use real series that doesn't have markers
         series_without_markers = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
         chart.add_series(series_without_markers)
 
@@ -523,7 +523,7 @@ class TestChartFrontendConfigurationEdgeCases:
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Add real series
-        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+        series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series)
 
         # Test to_frontend_config method
@@ -539,7 +539,7 @@ class TestChartFrontendConfigurationEdgeCases:
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Add real series
-        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+        series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series)
 
         # Test to_frontend_config method
@@ -555,7 +555,7 @@ class TestChartFrontendConfigurationEdgeCases:
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Add real series
-        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+        series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series)
 
         # Test to_frontend_config method
@@ -571,7 +571,7 @@ class TestChartFrontendConfigurationEdgeCases:
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Add real series
-        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+        series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series)
 
         # Test to_frontend_config method
@@ -586,7 +586,7 @@ class TestChartFrontendConfigurationEdgeCases:
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Add real series
-        series = LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+        series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series)
 
         # Test to_frontend_config method
@@ -666,7 +666,7 @@ class TestChartDataValidationEdgeCases:
         """Test chart with extreme numeric values."""
         # Test with infinity - should be handled correctly
         data_with_inf = [LineData(time=1640995200, value=float("inf"))]
-        series_with_inf = LineSeries(data=data_with_inf, line_options=LineOptions())
+        series_with_inf = LineSeries(data=data_with_inf)
 
         # Should not raise an exception - infinity is valid for charts
         chart = Chart(series=series_with_inf)
@@ -677,7 +677,7 @@ class TestChartDataValidationEdgeCases:
         """Test chart with NaN values."""
         # Test with NaN - should be converted to 0.0
         data_with_nan = [LineData(time=1640995200, value=float("nan"))]
-        series_with_nan = LineSeries(data=data_with_nan, line_options=LineOptions())
+        series_with_nan = LineSeries(data=data_with_nan)
 
         # Should not raise an exception - NaN is converted to 0.0
         chart = Chart(series=series_with_nan)
@@ -690,9 +690,7 @@ class TestChartDataValidationEdgeCases:
         """Test chart with negative timestamps."""
         # Test with negative timestamp - should be handled correctly
         data_with_negative_time = [LineData(time=-1640995200, value=100)]
-        series_with_negative_time = LineSeries(
-            data=data_with_negative_time, line_options=LineOptions()
-        )
+        series_with_negative_time = LineSeries(data=data_with_negative_time)
 
         # Should not raise an exception - negative timestamps are valid for historical data
         chart = Chart(series=series_with_negative_time)
@@ -704,7 +702,7 @@ class TestChartDataValidationEdgeCases:
         # Test with future timestamp (year 2100) - should be handled correctly
         future_time = int(datetime(2100, 1, 1).timestamp())
         data_with_future_time = [LineData(time=future_time, value=100)]
-        series_with_future_time = LineSeries(data=data_with_future_time, line_options=LineOptions())
+        series_with_future_time = LineSeries(data=data_with_future_time)
 
         # Should not raise an exception - future timestamps are valid for forecasting
         chart = Chart(series=series_with_future_time)
@@ -721,9 +719,7 @@ class TestChartDataValidationEdgeCases:
         """Test chart with very large numbers."""
         # Test with very large numbers
         data_with_large_numbers = [LineData(time=1640995200, value=1e20)]
-        series_with_large_numbers = LineSeries(
-            data=data_with_large_numbers, line_options=LineOptions()
-        )
+        series_with_large_numbers = LineSeries(data=data_with_large_numbers)
 
         # Should handle large numbers gracefully
         chart = Chart(series=series_with_large_numbers)
@@ -733,9 +729,7 @@ class TestChartDataValidationEdgeCases:
         """Test chart with very small numbers."""
         # Test with very small numbers
         data_with_small_numbers = [LineData(time=1640995200, value=1e-20)]
-        series_with_small_numbers = LineSeries(
-            data=data_with_small_numbers, line_options=LineOptions()
-        )
+        series_with_small_numbers = LineSeries(data=data_with_small_numbers)
 
         # Should handle small numbers gracefully
         chart = Chart(series=series_with_small_numbers)
@@ -752,7 +746,7 @@ class TestChartMemoryAndPerformanceEdgeCases:
         for i in range(10000):
             large_data.append(LineData(time=1640995200 + i, value=100 + i))
 
-        series = LineSeries(data=large_data, line_options=LineOptions())
+        series = LineSeries(data=large_data)
 
         import time
 
@@ -782,7 +776,7 @@ class TestChartMemoryAndPerformanceEdgeCases:
         for i in range(10000):
             large_data.append(LineData(time=1640995200 + i, value=100 + i))
 
-        series = LineSeries(data=large_data, line_options=LineOptions())
+        series = LineSeries(data=large_data)
         chart = Chart(series=series)
         config = chart.to_frontend_config()
 
@@ -804,7 +798,7 @@ class TestChartMemoryAndPerformanceEdgeCases:
         series_list = []
         for i in range(100):
             data = [LineData(time=1640995200, value=100 + i)]
-            series = LineSeries(data=data, line_options=LineOptions())
+            series = LineSeries(data=data)
             series_list.append(series)
 
         import time
@@ -824,7 +818,7 @@ class TestChartMemoryAndPerformanceEdgeCases:
     def test_chart_serialization_idempotency(self):
         """Test that chart serialization is idempotent."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         chart = Chart(series=series)
 
         # Serialize multiple times
@@ -838,7 +832,7 @@ class TestChartMemoryAndPerformanceEdgeCases:
     def test_chart_to_dict_does_not_modify_original(self):
         """Test that to_frontend_config doesn't modify original chart."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         chart = Chart(series=series)
 
         original_series_count = len(chart.series)

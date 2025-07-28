@@ -19,14 +19,12 @@ class TestOptionsUpdateMethod:
     def test_simple_property_updates(self):
         """Test updating simple properties."""
         options = LineOptions()
-        
+
         # Update simple properties
-        result = options.update({
-            "color": "#ff0000",
-            "line_width": 3,
-            "line_style": LineStyle.DASHED
-        })
-        
+        result = options.update(
+            {"color": "#ff0000", "line_width": 3, "line_style": LineStyle.DASHED}
+        )
+
         assert result is options  # Method chaining
         assert options.color == "#ff0000"
         assert options.line_width == 3
@@ -35,12 +33,9 @@ class TestOptionsUpdateMethod:
     def test_camel_case_key_support(self):
         """Test that camelCase keys are converted to snake_case."""
         options = LineOptions()
-        
-        result = options.update({
-            "lineWidth": 5,
-            "lineStyle": LineStyle.DOTTED
-        })
-        
+
+        result = options.update({"lineWidth": 5, "lineStyle": LineStyle.DOTTED})
+
         assert result is options
         assert options.line_width == 5
         assert options.line_style == LineStyle.DOTTED
@@ -50,13 +45,9 @@ class TestOptionsUpdateMethod:
         options = LineOptions(color="#ff0000", line_width=2)
         original_color = options.color
         original_width = options.line_width
-        
-        result = options.update({
-            "color": None,
-            "line_width": None,
-            "line_style": LineStyle.DASHED
-        })
-        
+
+        result = options.update({"color": None, "line_width": None, "line_style": LineStyle.DASHED})
+
         assert result is options
         assert options.color == original_color  # Unchanged
         assert options.line_width == original_width  # Unchanged
@@ -65,29 +56,27 @@ class TestOptionsUpdateMethod:
     def test_invalid_field_raises_error(self):
         """Test that invalid fields raise ValueError."""
         options = LineOptions()
-        
+
         with pytest.raises(ValueError, match="Invalid option field: invalid_field"):
             options.update({"invalid_field": "value"})
 
     def test_mixed_valid_invalid_fields(self):
         """Test handling of mixed valid and invalid fields."""
         options = LineOptions()
-        
+
         with pytest.raises(ValueError, match="Invalid option field: invalid_field"):
-            options.update({
-                "color": "#ff0000",
-                "invalid_field": "value"
-            })
+            options.update({"color": "#ff0000", "invalid_field": "value"})
 
     def test_method_chaining(self):
         """Test method chaining with update."""
         options = LineOptions()
-        
-        result = (options
-                 .update({"color": "#ff0000"})
-                 .update({"line_width": 3})
-                 .update({"line_style": LineStyle.DASHED}))
-        
+
+        result = (
+            options.update({"color": "#ff0000"})
+            .update({"line_width": 3})
+            .update({"line_style": LineStyle.DASHED})
+        )
+
         assert result is options
         assert options.color == "#ff0000"
         assert options.line_width == 3
@@ -101,14 +90,10 @@ class TestSeriesUpdateMethod:
         """Test updating simple series properties."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
-        result = series.update({
-            "visible": False,
-            "price_scale_id": "left",
-            "pane_id": 1
-        })
-        
+        series = LineSeries(data=data)
+
+        result = series.update({"visible": False, "price_scale_id": "left", "pane_id": 1})
+
         assert result is series  # Method chaining
         assert series.visible is False
         assert series.price_scale_id == "left"
@@ -118,16 +103,12 @@ class TestSeriesUpdateMethod:
         """Test updating nested Options objects."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
-        result = series.update({
-            "line_options": {
-                "color": "#ff0000",
-                "line_width": 3,
-                "line_style": LineStyle.DASHED
-            }
-        })
-        
+        series = LineSeries(data=data)
+
+        result = series.update(
+            {"line_options": {"color": "#ff0000", "line_width": 3, "line_style": LineStyle.DASHED}}
+        )
+
         assert result is series
         assert series.line_options.color == "#ff0000"
         assert series.line_options.line_width == 3
@@ -137,13 +118,10 @@ class TestSeriesUpdateMethod:
         """Test that camelCase keys are converted to snake_case."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
-        result = series.update({
-            "priceScaleId": "left",
-            "paneId": 2
-        })
-        
+        series = LineSeries(data=data)
+
+        result = series.update({"priceScaleId": "left", "paneId": 2})
+
         assert result is series
         assert series.price_scale_id == "left"
         assert series.pane_id == 2
@@ -152,16 +130,14 @@ class TestSeriesUpdateMethod:
         """Test that None values are ignored for method chaining."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options, visible=True, price_scale_id="right")
+        series = LineSeries(
+            data=data, visible=True, price_scale_id="right"
+        )
         original_visible = series.visible
         original_scale_id = series.price_scale_id
-        
-        result = series.update({
-            "visible": None,
-            "price_scale_id": None,
-            "pane_id": 1
-        })
-        
+
+        result = series.update({"visible": None, "price_scale_id": None, "pane_id": 1})
+
         assert result is series
         assert series.visible == original_visible  # Unchanged
         assert series.price_scale_id == original_scale_id  # Unchanged
@@ -171,8 +147,8 @@ class TestSeriesUpdateMethod:
         """Test that invalid attributes raise ValueError."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
+        series = LineSeries(data=data)
+
         with pytest.raises(ValueError, match="Invalid series attribute: invalid_attr"):
             series.update({"invalid_attr": "value"})
 
@@ -180,13 +156,14 @@ class TestSeriesUpdateMethod:
         """Test method chaining with update."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
-        result = (series
-                 .update({"visible": False})
-                 .update({"price_scale_id": "left"})
-                 .update({"pane_id": 1}))
-        
+        series = LineSeries(data=data)
+
+        result = (
+            series.update({"visible": False})
+            .update({"price_scale_id": "left"})
+            .update({"pane_id": 1})
+        )
+
         assert result is series
         assert series.visible is False
         assert series.price_scale_id == "left"
@@ -196,18 +173,20 @@ class TestSeriesUpdateMethod:
         """Test complex nested updates with multiple levels."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
-        result = series.update({
-            "visible": False,
-            "price_scale_id": "left",
-            "line_options": {
-                "color": "#ff0000",
-                "line_width": 3,
-                "line_style": LineStyle.DASHED
+        series = LineSeries(data=data)
+
+        result = series.update(
+            {
+                "visible": False,
+                "price_scale_id": "left",
+                "line_options": {
+                    "color": "#ff0000",
+                    "line_width": 3,
+                    "line_style": LineStyle.DASHED,
+                },
             }
-        })
-        
+        )
+
         assert result is series
         assert series.visible is False
         assert series.price_scale_id == "left"
@@ -222,14 +201,10 @@ class TestUpdateMethodIntegration:
     def test_options_serialization_after_update(self):
         """Test that updated options serialize correctly."""
         options = LineOptions()
-        options.update({
-            "color": "#ff0000",
-            "line_width": 3,
-            "line_style": LineStyle.DASHED
-        })
-        
+        options.update({"color": "#ff0000", "line_width": 3, "line_style": LineStyle.DASHED})
+
         result = options.asdict()
-        
+
         assert result["color"] == "#ff0000"
         assert result["lineWidth"] == 3
         assert result["lineStyle"] == LineStyle.DASHED.value
@@ -238,18 +213,17 @@ class TestUpdateMethodIntegration:
         """Test that updated series serialize correctly."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        series.update({
-            "visible": False,
-            "price_scale_id": "left",
-            "line_options": {
-                "color": "#ff0000",
-                "line_width": 3
+        series = LineSeries(data=data)
+        series.update(
+            {
+                "visible": False,
+                "price_scale_id": "left",
+                "line_options": {"color": "#ff0000", "line_width": 3},
             }
-        })
-        
+        )
+
         result = series.asdict()
-        
+
         assert result["visible"] is False
         assert result["priceScaleId"] == "left"
         assert result["options"]["color"] == "#ff0000"
@@ -258,10 +232,10 @@ class TestUpdateMethodIntegration:
     def test_update_preserves_existing_values(self):
         """Test that update doesn't overwrite unspecified values."""
         options = LineOptions(color="#ff0000", line_width=2, line_style=LineStyle.SOLID)
-        
+
         # Only update line_width
         options.update({"line_width": 5})
-        
+
         assert options.color == "#ff0000"  # Preserved
         assert options.line_width == 5  # Updated
         assert options.line_style == LineStyle.SOLID  # Preserved
@@ -271,9 +245,9 @@ class TestUpdateMethodIntegration:
         options = LineOptions(color="#ff0000", line_width=2)
         original_color = options.color
         original_width = options.line_width
-        
+
         result = options.update({})
-        
+
         assert result is options
         assert options.color == original_color
         assert options.line_width == original_width
@@ -285,12 +259,9 @@ class TestUpdateMethodEdgeCases:
     def test_update_with_enum_values(self):
         """Test updating with enum values."""
         options = LineOptions()
-        
-        options.update({
-            "line_style": LineStyle.DASHED,
-            "line_type": "curved"  # String enum value
-        })
-        
+
+        options.update({"line_style": LineStyle.DASHED, "line_type": "curved"})  # String enum value
+
         assert options.line_style == LineStyle.DASHED
         # Note: line_type might not exist in LineOptions, this is just for testing
 
@@ -298,30 +269,32 @@ class TestUpdateMethodEdgeCases:
         """Test updating with complex types."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
-        
+        series = LineSeries(data=data)
+
         # Test with list (should be handled gracefully)
         series.update({"pane_id": [1, 2, 3]})  # This should work or raise appropriate error
-        
+
         # Test with dict for non-options attribute
-        series.update({"pane_id": {"nested": "value"}})  # This should work or raise appropriate error
+        series.update(
+            {"pane_id": {"nested": "value"}}
+        )  # This should work or raise appropriate error
 
     def test_update_with_special_characters(self):
         """Test updating with special characters in keys."""
         options = LineOptions()
-        
+
         # Test with keys that have special characters (should be handled gracefully)
         with pytest.raises(ValueError):
             options.update({"invalid-key": "value"})
-        
+
         with pytest.raises(ValueError):
             options.update({"invalid.key": "value"})
 
     def test_update_with_unicode(self):
         """Test updating with unicode characters."""
         options = LineOptions()
-        
+
         # Test with unicode in values
         options.update({"color": "🔴"})  # Unicode emoji
-        
-        assert options.color == "🔴" 
+
+        assert options.color == "🔴"

@@ -46,44 +46,44 @@ def test_default_values():
 def test_chainable_properties():
     """Test that all properties support method chaining."""
     opts = PriceLineOptions()
-    
+
     # Test individual chainable methods
     result = opts.set_id("test_id")
     assert result is opts
     assert opts.id == "test_id"
-    
+
     result = opts.set_price(100.5)
     assert result is opts
     assert opts.price == 100.5
-    
+
     result = opts.set_color("#ff0000")
     assert result is opts
     assert opts.color == "#ff0000"
-    
+
     result = opts.set_line_width(3)
     assert result is opts
     assert opts.line_width == 3
-    
+
     result = opts.set_line_style(LineStyle.DASHED)
     assert result is opts
     assert opts.line_style == LineStyle.DASHED
-    
+
     result = opts.set_line_visible(False)
     assert result is opts
     assert opts.line_visible is False
-    
+
     result = opts.set_axis_label_visible(False)
     assert result is opts
     assert opts.axis_label_visible is False
-    
+
     result = opts.set_title("Test Title")
     assert result is opts
     assert opts.title == "Test Title"
-    
+
     result = opts.set_axis_label_color("#00ff00")
     assert result is opts
     assert opts.axis_label_color == "#00ff00"
-    
+
     result = opts.set_axis_label_text_color("#0000ff")
     assert result is opts
     assert opts.axis_label_text_color == "#0000ff"
@@ -92,17 +92,18 @@ def test_chainable_properties():
 def test_chainable_method_chaining():
     """Test complex method chaining."""
     opts = PriceLineOptions()
-    
-    result = (opts
-             .set_id("test_id")
-             .set_price(150.75)
-             .set_color("#ff0000")
-             .set_line_width(4)
-             .set_line_style(LineStyle.DASHED)
-             .set_line_visible(False)
-             .set_axis_label_visible(True)
-             .set_title("Chained Title"))
-    
+
+    result = (
+        opts.set_id("test_id")
+        .set_price(150.75)
+        .set_color("#ff0000")
+        .set_line_width(4)
+        .set_line_style(LineStyle.DASHED)
+        .set_line_visible(False)
+        .set_axis_label_visible(True)
+        .set_title("Chained Title")
+    )
+
     assert result is opts
     assert opts.id == "test_id"
     assert opts.price == 150.75
@@ -117,30 +118,30 @@ def test_chainable_method_chaining():
 def test_type_validation_in_chainable_methods():
     """Test that chainable methods validate types correctly."""
     opts = PriceLineOptions()
-    
+
     # Test price validation
     with pytest.raises(TypeError, match="price must be of type"):
         opts.set_price("invalid")
-    
+
     # Test color validation
     with pytest.raises(TypeError, match="color must be of type"):
         opts.set_color(123)
-    
+
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_color("invalid_color")
-    
+
     # Test line_width validation
     with pytest.raises(TypeError, match="line_width must be of type"):
         opts.set_line_width("invalid")
-    
+
     # Test line_style validation
     with pytest.raises(TypeError, match="line_style must be of type"):
         opts.set_line_style("invalid")
-    
+
     # Test boolean validation
     with pytest.raises(TypeError, match="line_visible must be of type"):
         opts.set_line_visible("invalid")
-    
+
     # Test string validation
     with pytest.raises(TypeError, match="id must be of type"):
         opts.set_id(123)
@@ -149,23 +150,23 @@ def test_type_validation_in_chainable_methods():
 def test_color_validation_in_chainable_methods():
     """Test color validation in chainable methods."""
     opts = PriceLineOptions()
-    
+
     # Valid colors
     opts.set_color("#123456")
     opts.set_color("rgba(1,2,3,0.5)")
     opts.set_axis_label_color("#123456")
     opts.set_axis_label_text_color("rgba(1,2,3,0.5)")
-    
+
     # Invalid colors
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_color("notacolor")
-    
+
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_color("rgb(255,0,0)")
-    
+
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_axis_label_color("notacolor")
-    
+
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_axis_label_text_color("rgb(255,0,0)")
 
@@ -173,15 +174,15 @@ def test_color_validation_in_chainable_methods():
 def test_both_property_styles_work():
     """Test that both direct property assignment and chainable methods work."""
     opts = PriceLineOptions()
-    
+
     # Direct property assignment
     opts.price = 100.0
     opts.color = "#ff0000"
     opts.line_visible = False
-    
+
     # Chainable methods
     opts.set_price(200.0).set_color("#00ff00").set_line_visible(True)
-    
+
     # Verify final state
     assert opts.price == 200.0
     assert opts.color == "#00ff00"
@@ -198,25 +199,17 @@ def test_optional_fields_omitted():
 def test_update_method():
     """Test the update method with both snake_case and camelCase."""
     opts = PriceLineOptions()
-    
+
     # Test with snake_case
-    opts.update({
-        "price": 100.0,
-        "color": "#ff0000",
-        "line_visible": False
-    })
-    
+    opts.update({"price": 100.0, "color": "#ff0000", "line_visible": False})
+
     assert opts.price == 100.0
     assert opts.color == "#ff0000"
     assert opts.line_visible is False
-    
+
     # Test with camelCase
-    opts.update({
-        "lineStyle": LineStyle.DASHED,
-        "lineWidth": 5,
-        "axisLabelVisible": True
-    })
-    
+    opts.update({"lineStyle": LineStyle.DASHED, "lineWidth": 5, "axisLabelVisible": True})
+
     assert opts.line_style == LineStyle.DASHED
     assert opts.line_width == 5
     assert opts.axis_label_visible is True
@@ -227,10 +220,10 @@ def test_static_color_validator():
     # Valid colors
     assert PriceLineOptions._validate_color_static("#123456", "test") == "#123456"
     assert PriceLineOptions._validate_color_static("rgba(1,2,3,0.5)", "test") == "rgba(1,2,3,0.5)"
-    
+
     # Invalid colors
     with pytest.raises(ValueError, match="Invalid color format for test"):
         PriceLineOptions._validate_color_static("notacolor", "test")
-    
+
     with pytest.raises(ValueError, match="Invalid color format for test"):
         PriceLineOptions._validate_color_static("rgb(255,0,0)", "test")

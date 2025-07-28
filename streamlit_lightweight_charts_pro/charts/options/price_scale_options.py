@@ -27,8 +27,14 @@ class PriceScaleMargins(Options):
 @chainable_field("mode", PriceScaleMode)
 @chainable_field("invert_scale", bool)
 @chainable_field("border_visible", bool)
-@chainable_field("border_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "border_color"))
-@chainable_field("text_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "text_color"))
+@chainable_field(
+    "border_color",
+    str,
+    validator=lambda v: PriceScaleOptions._validate_color_static(v, "border_color"),
+)
+@chainable_field(
+    "text_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "text_color")
+)
 @chainable_field("ticks_visible", bool)
 @chainable_field("ensure_edge_tick_marks_visible", bool)
 @chainable_field("align_labels", bool)
@@ -65,7 +71,7 @@ class PriceScaleOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""

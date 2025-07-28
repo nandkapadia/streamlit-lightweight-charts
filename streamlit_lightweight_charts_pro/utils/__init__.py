@@ -1,6 +1,6 @@
 """Utilities for streamlit-lightweight-charts."""
 
-from .chainable import chainable_property, chainable_field
+from .chainable import chainable_field, chainable_property
 
 # Note: trade_visualization functions are imported directly where needed
 # to avoid circular imports with the options module

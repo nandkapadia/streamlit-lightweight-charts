@@ -593,7 +593,6 @@ class Chart:
         elif price_type == "line":
             price_series = LineSeries(
                 data=data,
-                line_options=LineOptions(),
                 column_mapping=column_mapping,
                 pane_id=price_pane_id,
                 price_scale_id="right",

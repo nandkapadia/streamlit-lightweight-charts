@@ -6,11 +6,12 @@ configuration management, serialization, and advanced usage patterns.
 """
 
 import json
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 import streamlit as st
@@ -71,9 +72,7 @@ def main():
     st.write("Manage series configuration programmatically:")
 
     # Create series with full configuration
-    config_series = LineSeries(
-        data=data, visible=True, price_scale_id="right", pane_id=0
-    )
+    config_series = LineSeries(data=data, visible=True, price_scale_id="right", pane_id=0)
 
     # Add markers and price lines
     config_series.add_marker(

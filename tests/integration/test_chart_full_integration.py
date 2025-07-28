@@ -34,9 +34,7 @@ def create_sample_line_data(n=10):
 
 def test_multi_series_chart_with_price_scales():
     """Test chart with multiple series and different price scales."""
-    line_series = LineSeries(
-        data=create_sample_line_data(),
-        line_options=LineOptions(color="#2196f3"),
+    line_series = LineSeries(data=create_sample_line_data()),
         price_scale_id="left",
     )
     candle_series = CandlestickSeries(data=create_sample_ohlcv_data(), price_scale_id="right")
@@ -81,7 +79,7 @@ def test_dataframe_to_chart_pipeline():
 
 def test_chart_with_annotations_and_trades():
     """Test chart with annotations and trade visualization integration."""
-    line_series = LineSeries(data=create_sample_line_data(), line_options=LineOptions())
+    line_series = LineSeries(data=create_sample_line_data())
     chart = Chart(series=[line_series])
     # Add annotation
     annotation = Annotation(
@@ -113,7 +111,7 @@ def test_chart_with_annotations_and_trades():
 
 def test_serialization_idempotency():
     """Test that serialization is idempotent and matches frontend expectations."""
-    line_series = LineSeries(data=create_sample_line_data(), line_options=LineOptions())
+    line_series = LineSeries(data=create_sample_line_data())
     chart = Chart(series=[line_series])
     config1 = chart.to_frontend_config()
     config2 = chart.to_frontend_config()

@@ -33,30 +33,20 @@ class TestPriceScaleMargins:
         assert margins.bottom == 0.3
 
     def test_validation_top(self):
-
-
         """Test validation of top field."""
-
 
         options = PriceScaleMargins()
 
-
         with pytest.raises(TypeError, match="top must be of type"):
-
 
             options.set_top("invalid")
 
     def test_validation_bottom(self):
-
-
         """Test validation of bottom field."""
-
 
         options = PriceScaleMargins()
 
-
         with pytest.raises(TypeError, match="bottom must be of type"):
-
 
             options.set_bottom("invalid")
 
@@ -115,72 +105,47 @@ class TestPriceScaleOptions:
         assert options.mode == PriceScaleMode.LOGARITHMIC
 
     def test_validation_visible(self):
-
-
         """Test validation of visible field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="visible must be of type"):
-
 
             options.set_visible("invalid")
 
     def test_validation_auto_scale(self):
-
-
         """Test validation of auto_scale field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="auto_scale must be of type"):
-
 
             options.set_auto_scale("invalid")
 
     def test_validation_mode(self):
-
-
         """Test validation of mode field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="mode must be of type"):
-
 
             options.set_mode("invalid")
 
     def test_validation_invert_scale(self):
-
-
         """Test validation of invert_scale field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="invert_scale must be of type"):
-
 
             options.set_invert_scale("invalid")
 
     def test_validation_border_visible(self):
-
-
         """Test validation of border_visible field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="border_visible must be of type"):
-
 
             options.set_border_visible("invalid")
 
@@ -197,81 +162,54 @@ class TestPriceScaleOptions:
             options.set_text_color(123)
 
     def test_validation_ticks_visible(self):
-
-
         """Test validation of ticks_visible field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="ticks_visible must be of type"):
-
 
             options.set_ticks_visible("invalid")
 
     def test_validation_ensure_edge_tick_marks_visible(self):
-
-
         """Test validation of ensure_edge_tick_marks_visible field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="ensure_edge_tick_marks_visible must be of type"):
-
 
             options.set_ensure_edge_tick_marks_visible("invalid")
 
     def test_validation_align_labels(self):
-
-
         """Test validation of align_labels field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="align_labels must be of type"):
-
 
             options.set_align_labels("invalid")
 
     def test_validation_entire_text_only(self):
-
-
         """Test validation of entire_text_only field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="entire_text_only must be of type"):
-
 
             options.set_entire_text_only("invalid")
 
     def test_validation_minimum_width(self):
-
-
         """Test validation of minimum_width field."""
-
 
         options = PriceScaleOptions()
 
-
         with pytest.raises(TypeError, match="minimum_width must be of type"):
-
 
             options.set_minimum_width("invalid")
 
     def test_validation_scale_margins(self):
         """Test validation of scale_margins field."""
         options = PriceScaleOptions()
-        with pytest.raises(
-            TypeError, match="scale_margins must be of type"
-        ):
+        with pytest.raises(TypeError, match="scale_margins must be of type"):
             options.set_scale_margins("invalid")
 
     def test_validation_price_scale_id(self):

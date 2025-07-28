@@ -5,12 +5,14 @@ This example demonstrates a simple line chart with basic styling.
 The chart shows a single line series with default options.
 """
 
-import streamlit as st
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import streamlit as st
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 from examples.data_samples import get_line_data

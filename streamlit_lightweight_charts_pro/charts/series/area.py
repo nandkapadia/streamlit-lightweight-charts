@@ -45,8 +45,12 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @chainable_property("line_options", LineOptions, allow_none=True)
-@chainable_property("top_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "top_color"))
-@chainable_property("bottom_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "bottom_color"))
+@chainable_property(
+    "top_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "top_color")
+)
+@chainable_property(
+    "bottom_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "bottom_color")
+)
 @chainable_property("relative_gradient", bool)
 @chainable_property("invert_filled_area", bool)
 class AreaSeries(Series):
@@ -115,7 +119,7 @@ class AreaSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.AREA
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""
@@ -124,5 +128,3 @@ class AreaSeries(Series):
                 f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
         return color
-
-

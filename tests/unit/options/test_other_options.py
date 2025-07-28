@@ -306,36 +306,26 @@ class TestPriceFormatOptions:
         # Test type validation first
         with pytest.raises(TypeError, match="type must be of type"):
             options.set_type(123)
-        
+
         # Test custom validator with invalid string
         with pytest.raises(ValueError, match="Invalid type: 'invalid'"):
             options.set_type("invalid")
 
     def test_validation_precision(self):
-
-
         """Test validation of precision field."""
-
 
         options = PriceFormatOptions()
 
-
         with pytest.raises(TypeError, match="precision must be of type"):
-
 
             options.set_precision("invalid")
 
     def test_validation_min_move(self):
-
-
         """Test validation of min_move field."""
-
 
         options = PriceFormatOptions()
 
-
         with pytest.raises(TypeError, match="min_move must be of type"):
-
 
             options.set_min_move("invalid")
 
@@ -383,16 +373,11 @@ class TestPriceLineOptions:
         assert options.title == "Support Level"
 
     def test_validation_price(self):
-
-
         """Test validation of price field."""
-
 
         options = PriceLineOptions()
 
-
         with pytest.raises(TypeError, match="price must be of type"):
-
 
             options.set_price("invalid")
 
@@ -402,22 +387,17 @@ class TestPriceLineOptions:
         # Test type validation first
         with pytest.raises(TypeError, match="color must be of type"):
             options.set_color(123)
-        
+
         # Test custom validator with invalid string
         with pytest.raises(ValueError, match="Invalid color format"):
             options.set_color("invalid_color")
 
     def test_validation_line_width(self):
-
-
         """Test validation of line_width field."""
-
 
         options = PriceLineOptions()
 
-
         with pytest.raises(TypeError, match="line_width must be of type"):
-
 
             options.set_line_width("invalid")
 
@@ -511,22 +491,17 @@ class TestLineOptions:
         # Test type validation first
         with pytest.raises(TypeError, match="color must be of type"):
             options.set_color(123)
-        
+
         # Test custom validator with invalid string
         with pytest.raises(ValueError, match="Invalid color format"):
             options.set_color("invalid_color")
 
     def test_validation_line_width(self):
-
-
         """Test validation of line_width field."""
-
 
         options = LineOptions()
 
-
         with pytest.raises(TypeError, match="line_width must be of type"):
-
 
             options.set_line_width("invalid")
 
@@ -580,16 +555,11 @@ class TestTradeVisualizationOptions:
         assert options.style == TradeVisualization.RECTANGLES
 
     def test_validation_style(self):
-
-
         """Test validation of style field."""
-
 
         options = TradeVisualizationOptions()
 
-
         with pytest.raises(TypeError, match="style must be of type"):
-
 
             options.set_style("invalid")
 

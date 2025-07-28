@@ -43,7 +43,7 @@ class TestChartConstruction:
     def test_construction_with_single_series(self):
         """Test Chart construction with a single series."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         chart = Chart(series=series)
 
         assert len(chart.series) == 1
@@ -55,8 +55,8 @@ class TestChartConstruction:
         """Test Chart construction with multiple series."""
         data1 = [LineData(time=1640995200, value=100)]
         data2 = [LineData(time=1640995200, value=200)]
-        series1 = LineSeries(data=data1, line_options=LineOptions())
-        series2 = LineSeries(data=data2, line_options=LineOptions())
+        series1 = LineSeries(data=data1)
+        series2 = LineSeries(data=data2)
         chart = Chart(series=[series1, series2])
 
         assert len(chart.series) == 2
@@ -83,7 +83,7 @@ class TestChartConstruction:
     def test_construction_with_all_parameters(self):
         """Test Chart construction with all parameters."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         options = ChartOptions(height=500)
         annotation = Mock(spec=Annotation)
 
@@ -102,7 +102,7 @@ class TestChartSeriesManagement:
         """Test adding a series to the chart."""
         chart = Chart()
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
 
         result = chart.add_series(series)
 
@@ -115,8 +115,8 @@ class TestChartSeriesManagement:
         chart = Chart()
         data1 = [LineData(time=1640995200, value=100)]
         data2 = [LineData(time=1640995200, value=200)]
-        series1 = LineSeries(data=data1, line_options=LineOptions())
-        series2 = LineSeries(data=data2, line_options=LineOptions())
+        series1 = LineSeries(data=data1)
+        series2 = LineSeries(data=data2)
 
         chart.add_series(series1).add_series(series2)
 
@@ -490,7 +490,7 @@ class TestChartFrontendConfiguration:
     def test_to_frontend_config_with_series(self):
         """Test to_frontend_config with series."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         chart = Chart(series=series)
 
         config = chart.to_frontend_config()
@@ -503,8 +503,8 @@ class TestChartFrontendConfiguration:
         """Test to_frontend_config with multiple series."""
         data1 = [LineData(time=1640995200, value=100)]
         data2 = [LineData(time=1640995200, value=200)]
-        series1 = LineSeries(data=data1, line_options=LineOptions())
-        series2 = LineSeries(data=data2, line_options=LineOptions())
+        series1 = LineSeries(data=data1)
+        series2 = LineSeries(data=data2)
         chart = Chart(series=[series1, series2])
 
         config = chart.to_frontend_config()
@@ -558,7 +558,7 @@ class TestChartFrontendConfiguration:
     def test_to_frontend_config_with_series_height(self):
         """Test to_frontend_config with series that have height attribute."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         series.height = 200  # Add height attribute
         series.pane_id = 1  # Add pane_id attribute
         chart = Chart(series=series)
@@ -610,7 +610,7 @@ class TestChartMethodChaining:
     def test_complex_method_chaining(self):
         """Test complex method chaining."""
         data = [LineData(time=1640995200, value=100)]
-        series = LineSeries(data=data, line_options=LineOptions())
+        series = LineSeries(data=data)
         annotation = Mock(spec=Annotation)
 
         result = (
@@ -724,11 +724,11 @@ class TestChartIntegration:
         data = [LineData(time=1640995200, value=100)]
 
         # Create chart with series
-        chart = Chart(series=LineSeries(data=data, line_options=LineOptions()))
+        chart = Chart(series=LineSeries(data=data))
 
         # Add another series
         data2 = [LineData(time=1640995200, value=200)]
-        chart.add_series(LineSeries(data=data2, line_options=LineOptions()))
+        chart.add_series(LineSeries(data=data2))
 
         # Update options
         chart.update_options(height=500, width=800)

@@ -5,12 +5,14 @@ This example demonstrates interactive features of AreaSeries including
 dynamic data filtering, user controls, and real-time updates.
 """
 
-import numpy as np
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pandas as pd
 import streamlit as st
@@ -98,7 +100,6 @@ def main():
             area2 = AreaSeries(
                 data=dynamic_data_2,
                 pane_id=1 if show_data_1 else 0,
-                
                 top_color=color_2,
                 bottom_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency})",
                 line_options=LineOptions(color=color_2, line_width=line_width),
@@ -124,7 +125,6 @@ def main():
         if show_data_2:
             area2 = AreaSeries(
                 data=dynamic_data_2,
-                
                 top_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency + 0.2})",
                 bottom_color=f"rgba({int(color_2[1:3], 16)}, {int(color_2[3:5], 16)}, {int(color_2[5:7], 16)}, {transparency * 0.5})",
                 line_options=LineOptions(

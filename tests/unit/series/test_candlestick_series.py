@@ -35,9 +35,7 @@ class TestCandlestickSeriesConstruction:
     def test_construction_with_custom_parameters(self):
         """Test construction with custom parameters."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
-        series = CandlestickSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1
-        )
+        series = CandlestickSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.visible is False
         assert series.price_scale_id == "left"
@@ -98,9 +96,7 @@ class TestCandlestickSeriesConstruction:
     def test_construction_with_custom_parameters_duplicate(self):
         """Test construction with custom parameters."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
-        series = CandlestickSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1
-        )
+        series = CandlestickSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.visible is False
         assert series.price_scale_id == "left"

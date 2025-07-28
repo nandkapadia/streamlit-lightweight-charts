@@ -34,9 +34,7 @@ class TestHistogramSeriesConstruction:
     def test_construction_with_custom_parameters(self):
         """Test HistogramSeries construction with custom parameters."""
         data = [HistogramData(time=1640995200, value=100.5)]
-        series = HistogramSeries(
-            data=data, visible=False, price_scale_id="left", pane_id=1
-        )
+        series = HistogramSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.data == data
         assert series.visible is False

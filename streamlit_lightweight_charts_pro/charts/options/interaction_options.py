@@ -17,7 +17,9 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
-@chainable_field("color", str, validator=lambda v: CrosshairLineOptions._validate_color_static(v, "color"))
+@chainable_field(
+    "color", str, validator=lambda v: CrosshairLineOptions._validate_color_static(v, "color")
+)
 @chainable_field("width", int)
 @chainable_field("style", LineStyle)
 @chainable_field("visible", bool)
@@ -33,7 +35,7 @@ class CrosshairLineOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""

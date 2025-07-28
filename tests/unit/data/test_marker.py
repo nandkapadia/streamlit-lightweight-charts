@@ -766,7 +766,7 @@ class TestMarkerIntegration:
             LineData(time=1640995200, value=100),
             LineData(time=1640995201, value=110),
         ]
-        series = LineSeries(data=line_data, line_options=line_options)
+        series = LineSeries(data=line_data)
 
         # Create markers
         marker1 = Marker(

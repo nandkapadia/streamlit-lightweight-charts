@@ -33,7 +33,7 @@ class TestLineSeriesJsonFormat:
         ]
 
         line_options = LineOptions(color="#2196f3", line_width=2)
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         result = series.asdict()
 
@@ -83,7 +83,7 @@ class TestLineSeriesJsonFormat:
             last_price_animation=LastPriceAnimationMode.CONTINUOUS,
         )
 
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
         result = series.asdict()
 
         # Check options structure
@@ -106,7 +106,7 @@ class TestLineSeriesJsonFormat:
         """Test line series with price lines JSON structure."""
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add price lines
         resistance = PriceLineOptions(
@@ -147,7 +147,7 @@ class TestLineSeriesJsonFormat:
         """Test line series with markers JSON structure."""
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add markers
         series.add_marker(
@@ -196,7 +196,7 @@ class TestLineSeriesJsonFormat:
         """Test that JSON serialization works correctly."""
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         result = series.asdict()
 
@@ -215,7 +215,7 @@ class TestLineSeriesJsonFormat:
         """Test that the JSON structure is compatible with frontend SeriesConfig interface."""
         data = [LineData(time=1704067200, value=100.0)]
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         result = series.asdict()
 
@@ -240,7 +240,7 @@ class TestLineSeriesJsonFormat:
     def test_line_series_empty_data_handling(self):
         """Test that empty data is handled correctly."""
         line_options = LineOptions(color="#2196f3")
-        series = LineSeries(data=[], line_options=line_options)
+        series = LineSeries(data=[])
 
         result = series.asdict()
 
@@ -258,7 +258,7 @@ class TestLineSeriesJsonFormat:
         ]
 
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         result = series.asdict()
 
@@ -294,7 +294,7 @@ class TestLineSeriesJsonFormat:
         )
 
         # Create series
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add a price line
         price_line = PriceLineOptions(

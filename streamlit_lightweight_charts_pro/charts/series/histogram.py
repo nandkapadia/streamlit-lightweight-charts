@@ -38,7 +38,9 @@ from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
-@chainable_property("color", str, validator=lambda v: HistogramSeries._validate_color_static(v, "color"))
+@chainable_property(
+    "color", str, validator=lambda v: HistogramSeries._validate_color_static(v, "color")
+)
 @chainable_property("base", (int, float))
 class HistogramSeries(Series):
     """
@@ -65,7 +67,7 @@ class HistogramSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.HISTOGRAM
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""
@@ -210,5 +212,3 @@ class HistogramSeries(Series):
         # Initialize histogram-specific properties with default values
         self._color = "#26a69a"
         self._base = 0
-
-

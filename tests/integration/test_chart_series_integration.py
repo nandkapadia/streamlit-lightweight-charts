@@ -111,7 +111,7 @@ class TestChartSeriesIntegration:
         """Test toggling series visibility."""
         # Create multiple series
         line_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions(), visible=True
+            data=[LineData(time=1640995200, value=100)], visible=True
         )
         candlestick_series = CandlestickSeries(
             data=[OhlcvData("2024-01-01 10:00:00", 100, 102, 99, 101, 1000)], visible=True
@@ -141,7 +141,7 @@ class TestChartSeriesIntegration:
         """Test series ordering and layering."""
         # Create series in specific order
         line_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
         candlestick_series = CandlestickSeries(
             data=[OhlcvData("2024-01-01 10:00:00", 100, 102, 99, 101, 1000)]
@@ -162,7 +162,7 @@ class TestChartSeriesIntegration:
         """Test series with markers and price lines."""
         # Create series with markers and price lines
         line_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         # Add markers
@@ -201,11 +201,13 @@ class TestChartSeriesIntegration:
         # Create series with custom options
         line_series = LineSeries(
             data=[LineData(time=1640995200, value=100)],
-            line_options=LineOptions(
-                color="rgba(255,0,0,1)", line_width=3, line_style=LineStyle.DASHED
-            ),
             price_scale_id="custom_scale",
             visible=False,
+        )
+        
+        # Set custom line options after construction
+        line_series.line_options = LineOptions(
+            color="rgba(255,0,0,1)", line_width=3, line_style=LineStyle.DASHED
         )
 
         chart = Chart(series=line_series)
@@ -224,7 +226,7 @@ class TestChartSeriesIntegration:
         """Test chart with annotations and series."""
         # Create series
         line_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         # Create annotation
@@ -297,7 +299,6 @@ class TestChartSeriesIntegration:
         # Create series with different price scales
         line_series = LineSeries(
             data=[LineData(time=1640995200, value=100)],
-            line_options=LineOptions(),
             price_scale_id="left",
         )
 
@@ -329,7 +330,7 @@ class TestChartSeriesIntegration:
         chart = (
             Chart()
             .add_series(
-                LineSeries(data=[LineData(time=1640995200, value=100)], line_options=LineOptions())
+                LineSeries(data=[LineData(time=1640995200, value=100)])
             )
             .update_options(height=500, width=800)
             .add_series(
@@ -353,7 +354,7 @@ class TestChartSeriesIntegration:
         for i in range(1000):
             large_data.append(LineData(time=1640995200 + i, value=100 + i))
 
-        line_series = LineSeries(data=large_data, line_options=LineOptions())
+        line_series = LineSeries(data=large_data)
         chart = Chart(series=line_series)
 
         # Verify large dataset is handled correctly
@@ -370,7 +371,7 @@ class TestChartSeriesIntegration:
         line_data = [LineData(time=1640995200, value=100)]
         ohlcv_data = [OhlcvData("2024-01-01 10:00:00", 100, 102, 99, 101, 1000)]
 
-        line_series = LineSeries(data=line_data, line_options=LineOptions())
+        line_series = LineSeries(data=line_data)
         candlestick_series = CandlestickSeries(data=ohlcv_data)
 
         chart = Chart(series=[line_series, candlestick_series])
@@ -394,7 +395,7 @@ class TestChartSeriesIntegration:
         """Test chart JSON serialization consistency."""
         # Create chart with complex configuration
         line_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions(color="red")
+            data=[LineData(time=1640995200, value=100)]
         )
 
         candlestick_series = CandlestickSeries(
@@ -421,7 +422,7 @@ class TestChartSeriesIntegration:
     def test_chart_with_empty_series(self):
         """Test chart with empty series."""
         # Create series with empty data
-        empty_line_series = LineSeries(data=[], line_options=LineOptions())
+        empty_line_series = LineSeries(data=[])
         empty_candlestick_series = CandlestickSeries(data=[])
 
         chart = Chart(series=[empty_line_series, empty_candlestick_series])
@@ -440,7 +441,7 @@ class TestChartSeriesIntegration:
         single_line_data = [LineData(time=1640995200, value=100)]
         single_ohlcv_data = [OhlcvData("2024-01-01 10:00:00", 100, 102, 99, 101, 1000)]
 
-        line_series = LineSeries(data=single_line_data, line_options=LineOptions())
+        line_series = LineSeries(data=single_line_data)
         candlestick_series = CandlestickSeries(data=single_ohlcv_data)
 
         chart = Chart(series=[line_series, candlestick_series])
@@ -458,7 +459,6 @@ class TestChartSeriesIntegration:
         # Create series with various properties
         line_series = LineSeries(
             data=[LineData(time=1640995200, value=100)],
-            line_options=LineOptions(),
             price_scale_id="custom_scale",
             visible=False,
         )
@@ -636,7 +636,7 @@ class TestChartSeriesErrorHandlingIntegration:
 
         # Add valid series
         valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
         chart.add_series(valid_series)
 
@@ -653,12 +653,12 @@ class TestChartSeriesErrorHandlingIntegration:
         """Test series behavior when invalid data is provided."""
         # Test series with corrupted data
         with pytest.raises(OverflowError):
-            LineSeries(data=[LineData(time=float("inf"), value=100)], line_options=LineOptions())
+            LineSeries(data=[LineData(time=float("inf"), value=100)])
 
     def test_chart_with_partially_invalid_series_list(self):
         """Test chart with partially invalid series list."""
         valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         # Chart constructor now validates series types, so this should raise TypeError
@@ -674,7 +674,7 @@ class TestChartSeriesErrorHandlingIntegration:
                 return "not_a_dict"
 
         invalid_series = InvalidConfigSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         chart = Chart(series=[invalid_series])
@@ -693,7 +693,7 @@ class TestChartSeriesErrorHandlingIntegration:
                 return {}  # Empty dict with missing required fields
 
         incomplete_series = IncompleteConfigSeries(
-            data=[LineData(time=1640995200, value=100)], line_options=LineOptions()
+            data=[LineData(time=1640995200, value=100)]
         )
 
         chart = Chart(series=[incomplete_series])

@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from typing import Optional
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
-from streamlit_lightweight_charts_pro.utils import chainable_field
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LastPriceAnimationMode,
     LineStyle,
     LineType,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_field
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
@@ -21,8 +21,16 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @chainable_field("point_markers_radius", int)
 @chainable_field("crosshair_marker_visible", bool)
 @chainable_field("crosshair_marker_radius", int)
-@chainable_field("crosshair_marker_border_color", str, validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_border_color"))
-@chainable_field("crosshair_marker_background_color", str, validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_background_color"))
+@chainable_field(
+    "crosshair_marker_border_color",
+    str,
+    validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_border_color"),
+)
+@chainable_field(
+    "crosshair_marker_background_color",
+    str,
+    validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_background_color"),
+)
 @chainable_field("crosshair_marker_border_width", int)
 @chainable_field("last_price_animation", LastPriceAnimationMode)
 class LineOptions(Options):
@@ -65,7 +73,7 @@ class LineOptions(Options):
     def __post_init__(self):
         """Post-initialization validation."""
         super().__post_init__()
-    
+
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:
         """Static version of color validator for decorator use."""

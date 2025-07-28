@@ -5,12 +5,14 @@ This example demonstrates how to create charts with multiple AreaSeries,
 showing different datasets and overlay options.
 """
 
-import streamlit as st
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import streamlit as st
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 from examples.data_samples import get_line_data, get_multi_area_data_1, get_multi_area_data_2
@@ -48,7 +50,6 @@ def main():
     area2 = AreaSeries(
         data=area_data_2,
         pane_id=1,
-        
         top_color="#ff6b6b",
         bottom_color="rgba(255, 107, 107, 0.2)",
         line_options=LineOptions(color="#ff6b6b", line_width=2),
@@ -88,7 +89,6 @@ def main():
     # Overlay area
     overlay_area = AreaSeries(
         data=area_data_2,
-        
         top_color="rgba(255, 107, 107, 0.4)",
         bottom_color="rgba(255, 107, 107, 0.1)",
         line_options=LineOptions(

@@ -5,12 +5,14 @@ This example demonstrates the fundamental Series functionality that all series t
 It shows data handling, visibility control, price scale configuration, and basic operations.
 """
 
-import streamlit as st
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import streamlit as st
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 from examples.data_samples import get_line_data

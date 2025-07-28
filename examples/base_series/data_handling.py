@@ -5,12 +5,14 @@ This example demonstrates the data handling capabilities that all series types s
 It shows how to work with different data formats: Data objects, DataFrames, and Series.
 """
 
-import pandas as pd
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import pandas as pd
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import streamlit as st
 

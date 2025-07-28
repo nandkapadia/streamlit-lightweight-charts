@@ -6,12 +6,14 @@ Markers are visual indicators that can be placed on specific
 data points to highlight events, signals, or important moments.
 """
 
-import streamlit as st
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import streamlit as st
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 from examples.data_samples import get_line_data

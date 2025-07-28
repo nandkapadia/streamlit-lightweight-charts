@@ -27,7 +27,7 @@ class TestLineSeriesExtended:
         """Test the chart_type property."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
         assert series.chart_type == ChartType.LINE
 
     def test_to_dict_method_complete(self):
@@ -35,7 +35,7 @@ class TestLineSeriesExtended:
         line_options = LineOptions(color="#ff0000")
         data = [LineData(time=1640995200, value=100)]
 
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add price lines and markers
         price_line = PriceLineOptions(price=100, color="#00ff00")
@@ -67,7 +67,7 @@ class TestLineSeriesExtended:
     def test_to_dict_method_empty_data(self):
         """Test to_dict method with empty data."""
         line_options = LineOptions()
-        series = LineSeries(data=[], line_options=line_options)
+        series = LineSeries(data=[])
 
         result = series.asdict()
 
@@ -141,14 +141,14 @@ class TestLineSeriesExtended:
 
         # This should raise TypeError as the constructor validates line_options type
         with pytest.raises(TypeError, match="line_options must be an instance of LineOptions"):
-            series = LineSeries(data=data, line_options="invalid")
+            series = LineSeries(data=data)
 
     def test_line_options_property(self):
         """Test the line_options property."""
         line_options = LineOptions(color="#ff0000")
         data = [LineData(time=1640995200, value=100)]
 
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         assert series.line_options is line_options
 
@@ -157,7 +157,7 @@ class TestLineSeriesExtended:
         line_options = LineOptions(color="#ff0000")
         data = [LineData(time=1640995200, value=100)]
 
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Test complex chaining
         result = (
@@ -202,7 +202,7 @@ class TestLineSeriesExtended:
         line_options = LineOptions(color="#ff0000")
         data = [LineData(time=1640995200, value=100)]
 
-        series = LineSeries(data=data, line_options=line_options)
+        series = LineSeries(data=data)
 
         # Add some elements
         series.add_price_line(PriceLineOptions(price=100, color="#00ff00"))

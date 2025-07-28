@@ -5,12 +5,14 @@ This example demonstrates the fundamental usage of CandlestickSeries with sample
 from the data_samples module.
 """
 
-import streamlit as st
+import os
 
 # Add project root to path for examples imports
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+import streamlit as st
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from examples.data_samples import get_candlestick_data, get_dataframe_candlestick_data
 from streamlit_lightweight_charts_pro.charts import Chart

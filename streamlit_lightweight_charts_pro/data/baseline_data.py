@@ -28,7 +28,8 @@ class BaselineData(SingleValueData):
         top_fill_color2 (Optional[str]): Optional top area bottom fill color (hex or rgba).
         top_line_color (Optional[str]): Optional top area line color (hex or rgba).
         bottom_fill_color1 (Optional[str]): Optional bottom area top fill color (hex or rgba).
-        bottom_fill_color2 (Optional[str]): Optional bottom area bottom fill color (hex or rgba).
+        bottom_fill_color2 (Optional[str]): Optional bottom area bottom fill color
+            (hex or rgba).
         bottom_line_color (Optional[str]): Optional bottom area line color (hex or rgba).
 
     See also: SingleValueData

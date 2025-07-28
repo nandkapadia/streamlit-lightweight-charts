@@ -13,6 +13,7 @@ from typing import Any, Dict
 
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
+
 @dataclass
 class Options(ABC):
     """
@@ -69,13 +70,13 @@ class Options(ABC):
         Example:
             ```python
             options = MyOptions()
-            
+
             # Update simple properties
             options.update({
                 "background_color": "#ff0000",
                 "is_visible": False
             })
-            
+
             # Update nested objects
             options.update({
                 "line_options": {
@@ -83,7 +84,7 @@ class Options(ABC):
                     "line_width": 3
                 }
             })
-            
+
             # Method chaining
             options.update({"color": "red"}).update({"width": 100})
             ```
@@ -91,10 +92,10 @@ class Options(ABC):
         for key, value in updates.items():
             if value is None:
                 continue  # Skip None values for method chaining
-            
+
             # Convert camelCase to snake_case for field lookup
             field_name = self._camel_to_snake(key)
-            
+
             # Check if field exists
             if not hasattr(self, field_name):
                 # Try the original key in case it's already snake_case
@@ -102,17 +103,17 @@ class Options(ABC):
                     field_name = key
                 else:
                     raise ValueError(f"Invalid option field: {key}")
-            
+
             # Get field info for type checking
             field_info = None
             for field in fields(self):
                 if field.name == field_name:
                     field_info = field
                     break
-            
+
             if field_info is None:
                 raise ValueError(f"Field {field_name} not found in {self.__class__.__name__}")
-            
+
             # Handle nested Options objects
             if isinstance(value, dict) and hasattr(field_info.type, "__origin__"):
                 # Check if field type is a nested Options class
@@ -144,7 +145,7 @@ class Options(ABC):
             else:
                 # Simple value assignment
                 setattr(self, field_name, value)
-        
+
         return self
 
     def _camel_to_snake(self, camel_case: str) -> str:
@@ -157,8 +158,9 @@ class Options(ABC):
         Returns:
             String in snake_case format.
         """
-        import re
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case).lower()
+        import re  # pylint: disable=import-outside-toplevel
+
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", camel_case).lower()
 
     def asdict(self) -> Dict[str, Any]:
         """

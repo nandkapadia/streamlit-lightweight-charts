@@ -26,7 +26,6 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     VertAlign,
 )
 
-
 __all__ = [
     # Enums
     "AnnotationPosition",
@@ -51,5 +50,4 @@ __all__ = [
     "Background",
     "BackgroundSolid",
     "BackgroundGradient",
-
 ]

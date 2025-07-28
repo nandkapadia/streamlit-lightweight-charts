@@ -20,22 +20,24 @@ Example:
     ```
 """
 
-import abc
 from abc import ABC
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
 
+# Import options classes for dynamic creation
+from streamlit_lightweight_charts_pro.charts.options import (
+    LineOptions,
+    PriceFormatOptions,
+    PriceLineOptions,
+)
 from streamlit_lightweight_charts_pro.data import Data
-from streamlit_lightweight_charts_pro.data.marker import Marker
-from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
-from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType
-from streamlit_lightweight_charts_pro.charts.options.price_format_options import PriceFormatOptions
 from streamlit_lightweight_charts_pro.data.data import classproperty
+from streamlit_lightweight_charts_pro.data.marker import Marker
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
 # Initialize logger
@@ -44,7 +46,7 @@ logger = get_logger(__name__)
 
 # pylint: disable=no-member, invalid-name
 @chainable_property("price_scale_id")
-@chainable_property("price_format") 
+@chainable_property("price_format")
 @chainable_property("price_lines")
 @chainable_property("markers")
 @chainable_property("pane_id")
@@ -401,7 +403,7 @@ class Series(ABC):
             # If already list of dicts
             if isinstance(self.data[0], dict):
                 return self.data
-                    # If list of objects with asdict
+                # If list of objects with asdict
         if hasattr(self.data[0], "asdict"):
             return [item.asdict() for item in self.data]
         # Fallback: return as-is
@@ -591,13 +593,13 @@ class Series(ABC):
         Example:
             ```python
             series = LineSeries(data=data)
-            
+
             # Update simple properties
             series.update({
                 "visible": False,
                 "price_scale_id": "left"
             })
-            
+
             # Update nested options
             series.update({
                 "line_options": {
@@ -605,7 +607,7 @@ class Series(ABC):
                     "line_width": 3
                 }
             })
-            
+
             # Method chaining
             series.update({"visible": True}).update({"pane_id": 1})
             ```
@@ -613,10 +615,10 @@ class Series(ABC):
         for key, value in updates.items():
             if value is None:
                 continue  # Skip None values for method chaining
-            
+
             # Convert camelCase to snake_case for attribute lookup
             attr_name = self._camel_to_snake(key)
-            
+
             # Check if attribute exists
             if not hasattr(self, attr_name):
                 # Try the original key in case it's already snake_case
@@ -624,7 +626,7 @@ class Series(ABC):
                     attr_name = key
                 else:
                     raise ValueError(f"Invalid series attribute: {key}")
-            
+
             # Handle nested Options objects
             current_value = getattr(self, attr_name)
             if isinstance(value, dict) and hasattr(current_value, "update"):
@@ -637,10 +639,7 @@ class Series(ABC):
                     # Try to create appropriate Options class
                     options_class_name = attr_name.replace("_", " ").title().replace(" ", "")
                     try:
-                        # Import and create the options class
-                        from streamlit_lightweight_charts_pro.charts.options import (
-                            LineOptions, PriceFormatOptions, PriceLineOptions
-                        )
+                        # Use pre-imported options classes
                         options_classes = {
                             "line_options": LineOptions,
                             "price_format": PriceFormatOptions,
@@ -658,7 +657,7 @@ class Series(ABC):
             else:
                 # Simple value assignment
                 setattr(self, attr_name, value)
-        
+
         return self
 
     def _camel_to_snake(self, camel_case: str) -> str:
@@ -671,8 +670,9 @@ class Series(ABC):
         Returns:
             String in snake_case format.
         """
-        import re
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case).lower()
+        import re  # pylint: disable=import-outside-toplevel
+
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", camel_case).lower()
 
     def asdict(self) -> Dict[str, Any]:
         """
