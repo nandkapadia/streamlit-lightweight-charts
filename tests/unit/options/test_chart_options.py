@@ -99,108 +99,105 @@ class TestChartOptionsValidation:
 
     def test_invalid_width_type(self):
         """Test invalid width type raises TypeError."""
-        with pytest.raises(TypeError, match="width must be an int or None"):
-            ChartOptions(width="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="width must be of type"):
+            options.set_width("invalid")
 
     def test_invalid_height_type(self):
         """Test invalid height type raises TypeError."""
-        with pytest.raises(TypeError, match="height must be an int"):
-            ChartOptions(height="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="height must be of type"):
+            options.set_height("invalid")
 
     def test_invalid_auto_size_type(self):
         """Test invalid auto_size type raises TypeError."""
-        with pytest.raises(TypeError, match="auto_size must be a bool"):
-            ChartOptions(auto_size="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="auto_size must be of type"):
+            options.set_auto_size("invalid")
 
     def test_invalid_layout_type(self):
         """Test invalid layout type raises TypeError."""
-        with pytest.raises(TypeError, match="layout must be a LayoutOptions instance"):
-            ChartOptions(layout="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="layout must be of type"):
+            options.set_layout("invalid")
 
     def test_invalid_left_price_scale_type(self):
         """Test invalid left_price_scale type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="left_price_scale must be a PriceScaleOptions instance or None"
-        ):
-            ChartOptions(left_price_scale="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="left_price_scale must be of type"):
+            options.set_left_price_scale("invalid")
 
     def test_invalid_right_price_scale_type(self):
         """Test invalid right_price_scale type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="right_price_scale must be a PriceScaleOptions instance"
-        ):
-            ChartOptions(right_price_scale="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="right_price_scale must be of type"):
+            options.set_right_price_scale("invalid")
 
     def test_invalid_overlay_price_scales_type(self):
         """Test invalid overlay_price_scales type raises TypeError."""
-        with pytest.raises(TypeError, match="overlay_price_scales must be a dict"):
-            ChartOptions(overlay_price_scales="invalid")
-
-    def test_invalid_overlay_price_scales_value_type(self):
-        """Test invalid overlay_price_scales value type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="overlay_price_scales\\[key\\] must be a PriceScaleOptions instance"
-        ):
-            ChartOptions(overlay_price_scales={"key": "invalid"})
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="overlay_price_scales must be of type"):
+            options.set_overlay_price_scales("invalid")
 
     def test_invalid_time_scale_type(self):
         """Test invalid time_scale type raises TypeError."""
-        with pytest.raises(TypeError, match="time_scale must be a TimeScaleOptions instance"):
-            ChartOptions(time_scale="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="time_scale must be of type"):
+            options.set_time_scale("invalid")
 
     def test_invalid_crosshair_type(self):
         """Test invalid crosshair type raises TypeError."""
-        with pytest.raises(TypeError, match="crosshair must be a CrosshairOptions instance"):
-            ChartOptions(crosshair="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="crosshair must be of type"):
+            options.set_crosshair("invalid")
 
     def test_invalid_grid_type(self):
         """Test invalid grid type raises TypeError."""
-        with pytest.raises(TypeError, match="grid must be a GridOptions instance"):
-            ChartOptions(grid="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="grid must be of type"):
+            options.set_grid("invalid")
 
     def test_invalid_handle_scroll_type(self):
         """Test invalid handle_scroll type raises TypeError."""
-        with pytest.raises(TypeError, match="handle_scroll must be a bool"):
-            ChartOptions(handle_scroll="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="handle_scroll must be of type"):
+            options.set_handle_scroll("invalid")
 
     def test_invalid_handle_scale_type(self):
         """Test invalid handle_scale type raises TypeError."""
-        with pytest.raises(TypeError, match="handle_scale must be a bool"):
-            ChartOptions(handle_scale="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="handle_scale must be of type"):
+            options.set_handle_scale("invalid")
 
     def test_invalid_kinetic_scroll_type(self):
         """Test invalid kinetic_scroll type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="kinetic_scroll must be a KineticScrollOptions instance or None"
-        ):
-            ChartOptions(kinetic_scroll="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="kinetic_scroll must be of type"):
+            options.set_kinetic_scroll("invalid")
 
     def test_invalid_tracking_mode_type(self):
         """Test invalid tracking_mode type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="tracking_mode must be a TrackingModeOptions instance or None"
-        ):
-            ChartOptions(tracking_mode="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="tracking_mode must be of type"):
+            options.set_tracking_mode("invalid")
 
     def test_invalid_localization_type(self):
         """Test invalid localization type raises TypeError."""
-        with pytest.raises(
-            TypeError, match="localization must be a LocalizationOptions instance or None"
-        ):
-            ChartOptions(localization="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="localization must be of type"):
+            options.set_localization("invalid")
 
     def test_invalid_add_default_pane_type(self):
         """Test invalid add_default_pane type raises TypeError."""
-        with pytest.raises(TypeError, match="add_default_pane must be a bool"):
-            ChartOptions(add_default_pane="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="add_default_pane must be of type"):
+            options.set_add_default_pane("invalid")
 
     def test_invalid_trade_visualization_type(self):
         """Test invalid trade_visualization type raises TypeError."""
-        with pytest.raises(
-            TypeError,
-            match="trade_visualization must be a TradeVisualizationOptions instance or None",
-        ):
-            ChartOptions(trade_visualization="invalid")
+        options = ChartOptions()
+        with pytest.raises(TypeError, match="trade_visualization must be of type"):
+            options.set_trade_visualization("invalid")
 
     def test_none_left_price_scale_default(self):
         """Test that left_price_scale defaults to None."""

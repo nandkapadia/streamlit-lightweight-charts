@@ -7,6 +7,12 @@ showing different datasets and overlay options.
 
 import streamlit as st
 
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
 from examples.data_samples import get_line_data, get_multi_area_data_1, get_multi_area_data_2
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions

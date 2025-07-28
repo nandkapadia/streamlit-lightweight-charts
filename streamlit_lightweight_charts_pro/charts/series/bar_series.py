@@ -30,8 +30,14 @@ import pandas as pd
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import BarData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
+from streamlit_lightweight_charts_pro.utils import chainable_property
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
+@chainable_property("up_color", str, validator=lambda v: BarSeries._validate_color_static(v, "up_color"))
+@chainable_property("down_color", str, validator=lambda v: BarSeries._validate_color_static(v, "down_color"))
+@chainable_property("open_visible", bool)
+@chainable_property("thin_bars", bool)
 class BarSeries(Series):
     """
     Bar series for lightweight charts.
@@ -61,6 +67,15 @@ class BarSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.BAR
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
     def __init__(
         self,
@@ -84,90 +99,4 @@ class BarSeries(Series):
         self._open_visible = True
         self._thin_bars = True
 
-    @property
-    def up_color(self) -> str:
-        """
-        Get the color for up bars.
 
-        Returns:
-            str: The up bar color value.
-        """
-        return self._up_color
-
-    @up_color.setter
-    def up_color(self, value: str) -> None:
-        """
-        Set the color for up bars.
-
-        Args:
-            value (str): The up bar color value.
-        """
-        if not isinstance(value, str):
-            raise TypeError("up_color must be a string")
-        self._up_color = value
-
-    @property
-    def down_color(self) -> str:
-        """
-        Get the color for down bars.
-
-        Returns:
-            str: The down bar color value.
-        """
-        return self._down_color
-
-    @down_color.setter
-    def down_color(self, value: str) -> None:
-        """
-        Set the color for down bars.
-
-        Args:
-            value (str): The down bar color value.
-        """
-        if not isinstance(value, str):
-            raise TypeError("down_color must be a string")
-        self._down_color = value
-
-    @property
-    def open_visible(self) -> bool:
-        """
-        Get whether open values are visible.
-
-        Returns:
-            bool: True if open values are visible, False otherwise.
-        """
-        return self._open_visible
-
-    @open_visible.setter
-    def open_visible(self, value: bool) -> None:
-        """
-        Set whether open values should be visible.
-
-        Args:
-            value (bool): True if open values should be visible, False otherwise.
-        """
-        if not isinstance(value, bool):
-            raise TypeError("open_visible must be a boolean")
-        self._open_visible = value
-
-    @property
-    def thin_bars(self) -> bool:
-        """
-        Get whether to use thin bars.
-
-        Returns:
-            bool: True if thin bars should be used, False otherwise.
-        """
-        return self._thin_bars
-
-    @thin_bars.setter
-    def thin_bars(self, value: bool) -> None:
-        """
-        Set whether to use thin bars.
-
-        Args:
-            value (bool): True if thin bars should be used, False otherwise.
-        """
-        if not isinstance(value, bool):
-            raise TypeError("thin_bars must be a boolean")
-        self._thin_bars = value

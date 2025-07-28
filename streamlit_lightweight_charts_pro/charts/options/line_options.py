@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
+from streamlit_lightweight_charts_pro.utils import chainable_field
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LastPriceAnimationMode,
     LineStyle,
@@ -11,6 +12,19 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
+@chainable_field("color", str, validator=lambda v: LineOptions._validate_color_static(v, "color"))
+@chainable_field("line_style", LineStyle)
+@chainable_field("line_width", int)
+@chainable_field("line_type", LineType)
+@chainable_field("line_visible", bool)
+@chainable_field("point_markers_visible", bool)
+@chainable_field("point_markers_radius", int)
+@chainable_field("crosshair_marker_visible", bool)
+@chainable_field("crosshair_marker_radius", int)
+@chainable_field("crosshair_marker_border_color", str, validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_border_color"))
+@chainable_field("crosshair_marker_background_color", str, validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_background_color"))
+@chainable_field("crosshair_marker_border_width", int)
+@chainable_field("last_price_animation", LastPriceAnimationMode)
 class LineOptions(Options):
     """
     Encapsulates style options for a line series, mirroring TradingView's LineStyleOptions.
@@ -51,41 +65,12 @@ class LineOptions(Options):
     def __post_init__(self):
         """Post-initialization validation."""
         super().__post_init__()
-
-        if not is_valid_color(self.color):
-            raise ValueError(f"Invalid color format: {self.color!r}. Must be hex or rgba.")
-        if self.crosshair_marker_border_color and not is_valid_color(
-            self.crosshair_marker_border_color
-        ):
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
             raise ValueError(
-                f"Invalid crosshair_marker_border_color: {self.crosshair_marker_border_color!r}."
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
-        if self.crosshair_marker_background_color and not is_valid_color(
-            self.crosshair_marker_background_color
-        ):
-            raise ValueError(
-                f"Invalid crosshair_marker_background_color: "
-                f"{self.crosshair_marker_background_color!r}."
-            )
-        if not isinstance(self.line_width, int) or self.line_width < 1:
-            raise ValueError(f"line_width must be a positive integer, got {self.line_width}")
-        if self.point_markers_radius is not None and (
-            not isinstance(self.point_markers_radius, int) or self.point_markers_radius < 1
-        ):
-            raise ValueError(
-                f"point_markers_radius must be a positive integer or None, "
-                f"got {self.point_markers_radius}"
-            )
-        if not isinstance(self.crosshair_marker_radius, int) or self.crosshair_marker_radius < 1:
-            raise ValueError(
-                f"crosshair_marker_radius must be a positive integer, "
-                f"got {self.crosshair_marker_radius}"
-            )
-        if (
-            not isinstance(self.crosshair_marker_border_width, int)
-            or self.crosshair_marker_border_width < 1
-        ):
-            raise ValueError(
-                f"crosshair_marker_border_width must be a positive integer, "
-                f"got {self.crosshair_marker_border_width}"
-            )
+        return color

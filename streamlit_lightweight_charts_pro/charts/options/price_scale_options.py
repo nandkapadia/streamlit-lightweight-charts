@@ -4,9 +4,13 @@ from dataclasses import dataclass, field
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
+from streamlit_lightweight_charts_pro.utils import chainable_field
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
+@chainable_field("top", (int, float))
+@chainable_field("bottom", (int, float))
 class PriceScaleMargins(Options):
     """Price scale margins configuration."""
 
@@ -15,13 +19,23 @@ class PriceScaleMargins(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        if not isinstance(self.top, (int, float)):
-            raise TypeError(f"top must be a number, got {type(self.top)}")
-        if not isinstance(self.bottom, (int, float)):
-            raise TypeError(f"bottom must be a number, got {type(self.bottom)}")
 
 
 @dataclass
+@chainable_field("visible", bool)
+@chainable_field("auto_scale", bool)
+@chainable_field("mode", PriceScaleMode)
+@chainable_field("invert_scale", bool)
+@chainable_field("border_visible", bool)
+@chainable_field("border_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "border_color"))
+@chainable_field("text_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "text_color"))
+@chainable_field("ticks_visible", bool)
+@chainable_field("ensure_edge_tick_marks_visible", bool)
+@chainable_field("align_labels", bool)
+@chainable_field("entire_text_only", bool)
+@chainable_field("minimum_width", int)
+@chainable_field("scale_margins", PriceScaleMargins)
+@chainable_field("price_scale_id", str)
 class PriceScaleOptions(Options):
     """Price scale configuration for lightweight-charts v5.x."""
 
@@ -51,46 +65,12 @@ class PriceScaleOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        # Validate core fields
-        if not isinstance(self.visible, bool):
-            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
-        if not isinstance(self.auto_scale, bool):
-            raise TypeError(f"auto_scale must be a bool, got {type(self.auto_scale)}")
-        if not isinstance(self.mode, PriceScaleMode):
-            raise TypeError(f"mode must be a PriceScaleMode enum, got {type(self.mode)}")
-        if not isinstance(self.invert_scale, bool):
-            raise TypeError(f"invert_scale must be a bool, got {type(self.invert_scale)}")
-
-        # Validate visual appearance fields
-        if not isinstance(self.border_visible, bool):
-            raise TypeError(f"border_visible must be a bool, got {type(self.border_visible)}")
-        if not isinstance(self.border_color, str):
-            raise TypeError(f"border_color must be a string, got {type(self.border_color)}")
-        if not isinstance(self.text_color, str):
-            raise TypeError(f"text_color must be a string, got {type(self.text_color)}")
-
-        # Validate tick and label fields
-        if not isinstance(self.ticks_visible, bool):
-            raise TypeError(f"ticks_visible must be a bool, got {type(self.ticks_visible)}")
-        if not isinstance(self.ensure_edge_tick_marks_visible, bool):
-            raise TypeError(
-                f"ensure_edge_tick_marks_visible must be a bool, "
-                f"got {type(self.ensure_edge_tick_marks_visible)}"
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
-        if not isinstance(self.align_labels, bool):
-            raise TypeError(f"align_labels must be a bool, got {type(self.align_labels)}")
-        if not isinstance(self.entire_text_only, bool):
-            raise TypeError(f"entire_text_only must be a bool, got {type(self.entire_text_only)}")
-
-        # Validate size and positioning fields
-        if not isinstance(self.minimum_width, int):
-            raise TypeError(f"minimum_width must be an int, got {type(self.minimum_width)}")
-        if self.scale_margins is not None and not isinstance(self.scale_margins, PriceScaleMargins):
-            raise TypeError(
-                f"scale_margins must be a PriceScaleMargins instance or None, "
-                f"got {type(self.scale_margins)}"
-            )
-
-        # Validate identification fields
-        if not isinstance(self.price_scale_id, str):
-            raise TypeError(f"price_scale_id must be a string, got {type(self.price_scale_id)}")
+        return color

@@ -39,8 +39,10 @@ from streamlit_lightweight_charts_pro.data.line_data import LineData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_property
 
 
+@chainable_property("line_options", LineOptions, allow_none=True)
 class LineSeries(Series):
     DATA_CLASS = LineData
     """
@@ -80,27 +82,6 @@ class LineSeries(Series):
             price_scale_id=price_scale_id,
             pane_id=pane_id,
         )
-        self._line_options = None  # Initialize before using setter
         self.line_options = line_options
 
-    @property
-    def line_options(self) -> LineOptions:
-        """
-        Get the line options for this series.
 
-        Returns:
-            LineOptions: The line styling options.
-        """
-        return self._line_options
-
-    @line_options.setter
-    def line_options(self, value: LineOptions) -> None:
-        """
-        Set the line options for this series.
-
-        Args:
-            value (LineOptions): The line styling options to set.
-        """
-        if not isinstance(value, LineOptions):
-            raise TypeError("line_options must be an instance of LineOptions")
-        self._line_options = value

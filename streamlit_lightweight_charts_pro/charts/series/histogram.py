@@ -34,8 +34,12 @@ from streamlit_lightweight_charts_pro.data import Data
 from streamlit_lightweight_charts_pro.data.histogram_data import HistogramData
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
+from streamlit_lightweight_charts_pro.utils import chainable_property
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
+@chainable_property("color", str, validator=lambda v: HistogramSeries._validate_color_static(v, "color"))
+@chainable_property("base", (int, float))
 class HistogramSeries(Series):
     """
     Histogram series for lightweight charts.
@@ -61,6 +65,15 @@ class HistogramSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.HISTOGRAM
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
     @classmethod
     def create_volume_series(
@@ -194,50 +207,8 @@ class HistogramSeries(Series):
             pane_id=pane_id,
         )
 
-        # Initialize properties with default values
+        # Initialize histogram-specific properties with default values
         self._color = "#26a69a"
         self._base = 0
 
-    @property
-    def color(self) -> str:
-        """
-        Get the color of the bars.
 
-        Returns:
-            str: The bar color value.
-        """
-        return self._color
-
-    @color.setter
-    def color(self, value: str) -> None:
-        """
-        Set the color of the bars.
-
-        Args:
-            value (str): The bar color value.
-        """
-        if not isinstance(value, str):
-            raise TypeError("color must be a string")
-        self._color = value
-
-    @property
-    def base(self) -> float:
-        """
-        Get the base value for the bars.
-
-        Returns:
-            float: The base value.
-        """
-        return self._base
-
-    @base.setter
-    def base(self, value: float) -> None:
-        """
-        Set the base value for the bars.
-
-        Args:
-            value (float): The base value.
-        """
-        if not isinstance(value, (int, float)):
-            raise TypeError("base must be a number")
-        self._base = float(value)

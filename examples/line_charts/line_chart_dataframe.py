@@ -8,6 +8,11 @@ that comes in DataFrame format.
 
 import streamlit as st
 
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 from examples.data_samples import get_dataframe_line_data
 from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
@@ -42,7 +47,7 @@ with col1:
 
 with col2:
     st.write("**Sample Data:**")
-    st.write(df.head().asdict("records"))
+    st.write(df.head().to_dict("records"))
 
 # Define column mapping
 column_mapping = {
@@ -97,7 +102,7 @@ st.write("**Advanced DataFrame with additional columns:**")
 st.write(f"**Shape:** {advanced_df.shape}")
 st.write(f"**Columns:** {list(advanced_df.columns)}")
 st.write(f"**Sample Data:**")
-st.write(advanced_df.head().asdict("records"))
+st.write(advanced_df.head().to_dict("records"))
 
 # Create line series with color mapping
 advanced_column_mapping = {

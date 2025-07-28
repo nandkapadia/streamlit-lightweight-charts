@@ -40,8 +40,15 @@ from streamlit_lightweight_charts_pro.data.area_data import AreaData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_property
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
+@chainable_property("line_options", LineOptions, allow_none=True)
+@chainable_property("top_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "top_color"))
+@chainable_property("bottom_color", str, validator=lambda v: AreaSeries._validate_color_static(v, "bottom_color"))
+@chainable_property("relative_gradient", bool)
+@chainable_property("invert_filled_area", bool)
 class AreaSeries(Series):
     """
     Area series for lightweight charts.
@@ -97,7 +104,7 @@ class AreaSeries(Series):
             pane_id=pane_id,
         )
 
-        # Initialize properties before using setters
+        # Initialize properties
         self._line_options = LineOptions()
         self._top_color = "#2196F3"
         self._bottom_color = "rgba(33, 150, 243, 0.0)"
@@ -108,113 +115,14 @@ class AreaSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.AREA
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
-    @property
-    def line_options(self) -> Optional[LineOptions]:
-        """
-        Get the line options for this series.
 
-        Returns:
-            Optional[LineOptions]: The line styling options, or None if not set.
-        """
-        return self._line_options
-
-    @line_options.setter
-    def line_options(self, value: Optional[LineOptions]) -> None:
-        """
-        Set the line options for this series.
-
-        Args:
-            value (Optional[LineOptions]): The line styling options to set.
-        """
-        if value is not None and not isinstance(value, LineOptions):
-            raise TypeError("line_options must be an instance of LineOptions or None")
-        self._line_options = value
-
-    @property
-    def top_color(self) -> str:
-        """
-        Get the top color of the area.
-
-        Returns:
-            str: The top color value.
-        """
-        return self._top_color
-
-    @top_color.setter
-    def top_color(self, value: str) -> None:
-        """
-        Set the top color of the area.
-
-        Args:
-            value (str): The top color value.
-        """
-        if not isinstance(value, str):
-            raise TypeError("top_color must be a string")
-        self._top_color = value
-
-    @property
-    def bottom_color(self) -> str:
-        """
-        Get the bottom color of the area.
-
-        Returns:
-            str: The bottom color value.
-        """
-        return self._bottom_color
-
-    @bottom_color.setter
-    def bottom_color(self, value: str) -> None:
-        """
-        Set the bottom color of the area.
-
-        Args:
-            value (str): The bottom color value.
-        """
-        if not isinstance(value, str):
-            raise TypeError("bottom_color must be a string")
-        self._bottom_color = value
-
-    @property
-    def relative_gradient(self) -> bool:
-        """
-        Get whether the gradient is relative to base value.
-
-        Returns:
-            bool: True if gradient is relative, False otherwise.
-        """
-        return self._relative_gradient
-
-    @relative_gradient.setter
-    def relative_gradient(self, value: bool) -> None:
-        """
-        Set whether the gradient is relative to base value.
-
-        Args:
-            value (bool): True if gradient should be relative, False otherwise.
-        """
-        if not isinstance(value, bool):
-            raise TypeError("relative_gradient must be a boolean")
-        self._relative_gradient = value
-
-    @property
-    def invert_filled_area(self) -> bool:
-        """
-        Get whether the filled area is inverted.
-
-        Returns:
-            bool: True if filled area is inverted, False otherwise.
-        """
-        return self._invert_filled_area
-
-    @invert_filled_area.setter
-    def invert_filled_area(self, value: bool) -> None:
-        """
-        Set whether the filled area should be inverted.
-
-        Args:
-            value (bool): True if filled area should be inverted, False otherwise.
-        """
-        if not isinstance(value, bool):
-            raise TypeError("invert_filled_area must be a boolean")
-        self._invert_filled_area = value

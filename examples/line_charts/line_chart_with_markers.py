@@ -8,6 +8,12 @@ data points to highlight events, signals, or important moments.
 
 import streamlit as st
 
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
 from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions

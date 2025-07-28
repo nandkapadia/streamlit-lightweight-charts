@@ -67,15 +67,25 @@ class TestLayoutOptions:
 
     def test_validation_background_options(self):
         """Test validation of background_options field."""
+        options = LayoutOptions()
         with pytest.raises(
-            TypeError, match="background_options must be a BackgroundSolid or BackgroundGradient"
+            TypeError, match="background_options must be of type"
         ):
-            LayoutOptions(background_options="invalid")
+            options.set_background_options("invalid")
 
     def test_validation_pane_options(self):
+
+
         """Test validation of pane_options field."""
-        with pytest.raises(TypeError, match="pane_options must be a PaneOptions instance or None"):
-            LayoutOptions(pane_options="invalid")
+
+
+        options = LayoutOptions()
+
+
+        with pytest.raises(TypeError, match="pane_options must be of type"):
+
+
+            options.set_pane_options("invalid")
 
     def test_to_dict_basic(self):
         """Test basic serialization."""
@@ -125,14 +135,32 @@ class TestGridOptions:
         assert options.horz_lines == horz_lines
 
     def test_validation_vert_lines(self):
+
+
         """Test validation of vert_lines field."""
-        with pytest.raises(TypeError, match="vert_lines must be a GridLineOptions instance"):
-            GridOptions(vert_lines="invalid")
+
+
+        options = GridOptions()
+
+
+        with pytest.raises(TypeError, match="vert_lines must be of type"):
+
+
+            options.set_vert_lines("invalid")
 
     def test_validation_horz_lines(self):
+
+
         """Test validation of horz_lines field."""
-        with pytest.raises(TypeError, match="horz_lines must be a GridLineOptions instance"):
-            GridOptions(horz_lines="invalid")
+
+
+        options = GridOptions()
+
+
+        with pytest.raises(TypeError, match="horz_lines must be of type"):
+
+
+            options.set_horz_lines("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -170,18 +198,37 @@ class TestGridLineOptions:
 
     def test_validation_color(self):
         """Test validation of color field."""
-        with pytest.raises(TypeError, match="color must be a string"):
-            GridLineOptions(color=123)
+        options = GridLineOptions()
+        with pytest.raises(TypeError, match="color must be of type"):
+            options.set_color(123)
 
     def test_validation_style(self):
+
+
         """Test validation of style field."""
-        with pytest.raises(TypeError, match="style must be a LineStyle enum"):
-            GridLineOptions(style="invalid")
+
+
+        options = GridLineOptions()
+
+
+        with pytest.raises(TypeError, match="style must be of type"):
+
+
+            options.set_style("invalid")
 
     def test_validation_visible(self):
+
+
         """Test validation of visible field."""
-        with pytest.raises(TypeError, match="visible must be a bool"):
-            GridLineOptions(visible="invalid")
+
+
+        options = GridLineOptions()
+
+
+        with pytest.raises(TypeError, match="visible must be of type"):
+
+
+            options.set_visible("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -222,18 +269,29 @@ class TestPaneOptions:
 
     def test_validation_separator_color(self):
         """Test validation of separator_color field."""
-        with pytest.raises(TypeError, match="separator_color must be a string"):
-            PaneOptions(separator_color=123)
+        options = PaneOptions()
+        with pytest.raises(TypeError, match="separator_color must be of type"):
+            options.set_separator_color(123)
 
     def test_validation_separator_hover_color(self):
         """Test validation of separator_hover_color field."""
-        with pytest.raises(TypeError, match="separator_hover_color must be a string"):
-            PaneOptions(separator_hover_color=123)
+        options = PaneOptions()
+        with pytest.raises(TypeError, match="separator_hover_color must be of type"):
+            options.set_separator_hover_color(123)
 
     def test_validation_enable_resize(self):
+
+
         """Test validation of enable_resize field."""
-        with pytest.raises(TypeError, match="enable_resize must be a bool"):
-            PaneOptions(enable_resize="invalid")
+
+
+        options = PaneOptions()
+
+
+        with pytest.raises(TypeError, match="enable_resize must be of type"):
+
+
+            options.set_enable_resize("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -280,34 +338,72 @@ class TestWatermarkOptions:
         assert options.color == "#ff0000"
 
     def test_validation_visible(self):
+
+
         """Test validation of visible field."""
-        with pytest.raises(TypeError, match="visible must be a bool"):
-            WatermarkOptions(visible="invalid")
+
+
+        options = WatermarkOptions()
+
+
+        with pytest.raises(TypeError, match="visible must be of type"):
+
+
+            options.set_visible("invalid")
 
     def test_validation_text(self):
         """Test validation of text field."""
-        with pytest.raises(TypeError, match="text must be a string"):
-            WatermarkOptions(text=123)
+        options = WatermarkOptions()
+        with pytest.raises(TypeError, match="text must be of type"):
+            options.set_text(123)
 
     def test_validation_font_size(self):
+
+
         """Test validation of font_size field."""
-        with pytest.raises(TypeError, match="font_size must be an int"):
-            WatermarkOptions(font_size="invalid")
+
+
+        options = WatermarkOptions()
+
+
+        with pytest.raises(TypeError, match="font_size must be of type"):
+
+
+            options.set_font_size("invalid")
 
     def test_validation_horz_align(self):
+
+
         """Test validation of horz_align field."""
-        with pytest.raises(TypeError, match="horz_align must be a HorzAlign enum"):
-            WatermarkOptions(horz_align="invalid")
+
+
+        options = WatermarkOptions()
+
+
+        with pytest.raises(TypeError, match="horz_align must be of type"):
+
+
+            options.set_horz_align("invalid")
 
     def test_validation_vert_align(self):
+
+
         """Test validation of vert_align field."""
-        with pytest.raises(TypeError, match="vert_align must be a VertAlign enum"):
-            WatermarkOptions(vert_align="invalid")
+
+
+        options = WatermarkOptions()
+
+
+        with pytest.raises(TypeError, match="vert_align must be of type"):
+
+
+            options.set_vert_align("invalid")
 
     def test_validation_color(self):
         """Test validation of color field."""
-        with pytest.raises(TypeError, match="color must be a string"):
-            WatermarkOptions(color=123)
+        options = WatermarkOptions()
+        with pytest.raises(TypeError, match="color must be of type"):
+            options.set_color(123)
 
     def test_to_dict(self):
         """Test serialization."""

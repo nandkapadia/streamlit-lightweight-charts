@@ -32,8 +32,19 @@ from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data.candlestick_data import CandlestickData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
+from streamlit_lightweight_charts_pro.utils import chainable_property
 
 
+@chainable_property("up_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "up_color"))
+@chainable_property("down_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "down_color"))
+@chainable_property("wick_visible", bool)
+@chainable_property("border_visible", bool)
+@chainable_property("border_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "border_color"))
+@chainable_property("border_up_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "border_up_color"))
+@chainable_property("border_down_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "border_down_color"))
+@chainable_property("wick_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_color"))
+@chainable_property("wick_up_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_up_color"))
+@chainable_property("wick_down_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_down_color"))
 class CandlestickSeries(Series):
     """Candlestick series for lightweight charts."""
 
@@ -74,106 +85,17 @@ class CandlestickSeries(Series):
                 f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
         return color
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
-    @property
-    def up_color(self) -> str:
-        """Get the color of rising candles."""
-        return self._up_color
 
-    @up_color.setter
-    def up_color(self, value: str):
-        """Set the color of rising candles."""
-        self._up_color = self._validate_color(value, "up_color")
-
-    @property
-    def down_color(self) -> str:
-        """Get the color of falling candles."""
-        return self._down_color
-
-    @down_color.setter
-    def down_color(self, value: str):
-        """Set the color of falling candles."""
-        self._down_color = self._validate_color(value, "down_color")
-
-    @property
-    def wick_visible(self) -> bool:
-        """Get whether high and low prices candle wicks are enabled."""
-        return self._wick_visible
-
-    @wick_visible.setter
-    def wick_visible(self, value: bool):
-        """Set whether high and low prices candle wicks are enabled."""
-        self._wick_visible = bool(value)
-
-    @property
-    def border_visible(self) -> bool:
-        """Get whether candle borders are enabled."""
-        return self._border_visible
-
-    @border_visible.setter
-    def border_visible(self, value: bool):
-        """Set whether candle borders are enabled."""
-        self._border_visible = bool(value)
-
-    @property
-    def border_color(self) -> str:
-        """Get the border color."""
-        return self._border_color
-
-    @border_color.setter
-    def border_color(self, value: str):
-        """Set the border color."""
-        self._border_color = self._validate_color(value, "border_color")
-
-    @property
-    def border_up_color(self) -> str:
-        """Get the border color of rising candles."""
-        return self._border_up_color
-
-    @border_up_color.setter
-    def border_up_color(self, value: str):
-        """Set the border color of rising candles."""
-        self._border_up_color = self._validate_color(value, "border_up_color")
-
-    @property
-    def border_down_color(self) -> str:
-        """Get the border color of falling candles."""
-        return self._border_down_color
-
-    @border_down_color.setter
-    def border_down_color(self, value: str):
-        """Set the border color of falling candles."""
-        self._border_down_color = self._validate_color(value, "border_down_color")
-
-    @property
-    def wick_color(self) -> str:
-        """Get the wick color."""
-        return self._wick_color
-
-    @wick_color.setter
-    def wick_color(self, value: str):
-        """Set the wick color."""
-        self._wick_color = self._validate_color(value, "wick_color")
-
-    @property
-    def wick_up_color(self) -> str:
-        """Get the wick color of rising candles."""
-        return self._wick_up_color
-
-    @wick_up_color.setter
-    def wick_up_color(self, value: str):
-        """Set the wick color of rising candles."""
-        self._wick_up_color = self._validate_color(value, "wick_up_color")
-
-    @property
-    def wick_down_color(self) -> str:
-        """Get the wick color of falling candles."""
-        return self._wick_down_color
-
-    @wick_down_color.setter
-    def wick_down_color(self, value: str):
-        """Set the wick color of falling candles."""
-        self._wick_down_color = self._validate_color(value, "wick_down_color")
 
     @property
     def chart_type(self) -> ChartType:

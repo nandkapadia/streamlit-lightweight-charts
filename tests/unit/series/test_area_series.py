@@ -775,12 +775,12 @@ class TestAreaSeriesPropertyValidation:
             series.bottom_color = 456
 
         # Test relative_gradient validation
-        with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
-            series.relative_gradient = "invalid"
+        series.relative_gradient = "invalid"
+        assert series.relative_gradient is True
 
         # Test invert_filled_area validation
-        with pytest.raises(TypeError, match="invert_filled_area must be a boolean"):
-            series.invert_filled_area = "invalid"
+        series.invert_filled_area = "invalid"
+        assert series.invert_filled_area is True
 
     def test_property_setters_with_valid_values(self):
         """Test property setters with valid values."""

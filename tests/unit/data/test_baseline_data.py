@@ -489,11 +489,68 @@ class TestBaselineDataEdgeCases:
         assert data.bottom_fill_color1 == "rgba(33,150,243,2)"
 
     def test_rgba_with_negative_alpha(self):
-        """Test rgba color with negative alpha value (should be accepted by permissive validator)."""
+        """Test rgba color with negative alpha value (should be rejected)."""
+        with pytest.raises(ValueError, match="Invalid color format for bottom_fill_color1"):
+            data = BaselineData(
+                time=1640995200, value=100.5, bottom_fill_color1="rgba(33,150,243,-0.1)"
+            )
+
+    def test_color_serialization_consistency(self):
+        """Test that color serialization is consistent."""
+        colors = ["#2196F3", "rgba(33,150,243,1)", "#FF0000"]
+        for color in colors:
+            data = BaselineData(time=1640995200, value=100.5, top_fill_color1=color)
+            result = data.asdict()
+            assert result["topFillColor1"] == color
+
+    def test_all_color_properties_serialization(self):
+        """Test that all color properties are serialized correctly."""
         data = BaselineData(
-            time=1640995200, value=100.5, bottom_fill_color1="rgba(33,150,243,-0.1)"
+            time=1640995200,
+            value=100.5,
+            top_fill_color1="#FF0000",
+            top_fill_color2="#00FF00",
+            top_line_color="#0000FF",
+            bottom_fill_color1="rgba(255,0,0,0.5)",
+            bottom_fill_color2="rgba(0,255,0,0.5)",
+            bottom_line_color="rgba(0,0,255,0.5)",
         )
-        assert data.bottom_fill_color1 == "rgba(33,150,243,-0.1)"
+        result = data.asdict()
+
+        # Check that all color properties are present and correctly named
+        assert "topFillColor1" in result
+        assert "topFillColor2" in result
+        assert "topLineColor" in result
+        assert "bottomFillColor1" in result
+        assert "bottomFillColor2" in result
+        assert "bottomLineColor" in result
+
+        # Check values
+        assert result["topFillColor1"] == "#FF0000"
+        assert result["topFillColor2"] == "#00FF00"
+        assert result["topLineColor"] == "#0000FF"
+        assert result["bottomFillColor1"] == "rgba(255,0,0,0.5)"
+        assert result["bottomFillColor2"] == "rgba(0,255,0,0.5)"
+        assert result["bottomLineColor"] == "rgba(0,0,255,0.5)"
+
+    def test_color_omission_in_serialization(self):
+        """Test that None and empty color values are omitted from serialization."""
+        data = BaselineData(
+            time=1640995200,
+            value=100.5,
+            top_fill_color1=None,
+            top_fill_color2="",
+            bottom_fill_color1=None,
+            bottom_fill_color2="",
+        )
+        result = data.asdict()
+
+        # Only time and value should be present
+        assert result == {"time": 1640995200, "value": 100.5}
+        assert "topFillColor1" not in result
+        assert "topFillColor2" not in result
+        assert "bottomFillColor1" not in result
+        assert "bottomFillColor2" not in result
 
 
 class TestBaselineDataTimeHandling:
@@ -576,11 +633,11 @@ class TestBaselineDataColorHandling:
         assert data.bottom_fill_color1 == "rgba(33,150,243,2)"
 
     def test_rgba_with_negative_alpha(self):
-        """Test rgba color with negative alpha value (should be accepted by permissive validator)."""
-        data = BaselineData(
-            time=1640995200, value=100.5, bottom_fill_color1="rgba(33,150,243,-0.1)"
-        )
-        assert data.bottom_fill_color1 == "rgba(33,150,243,-0.1)"
+        """Test rgba color with negative alpha value (should be rejected)."""
+        with pytest.raises(ValueError, match="Invalid color format for bottom_fill_color1"):
+            data = BaselineData(
+                time=1640995200, value=100.5, bottom_fill_color1="rgba(33,150,243,-0.1)"
+            )
 
     def test_color_serialization_consistency(self):
         """Test that color serialization is consistent."""

@@ -7,6 +7,12 @@ configuration management, serialization, and advanced usage patterns.
 
 import json
 
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
 import streamlit as st
 
 from examples.data_samples import get_line_data

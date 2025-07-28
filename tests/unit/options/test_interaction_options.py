@@ -50,18 +50,21 @@ class TestCrosshairOptions:
 
     def test_validation_mode(self):
         """Test validation of mode field."""
-        with pytest.raises(TypeError, match="mode must be a CrosshairMode enum"):
-            CrosshairOptions(mode="invalid")
+        options = CrosshairOptions()
+        with pytest.raises(TypeError, match="mode must be of type"):
+            options.set_mode("invalid")
 
     def test_validation_vert_line(self):
         """Test validation of vert_line field."""
-        with pytest.raises(TypeError, match="vert_line must be a CrosshairLineOptions instance"):
-            CrosshairOptions(vert_line="invalid")
+        options = CrosshairOptions()
+        with pytest.raises(TypeError, match="vert_line must be of type"):
+            options.set_vert_line("invalid")
 
     def test_validation_horz_line(self):
         """Test validation of horz_line field."""
-        with pytest.raises(TypeError, match="horz_line must be a CrosshairLineOptions instance"):
-            CrosshairOptions(horz_line="invalid")
+        options = CrosshairOptions()
+        with pytest.raises(TypeError, match="horz_line must be of type"):
+            options.set_horz_line("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -108,28 +111,33 @@ class TestCrosshairLineOptions:
 
     def test_validation_color(self):
         """Test validation of color field."""
-        with pytest.raises(TypeError, match="color must be a string"):
-            CrosshairLineOptions(color=123)
+        options = CrosshairLineOptions()
+        with pytest.raises(TypeError, match="color must be of type"):
+            options.set_color(123)
 
     def test_validation_width(self):
         """Test validation of width field."""
-        with pytest.raises(TypeError, match="width must be an int"):
-            CrosshairLineOptions(width="invalid")
+        options = CrosshairLineOptions()
+        with pytest.raises(TypeError, match="width must be of type"):
+            options.set_width("invalid")
 
     def test_validation_style(self):
         """Test validation of style field."""
-        with pytest.raises(TypeError, match="style must be a LineStyle enum"):
-            CrosshairLineOptions(style="invalid")
+        options = CrosshairLineOptions()
+        with pytest.raises(TypeError, match="style must be of type"):
+            options.set_style("invalid")
 
     def test_validation_visible(self):
         """Test validation of visible field."""
-        with pytest.raises(TypeError, match="visible must be a bool"):
-            CrosshairLineOptions(visible="invalid")
+        options = CrosshairLineOptions()
+        with pytest.raises(TypeError, match="visible must be of type"):
+            options.set_visible("invalid")
 
     def test_validation_label_visible(self):
         """Test validation of label_visible field."""
-        with pytest.raises(TypeError, match="label_visible must be a bool"):
-            CrosshairLineOptions(label_visible="invalid")
+        options = CrosshairLineOptions()
+        with pytest.raises(TypeError, match="label_visible must be of type"):
+            options.set_label_visible("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -176,13 +184,15 @@ class TestCrosshairSyncOptions:
 
     def test_validation_group_id(self):
         """Test validation of group_id field."""
-        with pytest.raises(TypeError, match="group_id must be an integer"):
-            CrosshairSyncOptions(group_id="invalid")
+        options = CrosshairSyncOptions()
+        with pytest.raises(TypeError, match="group_id must be of type"):
+            options.set_group_id("invalid")
 
     def test_validation_suppress_series_animations(self):
         """Test validation of suppress_series_animations field."""
-        with pytest.raises(TypeError, match="suppress_series_animations must be a bool"):
-            CrosshairSyncOptions(suppress_series_animations="invalid")
+        options = CrosshairSyncOptions()
+        with pytest.raises(TypeError, match="suppress_series_animations must be of type"):
+            options.set_suppress_series_animations("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -212,13 +222,15 @@ class TestKineticScrollOptions:
 
     def test_validation_touch(self):
         """Test validation of touch field."""
-        with pytest.raises(TypeError, match="touch must be a bool"):
-            KineticScrollOptions(touch="invalid")
+        options = KineticScrollOptions()
+        with pytest.raises(TypeError, match="touch must be of type"):
+            options.set_touch("invalid")
 
     def test_validation_mouse(self):
         """Test validation of mouse field."""
-        with pytest.raises(TypeError, match="mouse must be a bool"):
-            KineticScrollOptions(mouse="invalid")
+        options = KineticScrollOptions()
+        with pytest.raises(TypeError, match="mouse must be of type"):
+            options.set_mouse("invalid")
 
     def test_to_dict(self):
         """Test serialization."""
@@ -246,8 +258,9 @@ class TestTrackingModeOptions:
 
     def test_validation_exit_on_escape(self):
         """Test validation of exit_on_escape field."""
-        with pytest.raises(TypeError, match="exit_on_escape must be a bool"):
-            TrackingModeOptions(exit_on_escape="invalid")
+        options = TrackingModeOptions()
+        with pytest.raises(TypeError, match="exit_on_escape must be of type"):
+            options.set_exit_on_escape("invalid")
 
     def test_to_dict(self):
         """Test serialization."""

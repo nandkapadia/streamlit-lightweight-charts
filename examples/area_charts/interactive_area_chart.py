@@ -6,6 +6,12 @@ dynamic data filtering, user controls, and real-time updates.
 """
 
 import numpy as np
+
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 import pandas as pd
 import streamlit as st
 

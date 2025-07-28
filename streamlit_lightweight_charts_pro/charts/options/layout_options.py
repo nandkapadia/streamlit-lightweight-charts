@@ -18,9 +18,14 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LineStyle,
     VertAlign,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_field
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
+@chainable_field("color", str, validator=lambda v: GridLineOptions._validate_color_static(v, "color"))
+@chainable_field("style", LineStyle)
+@chainable_field("visible", bool)
 class GridLineOptions(Options):
     """Grid line configuration."""
 
@@ -30,18 +35,20 @@ class GridLineOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        # Validate color
-        if not isinstance(self.color, str):
-            raise TypeError(f"color must be a string, got {type(self.color)}")
-        # Validate style
-        if not isinstance(self.style, LineStyle):
-            raise TypeError(f"style must be a LineStyle enum, got {type(self.style)}")
-        # Validate visible
-        if not isinstance(self.visible, bool):
-            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
 
 @dataclass
+@chainable_field("vert_lines", GridLineOptions)
+@chainable_field("horz_lines", GridLineOptions)
 class GridOptions(Options):
     """Grid configuration for chart."""
 
@@ -50,17 +57,12 @@ class GridOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        if not isinstance(self.vert_lines, GridLineOptions):
-            raise TypeError(
-                f"vert_lines must be a GridLineOptions instance, " f"got {type(self.vert_lines)}"
-            )
-        if not isinstance(self.horz_lines, GridLineOptions):
-            raise TypeError(
-                f"horz_lines must be a GridLineOptions instance, " f"got {type(self.horz_lines)}"
-            )
 
 
 @dataclass
+@chainable_field("separator_color", str, validator=lambda v: PaneOptions._validate_color_static(v, "separator_color"))
+@chainable_field("separator_hover_color", str, validator=lambda v: PaneOptions._validate_color_static(v, "separator_hover_color"))
+@chainable_field("enable_resize", bool)
 class PaneOptions(Options):
     """Pane configuration for chart."""
 
@@ -70,18 +72,24 @@ class PaneOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        if not isinstance(self.separator_color, str):
-            raise TypeError(f"separator_color must be a string, got {type(self.separator_color)}")
-        if not isinstance(self.separator_hover_color, str):
-            raise TypeError(
-                f"separator_hover_color must be a string, "
-                f"got {type(self.separator_hover_color)}"
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
-        if not isinstance(self.enable_resize, bool):
-            raise TypeError(f"enable_resize must be a bool, got {type(self.enable_resize)}")
+        return color
 
 
 @dataclass
+@chainable_field("background_options", (BackgroundSolid, BackgroundGradient))
+@chainable_field("text_color", str, validator=lambda v: LayoutOptions._validate_color_static(v, "text_color"))
+@chainable_field("font_size", int)
+@chainable_field("font_family", str)
+@chainable_field("pane_options", PaneOptions)
+@chainable_field("attribution_logo", bool)
 class LayoutOptions(Options):
     """Layout configuration for chart."""
 
@@ -96,24 +104,24 @@ class LayoutOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        # Validate background
-        if not isinstance(self.background_options, (BackgroundSolid, BackgroundGradient)):
-            raise TypeError(
-                f"background_options must be a BackgroundSolid or BackgroundGradient, "
-                f"got {type(self.background_options)}"
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
-        # Validate panes
-        if self.pane_options is not None and not isinstance(self.pane_options, PaneOptions):
-            raise TypeError(
-                f"pane_options must be a PaneOptions instance or None, "
-                f"got {type(self.pane_options)}"
-            )
-        # Validate attribution_logo
-        if not isinstance(self.attribution_logo, bool):
-            raise TypeError(f"attribution_logo must be a bool, got {type(self.attribution_logo)}")
+        return color
 
 
 @dataclass
+@chainable_field("visible", bool)
+@chainable_field("text", str)
+@chainable_field("font_size", int)
+@chainable_field("horz_align", HorzAlign)
+@chainable_field("vert_align", VertAlign)
+@chainable_field("color", str, validator=lambda v: WatermarkOptions._validate_color_static(v, "color"))
 class WatermarkOptions(Options):
     """Watermark configuration."""
 
@@ -126,15 +134,12 @@ class WatermarkOptions(Options):
 
     def __post_init__(self):
         super().__post_init__()
-        if not isinstance(self.visible, bool):
-            raise TypeError(f"visible must be a bool, got {type(self.visible)}")
-        if not isinstance(self.text, str):
-            raise TypeError(f"text must be a string, got {type(self.text)}")
-        if not isinstance(self.font_size, int):
-            raise TypeError(f"font_size must be an int, got {type(self.font_size)}")
-        if not isinstance(self.horz_align, HorzAlign):
-            raise TypeError(f"horz_align must be a HorzAlign enum, got {type(self.horz_align)}")
-        if not isinstance(self.vert_align, VertAlign):
-            raise TypeError(f"vert_align must be a VertAlign enum, got {type(self.vert_align)}")
-        if not isinstance(self.color, str):
-            raise TypeError(f"color must be a string, got {type(self.color)}")
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color

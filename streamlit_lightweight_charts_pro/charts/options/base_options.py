@@ -13,7 +13,6 @@ from typing import Any, Dict
 
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
-
 @dataclass
 class Options(ABC):
     """

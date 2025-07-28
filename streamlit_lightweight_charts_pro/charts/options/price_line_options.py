@@ -4,9 +4,20 @@ from typing import Optional
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
+from streamlit_lightweight_charts_pro.utils import chainable_field
 
 
 @dataclass
+@chainable_field("id", str)
+@chainable_field("price", (int, float))
+@chainable_field("color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "color"))
+@chainable_field("line_width", int)
+@chainable_field("line_style", LineStyle)
+@chainable_field("line_visible", bool)
+@chainable_field("axis_label_visible", bool)
+@chainable_field("title", str)
+@chainable_field("axis_label_color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_color"))
+@chainable_field("axis_label_text_color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_text_color"))
 class PriceLineOptions(Options):
     """
     Encapsulates style and configuration options for a price line,
@@ -41,19 +52,12 @@ class PriceLineOptions(Options):
     def __post_init__(self):
         """Post-initialization validation."""
         super().__post_init__()
-
-        if not isinstance(self.price, (int, float)):
-            raise ValueError(f"price must be a number, got {type(self.price)}")
-        if not isinstance(self.line_width, int) or self.line_width < 1:
-            raise ValueError(f"line_width must be a positive integer, got {self.line_width}")
-        if self.color and not is_valid_color(self.color):
-            raise ValueError(f"Invalid color format: {self.color!r}. Must be hex or rgba.")
-        if self.axis_label_color and not is_valid_color(self.axis_label_color):
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if color and not is_valid_color(color):
             raise ValueError(
-                f"Invalid axis_label_color: {self.axis_label_color!r}. Must be hex or rgba."
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
-        if self.axis_label_text_color and not is_valid_color(self.axis_label_text_color):
-            raise ValueError(
-                f"Invalid axis_label_text_color: {self.axis_label_text_color!r}. "
-                f"Must be hex or rgba."
-            )
+        return color

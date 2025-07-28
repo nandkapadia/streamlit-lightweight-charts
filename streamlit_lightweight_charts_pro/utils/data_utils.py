@@ -116,52 +116,23 @@ def is_valid_color(color: str) -> bool:
     Example:
         ```python
         is_valid_color("#FF0000")  # True
-        is_valid_color("rgb(255, 0, 0)")  # True
-        is_valid_color("red")  # True
+        is_valid_color("rgba(255, 0, 0, 1)")  # True
+        is_valid_color("")  # True (no color)
         is_valid_color("invalid")  # False
         ```
     """
     if not isinstance(color, str):
         return False
 
-    # Check for hex colors
-    if color.startswith("#") and len(color) in [4, 7, 9]:
+    # Accept empty strings as valid (meaning "no color")
+    if color == "":
         return True
 
-    # Check for RGB/RGBA colors - allow negative numbers for alpha
-    rgb_pattern = r"^rgb\(\s*-?\d+\s*,\s*-?\d+\s*,\s*-?\d+\s*\)$"
-    rgba_pattern = r"^rgba?\(\s*-?\d+\s*,\s*-?\d+\s*,\s*-?\d+\s*(?:,\s*-?[\d.]+\s*)?\)$"
+    # Check for hex colors (#RRGGBB, #RGB, #RRGGBBAA)
+    if color.startswith("#"):
+        hex_pattern = r"^#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{1,5})?$"
+        return bool(re.match(hex_pattern, color))
 
-    if re.match(rgb_pattern, color) or re.match(rgba_pattern, color):
-        return True
-
-    # Check for named colors
-    named_colors = {
-        "black",
-        "white",
-        "red",
-        "green",
-        "blue",
-        "yellow",
-        "cyan",
-        "magenta",
-        "gray",
-        "grey",
-        "orange",
-        "purple",
-        "brown",
-        "pink",
-        "lime",
-        "navy",
-        "teal",
-        "silver",
-        "gold",
-        "maroon",
-        "olive",
-        "aqua",
-        "fuchsia",
-    }
-    if color.lower() in named_colors:
-        return True
-
-    return False
+    # Check for rgba colors only (not rgb)
+    rgba_pattern = r"^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$"
+    return bool(re.match(rgba_pattern, color))

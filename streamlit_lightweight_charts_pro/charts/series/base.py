@@ -20,17 +20,21 @@ Example:
     ```
 """
 
+import abc
 from abc import ABC
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.charts.options.price_format_options import PriceFormatOptions
-from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
-from streamlit_lightweight_charts_pro.data.data import Data, classproperty
+from streamlit_lightweight_charts_pro.data import Data
 from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
+from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType
+from streamlit_lightweight_charts_pro.charts.options.price_format_options import PriceFormatOptions
+from streamlit_lightweight_charts_pro.data.data import classproperty
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
+from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
@@ -39,6 +43,11 @@ logger = get_logger(__name__)
 
 
 # pylint: disable=no-member, invalid-name
+@chainable_property("price_scale_id")
+@chainable_property("price_format") 
+@chainable_property("price_lines")
+@chainable_property("markers")
+@chainable_property("pane_id")
 class Series(ABC):
     """
     Abstract base class for all series types.
@@ -156,11 +165,11 @@ class Series(ABC):
             )
 
         self.visible = visible
-        self.price_scale_id = price_scale_id
+        self._price_scale_id = price_scale_id
         self._price_format = None
         self._price_lines = []
         self._markers = []
-        self.pane_id = pane_id
+        self._pane_id = pane_id
         self.column_mapping = column_mapping
 
     @staticmethod
@@ -522,66 +531,6 @@ class Series(ABC):
         self._markers.clear()
         return self
 
-    @property
-    def price_scale_id(self) -> str:
-        """
-        Get the price scale ID for this series.
-
-        Returns:
-            str: The price scale ID (e.g., "left" or "right").
-        """
-        return self._price_scale_id
-
-    @price_scale_id.setter
-    def price_scale_id(self, value: str) -> None:
-        """
-        Set the price scale ID for this series.
-
-        Args:
-            value (str): The price scale ID (e.g., "left" or "right").
-        """
-        self._price_scale_id = value
-
-    @property
-    def price_format(self) -> PriceFormatOptions:
-        """
-        Get the price format options for this series.
-
-        Returns:
-            PriceFormatOptions: The price format options.
-        """
-        return self._price_format
-
-    @price_format.setter
-    def price_format(self, value: PriceFormatOptions) -> None:
-        """
-        Set the price format options for this series.
-
-        Args:
-            value (PriceFormatOptions): The price format options.
-        """
-        self._price_format = value
-
-    @property
-    def price_lines(self) -> List[PriceLineOptions]:
-        """
-        Get the list of price line options for this series.
-
-        Returns:
-            List[PriceLineOptions]: The price line options.
-        """
-        return self._price_lines
-
-    @price_lines.setter
-    def price_lines(self, value: List[PriceLineOptions]) -> None:
-        """
-        Set the list of price line options for this series.
-
-        Args:
-            value (List[PriceLineOptions]): The price line options.
-        """
-        self._price_lines = value
-
     def add_price_line(self, price_line: PriceLineOptions) -> "Series":
         """
         Add a price line option to this series.
@@ -605,26 +554,6 @@ class Series(ABC):
         self._price_lines.clear()
         return self
 
-    @property
-    def markers(self) -> List[Marker]:
-        """
-        Get the list of markers for this series.
-
-        Returns:
-            List[Marker]: The markers for this series.
-        """
-        return self._markers
-
-    @markers.setter
-    def markers(self, value: List[Marker]) -> None:
-        """
-        Set the list of markers for this series.
-
-        Args:
-            value (List[Marker]): The markers for this series.
-        """
-        self._markers = value
-
     def _validate_pane_config(self) -> None:
         """
         Validate pane configuration for the series.
@@ -635,10 +564,10 @@ class Series(ABC):
         Raises:
             ValueError: If pane_id is negative.
         """
-        if self.pane_id is not None and self.pane_id < 0:
+        if self._pane_id is not None and self._pane_id < 0:
             raise ValueError("pane_id must be non-negative")
-        if self.pane_id is None:
-            self.pane_id = 0
+        if self._pane_id is None:
+            self._pane_id = 0
 
     def update(self, updates: Dict[str, Any]) -> "Series":
         """
@@ -822,21 +751,21 @@ class Series(ABC):
             config["options"] = options
 
         # Add markers if present
-        if self.markers:
-            config["markers"] = [marker.asdict() for marker in self.markers]
+        if self._markers:
+            config["markers"] = [marker.asdict() for marker in self._markers]
 
         # Add price lines if present
-        if self.price_lines:
-            config["priceLines"] = [pl.asdict() for pl in self.price_lines]
+        if self._price_lines:
+            config["priceLines"] = [pl.asdict() for pl in self._price_lines]
 
         # Add pane_id
-        config["pane_id"] = self.pane_id
+        config["pane_id"] = self._pane_id
 
         # Add visible property
         config["visible"] = self.visible
 
         # Add price_scale_id
-        config["priceScaleId"] = self.price_scale_id
+        config["priceScaleId"] = self._price_scale_id
 
         return config
 

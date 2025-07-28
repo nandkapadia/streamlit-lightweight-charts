@@ -6,6 +6,12 @@ It shows how to work with different data formats: Data objects, DataFrames, and 
 """
 
 import pandas as pd
+
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 import streamlit as st
 
 from examples.data_samples import (

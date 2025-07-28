@@ -36,8 +36,15 @@ from streamlit_lightweight_charts_pro.data.band import BandData
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_property
+from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
+@chainable_property("upper_line_options", LineOptions, allow_none=True)
+@chainable_property("middle_line_options", LineOptions, allow_none=True)
+@chainable_property("lower_line_options", LineOptions, allow_none=True)
+@chainable_property("upper_fill_color", str, validator=lambda v: BandSeries._validate_color_static(v, "upper_fill_color"))
+@chainable_property("lower_fill_color", str, validator=lambda v: BandSeries._validate_color_static(v, "lower_fill_color"))
 class BandSeries(Series):
     """
     Band series for lightweight charts (e.g., Bollinger Bands).
@@ -101,63 +108,14 @@ class BandSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.BAND
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
-    @property
-    def upper_line_options(self) -> LineOptions:
-        """Get the upper line options."""
-        return self._upper_line_options
 
-    @upper_line_options.setter
-    def upper_line_options(self, value: LineOptions) -> None:
-        """Set the upper line options."""
-        if not isinstance(value, LineOptions):
-            raise TypeError("upper_line_options must be a LineOptions instance")
-        self._upper_line_options = value
-
-    @property
-    def middle_line_options(self) -> LineOptions:
-        """Get the middle line options."""
-        return self._middle_line_options
-
-    @middle_line_options.setter
-    def middle_line_options(self, value: LineOptions) -> None:
-        """Set the middle line options."""
-        if not isinstance(value, LineOptions):
-            raise TypeError("middle_line_options must be a LineOptions instance")
-        self._middle_line_options = value
-
-    @property
-    def lower_line_options(self) -> LineOptions:
-        """Get the lower line options."""
-        return self._lower_line_options
-
-    @lower_line_options.setter
-    def lower_line_options(self, value: LineOptions) -> None:
-        """Set the lower line options."""
-        if not isinstance(value, LineOptions):
-            raise TypeError("lower_line_options must be a LineOptions instance")
-        self._lower_line_options = value
-
-    @property
-    def upper_fill_color(self) -> str:
-        """Get the upper fill color."""
-        return self._upper_fill_color
-
-    @upper_fill_color.setter
-    def upper_fill_color(self, value: str) -> None:
-        """Set the upper fill color."""
-        if not isinstance(value, str):
-            raise TypeError("upper_fill_color must be a string")
-        self._upper_fill_color = value
-
-    @property
-    def lower_fill_color(self) -> str:
-        """Get the lower fill color."""
-        return self._lower_fill_color
-
-    @lower_fill_color.setter
-    def lower_fill_color(self, value: str) -> None:
-        """Set the lower fill color."""
-        if not isinstance(value, str):
-            raise TypeError("lower_fill_color must be a string")
-        self._lower_fill_color = value

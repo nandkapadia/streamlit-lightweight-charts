@@ -26,9 +26,27 @@ from streamlit_lightweight_charts_pro.charts.options.time_scale_options import T
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.utils import chainable_field
 
 
 @dataclass
+@chainable_field("width", int)
+@chainable_field("height", int)
+@chainable_field("auto_size", bool)
+@chainable_field("layout", LayoutOptions)
+@chainable_field("left_price_scale", PriceScaleOptions)
+@chainable_field("right_price_scale", PriceScaleOptions)
+@chainable_field("overlay_price_scales", dict)
+@chainable_field("time_scale", TimeScaleOptions)
+@chainable_field("crosshair", CrosshairOptions)
+@chainable_field("grid", GridOptions)
+@chainable_field("handle_scroll", bool)
+@chainable_field("handle_scale", bool)
+@chainable_field("kinetic_scroll", KineticScrollOptions)
+@chainable_field("tracking_mode", TrackingModeOptions)
+@chainable_field("localization", LocalizationOptions)
+@chainable_field("add_default_pane", bool)
+@chainable_field("trade_visualization", TradeVisualizationOptions)
 class ChartOptions(Options):
     """
     Configuration options for chart display and behavior.
@@ -115,82 +133,3 @@ class ChartOptions(Options):
             TypeError: If any attribute has an invalid type.
         """
         super().__post_init__()
-        # Validate size fields
-        if self.width is not None and not isinstance(self.width, int):
-            raise TypeError(f"width must be an int or None, got {type(self.width)}")
-        if not isinstance(self.height, int):
-            raise TypeError(f"height must be an int, got {type(self.height)}")
-        if not isinstance(self.auto_size, bool):
-            raise TypeError(f"auto_size must be a bool, got {type(self.auto_size)}")
-
-        # Validate layout and scale fields
-        if not isinstance(self.layout, LayoutOptions):
-            raise TypeError(f"layout must be a LayoutOptions instance, got {type(self.layout)}")
-        if self.left_price_scale is not None and not isinstance(
-            self.left_price_scale, PriceScaleOptions
-        ):
-            raise TypeError(
-                f"left_price_scale must be a PriceScaleOptions instance or None, "
-                f"got {type(self.left_price_scale)}"
-            )
-        if not isinstance(self.right_price_scale, PriceScaleOptions):
-            raise TypeError(
-                f"right_price_scale must be a PriceScaleOptions instance, "
-                f"got {type(self.right_price_scale)}"
-            )
-        if not isinstance(self.overlay_price_scales, dict):
-            raise TypeError(
-                f"overlay_price_scales must be a dict, got {type(self.overlay_price_scales)}"
-            )
-        for key, value in self.overlay_price_scales.items():
-            if not isinstance(value, PriceScaleOptions):
-                raise TypeError(
-                    f"overlay_price_scales[{key}] must be a PriceScaleOptions instance, "
-                    f"got {type(value)}"
-                )
-        if not isinstance(self.time_scale, TimeScaleOptions):
-            raise TypeError(
-                f"time_scale must be a TimeScaleOptions instance, got {type(self.time_scale)}"
-            )
-
-        # Validate interaction fields
-        if not isinstance(self.crosshair, CrosshairOptions):
-            raise TypeError(
-                f"crosshair must be a CrosshairOptions instance, got {type(self.crosshair)}"
-            )
-        if not isinstance(self.grid, GridOptions):
-            raise TypeError(f"grid must be a GridOptions instance, got {type(self.grid)}")
-        if not isinstance(self.handle_scroll, bool):
-            raise TypeError(f"handle_scroll must be a bool, got {type(self.handle_scroll)}")
-        if not isinstance(self.handle_scale, bool):
-            raise TypeError(f"handle_scale must be a bool, got {type(self.handle_scale)}")
-        if self.kinetic_scroll is not None and not isinstance(
-            self.kinetic_scroll, KineticScrollOptions
-        ):
-            raise TypeError(
-                f"kinetic_scroll must be a KineticScrollOptions instance or None, "
-                f"got {type(self.kinetic_scroll)}"
-            )
-        if self.tracking_mode is not None and not isinstance(
-            self.tracking_mode, TrackingModeOptions
-        ):
-            raise TypeError(
-                f"tracking_mode must be a TrackingModeOptions instance or None, "
-                f"got {type(self.tracking_mode)}"
-            )
-
-        # Validate localization and UI fields
-        if self.localization is not None and not isinstance(self.localization, LocalizationOptions):
-            raise TypeError(
-                f"localization must be a LocalizationOptions instance or None, "
-                f"got {type(self.localization)}"
-            )
-        if not isinstance(self.add_default_pane, bool):
-            raise TypeError(f"add_default_pane must be a bool, got {type(self.add_default_pane)}")
-        if self.trade_visualization is not None and not isinstance(
-            self.trade_visualization, TradeVisualizationOptions
-        ):
-            raise TypeError(
-                f"trade_visualization must be a TradeVisualizationOptions instance or None, "
-                f"got {type(self.trade_visualization)}"
-            )

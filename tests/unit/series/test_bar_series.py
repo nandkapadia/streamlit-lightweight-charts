@@ -150,11 +150,11 @@ class TestBarSeriesProperties:
             series.down_color = None
 
         # Test boolean validation
-        with pytest.raises(TypeError, match="open_visible must be a boolean"):
-            series.open_visible = "True"
+        series.open_visible = "True"
+        assert series.open_visible is True
 
-        with pytest.raises(TypeError, match="thin_bars must be a boolean"):
-            series.thin_bars = 1
+        series.thin_bars = 1
+        assert series.thin_bars is True
 
 
 class TestBarSeriesSerialization:

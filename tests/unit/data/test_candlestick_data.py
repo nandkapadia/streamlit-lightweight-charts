@@ -371,17 +371,16 @@ class TestCandlestickDataColorHandling:
         assert data.border_color == "rgba(255, 0, 0, 2.0)"
 
     def test_rgba_with_negative_alpha(self):
-        """Test rgba colors with negative alpha."""
-        # Note: is_valid_color is permissive, so this should pass
-        data = CandlestickData(
-            time=1640995200,
-            open=100.0,
-            high=105.0,
-            low=98.0,
-            close=103.0,
-            wick_color="rgba(255, 0, 0, -0.5)",
-        )
-        assert data.wick_color == "rgba(255, 0, 0, -0.5)"
+        """Test rgba colors with negative alpha (should be rejected)."""
+        with pytest.raises(ValueError, match="Invalid color format for wick_color"):
+            data = CandlestickData(
+                time=1640995200,
+                open=100.0,
+                high=105.0,
+                low=98.0,
+                close=103.0,
+                wick_color="rgba(255, 0, 0, -0.5)",
+            )
 
     def test_color_omission_in_serialization(self):
         """Test that None colors are omitted from serialization."""

@@ -37,8 +37,17 @@ from streamlit_lightweight_charts_pro.type_definitions import (
 )
 from typing import Union
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
+from streamlit_lightweight_charts_pro.utils import chainable_property
 
 
+@chainable_property("base_value", validator=lambda v: BaselineSeries._validate_base_value_static(v))
+@chainable_property("relative_gradient", bool)
+@chainable_property("top_fill_color1", str, validator=lambda v: BaselineSeries._validate_color_static(v, "top_fill_color1"))
+@chainable_property("top_fill_color2", str, validator=lambda v: BaselineSeries._validate_color_static(v, "top_fill_color2"))
+@chainable_property("top_line_color", str, validator=lambda v: BaselineSeries._validate_color_static(v, "top_line_color"))
+@chainable_property("bottom_fill_color1", str, validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_fill_color1"))
+@chainable_property("bottom_fill_color2", str, validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_fill_color2"))
+@chainable_property("bottom_line_color", str, validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_line_color"))
 class BaselineSeries(Series):
     """Baseline series for lightweight charts."""
 
@@ -91,86 +100,29 @@ class BaselineSeries(Series):
                 f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
             )
         return color
+    
+    @staticmethod
+    def _validate_base_value_static(base_value) -> Dict[str, Any]:
+        """Static version of base_value validator for decorator use."""
+        if isinstance(base_value, (int, float)):
+            return {"type": "price", "price": float(base_value)}
+        elif isinstance(base_value, dict):
+            if "type" not in base_value or "price" not in base_value:
+                raise ValueError("base_value dict must contain 'type' and 'price' keys")
+            return {"type": str(base_value["type"]), "price": float(base_value["price"])}
+        else:
+            raise ValueError("base_value must be a number or dict with 'type' and 'price' keys")
+    
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Static version of color validator for decorator use."""
+        if not is_valid_color(color):
+            raise ValueError(
+                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
+            )
+        return color
 
-    @property
-    def base_value(self) -> Dict[str, Any]:
-        """Get the base value configuration."""
-        return self._base_value
 
-    @base_value.setter
-    def base_value(self, value: Union[int, float, Dict[str, Any]]):
-        """Set the base value configuration."""
-        self._base_value = self._validate_base_value(value)
-
-    @property
-    def relative_gradient(self) -> bool:
-        """Get whether gradient is relative to base value and visible range."""
-        return self._relative_gradient
-
-    @relative_gradient.setter
-    def relative_gradient(self, value: bool):
-        """Set whether gradient is relative to base value and visible range."""
-        self._relative_gradient = bool(value)
-
-    @property
-    def top_fill_color1(self) -> str:
-        """Get the first color of the top area."""
-        return self._top_fill_color1
-
-    @top_fill_color1.setter
-    def top_fill_color1(self, value: str):
-        """Set the first color of the top area."""
-        self._top_fill_color1 = self._validate_color(value, "top_fill_color1")
-
-    @property
-    def top_fill_color2(self) -> str:
-        """Get the second color of the top area."""
-        return self._top_fill_color2
-
-    @top_fill_color2.setter
-    def top_fill_color2(self, value: str):
-        """Set the second color of the top area."""
-        self._top_fill_color2 = self._validate_color(value, "top_fill_color2")
-
-    @property
-    def top_line_color(self) -> str:
-        """Get the line color of the top area."""
-        return self._top_line_color
-
-    @top_line_color.setter
-    def top_line_color(self, value: str):
-        """Set the line color of the top area."""
-        self._top_line_color = self._validate_color(value, "top_line_color")
-
-    @property
-    def bottom_fill_color1(self) -> str:
-        """Get the first color of the bottom area."""
-        return self._bottom_fill_color1
-
-    @bottom_fill_color1.setter
-    def bottom_fill_color1(self, value: str):
-        """Set the first color of the bottom area."""
-        self._bottom_fill_color1 = self._validate_color(value, "bottom_fill_color1")
-
-    @property
-    def bottom_fill_color2(self) -> str:
-        """Get the second color of the bottom area."""
-        return self._bottom_fill_color2
-
-    @bottom_fill_color2.setter
-    def bottom_fill_color2(self, value: str):
-        """Set the second color of the bottom area."""
-        self._bottom_fill_color2 = self._validate_color(value, "bottom_fill_color2")
-
-    @property
-    def bottom_line_color(self) -> str:
-        """Get the line color of the bottom area."""
-        return self._bottom_line_color
-
-    @bottom_line_color.setter
-    def bottom_line_color(self, value: str):
-        """Set the line color of the bottom area."""
-        self._bottom_line_color = self._validate_color(value, "bottom_line_color")
 
     @property
     def chart_type(self) -> ChartType:

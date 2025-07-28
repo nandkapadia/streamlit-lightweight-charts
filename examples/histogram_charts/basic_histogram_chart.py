@@ -3,6 +3,14 @@ Basic Histogram Chart Example.
 
 This example demonstrates the fundamental usage of HistogramSeries with sample data
 from the data_samples module.
+
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
+
 """
 
 import streamlit as st

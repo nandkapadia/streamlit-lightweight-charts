@@ -7,6 +7,12 @@ Users can select which example to run from a dropdown menu.
 
 from pathlib import Path
 
+# Add project root to path for examples imports
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
 import streamlit as st
 
 # Page configuration
