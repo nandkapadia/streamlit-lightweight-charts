@@ -59,7 +59,6 @@ def main():
     st.write(f"Visible: {area_series.visible}")
     st.write(f"Price scale ID: {area_series.price_scale_id}")
     st.write(f"Pane ID: {area_series.pane_id}")
-    st.write(f"Overlay: {area_series.overlay}")
 
     # Show data statistics
     st.subheader("Data Statistics")

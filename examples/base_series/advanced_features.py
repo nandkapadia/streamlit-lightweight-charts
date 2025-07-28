@@ -83,7 +83,6 @@ def main():
     st.write(f"Visible: {config_series.visible}")
     st.write(f"Price Scale ID: {config_series.price_scale_id}")
     st.write(f"Pane ID: {config_series.pane_id}")
-    st.write(f"Overlay: {config_series.overlay}")
     st.write(f"Markers: {len(config_series.markers)}")
     st.write(f"Price Lines: {len(config_series.price_lines)}")
 

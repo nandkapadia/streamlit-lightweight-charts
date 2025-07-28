@@ -129,7 +129,6 @@ def main():
             "visible": baseline_series.visible,
             "price_scale_id": baseline_series.price_scale_id,
             "pane_id": baseline_series.pane_id,
-            "overlay": baseline_series.overlay,
             "base_value": baseline_series.base_value,
             "relative_gradient": baseline_series.relative_gradient,
             "top_fill_color1": baseline_series.top_fill_color1,

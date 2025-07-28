@@ -73,7 +73,6 @@ def main():
     st.write(f"- Visible: {series.visible}")
     st.write(f"- Price Scale ID: {series.price_scale_id}")
     st.write(f"- Pane ID: {series.pane_id}")
-    st.write(f"- Overlay: {series.overlay}")
     st.write(f"- Data Points: {len(series.data)}")
 
     # Method chaining example

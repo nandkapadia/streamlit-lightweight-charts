@@ -141,7 +141,6 @@ def main():
             "visible": histogram_series.visible,
             "price_scale_id": histogram_series.price_scale_id,
             "pane_id": histogram_series.pane_id,
-            "overlay": histogram_series.overlay,
             "color": histogram_series.color,
             "base": histogram_series.base,
         }

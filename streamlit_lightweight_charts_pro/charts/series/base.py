@@ -745,6 +745,8 @@ class Series(ABC):
         import re
         return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_case).lower()
 
+
+
     def asdict(self) -> Dict[str, Any]:
         """
         Convert series to dictionary representation.

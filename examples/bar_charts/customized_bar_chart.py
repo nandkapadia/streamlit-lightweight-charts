@@ -114,7 +114,6 @@ def main():
             "visible": bar_series.visible,
             "price_scale_id": bar_series.price_scale_id,
             "pane_id": bar_series.pane_id,
-            "overlay": bar_series.overlay,
             "up_color": bar_series.up_color,
             "down_color": bar_series.down_color,
             "color": bar_series.color,

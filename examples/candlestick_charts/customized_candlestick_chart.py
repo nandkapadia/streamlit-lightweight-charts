@@ -129,7 +129,6 @@ def main():
             "visible": candlestick_series.visible,
             "price_scale_id": candlestick_series.price_scale_id,
             "pane_id": candlestick_series.pane_id,
-            "overlay": candlestick_series.overlay,
             "up_color": candlestick_series.up_color,
             "down_color": candlestick_series.down_color,
             "border_color": candlestick_series.border_color,
