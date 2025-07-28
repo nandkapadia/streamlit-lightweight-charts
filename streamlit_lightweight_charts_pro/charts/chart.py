@@ -33,7 +33,6 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
-from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
     PriceScaleMargins,
     PriceScaleOptions,
@@ -947,14 +946,14 @@ class Chart:
         config = self.to_frontend_config()
         component_func = get_component_func()
         kwargs = {"config": config}
-        
+
         # Extract height and width from chart options and pass to frontend
         if self.options:
-            if hasattr(self.options, 'height') and self.options.height is not None:
+            if hasattr(self.options, "height") and self.options.height is not None:
                 kwargs["height"] = self.options.height
-            if hasattr(self.options, 'width') and self.options.width is not None:
+            if hasattr(self.options, "width") and self.options.width is not None:
                 kwargs["width"] = self.options.width
-                
+
         if (
             key is not None and isinstance(key, str) and key.strip()
         ):  # Only add key if it's a non-empty string
