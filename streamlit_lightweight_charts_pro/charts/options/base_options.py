@@ -12,6 +12,10 @@ from enum import Enum
 from typing import Any, Dict
 
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
+from streamlit_lightweight_charts_pro.logging_config import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -102,7 +106,9 @@ class Options(ABC):
                 if hasattr(self, key):
                     field_name = key
                 else:
-                    raise ValueError(f"Invalid option field: {key}")
+                    # Ignore invalid fields instead of raising an error
+                    logger.debug(f"Ignoring invalid option field: {key}")
+                    continue
 
             # Get field info for type checking
             field_info = None
@@ -112,7 +118,9 @@ class Options(ABC):
                     break
 
             if field_info is None:
-                raise ValueError(f"Field {field_name} not found in {self.__class__.__name__}")
+                # Ignore fields not found in dataclass fields
+                logger.debug(f"Ignoring field {field_name} not found in {self.__class__.__name__}")
+                continue
 
             # Handle nested Options objects
             if isinstance(value, dict) and hasattr(field_info.type, "__origin__"):

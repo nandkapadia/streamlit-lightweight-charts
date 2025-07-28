@@ -625,7 +625,9 @@ class Series(ABC):
                 if hasattr(self, key):
                     attr_name = key
                 else:
-                    raise ValueError(f"Invalid series attribute: {key}")
+                    # Ignore invalid attributes instead of raising an error
+                    logger.debug(f"Ignoring invalid series attribute: {key}")
+                    continue
 
             # Handle nested Options objects
             current_value = getattr(self, attr_name)

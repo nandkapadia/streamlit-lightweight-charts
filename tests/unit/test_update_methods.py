@@ -53,19 +53,28 @@ class TestOptionsUpdateMethod:
         assert options.line_width == original_width  # Unchanged
         assert options.line_style == LineStyle.DASHED  # Changed
 
-    def test_invalid_field_raises_error(self):
-        """Test that invalid fields raise ValueError."""
+    def test_invalid_field_ignored(self):
+        """Test that invalid fields are ignored instead of raising ValueError."""
         options = LineOptions()
 
-        with pytest.raises(ValueError, match="Invalid option field: invalid_field"):
-            options.update({"invalid_field": "value"})
+        # Invalid fields should be ignored, not raise errors
+        result = options.update({"invalid_field": "value"})
+        
+        assert result is options  # Method chaining still works
+        # The options object should remain unchanged
+        assert options.color == "#2196f3"  # Default value
 
     def test_mixed_valid_invalid_fields(self):
         """Test handling of mixed valid and invalid fields."""
         options = LineOptions()
 
-        with pytest.raises(ValueError, match="Invalid option field: invalid_field"):
-            options.update({"color": "#ff0000", "invalid_field": "value"})
+        # Mixed valid and invalid fields - valid fields should be updated, invalid ones ignored
+        result = options.update({"color": "#ff0000", "invalid_field": "value"})
+        
+        assert result is options  # Method chaining still works
+        assert options.color == "#ff0000"  # Valid field was updated
+        # Invalid field was ignored, other fields remain unchanged
+        assert options.line_width == 3  # Default value
 
     def test_method_chaining(self):
         """Test method chaining with update."""
@@ -143,14 +152,18 @@ class TestSeriesUpdateMethod:
         assert series.price_scale_id == original_scale_id  # Unchanged
         assert series.pane_id == 1  # Changed
 
-    def test_invalid_attribute_raises_error(self):
-        """Test that invalid attributes raise ValueError."""
+    def test_invalid_attribute_ignored(self):
+        """Test that invalid attributes are ignored instead of raising ValueError."""
         data = [LineData(time=1640995200, value=100)]
         line_options = LineOptions()
         series = LineSeries(data=data)
 
-        with pytest.raises(ValueError, match="Invalid series attribute: invalid_attr"):
-            series.update({"invalid_attr": "value"})
+        # Invalid attributes should be ignored, not raise errors
+        result = series.update({"invalid_attr": "value"})
+        
+        assert result is series  # Method chaining still works
+        # The series object should remain unchanged
+        assert series.visible is True  # Default value
 
     def test_method_chaining(self):
         """Test method chaining with update."""
@@ -284,11 +297,12 @@ class TestUpdateMethodEdgeCases:
         options = LineOptions()
 
         # Test with keys that have special characters (should be handled gracefully)
-        with pytest.raises(ValueError):
-            options.update({"invalid-key": "value"})
+        # These should be ignored instead of raising errors
+        result = options.update({"invalid-key": "value"})
+        assert result is options  # Method chaining still works
 
-        with pytest.raises(ValueError):
-            options.update({"invalid.key": "value"})
+        result = options.update({"invalid.key": "value"})
+        assert result is options  # Method chaining still works
 
     def test_update_with_unicode(self):
         """Test updating with unicode characters."""
