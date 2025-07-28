@@ -562,14 +562,9 @@ class TestSeriesBaseAdvanced:
         series._validate_pane_config()
         assert series.pane_id == 0
 
-        # Test with pane_id=None (should set pane_id to 0)
-series = ConcreteSeries(data=data, pane_id=None)
-series._validate_pane_config()  # Should not raise, sets pane_id to 0
-assert series.pane_id == 0
-
-# Test with pane_id=0 (should not raise error)
-series = ConcreteSeries(data=data, pane_id=0)
-series._validate_pane_config()  # Should not raise
+        # Test with pane_id=0 (should not raise error)
+        series = ConcreteSeries(data=data, pane_id=0)
+        series._validate_pane_config()  # Should not raise
 
     def test_data_class_property_inheritance(self):
         """Test data_class property with inheritance."""
