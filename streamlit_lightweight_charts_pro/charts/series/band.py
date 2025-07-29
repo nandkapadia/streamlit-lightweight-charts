@@ -82,7 +82,7 @@ class BandSeries(Series):
         data: Union[List[BandData], pd.DataFrame, pd.Series],
         column_mapping: Optional[dict] = None,
         visible: bool = True,
-        price_scale_id: str = "right",
+        price_scale_id: str = "",
         pane_id: Optional[int] = 0,
     ):
         """

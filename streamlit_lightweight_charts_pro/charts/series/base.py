@@ -21,13 +21,12 @@ Example:
 """
 
 from abc import ABC
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, get_type_hints
 
 import pandas as pd
 
 # Import options classes for dynamic creation
 from streamlit_lightweight_charts_pro.charts.options import (
-    LineOptions,
     PriceFormatOptions,
     PriceLineOptions,
 )
@@ -51,6 +50,12 @@ logger = get_logger(__name__)
 @chainable_property("markers")
 @chainable_property("pane_id")
 class Series(ABC):
+    # Type annotations for attributes to enable automatic type inspection
+    price_format: Optional[PriceFormatOptions]
+    price_lines: List[PriceLineOptions]
+    markers: List[Marker]
+    price_scale_id: str
+    pane_id: int
     """
     Abstract base class for all series types.
 
@@ -90,7 +95,7 @@ class Series(ABC):
         data: Union[List[Data], pd.DataFrame, pd.Series],
         column_mapping: Optional[dict] = None,
         visible: bool = True,
-        price_scale_id: str = "right",
+        price_scale_id: str = "",
         pane_id: Optional[int] = 0,
     ):
         """
@@ -108,7 +113,7 @@ class Series(ABC):
                 input. Required when providing DataFrame or Series data.
             visible (bool, optional): Whether the series is visible. Defaults to True.
             price_scale_id (str, optional): ID of the price scale to attach to.
-                Defaults to "right".
+                Defaults to "".
             pane_id (Optional[int], optional): The pane index this series belongs to.
                 Defaults to 0.
 
@@ -138,7 +143,7 @@ class Series(ABC):
             series = LineSeries(
                 data=line_data,
                 visible=False,
-                price_scale_id="left",
+                price_scale_id="right",
                 pane_id=1
             )
             ```
@@ -571,96 +576,238 @@ class Series(ABC):
         if self._pane_id is None:
             self._pane_id = 0
 
+    def _get_attr_name(self, key: str) -> str:
+        """
+        Get the attribute name for a given key.
+        """
+        print(f"[DEBUG] _get_attr_name() called with key: '{key}'")
+        
+        # Convert camelCase to snake_case for attribute lookup
+        attr_name = self._camel_to_snake(key)
+        print(f"[DEBUG] Converted '{key}' to snake_case: '{attr_name}'")
+
+        # Check if attribute exists (try multiple variations)
+        print(f"[DEBUG] Checking if hasattr(self, '{attr_name}'): {hasattr(self, attr_name)}")
+        if not hasattr(self, attr_name):
+            print(f"[DEBUG] Attribute '{attr_name}' not found, trying variations...")
+            
+            # Try the original key in case it's already snake_case
+            print(f"[DEBUG] Checking if hasattr(self, '{key}'): {hasattr(self, key)}")
+            if hasattr(self, key):
+                attr_name = key
+                print(f"[DEBUG] Found attribute with original key: '{attr_name}'")
+            # Try with _ prefix (for private attributes)
+            elif hasattr(self, f"_{attr_name}"):
+                attr_name = f"_{attr_name}"
+                print(f"[DEBUG] Found attribute with _ prefix: '{attr_name}'")
+            # Try original key with _ prefix
+            elif hasattr(self, f"_{key}"):
+                attr_name = f"_{key}"
+                print(f"[DEBUG] Found attribute with original key + _ prefix: '{attr_name}'")
+            else:
+                # Ignore invalid attributes instead of raising an error
+                print(f"[DEBUG] No attribute found for key: '{key}', returning None")
+                logger.debug("Ignoring invalid series attribute: %s", key)
+                attr_name = None
+        else:
+            print(f"[DEBUG] Found attribute directly: '{attr_name}'")
+
+        print(f"[DEBUG] _get_attr_name() returning: '{attr_name}'")
+        return attr_name
+
     def update(self, updates: Dict[str, Any]) -> "Series":
         """
         Update series configuration with a dictionary of values.
 
-        This method provides a flexible way to update series properties using a dictionary.
-        It handles both simple properties and nested objects, automatically creating
-        nested Options instances when needed.
+        This method updates series properties using a configuration dictionary. It supports
+        updating simple attributes, nested options objects, and lists of options. Keys may be
+        in snake_case or camelCase. Invalid or unknown attributes will be logged and skipped.
 
         Args:
-            updates: Dictionary of updates to apply. Keys can be in snake_case or camelCase.
-                Values can be simple types or dictionaries for nested objects.
+            updates (Dict[str, Any]): Dictionary of updates to apply. Keys can be in snake_case
+                or camelCase. Values can be simple types, dictionaries for nested objects, or lists.
 
         Returns:
             Series: Self for method chaining.
 
         Raises:
-            ValueError: If an update key doesn't correspond to a valid attribute.
-            TypeError: If a value type is incompatible with the attribute type.
+            AttributeError: If an attribute cannot be set due to type or value errors.
 
         Example:
             ```python
             series = LineSeries(data=data)
-
-            # Update simple properties
-            series.update({
-                "visible": False,
-                "price_scale_id": "left"
-            })
-
-            # Update nested options
-            series.update({
-                "line_options": {
-                    "color": "#ff0000",
-                    "line_width": 3
-                }
-            })
-
-            # Method chaining
+            series.update({"visible": False, "price_scale_id": "left"})
+            series.update({"price_format": {"precision": 2, "minMove": 0.01}})
+            series.update({"price_lines": [
+                {"price": 105, "color": "#00ff00"},
+                {"price": 110, "color": "#ff0000"}
+            ]})
             series.update({"visible": True}).update({"pane_id": 1})
             ```
         """
+        print(f"[DEBUG] update() called with updates: {updates}")
         for key, value in updates.items():
+            print(f"[DEBUG] Processing key: '{key}', value: {value} (type: {type(value)})")
+            
             if value is None:
+                print(f"[DEBUG] Skipping None value for key: '{key}'")
                 continue  # Skip None values for method chaining
 
-            # Convert camelCase to snake_case for attribute lookup
-            attr_name = self._camel_to_snake(key)
+            attr_name = self._get_attr_name(key)
+            print(f"[DEBUG] Resolved attr_name: '{attr_name}' for key: '{key}'")
+            
+            if attr_name is None:
+                print(f"[DEBUG] attr_name is None, skipping key: '{key}'")
+                logger.debug("Skipping update for unknown attribute: %s", key)
+                continue
 
-            # Check if attribute exists
-            if not hasattr(self, attr_name):
-                # Try the original key in case it's already snake_case
-                if hasattr(self, key):
-                    attr_name = key
+            try:
+                if isinstance(value, dict):
+                    print(f"[DEBUG] Calling _update_dict_value for '{attr_name}' with dict value")
+                    self._update_dict_value(attr_name, value)
+                elif isinstance(value, list):
+                    print(f"[DEBUG] Calling _update_list_value for '{attr_name}' with list value")
+                    self._update_list_value(attr_name, value)
                 else:
-                    # Ignore invalid attributes instead of raising an error
-                    logger.debug(f"Ignoring invalid series attribute: {key}")
-                    continue
-
-            # Handle nested Options objects
-            current_value = getattr(self, attr_name)
-            if isinstance(value, dict) and hasattr(current_value, "update"):
-                # Update existing Options object
-                current_value.update(value)
-            elif isinstance(value, dict) and current_value is None:
-                # Create new Options object if current is None
-                # This requires knowing the type, so we'll need to handle specific cases
-                if attr_name.endswith("_options"):
-                    # Try to create appropriate Options class
-                    options_class_name = attr_name.replace("_", " ").title().replace(" ", "")
-                    try:
-                        # Use pre-imported options classes
-                        options_classes = {
-                            "line_options": LineOptions,
-                            "price_format": PriceFormatOptions,
-                        }
-                        if attr_name in options_classes:
-                            setattr(self, attr_name, options_classes[attr_name](**value))
-                        else:
-                            # Fallback to direct assignment
-                            setattr(self, attr_name, value)
-                    except (ImportError, TypeError):
-                        # Fallback to direct assignment
-                        setattr(self, attr_name, value)
-                else:
+                    print(f"[DEBUG] Setting simple attribute '{attr_name}' = {value}")
                     setattr(self, attr_name, value)
-            else:
-                # Simple value assignment
-                setattr(self, attr_name, value)
+            except Exception as exc:
+                print(f"[DEBUG] Exception occurred: {exc}")
+                logger.error("Failed to update attribute '%s': %s", attr_name, exc)
+                raise
 
+        print(f"[DEBUG] update() completed")
         return self
+
+    def _update_dict_value(self, attr_name: str, value: dict) -> None:
+        """
+        Update a nested options object attribute with a dictionary.
+
+        Args:
+            attr_name (str): Attribute name to update.
+            value (dict): Dictionary of values to update the nested object.
+
+        Raises:
+            AttributeError: If the attribute cannot be updated.
+        """
+        print(f"[DEBUG] _update_dict_value() called with attr_name: '{attr_name}', value: {value}")
+        
+        current_value = getattr(self, attr_name, None)
+        print(f"[DEBUG] current_value: {current_value} (type: {type(current_value)})")
+        
+        if current_value is not None and hasattr(current_value, "update"):
+            print(f"[DEBUG] Using existing object with update method")
+            current_value.update(value)
+            return
+
+        print(f"[DEBUG] Getting type hints for class: {self.__class__}")
+        type_hints = get_type_hints(self.__class__)
+        print(f"[DEBUG] type_hints: {type_hints}")
+        
+        attr_type = type_hints.get(attr_name)
+        print(f"[DEBUG] attr_type for '{attr_name}': {attr_type}")
+        
+        if attr_type is None:
+            print(f"[DEBUG] No type hints for attribute: {attr_name}. Skipping...")
+            logger.debug("No type hints for attribute: %s. Skipping...", attr_name)
+            return
+
+        # Handle Union types (e.g., Optional[T])
+        if getattr(attr_type, "__origin__", None) is Union:
+            print(f"[DEBUG] Handling Union type: {attr_type}")
+            for arg in attr_type.__args__:
+                print(f"[DEBUG] Union arg: {arg}")
+                if arg is not type(None):
+                    attr_type = arg
+                    print(f"[DEBUG] Selected non-None type: {attr_type}")
+                    break
+
+        print(f"[DEBUG] Final attr_type: {attr_type}")
+        print(f"[DEBUG] Checking if attr_type has update method: {hasattr(attr_type, 'update')}")
+        
+        if hasattr(attr_type, "update"):
+            try:
+                print(f"[DEBUG] Creating instance of {attr_type}")
+                instance = attr_type()
+                print(f"[DEBUG] Created instance: {instance}")
+                setattr(self, attr_name, instance)
+                print(f"[DEBUG] Set attribute '{attr_name}' to instance")
+                instance.update(value)
+                print(f"[DEBUG] Updated instance with value")
+            except Exception as exc:
+                print(f"[DEBUG] Exception in _update_dict_value: {exc}")
+                logger.error("Failed to instantiate or update %s: %s", attr_name, exc)
+                raise
+        else:
+            print(f"[DEBUG] No update method for attribute: {attr_name}. Skipping...")
+            logger.debug("No update method for attribute: %s. Skipping...", attr_name)
+
+    def _update_list_value(self, attr_name: str, value: list) -> None:
+        """
+        Update a list attribute, instantiating and updating items as needed.
+
+        Args:
+            attr_name (str): Attribute name to update.
+            value (list): List of values or dicts to update the list attribute.
+
+        Raises:
+            AttributeError: If the attribute cannot be updated.
+        """
+        print(f"[DEBUG] _update_list_value() called with attr_name: '{attr_name}', value: {value}")
+        
+        current_value = getattr(self, attr_name, None)
+        print(f"[DEBUG] current_value: {current_value} (type: {type(current_value)})")
+        
+        type_hints = get_type_hints(self.__class__)
+        print(f"[DEBUG] type_hints: {type_hints}")
+        
+        attr_type = type_hints.get(attr_name)
+        print(f"[DEBUG] attr_type for '{attr_name}': {attr_type}")
+
+        if attr_type is None:
+            print(f"[DEBUG] No type hints for attribute: {attr_name}. Assigning list directly.")
+            setattr(self, attr_name, value)
+            return
+
+        print(f"[DEBUG] Checking if attr_type is list: {getattr(attr_type, '__origin__', None) is list}")
+        if getattr(attr_type, "__origin__", None) is list:
+            item_type = attr_type.__args__[0]
+            print(f"[DEBUG] item_type: {item_type}")
+            print(f"[DEBUG] item_type has update method: {hasattr(item_type, 'update')}")
+            
+            if not hasattr(item_type, "update"):
+                print(f"[DEBUG] Item type {item_type} has no update method. Assigning list directly.")
+                logger.debug("Item type %s has no update method. Assigning list directly.", item_type)
+                setattr(self, attr_name, value)
+                return
+
+            if current_value is None:
+                print(f"[DEBUG] Creating new list for attribute: {attr_name}")
+                current_value = []
+                setattr(self, attr_name, current_value)
+
+            print(f"[DEBUG] Processing {len(value)} items in the list")
+            for i, item in enumerate(value):
+                print(f"[DEBUG] Processing item {i}: {item} (type: {type(item)})")
+                if isinstance(item, dict):
+                    try:
+                        print(f"[DEBUG] Creating instance of {item_type} for dict item")
+                        instance = item_type()
+                        print(f"[DEBUG] Created instance: {instance}")
+                        instance.update(item)
+                        print(f"[DEBUG] Updated instance with dict")
+                        current_value.append(instance)
+                        print(f"[DEBUG] Added instance to list")
+                    except Exception as exc:
+                        print(f"[DEBUG] Exception processing list item: {exc}")
+                        logger.error("Failed to instantiate or update list item for %s: %s", attr_name, exc)
+                        raise
+                else:
+                    print(f"[DEBUG] Adding non-dict item directly: {item}")
+                    current_value.append(item)
+        else:
+            print(f"[DEBUG] attr_type is not list, assigning value directly")
+            setattr(self, attr_name, value)
 
     def _camel_to_snake(self, camel_case: str) -> str:
         """
@@ -766,9 +913,6 @@ class Series(ABC):
         # Add visible property
         config["visible"] = self.visible
 
-        # Add price_scale_id
-        config["priceScaleId"] = self._price_scale_id
-
         return config
 
     @classproperty
@@ -786,7 +930,7 @@ class Series(ABC):
         cls,
         df: Union[pd.DataFrame, pd.Series],
         column_mapping: Dict[str, str],
-        price_scale_id: str = "right",
+        price_scale_id: str = "",
         **kwargs,
     ) -> "Series":
         """
@@ -796,7 +940,7 @@ class Series(ABC):
             df (Union[pd.DataFrame, pd.Series]): The input DataFrame or Series.
             column_mapping (dict): Mapping of required fields
                 (e.g., {'time': 'datetime', 'value': 'close', ...}).
-            price_scale_id (str): Price scale ID (default 'right').
+            price_scale_id (str): Price scale ID (default '').
             **kwargs: Additional arguments for the Series constructor.
 
         Returns:

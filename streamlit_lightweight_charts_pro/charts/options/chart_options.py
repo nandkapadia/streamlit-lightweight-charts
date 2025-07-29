@@ -42,6 +42,8 @@ from streamlit_lightweight_charts_pro.utils import chainable_field
 @chainable_field("grid", GridOptions)
 @chainable_field("handle_scroll", bool)
 @chainable_field("handle_scale", bool)
+@chainable_field("handle_double_click", bool)
+@chainable_field("fit_content_on_load", bool)
 @chainable_field("kinetic_scroll", KineticScrollOptions)
 @chainable_field("tracking_mode", TrackingModeOptions)
 @chainable_field("localization", LocalizationOptions)
@@ -112,6 +114,8 @@ class ChartOptions(Options):
     grid: GridOptions = field(default_factory=GridOptions)
     handle_scroll: bool = True
     handle_scale: bool = True
+    handle_double_click: bool = True
+    fit_content_on_load: bool = True
     kinetic_scroll: Optional[KineticScrollOptions] = None
     tracking_mode: Optional[TrackingModeOptions] = None
 

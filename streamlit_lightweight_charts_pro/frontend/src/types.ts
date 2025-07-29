@@ -82,9 +82,13 @@ export interface Annotation {
 
 export interface AnnotationLayer {
   name: string
-  annotations: Annotation[]
   visible: boolean
   opacity: number
+  annotations: Annotation[]
+}
+
+export interface AnnotationManager {
+  layers: { [key: string]: AnnotationLayer }
 }
 
 // Enhanced Series Configuration
@@ -116,6 +120,7 @@ export interface ChartConfig {
   rangeSwitcher?: RangeSwitcherConfig
   legend?: LegendConfig
   tooltip?: TooltipConfig  // Add chart-level tooltip configuration
+  tradeVisualizationOptions?: TradeVisualizationOptions  // Add chart-level trade visualization options
   autoSize?: boolean
   autoWidth?: boolean
   autoHeight?: boolean

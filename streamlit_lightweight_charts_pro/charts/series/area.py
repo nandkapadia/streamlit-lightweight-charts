@@ -82,7 +82,7 @@ class AreaSeries(Series):
         data: Union[List[AreaData], pd.DataFrame, pd.Series],
         column_mapping: Optional[dict] = None,
         visible: bool = True,
-        price_scale_id: str = "right",
+        price_scale_id: str = "",
         pane_id: Optional[int] = 0,
     ):
         """

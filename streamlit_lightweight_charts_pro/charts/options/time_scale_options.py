@@ -29,6 +29,10 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @chainable_field("shift_visible_range_on_new_bar", bool)
 @chainable_field("allow_shift_visible_range_on_whitespace_access", bool)
 @chainable_field("tick_mark_formatter", Callable)
+@chainable_field("fit_content_on_load", bool)
+@chainable_field("handle_double_click", bool)
+@chainable_field("handle_scale", bool)
+@chainable_field("handle_scroll", bool)
 class TimeScaleOptions(Options):
     """Time scale configuration."""
 
@@ -48,6 +52,10 @@ class TimeScaleOptions(Options):
     shift_visible_range_on_new_bar: bool = False
     allow_shift_visible_range_on_whitespace_access: bool = False
     tick_mark_formatter: Optional[Callable] = None
+    fit_content_on_load: bool = True
+    handle_double_click: bool = True
+    handle_scale: bool = True
+    handle_scroll: bool = True
 
     def __getitem__(self, key):
         return self.asdict()[key]
