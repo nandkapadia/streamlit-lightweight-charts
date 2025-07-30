@@ -25,7 +25,7 @@ Key Features:
 Example Usage:
     ```python
     from streamlit_lightweight_charts_pro import (
-        Chart, LineSeries, create_chart, create_text_annotation
+        Chart, LineSeries, create_text_annotation
     )
     from streamlit_lightweight_charts_pro.data import SingleValueData
 
@@ -37,11 +37,10 @@ Example Usage:
     chart.render(key="my_chart")
 
     # Method 2: Fluent API with method chaining
-    chart = (create_chart()
-             .add_line_series(data, color="#ff0000")
-             .set_height(400)
-             .add_annotation(create_text_annotation("2024-01-01", 100, "Start"))
-             .build())
+    chart = (Chart()
+             .add_series(LineSeries(data, color="#ff0000"))
+             .update_options(height=400)
+             .add_annotation(create_text_annotation("2024-01-01", 100, "Start")))
     chart.render(key="my_chart")
     ```
 
@@ -59,8 +58,6 @@ License: MIT
 # Import core components
 from streamlit_lightweight_charts_pro.charts import (
     Chart,
-    ChartBuilder,
-    create_chart,
 )
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
@@ -110,8 +107,6 @@ __all__ = [
     "setup_logging",
     # Core chart classes
     "Chart",
-    "create_chart",
-    "ChartBuilder",
     # Series classes
     "AreaSeries",
     "BarSeries",

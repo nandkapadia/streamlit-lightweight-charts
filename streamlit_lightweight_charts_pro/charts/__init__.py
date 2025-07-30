@@ -4,33 +4,22 @@ Chart classes for streamlit-lightweight-charts.
 This module provides all chart classes including Chart and various series types
 for creating interactive financial charts.
 
-The module also includes a ChartBuilder class that provides a fluent API for
-creating charts with method chaining, making chart creation more intuitive and
-readable.
+The Chart class provides a fluent API for creating charts with method chaining,
+making chart creation more intuitive and readable.
 
 Example:
     ```python
-    from streamlit_lightweight_charts_pro.charts import (
-        Chart, create_chart, ChartBuilder
-    )
+    from streamlit_lightweight_charts_pro.charts import Chart
 
-    # Using ChartBuilder directly
-    builder = ChartBuilder()
-    chart = (builder
-             .add_line_series(data, color="#ff0000")
-             .set_height(400)
-             .build())
-
-    # Using convenience function
-    chart = (create_chart()
-             .add_line_series(data, color="#ff0000")
-             .set_height(400)
-             .build())
+    # Using Chart directly
+    chart = Chart()
+    chart.add_series(LineSeries(data))
+    chart.update_options(height=400)
+    chart.render()
     ```
 """
 
 from streamlit_lightweight_charts_pro.charts.chart import Chart
-from streamlit_lightweight_charts_pro.charts.chart_builder import ChartBuilder, create_chart
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
@@ -41,8 +30,6 @@ from streamlit_lightweight_charts_pro.charts.series import (
 )
 
 __all__ = [
-    "ChartBuilder",
-    "create_chart",
     "AreaSeries",
     "LineSeries",
     "CandlestickSeries",
