@@ -91,14 +91,14 @@ class TestCandlestickSeriesConstruction:
         series = CandlestickSeries(data=[])
 
         assert len(series.data) == 0
-        assert series.visible is True
+        assert series._visible is True
 
     def test_construction_with_custom_parameters_duplicate(self):
         """Test construction with custom parameters."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 
@@ -283,7 +283,7 @@ class TestCandlestickSeriesSerialization:
         assert result["data"][0]["low"] == 98
         assert result["data"][0]["close"] == 103
         assert "options" in result
-        assert "pane_id" in result
+        assert "paneId" in result
 
     def test_asdict_with_candlestick_options(self):
         """Test asdict with candlestick styling options."""
@@ -672,7 +672,7 @@ class TestCandlestickSeriesJsonStructure:
 
         result = series.asdict()
 
-        required_keys = {"type", "data", "options", "pane_id"}
+        required_keys = {"type", "data", "options", "paneId"}
         assert all(key in result for key in required_keys)
         assert result["type"] == "candlestick"
         assert isinstance(result["data"], list)
@@ -743,7 +743,7 @@ class TestCandlestickSeriesJsonStructure:
         result = series.asdict()
 
         # Check all required keys
-        required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
+        required_keys = {"type", "data", "options", "paneId", "markers", "priceLines"}
         assert all(key in result for key in required_keys)
 
         # Check options

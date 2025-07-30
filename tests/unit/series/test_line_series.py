@@ -133,7 +133,7 @@ def test_method_chaining(line_data, line_options):
         .clear_price_lines()
     )
     assert result is series
-    assert series.visible is False
+    assert series._visible is False
     assert series.markers == []
     assert series.price_lines == []
 

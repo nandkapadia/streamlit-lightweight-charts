@@ -66,7 +66,7 @@ def main():
     series.update({"visible": False, "price_scale_id": "left", "pane_id": 1})
 
     st.write("**Updated Series Properties:**")
-    st.write(f"- Visible: {series.visible}")
+    st.write(f"- Visible: {series._visible}")
     st.write(f"- Price Scale ID: {series.price_scale_id}")
     st.write(f"- Pane ID: {series.pane_id}")
 
@@ -90,7 +90,7 @@ def main():
     )
 
     st.write("**After Complex Updates:**")
-    st.write(f"- Visible: {series.visible}")
+    st.write(f"- Visible: {series._visible}")
     st.write(f"- Price Scale ID: {series.price_scale_id}")
     st.write(f"- Line Color: {series.line_options.color}")
 
@@ -110,7 +110,7 @@ def main():
     )
 
     st.write("**After Method Chaining:**")
-    st.write(f"- Visible: {chain_series.visible}")
+    st.write(f"- Visible: {chain_series._visible}")
     st.write(f"- Price Scale ID: {chain_series.price_scale_id}")
     st.write(f"- Pane ID: {chain_series.pane_id}")
     st.write(f"- Line Color: {chain_series.line_options.color}")

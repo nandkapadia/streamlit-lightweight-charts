@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
 from streamlit_lightweight_charts_pro.utils import chainable_field
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
@@ -24,14 +23,8 @@ class PriceScaleMargins(Options):
 @chainable_field("mode", PriceScaleMode)
 @chainable_field("invert_scale", bool)
 @chainable_field("border_visible", bool)
-@chainable_field(
-    "border_color",
-    str,
-    validator=lambda v: PriceScaleOptions._validate_color_static(v, "border_color"),
-)
-@chainable_field(
-    "text_color", str, validator=lambda v: PriceScaleOptions._validate_color_static(v, "text_color")
-)
+@chainable_field("border_color", str, validator="color")
+@chainable_field("text_color", str, validator="color")
 @chainable_field("ticks_visible", bool)
 @chainable_field("ensure_edge_tick_marks_visible", bool)
 @chainable_field("align_labels", bool)
@@ -65,12 +58,3 @@ class PriceScaleOptions(Options):
 
     # Identification
     price_scale_id: str = ""
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color

@@ -12,12 +12,6 @@ export const createAnnotationVisualElements = (annotations: Annotation[]): Annot
   const shapes: any[] = []
   const texts: any[] = []
 
-  // Debug logging to see what's being passed
-  console.log('createAnnotationVisualElements called with:', annotations)
-  console.log('Type of annotations:', typeof annotations)
-  console.log('Is array:', Array.isArray(annotations))
-  console.log('Has forEach:', annotations && typeof annotations.forEach === 'function')
-
   // Immediate return if annotations is null, undefined, or not an object
   if (!annotations || typeof annotations !== 'object') {
     console.warn('createAnnotationVisualElements: annotations is null, undefined, or not an object:', annotations)

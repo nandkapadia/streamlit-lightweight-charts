@@ -11,9 +11,6 @@ import os
 import sys
 
 import numpy as np
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import pandas as pd
 import streamlit as st
 
@@ -26,6 +23,8 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     MarkerPosition,
     MarkerShape,
 )
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def create_dynamic_data(base_data, trend_factor=1.0, noise_factor=1.0):

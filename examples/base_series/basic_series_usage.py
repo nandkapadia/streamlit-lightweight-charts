@@ -12,12 +12,11 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series import LineSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -78,7 +77,7 @@ def main():
     series = LineSeries(data=data)
 
     st.write(f"**Series Properties:**")
-    st.write(f"- Visible: {series.visible}")
+    st.write(f"- Visible: {series._visible}")
     st.write(f"- Price Scale ID: {series.price_scale_id}")
     st.write(f"- Pane ID: {series.pane_id}")
     st.write(f"- Data Points: {len(series.data)}")

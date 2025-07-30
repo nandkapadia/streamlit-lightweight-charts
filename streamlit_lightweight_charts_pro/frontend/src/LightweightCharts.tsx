@@ -23,8 +23,6 @@ interface LightweightChartsProps {
   width?: number | null
 }
 
-console.log("LightweightCharts component loaded!");
-
 const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = null }) => {
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
@@ -260,13 +258,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           const visibleRange = timeScale.getVisibleRange()
           if (visibleRange && visibleRange.from && visibleRange.to) {
             timeScale.fitContent()
-            console.log('✅ fitContent() called after data loaded')
           } else {
             // If no visible range, try again after a short delay
             setTimeout(() => {
               try {
                 timeScale.fitContent()
-                console.log('✅ fitContent() called after delay')
               } catch (error) {
                 console.warn('❌ fitContent after delay failed:', error)
               }
@@ -299,7 +295,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (currentTime - lastClickTime < doubleClickThreshold) {
           try {
             timeScale.fitContent()
-            console.log('✅ fitContent() called on double-click')
           } catch (error) {
             console.warn('❌ fitContent on double-click failed:', error)
           }
@@ -342,7 +337,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Create series function
   const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
-    const { type, data, options = {}, priceScale, pane_id } = seriesConfig
+    const { type, data, options = {}, priceScale, paneId } = seriesConfig
 
     let series: ISeriesApi<any>
     
@@ -366,7 +361,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           areaOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(AreaSeries, areaOptions, pane_id)
+        series = chart.addSeries(AreaSeries, areaOptions, paneId)
         break
       case 'band':
         try {
@@ -447,7 +442,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           baselineOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(BaselineSeries, baselineOptions, pane_id)
+        series = chart.addSeries(BaselineSeries, baselineOptions, paneId)
         break
       case 'histogram':
         const histogramOptions = {
@@ -463,7 +458,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           color: cleanedOptions.color || '#2196F3'
         }
 
-        series = chart.addSeries(HistogramSeries, histogramOptions, pane_id)
+        series = chart.addSeries(HistogramSeries, histogramOptions, paneId)
         break
       case 'line':
         const lineOptions = {
@@ -475,7 +470,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           lineOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(LineSeries, lineOptions, pane_id)
+        series = chart.addSeries(LineSeries, lineOptions, paneId)
         break
       case 'bar':
         const barOptions = {
@@ -490,7 +485,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           barOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(BarSeries, barOptions, pane_id)
+        series = chart.addSeries(BarSeries, barOptions, paneId)
         break
       case 'candlestick':
         const candlestickOptions = {
@@ -505,7 +500,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           candlestickOptions.priceFormat = priceFormat
         }
 
-        series = chart.addSeries(CandlestickSeries, candlestickOptions, pane_id)
+        series = chart.addSeries(CandlestickSeries, candlestickOptions, paneId)
         break
       default:
         // Unknown series type - handled silently in production
@@ -524,33 +519,23 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
     // Add price lines attached to this series
     if (seriesConfig.priceLines && Array.isArray(seriesConfig.priceLines)) {
-      console.log('💰 Creating price lines for series:', seriesConfig.priceLines)
       seriesConfig.priceLines.forEach((priceLine: any, index: number) => {
         try {
-          console.log(`💰 Creating price line ${index + 1}:`, priceLine)
           series.createPriceLine(priceLine)
-          console.log(`✅ Successfully created price line ${index + 1}`)
         } catch (error) {
           console.warn(`❌ Failed to create price line ${index + 1} for series:`, error)
         }
       })
-    } else {
-      console.log('ℹ️ No price lines found in series config:', seriesConfig.priceLines)
     }
 
     // Add markers attached to this series
     if (seriesConfig.markers && Array.isArray(seriesConfig.markers)) {
-      console.log('🎯 Creating markers for series:', seriesConfig.markers)
-      
       try {
         // Use createSeriesMarkers as per TradingView documentation
         createSeriesMarkers(series, seriesConfig.markers)
-        console.log('✅ Successfully created markers using createSeriesMarkers()')
       } catch (error) {
         console.warn('❌ Failed to create markers for series:', error)
       }
-    } else {
-      console.log('ℹ️ No markers found in series config:', seriesConfig.markers)
     }
 
     return series
@@ -657,7 +642,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     )
 
     if (validAnnotations.length === 0) {
-      console.log('addAnnotations: no valid annotations found')
       return
     }
 
@@ -798,8 +782,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...chartConfig.chart
         })
 
-        console.log("Chart options passed to createChart:", chartOptions);
-        
         let chart: IChartApi
         try {
           chart = createChart(container, chartOptions)
@@ -827,7 +809,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         
         // Ensure we have enough panes for the series
         chartConfig.series.forEach((seriesConfig: SeriesConfig) => {
-          const paneId = seriesConfig.pane_id || 0
+          const paneId = seriesConfig.paneId || 0
           if (!paneMap.has(paneId)) {
             if (paneId < existingPanes.length) {
               paneMap.set(paneId, existingPanes[paneId])
@@ -984,7 +966,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               const timeScale = chart.timeScale()
               if (timeScale) {
                 timeScale.fitContent()
-                console.log('✅ fitContent() called after all series loaded')
               }
             } catch (error) {
               console.warn('❌ fitContent after all series failed:', error)
@@ -1001,7 +982,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [config, cleanupCharts, createSeries, addTradeVisualization, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, setupAutoSizing, setupChartSynchronization, setupFitContent, width, height])
 
   useEffect(() => {
+    // Initialize charts when component mounts
     initializeCharts()
+    
+    // Cleanup on unmount
     return cleanupCharts
   }, [initializeCharts, cleanupCharts])
 

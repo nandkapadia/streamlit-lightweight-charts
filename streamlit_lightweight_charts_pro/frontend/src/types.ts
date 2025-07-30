@@ -105,7 +105,7 @@ export interface SeriesConfig {
   annotations?: Annotation[]  // Add annotations to series
   shapes?: any[]  // Add shapes support
   tooltip?: TooltipConfig  // Add tooltip configuration
-  pane_id?: number // Add support for multi-pane charts
+  paneId?: number // Add support for multi-pane charts
 }
 
 // Enhanced Chart Configuration

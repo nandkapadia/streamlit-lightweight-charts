@@ -12,13 +12,9 @@ from streamlit_lightweight_charts_pro.utils import chainable_field
 
 
 @dataclass
-@chainable_field("type", str, validator=lambda v: PriceFormatOptions._validate_type_static(v))
-@chainable_field(
-    "precision", int, validator=lambda v: PriceFormatOptions._validate_precision_static(v)
-)
-@chainable_field(
-    "min_move", (int, float), validator=lambda v: PriceFormatOptions._validate_min_move_static(v)
-)
+@chainable_field("type", str, validator="price_format_type")
+@chainable_field("precision", int, validator="precision")
+@chainable_field("min_move", (int, float), validator="min_move")
 @chainable_field("formatter", str)
 class PriceFormatOptions(Options):
     """
@@ -35,8 +31,6 @@ class PriceFormatOptions(Options):
     precision: int = 2
     min_move: float = 0.01
     formatter: Optional[str] = None
-
-
 
     @staticmethod
     def _validate_type_static(type_value: str) -> str:

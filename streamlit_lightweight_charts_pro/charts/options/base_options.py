@@ -11,8 +11,8 @@ from dataclasses import dataclass, fields
 from enum import Enum
 from typing import Any, Dict
 
-from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 from streamlit_lightweight_charts_pro.logging_config import get_logger
+from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -119,7 +119,9 @@ class Options(ABC):
 
             if field_info is None:
                 # Ignore fields not found in dataclass fields
-                logger.debug("Ignoring field %s not found in %s", field_name, self.__class__.__name__)
+                logger.debug(
+                    "Ignoring field %s not found in %s", field_name, self.__class__.__name__
+                )
                 continue
 
             # Handle nested Options objects

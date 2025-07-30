@@ -13,7 +13,6 @@ import pytest
 
 from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
-from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series import (
     LineSeries,
 )
@@ -42,9 +41,7 @@ class TestChartConstructionEdgeCases:
 
     def test_construction_with_mixed_valid_invalid_series(self):
         """Test Chart construction with mix of valid and invalid series."""
-        valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)]
-        )
+        valid_series = LineSeries(data=[LineData(time=1640995200, value=100)])
 
         with pytest.raises(TypeError):
             Chart(series=[valid_series, "invalid_series", valid_series])
@@ -108,9 +105,7 @@ class TestChartSeriesManagementEdgeCases:
     def test_add_multiple_invalid_series(self):
         """Test adding multiple invalid series."""
         chart = Chart()
-        valid_series = LineSeries(
-            data=[LineData(time=1640995200, value=100)]
-        )
+        valid_series = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(valid_series)
 
         with pytest.raises(TypeError):
@@ -475,14 +470,11 @@ class TestChartTradeVisualizationEdgeCases:
     def test_add_trade_visualization_with_series_without_markers(self):
         """Test adding trade visualization to series without markers support."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
         # Use real series that doesn't have markers
-        series_without_markers = LineSeries(
-            data=[LineData(time=1640995200, value=100)]
-        )
+        series_without_markers = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series_without_markers)
 
         from streamlit_lightweight_charts_pro.data.trade import Trade
@@ -518,7 +510,6 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_without_to_dict(self):
         """Test to_frontend_config with series without to_dict method."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
@@ -534,7 +525,6 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_returning_invalid_dict(self):
         """Test to_frontend_config with series returning invalid dict."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
@@ -550,7 +540,6 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_without_required_fields(self):
         """Test to_frontend_config with series without required fields."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
@@ -566,7 +555,6 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_with_invalid_height(self):
         """Test to_frontend_config with series with invalid height."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 
@@ -581,7 +569,6 @@ class TestChartFrontendConfigurationEdgeCases:
     def test_to_frontend_config_with_series_with_none_pane_id(self):
         """Test to_frontend_config with series with None pane_id."""
         chart = Chart()
-        from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
         from streamlit_lightweight_charts_pro.data.line_data import LineData
 

@@ -12,11 +12,11 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 from examples.data_samples import get_dataframe_line_data, get_line_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series.area import AreaSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -63,7 +63,7 @@ def main():
     # Show series properties
     st.subheader("Series Properties")
     st.write(f"Chart type: {area_series.chart_type}")
-    st.write(f"Visible: {area_series.visible}")
+    st.write(f"Visible: {area_series._visible}")
     st.write(f"Price scale ID: {area_series.price_scale_id}")
     st.write(f"Pane ID: {area_series.pane_id}")
 

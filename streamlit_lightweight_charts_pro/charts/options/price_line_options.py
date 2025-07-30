@@ -16,24 +16,14 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @dataclass
 @chainable_field("id", str)
 @chainable_field("price", (int, float))
-@chainable_field(
-    "color", str, validator=lambda v: PriceLineOptions._validate_color_static(v, "color")
-)
+@chainable_field("color", str, validator="color")
 @chainable_field("line_width", int)
 @chainable_field("line_style", LineStyle)
 @chainable_field("line_visible", bool)
 @chainable_field("axis_label_visible", bool)
 @chainable_field("title", str)
-@chainable_field(
-    "axis_label_color",
-    str,
-    validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_color"),
-)
-@chainable_field(
-    "axis_label_text_color",
-    str,
-    validator=lambda v: PriceLineOptions._validate_color_static(v, "axis_label_text_color"),
-)
+@chainable_field("axis_label_color", str, validator="color")
+@chainable_field("axis_label_text_color", str, validator="color")
 class PriceLineOptions(Options):
     """
     Encapsulates style and configuration options for a price line,
@@ -64,8 +54,6 @@ class PriceLineOptions(Options):
     title: str = ""
     axis_label_color: Optional[str] = None
     axis_label_text_color: Optional[str] = None
-
-
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

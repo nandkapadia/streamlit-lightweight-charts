@@ -328,10 +328,10 @@ class TestHistogramChartIntegration:
 
         # Hide volume series
         volume_series = chart.series[1]
-        volume_series.visible = False
+        volume_series._visible = False
 
         # Verify visibility setting
-        assert volume_series.visible is False
+        assert volume_series._visible is False
 
         # Verify JSON serialization reflects visibility
         chart_config = chart.to_frontend_config()

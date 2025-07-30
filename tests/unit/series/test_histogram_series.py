@@ -25,7 +25,7 @@ class TestHistogramSeriesConstruction:
         series = HistogramSeries(data=data)
 
         assert series.data == data
-        assert series.visible is True
+        assert series._visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
         assert series.color == "#26a69a"
@@ -37,7 +37,7 @@ class TestHistogramSeriesConstruction:
         series = HistogramSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.data == data
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
         assert series.color == "#26a69a"
@@ -146,7 +146,7 @@ class TestHistogramSeriesSerialization:
         assert result["data"] == [{"time": 1640995200, "value": 100.5}]
         assert result["options"]["color"] == "#26a69a"
         assert result["options"]["base"] == 0
-        assert result["pane_id"] == 0
+        assert result["paneId"] == 0
 
     def test_to_dict_with_custom_colors(self):
         """Test to_dict with custom colors."""
@@ -249,7 +249,7 @@ class TestHistogramSeriesMethods:
         assert result is series
         assert len(series.markers) == 1
         assert len(series.price_lines) == 1
-        assert series.visible is False
+        assert series._visible is False
 
 
 class TestHistogramSeriesDataHandling:
@@ -425,7 +425,7 @@ class TestHistogramSeriesJsonStructure:
         series = HistogramSeries(data=data)
         result = series.asdict()
 
-        required_keys = {"type", "data", "options", "pane_id"}
+        required_keys = {"type", "data", "options", "paneId"}
         assert all(key in result for key in required_keys)
         assert result["type"] == "histogram"
         assert isinstance(result["data"], list)
@@ -500,7 +500,7 @@ class TestHistogramSeriesJsonStructure:
         result = series.asdict()
 
         # Check all required keys
-        required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
+        required_keys = {"type", "data", "options", "paneId", "markers", "priceLines"}
         assert all(key in result for key in required_keys)
 
         # Check data structure

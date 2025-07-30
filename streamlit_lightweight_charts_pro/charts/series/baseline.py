@@ -39,38 +39,27 @@ from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
-@chainable_property("base_value", validator=lambda v: BaselineSeries._validate_base_value_static(v))
+def _validate_base_value_static(base_value) -> Dict[str, Any]:
+    """Static version of base_value validator for decorator use."""
+    if isinstance(base_value, (int, float)):
+        return {"type": "price", "price": float(base_value)}
+    elif isinstance(base_value, dict):
+        if "type" not in base_value or "price" not in base_value:
+            raise ValueError("base_value dict must contain 'type' and 'price' keys")
+        return {"type": str(base_value["type"]), "price": float(base_value["price"])}
+    else:
+        raise ValueError("base_value must be a number or dict with 'type' and 'price' keys")
+
+
+@chainable_property("line_options", LineOptions, allow_none=True)
+@chainable_property("base_value", validator=_validate_base_value_static)
 @chainable_property("relative_gradient", bool)
-@chainable_property(
-    "top_fill_color1",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "top_fill_color1"),
-)
-@chainable_property(
-    "top_fill_color2",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "top_fill_color2"),
-)
-@chainable_property(
-    "top_line_color",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "top_line_color"),
-)
-@chainable_property(
-    "bottom_fill_color1",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_fill_color1"),
-)
-@chainable_property(
-    "bottom_fill_color2",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_fill_color2"),
-)
-@chainable_property(
-    "bottom_line_color",
-    str,
-    validator=lambda v: BaselineSeries._validate_color_static(v, "bottom_line_color"),
-)
+@chainable_property("top_fill_color1", str, validator="color")
+@chainable_property("top_fill_color2", str, validator="color")
+@chainable_property("top_line_color", str, validator="color")
+@chainable_property("bottom_fill_color1", str, validator="color")
+@chainable_property("bottom_fill_color2", str, validator="color")
+@chainable_property("bottom_line_color", str, validator="color")
 class BaselineSeries(Series):
     """Baseline series for lightweight charts."""
 
@@ -93,7 +82,7 @@ class BaselineSeries(Series):
         )
 
         # Initialize LineOptions for common line properties
-        self.line_options = LineOptions()
+        self._line_options = LineOptions()
 
         # Baseline-specific properties (not in LineOptions) - set default values internally
         self._base_value = self._validate_base_value({"type": "price", "price": 0})
@@ -118,27 +107,6 @@ class BaselineSeries(Series):
 
     def _validate_color(self, color: str, property_name: str) -> str:
         """Validate color format."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
-
-    @staticmethod
-    def _validate_base_value_static(base_value) -> Dict[str, Any]:
-        """Static version of base_value validator for decorator use."""
-        if isinstance(base_value, (int, float)):
-            return {"type": "price", "price": float(base_value)}
-        elif isinstance(base_value, dict):
-            if "type" not in base_value or "price" not in base_value:
-                raise ValueError("base_value dict must contain 'type' and 'price' keys")
-            return {"type": str(base_value["type"]), "price": float(base_value["price"])}
-        else:
-            raise ValueError("base_value must be a number or dict with 'type' and 'price' keys")
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
         if not is_valid_color(color):
             raise ValueError(
                 f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."

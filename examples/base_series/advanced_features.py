@@ -11,9 +11,6 @@ import os
 # Add project root to path for examples imports
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 import streamlit as st
 
 from examples.data_samples import get_line_data
@@ -22,6 +19,8 @@ from streamlit_lightweight_charts_pro.charts.options.price_format_options import
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
 from streamlit_lightweight_charts_pro.charts.series import LineSeries
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -44,7 +43,7 @@ def main():
     )
 
     st.write("**Method chaining result:**")
-    st.write(f"Visible: {chained_series.visible}")
+    st.write(f"Visible: {chained_series._visible}")
     st.write(f"Markers: {len(chained_series.markers)}")
     st.write(f"Price lines: {len(chained_series.price_lines)}")
 
@@ -85,7 +84,7 @@ def main():
     config_series.add_price_line(PriceLineOptions(price=20.0, color="#00FF00", title="Support"))
 
     st.write("**Full Configuration:**")
-    st.write(f"Visible: {config_series.visible}")
+    st.write(f"Visible: {config_series._visible}")
     st.write(f"Price Scale ID: {config_series.price_scale_id}")
     st.write(f"Pane ID: {config_series.pane_id}")
     st.write(f"Markers: {len(config_series.markers)}")

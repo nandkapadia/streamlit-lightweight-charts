@@ -5,7 +5,6 @@ from typing import Callable, Optional
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.utils import chainable_field
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
@@ -17,11 +16,7 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @chainable_field("time_visible", bool)
 @chainable_field("seconds_visible", bool)
 @chainable_field("border_visible", bool)
-@chainable_field(
-    "border_color",
-    str,
-    validator=lambda v: TimeScaleOptions._validate_color_static(v, "border_color"),
-)
+@chainable_field("border_color", str, validator="color")
 @chainable_field("fix_left_edge", bool)
 @chainable_field("fix_right_edge", bool)
 @chainable_field("lock_visible_time_range_on_resize", bool)
@@ -59,12 +54,3 @@ class TimeScaleOptions(Options):
 
     def __getitem__(self, key):
         return self.asdict()[key]
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color

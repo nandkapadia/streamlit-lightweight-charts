@@ -16,9 +16,6 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
@@ -30,6 +27,9 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     MarkerPosition,
     MarkerShape,
 )
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
 
 # Page configuration
 st.set_page_config(page_title="Advanced Line Chart", page_icon="📈", layout="wide")

@@ -35,12 +35,9 @@ from streamlit_lightweight_charts_pro.data.histogram_data import HistogramData
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
 from streamlit_lightweight_charts_pro.utils import chainable_property
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
-@chainable_property(
-    "color", str, validator=lambda v: HistogramSeries._validate_color_static(v, "color")
-)
+@chainable_property("color", str, validator="color")
 @chainable_property("base", (int, float))
 class HistogramSeries(Series):
     """
@@ -67,15 +64,6 @@ class HistogramSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.HISTOGRAM
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
 
     @classmethod
     def create_volume_series(

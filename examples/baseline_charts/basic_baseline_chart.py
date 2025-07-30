@@ -66,7 +66,7 @@ def main():
     # Show series properties
     st.subheader("Series Properties")
     st.write(f"Chart type: {baseline_series.chart_type}")
-    st.write(f"Visible: {baseline_series.visible}")
+    st.write(f"Visible: {baseline_series._visible}")
     st.write(f"Price scale ID: {baseline_series.price_scale_id}")
     st.write(f"Pane ID: {baseline_series.pane_id}")
 

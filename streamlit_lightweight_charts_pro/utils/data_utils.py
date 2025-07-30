@@ -136,3 +136,79 @@ def is_valid_color(color: str) -> bool:
     # Check for rgba colors only (not rgb)
     rgba_pattern = r"^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$"
     return bool(re.match(rgba_pattern, color))
+
+
+def validate_price_format_type(type_value: str) -> str:
+    """
+    Validate price format type.
+
+    Args:
+        type_value: Type string to validate
+
+    Returns:
+        str: Validated type string
+
+    Raises:
+        ValueError: If type is not valid
+
+    Example:
+        ```python
+        validate_price_format_type("price")  # "price"
+        validate_price_format_type("volume")  # "volume"
+        validate_price_format_type("invalid")  # ValueError
+        ```
+    """
+    valid_types = {"price", "volume", "percent", "custom"}
+    if type_value not in valid_types:
+        raise ValueError(
+            f"Invalid type: {type_value!r}. Must be one of 'price', 'volume', 'percent', 'custom'."
+        )
+    return type_value
+
+
+def validate_precision(precision: int) -> int:
+    """
+    Validate precision value.
+
+    Args:
+        precision: Precision value to validate
+
+    Returns:
+        int: Validated precision value
+
+    Raises:
+        ValueError: If precision is not valid
+
+    Example:
+        ```python
+        validate_precision(5)  # 5
+        validate_precision(-1)  # ValueError
+        ```
+    """
+    if not isinstance(precision, int) or precision < 0:
+        raise ValueError(f"precision must be a non-negative integer, got {precision}")
+    return precision
+
+
+def validate_min_move(min_move: float) -> float:
+    """
+    Validate minimum move value.
+
+    Args:
+        min_move: Minimum move value to validate
+
+    Returns:
+        float: Validated minimum move value
+
+    Raises:
+        ValueError: If min_move is not valid
+
+    Example:
+        ```python
+        validate_min_move(0.001)  # 0.001
+        validate_min_move(0)  # ValueError
+        ```
+    """
+    if not isinstance(min_move, (int, float)) or min_move <= 0:
+        raise ValueError(f"min_move must be a positive number, got {min_move}")
+    return float(min_move)

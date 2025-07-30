@@ -11,9 +11,6 @@ import os
 import sys
 
 import pandas as pd
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import streamlit as st
 
 from examples.data_samples import (
@@ -22,6 +19,8 @@ from examples.data_samples import (
 )
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series import LineSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():

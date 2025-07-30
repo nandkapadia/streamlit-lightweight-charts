@@ -25,7 +25,7 @@ class TestBaselineSeriesConstruction:
         series = BaselineSeries(data=data)
 
         assert series.data == data
-        assert series.visible is True
+        assert series._visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
         assert series.chart_type == ChartType.BASELINE
@@ -87,7 +87,7 @@ class TestBaselineSeriesConstruction:
         """Test BaselineSeries construction with empty data."""
         series = BaselineSeries(data=[])
         assert series.data == []
-        assert series.visible is True
+        assert series._visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
 
@@ -97,7 +97,7 @@ class TestBaselineSeriesConstruction:
         series = BaselineSeries(data=data, visible=False, price_scale_id="left", pane_id=1)
 
         assert series.data == data
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 
@@ -657,7 +657,7 @@ class TestBaselineSeriesJsonStructure:
         series = BaselineSeries(data=data)
         result = series.asdict()
 
-        required_keys = {"type", "data", "options", "pane_id"}
+        required_keys = {"type", "data", "options", "paneId"}
         assert all(key in result for key in required_keys)
         assert result["type"] == "baseline"
         assert isinstance(result["data"], list)
@@ -729,7 +729,7 @@ class TestBaselineSeriesJsonStructure:
 
         result = series.asdict()
 
-        required_keys = {"type", "data", "options", "pane_id", "markers", "priceLines"}
+        required_keys = {"type", "data", "options", "paneId", "markers", "priceLines"}
         assert all(key in result for key in required_keys)
 
         # Check options structure

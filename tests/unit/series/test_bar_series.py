@@ -26,7 +26,7 @@ class TestBarSeriesConstruction:
         series = BarSeries(data=data)
 
         assert series.data == data
-        assert series.visible is True
+        assert series._visible is True
         assert series.price_scale_id == "right"
         assert series.pane_id == 0
         assert series.up_color == "#26a69a"
@@ -44,7 +44,7 @@ class TestBarSeriesConstruction:
             pane_id=1,
         )
 
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 
@@ -278,7 +278,7 @@ class TestBarSeriesMethods:
         assert result is series
         assert len(series.markers) == 1
         assert len(series.price_lines) == 1
-        assert series.visible is False
+        assert series._visible is False
 
 
 class TestBarSeriesDataHandling:

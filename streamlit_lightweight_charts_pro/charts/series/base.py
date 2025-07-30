@@ -27,7 +27,6 @@ import pandas as pd
 
 # Import options classes for dynamic creation
 from streamlit_lightweight_charts_pro.charts.options import (
-    PriceFormatOptions,
     PriceLineOptions,
 )
 from streamlit_lightweight_charts_pro.data import Data
@@ -44,18 +43,16 @@ logger = get_logger(__name__)
 
 
 # pylint: disable=no-member, invalid-name
-@chainable_property("price_scale_id")
+@chainable_property("visible", top_level=True)
+@chainable_property("price_scale_id", top_level=True)
+@chainable_property("price_scale", allow_none=True, top_level=True)
 @chainable_property("price_format")
-@chainable_property("price_lines")
-@chainable_property("markers")
-@chainable_property("pane_id")
+@chainable_property("price_lines", top_level=True)
+@chainable_property("markers", top_level=True)
+@chainable_property("pane_id", top_level=True)
+@chainable_property("last_line_visible")
 class Series(ABC):
     # Type annotations for attributes to enable automatic type inspection
-    price_format: Optional[PriceFormatOptions]
-    price_lines: List[PriceLineOptions]
-    markers: List[Marker]
-    price_scale_id: str
-    pane_id: int
     """
     Abstract base class for all series types.
 
@@ -171,13 +168,15 @@ class Series(ABC):
                 f"got {type(data)}"
             )
 
-        self.visible = visible
+        self._visible = visible
         self._price_scale_id = price_scale_id
+        self._price_scale = None
         self._price_format = None
         self._price_lines = []
         self._markers = []
         self._pane_id = pane_id
-        self.column_mapping = column_mapping
+        self._column_mapping = column_mapping
+        self._last_line_visible = True
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:
@@ -397,7 +396,8 @@ class Series(ABC):
 
             # Access individual data points
             for data_point in data_dicts:
-                print(f"Time: {data_point['time']}, Value: {data_point['value']}")
+                # Data point contains time and value information
+                pass
             ```
         """
         if isinstance(self.data, dict):
@@ -413,34 +413,6 @@ class Series(ABC):
             return [item.asdict() for item in self.data]
         # Fallback: return as-is
         return self.data
-
-    def set_visible(self, visible: bool) -> "Series":
-        """
-        Set series visibility.
-
-        Shows or hides the series on the chart. This method provides a
-        convenient way to control series visibility with method chaining support.
-
-        Args:
-            visible (bool): Whether the series should be visible on the chart.
-
-        Returns:
-            Series: Self for method chaining.
-
-        Example:
-            ```python
-            # Hide the series
-            series.set_visible(False)
-
-            # Show the series
-            series.set_visible(True)
-
-            # Method chaining
-            series.set_visible(False).add_marker(marker)
-            ```
-        """
-        self.visible = visible
-        return self
 
     def add_marker(
         self,
@@ -580,39 +552,25 @@ class Series(ABC):
         """
         Get the attribute name for a given key.
         """
-        print(f"[DEBUG] _get_attr_name() called with key: '{key}'")
-        
         # Convert camelCase to snake_case for attribute lookup
         attr_name = self._camel_to_snake(key)
-        print(f"[DEBUG] Converted '{key}' to snake_case: '{attr_name}'")
 
         # Check if attribute exists (try multiple variations)
-        print(f"[DEBUG] Checking if hasattr(self, '{attr_name}'): {hasattr(self, attr_name)}")
         if not hasattr(self, attr_name):
-            print(f"[DEBUG] Attribute '{attr_name}' not found, trying variations...")
-            
             # Try the original key in case it's already snake_case
-            print(f"[DEBUG] Checking if hasattr(self, '{key}'): {hasattr(self, key)}")
             if hasattr(self, key):
                 attr_name = key
-                print(f"[DEBUG] Found attribute with original key: '{attr_name}'")
             # Try with _ prefix (for private attributes)
             elif hasattr(self, f"_{attr_name}"):
                 attr_name = f"_{attr_name}"
-                print(f"[DEBUG] Found attribute with _ prefix: '{attr_name}'")
             # Try original key with _ prefix
             elif hasattr(self, f"_{key}"):
                 attr_name = f"_{key}"
-                print(f"[DEBUG] Found attribute with original key + _ prefix: '{attr_name}'")
             else:
                 # Ignore invalid attributes instead of raising an error
-                print(f"[DEBUG] No attribute found for key: '{key}', returning None")
                 logger.debug("Ignoring invalid series attribute: %s", key)
                 attr_name = None
-        else:
-            print(f"[DEBUG] Found attribute directly: '{attr_name}'")
 
-        print(f"[DEBUG] _get_attr_name() returning: '{attr_name}'")
         return attr_name
 
     def update(self, updates: Dict[str, Any]) -> "Series":
@@ -645,38 +603,27 @@ class Series(ABC):
             series.update({"visible": True}).update({"pane_id": 1})
             ```
         """
-        print(f"[DEBUG] update() called with updates: {updates}")
         for key, value in updates.items():
-            print(f"[DEBUG] Processing key: '{key}', value: {value} (type: {type(value)})")
-            
             if value is None:
-                print(f"[DEBUG] Skipping None value for key: '{key}'")
                 continue  # Skip None values for method chaining
 
             attr_name = self._get_attr_name(key)
-            print(f"[DEBUG] Resolved attr_name: '{attr_name}' for key: '{key}'")
-            
+
             if attr_name is None:
-                print(f"[DEBUG] attr_name is None, skipping key: '{key}'")
                 logger.debug("Skipping update for unknown attribute: %s", key)
                 continue
 
             try:
                 if isinstance(value, dict):
-                    print(f"[DEBUG] Calling _update_dict_value for '{attr_name}' with dict value")
                     self._update_dict_value(attr_name, value)
                 elif isinstance(value, list):
-                    print(f"[DEBUG] Calling _update_list_value for '{attr_name}' with list value")
                     self._update_list_value(attr_name, value)
                 else:
-                    print(f"[DEBUG] Setting simple attribute '{attr_name}' = {value}")
                     setattr(self, attr_name, value)
             except Exception as exc:
-                print(f"[DEBUG] Exception occurred: {exc}")
                 logger.error("Failed to update attribute '%s': %s", attr_name, exc)
                 raise
 
-        print(f"[DEBUG] update() completed")
         return self
 
     def _update_dict_value(self, attr_name: str, value: dict) -> None:
@@ -690,56 +637,37 @@ class Series(ABC):
         Raises:
             AttributeError: If the attribute cannot be updated.
         """
-        print(f"[DEBUG] _update_dict_value() called with attr_name: '{attr_name}', value: {value}")
-        
+
         current_value = getattr(self, attr_name, None)
-        print(f"[DEBUG] current_value: {current_value} (type: {type(current_value)})")
-        
+
         if current_value is not None and hasattr(current_value, "update"):
-            print(f"[DEBUG] Using existing object with update method")
             current_value.update(value)
             return
 
-        print(f"[DEBUG] Getting type hints for class: {self.__class__}")
         type_hints = get_type_hints(self.__class__)
-        print(f"[DEBUG] type_hints: {type_hints}")
-        
+
         attr_type = type_hints.get(attr_name)
-        print(f"[DEBUG] attr_type for '{attr_name}': {attr_type}")
-        
+
         if attr_type is None:
-            print(f"[DEBUG] No type hints for attribute: {attr_name}. Skipping...")
             logger.debug("No type hints for attribute: %s. Skipping...", attr_name)
             return
 
         # Handle Union types (e.g., Optional[T])
         if getattr(attr_type, "__origin__", None) is Union:
-            print(f"[DEBUG] Handling Union type: {attr_type}")
             for arg in attr_type.__args__:
-                print(f"[DEBUG] Union arg: {arg}")
                 if arg is not type(None):
                     attr_type = arg
-                    print(f"[DEBUG] Selected non-None type: {attr_type}")
                     break
 
-        print(f"[DEBUG] Final attr_type: {attr_type}")
-        print(f"[DEBUG] Checking if attr_type has update method: {hasattr(attr_type, 'update')}")
-        
         if hasattr(attr_type, "update"):
             try:
-                print(f"[DEBUG] Creating instance of {attr_type}")
                 instance = attr_type()
-                print(f"[DEBUG] Created instance: {instance}")
                 setattr(self, attr_name, instance)
-                print(f"[DEBUG] Set attribute '{attr_name}' to instance")
                 instance.update(value)
-                print(f"[DEBUG] Updated instance with value")
             except Exception as exc:
-                print(f"[DEBUG] Exception in _update_dict_value: {exc}")
                 logger.error("Failed to instantiate or update %s: %s", attr_name, exc)
                 raise
         else:
-            print(f"[DEBUG] No update method for attribute: {attr_name}. Skipping...")
             logger.debug("No update method for attribute: %s. Skipping...", attr_name)
 
     def _update_list_value(self, attr_name: str, value: list) -> None:
@@ -753,60 +681,45 @@ class Series(ABC):
         Raises:
             AttributeError: If the attribute cannot be updated.
         """
-        print(f"[DEBUG] _update_list_value() called with attr_name: '{attr_name}', value: {value}")
-        
+
         current_value = getattr(self, attr_name, None)
-        print(f"[DEBUG] current_value: {current_value} (type: {type(current_value)})")
-        
+
         type_hints = get_type_hints(self.__class__)
-        print(f"[DEBUG] type_hints: {type_hints}")
-        
+
         attr_type = type_hints.get(attr_name)
-        print(f"[DEBUG] attr_type for '{attr_name}': {attr_type}")
 
         if attr_type is None:
-            print(f"[DEBUG] No type hints for attribute: {attr_name}. Assigning list directly.")
             setattr(self, attr_name, value)
             return
 
-        print(f"[DEBUG] Checking if attr_type is list: {getattr(attr_type, '__origin__', None) is list}")
         if getattr(attr_type, "__origin__", None) is list:
             item_type = attr_type.__args__[0]
-            print(f"[DEBUG] item_type: {item_type}")
-            print(f"[DEBUG] item_type has update method: {hasattr(item_type, 'update')}")
-            
+
             if not hasattr(item_type, "update"):
-                print(f"[DEBUG] Item type {item_type} has no update method. Assigning list directly.")
-                logger.debug("Item type %s has no update method. Assigning list directly.", item_type)
+                logger.debug(
+                    "Item type %s has no update method. Assigning list directly.", item_type
+                )
                 setattr(self, attr_name, value)
                 return
 
             if current_value is None:
-                print(f"[DEBUG] Creating new list for attribute: {attr_name}")
                 current_value = []
                 setattr(self, attr_name, current_value)
 
-            print(f"[DEBUG] Processing {len(value)} items in the list")
             for i, item in enumerate(value):
-                print(f"[DEBUG] Processing item {i}: {item} (type: {type(item)})")
                 if isinstance(item, dict):
                     try:
-                        print(f"[DEBUG] Creating instance of {item_type} for dict item")
                         instance = item_type()
-                        print(f"[DEBUG] Created instance: {instance}")
                         instance.update(item)
-                        print(f"[DEBUG] Updated instance with dict")
                         current_value.append(instance)
-                        print(f"[DEBUG] Added instance to list")
                     except Exception as exc:
-                        print(f"[DEBUG] Exception processing list item: {exc}")
-                        logger.error("Failed to instantiate or update list item for %s: %s", attr_name, exc)
+                        logger.error(
+                            "Failed to instantiate or update list item for %s: %s", attr_name, exc
+                        )
                         raise
                 else:
-                    print(f"[DEBUG] Adding non-dict item directly: {item}")
                     current_value.append(item)
         else:
-            print(f"[DEBUG] attr_type is not list, assigning value directly")
             setattr(self, attr_name, value)
 
     def _camel_to_snake(self, camel_case: str) -> str:
@@ -842,7 +755,7 @@ class Series(ABC):
             "data": self.data_dict,
         }
 
-        # Add options from attributes that have asdict() method
+        # Add options from chainable properties only
         options = {}
         for attr_name in dir(self):
             if attr_name.startswith("_"):
@@ -857,63 +770,117 @@ class Series(ABC):
             if attr_name == "data_class":
                 continue
 
+            # Rule 1: Only include attributes decorated with chainable_property
+            if not self._is_chainable_property(attr_name):
+                continue
+
             attr_value = getattr(self, attr_name)
-            # Only process instance attributes, not classes
+
+            # Rule 2: Skip if None and allow_none is True
+            if attr_value is None and self._is_allow_none(attr_name):
+                continue
+
+            # Determine if this should go to top level or options
+            is_top_level = self._is_top_level(attr_name)
+
+            # Handle objects with asdict() method
             if (
                 hasattr(attr_value, "asdict")
                 and callable(getattr(attr_value, "asdict"))
                 and not isinstance(attr_value, type)
             ):
-                # For any options object, flatten the options instead of nesting
+                # Rule 3: If property ends with _options, flatten it into options
                 if attr_name.endswith("_options"):
                     options.update(attr_value.asdict())
                 else:
                     # Convert snake_case to camelCase for the key
                     key = snake_to_camel(attr_name)
-                    options[key] = attr_value.asdict()
+                    if is_top_level:
+                        config[key] = attr_value.asdict()
+                    else:
+                        options[key] = attr_value.asdict()
 
-            # Also include individual option attributes that are not None and not empty strings
+            # Handle lists of objects with asdict() method
+            elif (
+                isinstance(attr_value, list)
+                and attr_value
+                and hasattr(attr_value[0], "asdict")
+                and callable(getattr(attr_value[0], "asdict"))
+            ):
+                # Convert list of objects to list of dictionaries
+                key = snake_to_camel(attr_name)
+                if is_top_level:
+                    config[key] = [item.asdict() for item in attr_value]
+                else:
+                    options[key] = [item.asdict() for item in attr_value]
+
+            # Also include individual option attributes that are not None
             elif (
                 not callable(attr_value)
                 and not isinstance(attr_value, type)
                 and attr_value is not None
-                and attr_value != ""
-                and attr_name
-                not in [
-                    "markers",
-                    "price_lines",
-                    "pane_id",
-                    "visible",
-                    "data_dict",
-                    "chart_type",
-                    "data_class",
-                    "column_mapping",
-                    "required_columns",
-                    "optional_columns",
-                ]
             ):
+                # Skip empty lists (they should not be included in configuration)
+                if isinstance(attr_value, list) and not attr_value:
+                    continue
+
                 # Convert snake_case to camelCase for the key
                 key = snake_to_camel(attr_name)
-                options[key] = attr_value
+                if is_top_level:
+                    # Include empty strings for top-level properties (they are valid)
+                    config[key] = attr_value
+                else:
+                    # Skip empty strings for options (they are not meaningful)
+                    if attr_value != "":
+                        options[key] = attr_value
 
         if options:
             config["options"] = options
 
-        # Add markers if present
-        if self._markers:
-            config["markers"] = [marker.asdict() for marker in self._markers]
-
-        # Add price lines if present
-        if self._price_lines:
-            config["priceLines"] = [pl.asdict() for pl in self._price_lines]
-
-        # Add pane_id
-        config["pane_id"] = self._pane_id
-
-        # Add visible property
-        config["visible"] = self.visible
-
         return config
+
+    def _is_chainable_property(self, attr_name: str) -> bool:
+        """
+        Check if an attribute is decorated with chainable_property.
+
+        Args:
+            attr_name: Name of the attribute to check
+
+        Returns:
+            bool: True if the attribute is a chainable property
+        """
+        return (
+            hasattr(self.__class__, "_chainable_properties")
+            and attr_name in self.__class__._chainable_properties
+        )
+
+    def _is_allow_none(self, attr_name: str) -> bool:
+        """
+        Check if a chainable property allows None values.
+
+        Args:
+            attr_name: Name of the attribute to check
+
+        Returns:
+            bool: True if the property allows None values
+        """
+        if self._is_chainable_property(attr_name):
+            return self.__class__._chainable_properties[attr_name]["allow_none"]
+        return False
+
+    def _is_top_level(self, attr_name: str) -> bool:
+        """
+        Check if a chainable property should be output at the top level.
+
+        Args:
+            attr_name: Name of the attribute to check
+
+        Returns:
+            bool: True if the attribute should be at the top level
+        """
+        if self._is_chainable_property(attr_name):
+            return self.__class__._chainable_properties[attr_name]["top_level"]
+        return False
 
     @classproperty
     def data_class(cls) -> Type[Data]:  # pylint: disable=no-self-argument

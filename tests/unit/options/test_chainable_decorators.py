@@ -5,7 +5,6 @@ Comprehensive tests for chainable decorators across all Options classes.
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.options import (
-    ChartOptions,
     CrosshairOptions,
     LayoutOptions,
     LegendOptions,
@@ -21,7 +20,6 @@ from streamlit_lightweight_charts_pro.charts.options import (
 )
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     CrosshairMode,
-    LastPriceAnimationMode,
     LineStyle,
     LineType,
     PriceScaleMode,
@@ -461,17 +459,14 @@ class TestStaticValidators:
 
     def test_static_color_validator(self):
         """Test static color validator methods."""
-        # Test across different classes that have color validation
-        classes_with_color_validators = [
+        # Test across different classes that have static color validation methods
+        classes_with_static_color_validators = [
             LineOptions,
             PriceLineOptions,
             LayoutOptions,
-            PriceScaleOptions,
-            TradeVisualizationOptions,
-            TimeScaleOptions,
         ]
 
-        for cls in classes_with_color_validators:
+        for cls in classes_with_static_color_validators:
             # Valid colors
             assert cls._validate_color_static("#123456", "test") == "#123456"
             assert cls._validate_color_static("rgba(1,2,3,0.5)", "test") == "rgba(1,2,3,0.5)"
@@ -482,6 +477,44 @@ class TestStaticValidators:
 
             with pytest.raises(ValueError, match="Invalid color format for test"):
                 cls._validate_color_static("rgb(255,0,0)", "test")
+
+    def test_builtin_color_validator(self):
+        """Test built-in color validator via chainable_field."""
+        # Test classes that use validator="color" in chainable_field
+        classes_with_builtin_color_validators = [
+            PriceScaleOptions,
+            TradeVisualizationOptions,
+            TimeScaleOptions,
+        ]
+
+        for cls in classes_with_builtin_color_validators:
+            # Test that the setter methods validate colors properly
+            instance = cls()
+
+            # Valid colors should work
+            if hasattr(instance, "set_border_color"):
+                instance.set_border_color("#123456")
+                assert instance.border_color == "#123456"
+
+                instance.set_border_color("rgba(1,2,3,0.5)")
+                assert instance.border_color == "rgba(1,2,3,0.5)"
+
+            # Invalid colors should raise ValueError
+            if hasattr(instance, "set_border_color"):
+                with pytest.raises(ValueError, match="Invalid color format"):
+                    instance.set_border_color("notacolor")
+
+                with pytest.raises(ValueError, match="Invalid color format"):
+                    instance.set_border_color("rgb(255,0,0)")
+
+            # Test other color fields if they exist
+            if hasattr(instance, "set_text_color"):
+                instance.set_text_color("#abcdef")
+                assert instance.text_color == "#abcdef"
+
+            if hasattr(instance, "set_color"):
+                instance.set_color("#fedcba")
+                assert instance.color == "#fedcba"
 
     def test_static_custom_validators(self):
         """Test static custom validator methods."""

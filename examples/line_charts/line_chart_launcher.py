@@ -11,10 +11,10 @@ import os
 import sys
 from pathlib import Path
 
+import streamlit as st
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-
-import streamlit as st
 
 # Page configuration
 st.set_page_config(page_title="Line Chart Examples Launcher", page_icon="📈", layout="wide")

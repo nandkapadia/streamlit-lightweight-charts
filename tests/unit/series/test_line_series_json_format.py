@@ -60,8 +60,8 @@ class TestLineSeriesJsonFormat:
         assert options["lineWidth"] == 2
 
         # Check other required fields
-        assert "pane_id" in result
-        assert result["pane_id"] == 0
+        assert "paneId" in result
+        assert result["paneId"] == 0
 
     def test_line_series_options_json_structure(self):
         """Test line series options match frontend expectations."""
@@ -226,7 +226,7 @@ class TestLineSeriesJsonFormat:
         assert "type" in result
         assert "data" in result
         assert "options" in result
-        assert "pane_id" in result
+        assert "paneId" in result
 
         # Type should be lowercase to match frontend expectations
         assert result["type"] == "line"
@@ -238,7 +238,7 @@ class TestLineSeriesJsonFormat:
         assert isinstance(result["options"], dict)
 
         # pane_id should be a number
-        assert isinstance(result["pane_id"], int)
+        assert isinstance(result["paneId"], int)
 
     def test_line_series_empty_data_handling(self):
         """Test that empty data is handled correctly."""
@@ -260,7 +260,7 @@ class TestLineSeriesJsonFormat:
             LineData(time=1704240000, value=102.0),
         ]
 
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = series.asdict()
@@ -363,4 +363,4 @@ class TestLineSeriesJsonFormat:
         assert result["options"]["color"] == expected_structure["options"]["color"]
         assert result["options"]["lineStyle"] == expected_structure["options"]["lineStyle"]
         assert result["priceLines"][0]["price"] == expected_structure["priceLines"][0]["price"]
-        assert result["pane_id"] == expected_structure["pane_id"]
+        assert result["paneId"] == expected_structure["pane_id"]

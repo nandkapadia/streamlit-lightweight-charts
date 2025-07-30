@@ -12,12 +12,11 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 from examples.data_samples import get_volume_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series.histogram import HistogramSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -67,7 +66,7 @@ def main():
 
     with col3:
         st.write("**Properties:**")
-        st.write(f"Visible: {histogram_series.visible}")
+        st.write(f"Visible: {histogram_series._visible}")
         st.write(f"Price scale ID: {histogram_series.price_scale_id}")
 
     # Show data statistics
@@ -146,7 +145,7 @@ def main():
     st.json(
         {
             "chart_type": histogram_series.chart_type,
-            "visible": histogram_series.visible,
+            "visible": histogram_series._visible,
             "price_scale_id": histogram_series.price_scale_id,
             "pane_id": histogram_series.pane_id,
             "color": histogram_series.color,

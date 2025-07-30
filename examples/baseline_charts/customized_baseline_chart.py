@@ -12,12 +12,11 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 from examples.data_samples import get_baseline_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series.baseline import BaselineSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -134,7 +133,7 @@ def main():
     st.json(
         {
             "chart_type": baseline_series.chart_type,
-            "visible": baseline_series.visible,
+            "visible": baseline_series._visible,
             "price_scale_id": baseline_series.price_scale_id,
             "pane_id": baseline_series.pane_id,
             "base_value": baseline_series.base_value,

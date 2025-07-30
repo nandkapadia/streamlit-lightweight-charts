@@ -23,9 +23,7 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
-@chainable_field(
-    "color", str, validator=lambda v: GridLineOptions._validate_color_static(v, "color")
-)
+@chainable_field("color", str, validator="color")
 @chainable_field("style", LineStyle)
 @chainable_field("visible", bool)
 class GridLineOptions(Options):
@@ -34,15 +32,6 @@ class GridLineOptions(Options):
     color: str = "#e1e3e6"
     style: LineStyle = LineStyle.SOLID
     visible: bool = False
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
 
 
 @dataclass
@@ -56,16 +45,8 @@ class GridOptions(Options):
 
 
 @dataclass
-@chainable_field(
-    "separator_color",
-    str,
-    validator=lambda v: PaneOptions._validate_color_static(v, "separator_color"),
-)
-@chainable_field(
-    "separator_hover_color",
-    str,
-    validator=lambda v: PaneOptions._validate_color_static(v, "separator_hover_color"),
-)
+@chainable_field("separator_color", str, validator="color")
+@chainable_field("separator_hover_color", str, validator="color")
 @chainable_field("enable_resize", bool)
 class PaneOptions(Options):
     """Pane configuration for chart."""
@@ -74,21 +55,10 @@ class PaneOptions(Options):
     separator_hover_color: str = "#ffffff"
     enable_resize: bool = True
 
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
-
 
 @dataclass
 @chainable_field("background_options", (BackgroundSolid, BackgroundGradient))
-@chainable_field(
-    "text_color", str, validator=lambda v: LayoutOptions._validate_color_static(v, "text_color")
-)
+@chainable_field("text_color", str, validator="color")
 @chainable_field("font_size", int)
 @chainable_field("font_family", str)
 @chainable_field("pane_options", PaneOptions)
@@ -121,9 +91,7 @@ class LayoutOptions(Options):
 @chainable_field("font_size", int)
 @chainable_field("horz_align", HorzAlign)
 @chainable_field("vert_align", VertAlign)
-@chainable_field(
-    "color", str, validator=lambda v: WatermarkOptions._validate_color_static(v, "color")
-)
+@chainable_field("color", str, validator="color")
 class WatermarkOptions(Options):
     """Watermark configuration."""
 

@@ -12,11 +12,11 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 from examples.data_samples import get_bar_data, get_dataframe_candlestick_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.series.bar_series import BarSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def main():
@@ -72,7 +72,7 @@ def main():
     # Show series properties
     st.subheader("Series Properties")
     st.write(f"Chart type: {bar_series.chart_type}")
-    st.write(f"Visible: {bar_series.visible}")
+    st.write(f"Visible: {bar_series._visible}")
     st.write(f"Price scale ID: {bar_series.price_scale_id}")
     st.write(f"Pane ID: {bar_series.pane_id}")
 

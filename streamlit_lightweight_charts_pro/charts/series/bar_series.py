@@ -31,15 +31,10 @@ from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data import BarData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
 from streamlit_lightweight_charts_pro.utils import chainable_property
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
-@chainable_property(
-    "up_color", str, validator=lambda v: BarSeries._validate_color_static(v, "up_color")
-)
-@chainable_property(
-    "down_color", str, validator=lambda v: BarSeries._validate_color_static(v, "down_color")
-)
+@chainable_property("up_color", str, validator="color")
+@chainable_property("down_color", str, validator="color")
 @chainable_property("open_visible", bool)
 @chainable_property("thin_bars", bool)
 class BarSeries(Series):
@@ -71,15 +66,6 @@ class BarSeries(Series):
     def chart_type(self) -> ChartType:
         """Get the chart type for this series."""
         return ChartType.BAR
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
 
     def __init__(
         self,

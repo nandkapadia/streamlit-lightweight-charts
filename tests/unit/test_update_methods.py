@@ -5,7 +5,6 @@ This module tests the dictionary-based update functionality for both
 Options and Series classes, including nested object handling.
 """
 
-import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
@@ -59,7 +58,7 @@ class TestOptionsUpdateMethod:
 
         # Invalid fields should be ignored, not raise errors
         result = options.update({"invalid_field": "value"})
-        
+
         assert result is options  # Method chaining still works
         # The options object should remain unchanged
         assert options.color == "#2196f3"  # Default value
@@ -70,7 +69,7 @@ class TestOptionsUpdateMethod:
 
         # Mixed valid and invalid fields - valid fields should be updated, invalid ones ignored
         result = options.update({"color": "#ff0000", "invalid_field": "value"})
-        
+
         assert result is options  # Method chaining still works
         assert options.color == "#ff0000"  # Valid field was updated
         # Invalid field was ignored, other fields remain unchanged
@@ -98,20 +97,20 @@ class TestSeriesUpdateMethod:
     def test_simple_property_updates(self):
         """Test updating simple series properties."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = series.update({"visible": False, "price_scale_id": "left", "pane_id": 1})
 
         assert result is series  # Method chaining
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 
     def test_nested_options_updates(self):
         """Test updating nested Options objects."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = series.update(
@@ -126,7 +125,7 @@ class TestSeriesUpdateMethod:
     def test_camel_case_key_support(self):
         """Test that camelCase keys are converted to snake_case."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = series.update({"priceScaleId": "left", "paneId": 2})
@@ -138,37 +137,35 @@ class TestSeriesUpdateMethod:
     def test_none_values_ignored(self):
         """Test that None values are ignored for method chaining."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
-        series = LineSeries(
-            data=data, visible=True, price_scale_id="right"
-        )
-        original_visible = series.visible
+        LineOptions()
+        series = LineSeries(data=data, visible=True, price_scale_id="right")
+        original_visible = series._visible
         original_scale_id = series.price_scale_id
 
         result = series.update({"visible": None, "price_scale_id": None, "pane_id": 1})
 
         assert result is series
-        assert series.visible == original_visible  # Unchanged
+        assert series._visible == original_visible  # Unchanged
         assert series.price_scale_id == original_scale_id  # Unchanged
         assert series.pane_id == 1  # Changed
 
     def test_invalid_attribute_ignored(self):
         """Test that invalid attributes are ignored instead of raising ValueError."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         # Invalid attributes should be ignored, not raise errors
         result = series.update({"invalid_attr": "value"})
-        
+
         assert result is series  # Method chaining still works
         # The series object should remain unchanged
-        assert series.visible is True  # Default value
+        assert series._visible is True  # Default value
 
     def test_method_chaining(self):
         """Test method chaining with update."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = (
@@ -178,14 +175,14 @@ class TestSeriesUpdateMethod:
         )
 
         assert result is series
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 
     def test_complex_nested_updates(self):
         """Test complex nested updates with multiple levels."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         result = series.update(
@@ -201,7 +198,7 @@ class TestSeriesUpdateMethod:
         )
 
         assert result is series
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.line_options.color == "#ff0000"
         assert series.line_options.line_width == 3
@@ -225,7 +222,7 @@ class TestUpdateMethodIntegration:
     def test_series_serialization_after_update(self):
         """Test that updated series serialize correctly."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
         series.update(
             {
@@ -281,7 +278,7 @@ class TestUpdateMethodEdgeCases:
     def test_update_with_complex_types(self):
         """Test updating with complex types."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
 
         # Test with list (should be handled gracefully)

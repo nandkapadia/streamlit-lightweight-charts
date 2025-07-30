@@ -18,7 +18,7 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @dataclass
-@chainable_field("color", str, validator=lambda v: LineOptions._validate_color_static(v, "color"))
+@chainable_field("color", str, validator="color")
 @chainable_field("line_style", LineStyle)
 @chainable_field("line_width", int)
 @chainable_field("line_type", LineType)
@@ -27,16 +27,8 @@ from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 @chainable_field("point_markers_radius", int)
 @chainable_field("crosshair_marker_visible", bool)
 @chainable_field("crosshair_marker_radius", int)
-@chainable_field(
-    "crosshair_marker_border_color",
-    str,
-    validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_border_color"),
-)
-@chainable_field(
-    "crosshair_marker_background_color",
-    str,
-    validator=lambda v: LineOptions._validate_color_static(v, "crosshair_marker_background_color"),
-)
+@chainable_field("crosshair_marker_border_color", str, validator="color")
+@chainable_field("crosshair_marker_background_color", str, validator="color")
 @chainable_field("crosshair_marker_border_width", int)
 @chainable_field("last_price_animation", LastPriceAnimationMode)
 class LineOptions(Options):
@@ -75,8 +67,6 @@ class LineOptions(Options):
     crosshair_marker_background_color: str = ""
     crosshair_marker_border_width: int = 2
     last_price_animation: LastPriceAnimationMode = LastPriceAnimationMode.DISABLED
-
-
 
     @staticmethod
     def _validate_color_static(color: str, property_name: str) -> str:

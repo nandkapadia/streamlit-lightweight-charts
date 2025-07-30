@@ -31,7 +31,7 @@ class TestAreaSeriesConstruction:
         assert series.data == data
         assert series.chart_type == "area"
         assert series.visible is True
-        assert series.price_scale_id == "right"
+        assert series.price_scale_id == ""
         assert series.pane_id == 0
         assert series.top_color == "#2196F3"
         assert series.bottom_color == "rgba(33, 150, 243, 0.0)"
@@ -142,7 +142,7 @@ class TestAreaSeriesSerialization:
         assert result["type"] == "area"
         assert result["data"] == [{"time": 1640995200, "value": 100}]
         assert "options" in result
-        assert result["pane_id"] == 0
+        assert result["paneId"] == 0
 
     def test_to_dict_with_line_options(self):
         """Test to_dict with line options."""
@@ -645,7 +645,7 @@ class TestAreaSeriesJsonStructure:
         assert "options" in result
         assert "markers" in result
         assert "priceLines" in result
-        assert "pane_id" in result
+        assert "paneId" in result
 
         # Verify options
         options = result["options"]
@@ -667,7 +667,7 @@ class TestAreaSeriesJsonStructure:
         assert result["priceLines"][0]["color"] == "#ff0000"
 
         # Verify pane_id
-        assert result["pane_id"] == 1
+        assert result["paneId"] == 1
 
     def test_json_serialization_consistency(self):
         """Test that JSON serialization is consistent and can be parsed."""
@@ -704,7 +704,7 @@ class TestAreaSeriesJsonStructure:
         assert "type" in result
         assert "data" in result
         assert "options" in result
-        assert "pane_id" in result
+        assert "paneId" in result
 
         # Type should be lowercase to match frontend expectations
         assert result["type"] == "area"
@@ -716,7 +716,7 @@ class TestAreaSeriesJsonStructure:
         assert isinstance(result["options"], dict)
 
         # pane_id should be a number
-        assert isinstance(result["pane_id"], int)
+        assert isinstance(result["paneId"], int)
 
     def test_empty_options_handling(self):
         """Test that empty options are handled correctly."""
@@ -749,7 +749,7 @@ class TestAreaSeriesJsonStructure:
         assert "type" in result
         assert "data" in result
         assert "options" in result
-        assert "pane_id" in result
+        assert "paneId" in result
 
 
 class TestAreaSeriesPropertyValidation:

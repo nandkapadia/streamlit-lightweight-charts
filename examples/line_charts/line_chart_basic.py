@@ -12,13 +12,13 @@ import sys
 
 import streamlit as st
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
 from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
 
 # Page configuration
 st.set_page_config(page_title="Basic Line Chart", page_icon="📈", layout="wide")

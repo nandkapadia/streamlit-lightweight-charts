@@ -26,7 +26,7 @@ class TestLineSeriesExtended:
     def test_chart_type_property(self):
         """Test the chart_type property."""
         data = [LineData(time=1640995200, value=100)]
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=data)
         assert series.chart_type == ChartType.LINE
 
@@ -67,7 +67,7 @@ class TestLineSeriesExtended:
 
     def test_to_dict_method_empty_data(self):
         """Test to_dict method with empty data."""
-        line_options = LineOptions()
+        LineOptions()
         series = LineSeries(data=[])
 
         result = series.asdict()
@@ -118,9 +118,7 @@ class TestLineSeriesExtended:
             [("2022-01-01", "A"), ("2022-01-02", "B")], names=["date", "symbol"]
         )
 
-        series = LineSeries.from_dataframe(
-            df=df, column_mapping={"time": "date", "value": "value"}
-        )
+        series = LineSeries.from_dataframe(df=df, column_mapping={"time": "date", "value": "value"})
 
         assert len(series.data) == 2
         assert all(isinstance(d, LineData) for d in series.data)
@@ -176,7 +174,7 @@ class TestLineSeriesExtended:
         )
 
         assert result is series
-        assert series.visible is False
+        assert series._visible is False
         assert len(series.price_lines) == 0
         assert len(series.markers) == 0
 
@@ -230,9 +228,7 @@ class TestLineSeriesExtended:
         """Test handling of empty DataFrame."""
         df = pd.DataFrame(columns=["time", "value"])
 
-        series = LineSeries.from_dataframe(
-            df=df, column_mapping={"time": "time", "value": "value"}
-        )
+        series = LineSeries.from_dataframe(df=df, column_mapping={"time": "time", "value": "value"})
 
         assert len(series.data) == 0
 
@@ -240,9 +236,7 @@ class TestLineSeriesExtended:
         """Test handling of single row DataFrame."""
         df = pd.DataFrame({"time": [1640995200], "value": [100]})
 
-        series = LineSeries.from_dataframe(
-            df=df, column_mapping={"time": "time", "value": "value"}
-        )
+        series = LineSeries.from_dataframe(df=df, column_mapping={"time": "time", "value": "value"})
 
         assert len(series.data) == 1
         assert series.data[0].time == 1640995200

@@ -288,15 +288,8 @@ function createTradeMarkers(trades: TradeConfig[], options: TradeVisualizationOp
     const entryTime = parseTime(trade.entryTime)
     const exitTime = parseTime(trade.exitTime)
     
-    console.log(`Trade ${index} times:`, {
-      entryTime: trade.entryTime,
-      parsedEntryTime: entryTime,
-      exitTime: trade.exitTime,
-      parsedExitTime: exitTime
-    })
-    
-    if (entryTime === null || exitTime === null) {
-      console.warn(`Failed to parse times for trade ${index}:`, trade)
+    if (!entryTime || !exitTime) {
+      console.warn(`Invalid trade data for trade ${index}:`, trade)
       return
     }
 
@@ -311,12 +304,6 @@ function createTradeMarkers(trades: TradeConfig[], options: TradeVisualizationOp
       if (nearestEntryTime) adjustedEntryTime = nearestEntryTime
       if (nearestExitTime) adjustedExitTime = nearestExitTime
       
-      console.log(`Trade ${index} adjusted times:`, {
-        originalEntry: entryTime,
-        adjustedEntry: adjustedEntryTime,
-        originalExit: exitTime,
-        adjustedExit: adjustedExitTime
-      })
     }
 
     // Entry marker

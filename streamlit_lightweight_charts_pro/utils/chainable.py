@@ -8,12 +8,20 @@ method chaining styles with optional type validation.
 
 from typing import Any, Callable, Optional, Type, Union
 
+from .data_utils import (
+    is_valid_color,
+    validate_min_move,
+    validate_precision,
+    validate_price_format_type,
+)
+
 
 def chainable_property(
     attr_name: str,
     value_type: Optional[Union[Type, tuple]] = None,
-    validator: Optional[Callable[[Any], Any]] = None,
+    validator: Optional[Union[Callable[[Any], Any], str]] = None,
     allow_none: bool = False,
+    top_level: bool = False,
 ):
     """
     Decorator that creates both a property setter and a chaining method with optional validation.
@@ -25,19 +33,22 @@ def chainable_property(
     Args:
         attr_name: The name of the attribute to manage
         value_type: Optional type or tuple of types for validation
-        validator: Optional custom validation function that takes a value and returns the validated value
+        validator: Optional validation function or string. If callable, takes a value and returns the validated value.
+                  If string, uses built-in validators (e.g., "color" for color validation)
         allow_none: Whether to allow None values
+        top_level: Whether this property should be output at the top level in asdict() instead of in options
 
     Returns:
         Decorator function that creates both property and method
 
     Example:
         ```python
-        @chainable_property("color", str)
+        @chainable_property("color", str, validator="color")
         @chainable_property("width", int)
         @chainable_property("line_options", LineOptions,
                            allow_none=True)
         @chainable_property("base_value", validator=validate_base_value)
+        @chainable_property("price_scale_id", top_level=True)
         class MySeries(Series):
             pass
         ```
@@ -95,7 +106,24 @@ def chainable_property(
 
             # Apply custom validation if specified
             if validator is not None:
-                value = validator(value)
+                if isinstance(validator, str):
+                    # Built-in validators
+                    if validator == "color":
+                        if not is_valid_color(value):
+                            raise ValueError(
+                                f"Invalid color format for {attr_name}: {value!r}. Must be hex or rgba."
+                            )
+                    elif validator == "price_format_type":
+                        value = validate_price_format_type(value)
+                    elif validator == "precision":
+                        value = validate_precision(value)
+                    elif validator == "min_move":
+                        value = validate_min_move(value)
+                    else:
+                        raise ValueError(f"Unknown built-in validator: {validator}")
+                else:
+                    # Custom validator function
+                    value = validator(value)
 
             setattr(self, f"_{attr_name}", value)
             return self
@@ -152,7 +180,24 @@ def chainable_property(
 
             # Apply custom validation if specified
             if validator is not None:
-                value = validator(value)
+                if isinstance(validator, str):
+                    # Built-in validators
+                    if validator == "color":
+                        if not is_valid_color(value):
+                            raise ValueError(
+                                f"Invalid color format for {attr_name}: {value!r}. Must be hex or rgba."
+                            )
+                    elif validator == "price_format_type":
+                        value = validate_price_format_type(value)
+                    elif validator == "precision":
+                        value = validate_precision(value)
+                    elif validator == "min_move":
+                        value = validate_min_move(value)
+                    else:
+                        raise ValueError(f"Unknown built-in validator: {validator}")
+                else:
+                    # Custom validator function
+                    value = validator(value)
 
             setattr(self, f"_{attr_name}", value)
 
@@ -163,6 +208,16 @@ def chainable_property(
         setattr(cls, attr_name, prop)
         setattr(cls, setter_name, setter_method)
 
+        # Store metadata about serialization
+        if not hasattr(cls, "_chainable_properties"):
+            cls._chainable_properties = {}
+
+        cls._chainable_properties[attr_name] = {
+            "allow_none": allow_none,
+            "value_type": value_type,
+            "top_level": top_level,
+        }
+
         return cls
 
     return decorator
@@ -171,7 +226,7 @@ def chainable_property(
 def chainable_field(
     field_name: str,
     value_type: Optional[Union[Type, tuple]] = None,
-    validator: Optional[Callable[[Any], Any]] = None,
+    validator: Optional[Union[Callable[[Any], Any], str]] = None,
 ):
     """
     Decorator that creates a setter method for dataclass fields with optional validation.
@@ -183,7 +238,8 @@ def chainable_field(
     Args:
         field_name: The name of the dataclass field
         value_type: Optional type or tuple of types for validation
-        validator: Optional custom validation function that takes a value and returns the validated value
+        validator: Optional validation function or string. If callable, takes a value and returns the validated value.
+                  If string, uses built-in validators (e.g., "color" for color validation)
 
     Returns:
         Decorator function that creates a setter method
@@ -212,7 +268,24 @@ def chainable_field(
 
             # Apply custom validation if specified
             if validator is not None:
-                value = validator(value)
+                if isinstance(validator, str):
+                    # Built-in validators
+                    if validator == "color":
+                        if not is_valid_color(value):
+                            raise ValueError(
+                                f"Invalid color format for {field_name}: {value!r}. Must be hex or rgba."
+                            )
+                    elif validator == "price_format_type":
+                        value = validate_price_format_type(value)
+                    elif validator == "precision":
+                        value = validate_precision(value)
+                    elif validator == "min_move":
+                        value = validate_min_move(value)
+                    else:
+                        raise ValueError(f"Unknown built-in validator: {validator}")
+                else:
+                    # Custom validator function
+                    value = validator(value)
 
             setattr(self, field_name, value)
             return self

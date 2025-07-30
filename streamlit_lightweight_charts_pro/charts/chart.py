@@ -33,7 +33,6 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 import pandas as pd
 
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
-from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
     PriceScaleMargins,
     PriceScaleOptions,
@@ -48,12 +47,12 @@ from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
 from streamlit_lightweight_charts_pro.data.trade import Trade
+from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     ColumnNames,
     PriceScaleMode,
     TradeVisualization,
 )
-
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -206,7 +205,7 @@ class Chart:
         """
         if not isinstance(series, Series):
             raise TypeError("series must be an instance of Series")
-        
+
         # Check if series has a custom price_scale_id that's not "left" or "right"
         price_scale_id = series.price_scale_id
         if price_scale_id and price_scale_id not in ["left", "right", ""]:
@@ -215,13 +214,16 @@ class Chart:
                 logger.warning(
                     "Series with price_scale_id '%s' does not have a corresponding "
                     "overlay price scale configuration. Creating empty price scale object.",
-                    price_scale_id
+                    price_scale_id,
                 )
                 # Create an empty PriceScaleOptions object
-                from streamlit_lightweight_charts_pro.charts.options.price_scale_options import PriceScaleOptions
+                from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+                    PriceScaleOptions,
+                )
+
                 empty_scale = PriceScaleOptions(price_scale_id=price_scale_id)
                 self.options.overlay_price_scales[price_scale_id] = empty_scale
-        
+
         self.series.append(series)
         return self
 

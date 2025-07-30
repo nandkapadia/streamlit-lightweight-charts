@@ -31,8 +31,8 @@ class TestBandSeriesConstruction:
 
         assert series.data == data
         assert series.chart_type == "band"
-        assert series.visible is True
-        assert series.price_scale_id == "right"
+        assert series._visible is True
+        assert series.price_scale_id == ""
         assert series.pane_id == 0
         assert series.upper_fill_color == "rgba(76, 175, 80, 0.1)"
         assert series.lower_fill_color == "rgba(244, 67, 54, 0.1)"
@@ -51,7 +51,7 @@ class TestBandSeriesConstruction:
         )
 
         assert series.data == data
-        assert series.visible is False
+        assert series._visible is False
         assert series.price_scale_id == "left"
         assert series.pane_id == 1
 

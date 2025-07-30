@@ -35,42 +35,16 @@ from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
-@chainable_property(
-    "up_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "up_color")
-)
-@chainable_property(
-    "down_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "down_color")
-)
+@chainable_property("up_color", str, validator="color")
+@chainable_property("down_color", str, validator="color")
 @chainable_property("wick_visible", bool)
 @chainable_property("border_visible", bool)
-@chainable_property(
-    "border_color",
-    str,
-    validator=lambda v: CandlestickSeries._validate_color_static(v, "border_color"),
-)
-@chainable_property(
-    "border_up_color",
-    str,
-    validator=lambda v: CandlestickSeries._validate_color_static(v, "border_up_color"),
-)
-@chainable_property(
-    "border_down_color",
-    str,
-    validator=lambda v: CandlestickSeries._validate_color_static(v, "border_down_color"),
-)
-@chainable_property(
-    "wick_color", str, validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_color")
-)
-@chainable_property(
-    "wick_up_color",
-    str,
-    validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_up_color"),
-)
-@chainable_property(
-    "wick_down_color",
-    str,
-    validator=lambda v: CandlestickSeries._validate_color_static(v, "wick_down_color"),
-)
+@chainable_property("border_color", str, validator="color")
+@chainable_property("border_up_color", str, validator="color")
+@chainable_property("border_down_color", str, validator="color")
+@chainable_property("wick_color", str, validator="color")
+@chainable_property("wick_up_color", str, validator="color")
+@chainable_property("wick_down_color", str, validator="color")
 class CandlestickSeries(Series):
     """Candlestick series for lightweight charts."""
 
@@ -106,15 +80,6 @@ class CandlestickSeries(Series):
 
     def _validate_color(self, color: str, property_name: str) -> str:
         """Validate color format."""
-        if not is_valid_color(color):
-            raise ValueError(
-                f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
-            )
-        return color
-
-    @staticmethod
-    def _validate_color_static(color: str, property_name: str) -> str:
-        """Static version of color validator for decorator use."""
         if not is_valid_color(color):
             raise ValueError(
                 f"Invalid color format for {property_name}: {color!r}. Must be hex or rgba."
