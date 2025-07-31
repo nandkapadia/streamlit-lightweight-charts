@@ -6,7 +6,7 @@ chart appearance, grid settings, panes, and watermarks.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Dict, Optional
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
 from streamlit_lightweight_charts_pro.type_definitions.colors import (
@@ -57,11 +57,25 @@ class PaneOptions(Options):
 
 
 @dataclass
+@chainable_field("factor", float)
+class PaneHeightOptions(Options):
+    """Pane height configuration for chart."""
+
+    factor: float = 1.0
+
+    def __post_init__(self):
+        """Validate factor value."""
+        if self.factor <= 0:
+            raise ValueError(f"Pane height factor must be positive, got {self.factor}")
+
+
+@dataclass
 @chainable_field("background_options", (BackgroundSolid, BackgroundGradient))
 @chainable_field("text_color", str, validator="color")
 @chainable_field("font_size", int)
 @chainable_field("font_family", str)
 @chainable_field("pane_options", PaneOptions)
+@chainable_field("pane_heights", Dict[int, PaneHeightOptions])
 @chainable_field("attribution_logo", bool)
 class LayoutOptions(Options):
     """Layout configuration for chart."""
@@ -73,6 +87,7 @@ class LayoutOptions(Options):
     font_size: int = 11
     font_family: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     pane_options: Optional[PaneOptions] = None
+    pane_heights: Optional[Dict[int, PaneHeightOptions]] = None
     attribution_logo: bool = False
 
     @staticmethod

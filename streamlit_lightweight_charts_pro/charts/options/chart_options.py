@@ -121,7 +121,7 @@ class ChartOptions(Options):
 
     # Localization and UI
     localization: Optional[LocalizationOptions] = None
-    add_default_pane: bool = True
+    add_default_pane: bool = False
 
     # Trade visualization options
     trade_visualization: Optional[TradeVisualizationOptions] = None

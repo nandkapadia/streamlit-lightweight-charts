@@ -805,7 +805,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         // Create panes if needed for multi-pane charts
         const paneMap = new Map<number, any>()
-        const existingPanes = chart.panes()
+        let existingPanes = chart.panes()
         
         // Ensure we have enough panes for the series
         chartConfig.series.forEach((seriesConfig: SeriesConfig) => {
@@ -817,9 +817,43 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               // Create new pane if it doesn't exist
               const newPane = chart.addPane()
               paneMap.set(paneId, newPane)
+              // Update existingPanes after adding new pane
+              existingPanes = chart.panes()
             }
           }
         })
+
+        // Apply pane heights configuration if present
+        if (chartConfig.paneHeights) {
+          console.log('🔧 Applying pane heights configuration:', chartConfig.paneHeights)
+          console.log('📊 Current panes count:', existingPanes.length)
+          
+          Object.entries(chartConfig.paneHeights).forEach(([paneIdStr, heightOptions]) => {
+            const paneId = parseInt(paneIdStr)
+            console.log(`🎯 Processing pane ${paneId} with factor:`, heightOptions.factor)
+            
+            if (paneId < existingPanes.length && heightOptions.factor) {
+              try {
+                console.log(`✅ Setting stretch factor ${heightOptions.factor} for pane ${paneId}`)
+                existingPanes[paneId].setStretchFactor(heightOptions.factor)
+                console.log(`✅ Successfully set stretch factor for pane ${paneId}`)
+              } catch (error) {
+                console.warn(`❌ Failed to set stretch factor for pane ${paneId}:`, error)
+              }
+            } else {
+              console.warn(`⚠️ Skipping pane ${paneId}: paneId < existingPanes.length = ${paneId < existingPanes.length}, factor = ${heightOptions.factor}`)
+            }
+          })
+          
+          // Log final pane state
+          console.log('📋 Final panes state:', existingPanes.map((pane, index) => ({
+            paneId: index,
+            pane: pane,
+            hasSetStretchFactor: typeof pane.setStretchFactor === 'function'
+          })))
+        } else {
+          console.log('ℹ️ No pane heights configuration found')
+        }
 
         // Configure overlay price scales (volume, indicators, etc.) if they exist
         if (chartConfig.chart?.overlayPriceScales) {

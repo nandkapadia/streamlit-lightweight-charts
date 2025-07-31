@@ -230,7 +230,14 @@ class Options(ABC):
             elif isinstance(value, list):
                 # Handle lists of Options objects
                 value = [item.asdict() if isinstance(item, Options) else item for item in value]
-
+            elif isinstance(value, dict):
+                # Handle dictionaries of Options objects
+                # Only convert if any value is an Options object
+                if any(isinstance(v, Options) for v in value.values()):
+                    value = {
+                        str(k): (v.asdict() if isinstance(v, Options) else v) 
+                        for k, v in value.items()
+                    }
             # Convert to camelCase key
             key = snake_to_camel(name)
 

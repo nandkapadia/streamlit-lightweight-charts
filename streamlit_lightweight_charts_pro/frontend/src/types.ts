@@ -91,6 +91,11 @@ export interface AnnotationManager {
   layers: { [key: string]: AnnotationLayer }
 }
 
+// Pane Height Configuration
+export interface PaneHeightOptions {
+  factor: number
+}
+
 // Enhanced Series Configuration
 export interface SeriesConfig {
   type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
@@ -128,6 +133,7 @@ export interface ChartConfig {
   minHeight?: number
   maxWidth?: number
   maxHeight?: number
+  paneHeights?: { [key: string]: PaneHeightOptions }  // Add pane heights configuration
 }
 
 // Range Switcher Configuration

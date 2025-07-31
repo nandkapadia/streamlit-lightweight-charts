@@ -297,8 +297,9 @@ class TestChartOptionsSerialization:
 
         assert "overlayPriceScales" in result
         assert "overlay1" in result["overlayPriceScales"]
-        # Fix: convert the nested PriceScaleOptions object to dict first
-        overlay_dict = result["overlayPriceScales"]["overlay1"].asdict()
+        # The overlay_price_scales should contain dictionaries, not PriceScaleOptions objects
+        overlay_dict = result["overlayPriceScales"]["overlay1"]
+        assert isinstance(overlay_dict, dict)
         assert overlay_dict["visible"] is True
         assert overlay_dict["borderColor"] == "#ff0000"
 
