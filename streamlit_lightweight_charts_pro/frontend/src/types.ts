@@ -96,6 +96,19 @@ export interface PaneHeightOptions {
   factor: number
 }
 
+// Signal Series Configuration
+export interface SignalData {
+  time: string
+  value: number
+}
+
+export interface SignalOptions {
+  color0: string
+  color1: string
+  color2?: string
+  visible: boolean
+}
+
 // Enhanced Series Configuration
 export interface SeriesConfig {
   type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
@@ -111,6 +124,9 @@ export interface SeriesConfig {
   shapes?: any[]  // Add shapes support
   tooltip?: TooltipConfig  // Add tooltip configuration
   paneId?: number // Add support for multi-pane charts
+  // Signal series support
+  signalData?: SignalData[]
+  signalOptions?: SignalOptions
 }
 
 // Enhanced Chart Configuration

@@ -16,6 +16,7 @@ import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualiza
 import { createTradeVisualElements, TradeRectanglePlugin } from './tradeVisualization'
 import { createAnnotationVisualElements } from './annotationSystem'
 import { createBandSeries, BandData } from './bandSeriesPlugin'
+import { createSignalSeriesPlugin, SignalSeries } from './signalSeriesPlugin'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -27,6 +28,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
   const rectanglePluginRefs = useRef<{ [key: string]: TradeRectanglePlugin }>({})
+  const signalPluginRefs = useRef<{ [key: string]: SignalSeries }>({})
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
   const isInitializedRef = useRef<boolean>(false)
   const fitContentTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -336,7 +338,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [])
 
   // Create series function
-  const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig): ISeriesApi<any> | null => {
+  const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
     const { type, data, options = {}, priceScale, paneId } = seriesConfig
 
     let series: ISeriesApi<any>
@@ -424,6 +426,72 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           } as unknown as ISeriesApi<any>
         } catch (error) {
           // Failed to create band series - return null
+          return null
+        }
+      case 'signal':
+        try {
+          // Create signal series using the custom plugin
+          const signalSeries = createSignalSeriesPlugin(chart, {
+            type: 'signal',
+            data: data || [],
+                              options: {
+                    color0: cleanedOptions.color0 || '#ffffff',
+                    color1: cleanedOptions.color1 || '#ff0000',
+                    color2: cleanedOptions.color2,
+                    visible: cleanedOptions.visible !== false,
+                  }
+          })
+          
+          // Store reference for cleanup
+          signalPluginRefs.current[`${chartId}-${seriesIndex}`] = signalSeries
+          
+          // Return a proxy object that mimics ISeriesApi interface
+          return {
+            setData: (newData: any[]) => {
+              try {
+                signalSeries.updateData(newData)
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            update: (newData: any) => {
+              try {
+                // For signal series, we need to update the entire dataset
+                signalSeries.updateData([newData])
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            applyOptions: (options: any) => {
+              try {
+                signalSeries.updateOptions({
+                  color0: options.color0 || '#ffffff',
+                  color1: options.color1 || '#ff0000',
+                  color2: options.color2,
+                  visible: options.visible !== false,
+                })
+              } catch (error) {
+                // Series is disposed or invalid - ignore error
+              }
+            },
+            priceScale: () => {
+              try {
+                return chart.priceScale(cleanedOptions.priceScaleId || 'right')
+              } catch (error) {
+                return null
+              }
+            },
+            remove: () => {
+              try {
+                signalSeries.destroy()
+                delete signalPluginRefs.current[`${chartId}-${seriesIndex}`]
+              } catch (error) {
+                // Series is already removed - ignore error
+              }
+            },
+          } as unknown as ISeriesApi<any>
+        } catch (error) {
+          // Failed to create signal series - return null
           return null
         }
       case 'baseline':
@@ -883,7 +951,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 return
               }
 
-              const series = createSeries(chart, seriesConfig)
+              const series = createSeries(chart, seriesConfig, chartId, seriesIndex)
               if (series) {
                 seriesList.push(series)
                 

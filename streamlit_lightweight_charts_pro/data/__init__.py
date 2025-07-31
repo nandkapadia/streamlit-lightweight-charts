@@ -54,6 +54,9 @@ from streamlit_lightweight_charts_pro.data.trade import (
 )
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeVisualization
 
+# Import signal data classes
+from streamlit_lightweight_charts_pro.data.signal_data import SignalData
+
 # Re-export all classes for backward compatibility
 __all__ = [
     # Base data classes
@@ -87,4 +90,6 @@ __all__ = [
     "create_arrow_annotation",
     "create_shape_annotation",
     "create_text_annotation",
+    # Signal data classes
+    "SignalData",
 ]

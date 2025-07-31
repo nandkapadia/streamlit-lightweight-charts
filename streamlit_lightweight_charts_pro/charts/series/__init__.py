@@ -8,6 +8,7 @@ from streamlit_lightweight_charts_pro.charts.series.baseline import BaselineSeri
 from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries
 from streamlit_lightweight_charts_pro.charts.series.histogram import HistogramSeries
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
+from streamlit_lightweight_charts_pro.charts.series.signal_series import SignalSeries
 
 __all__ = [
     "Series",
@@ -18,4 +19,5 @@ __all__ = [
     "BarSeries",
     "HistogramSeries",
     "BaselineSeries",
+    "SignalSeries",
 ]

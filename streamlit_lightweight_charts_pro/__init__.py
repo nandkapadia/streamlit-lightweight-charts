@@ -64,6 +64,7 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     LayoutOptions,
     PaneHeightOptions,
 )
+from streamlit_lightweight_charts_pro.charts.options.signal_options import SignalOptions
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
@@ -75,6 +76,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
     HistogramSeries,
     LineSeries,
     Series,
+    SignalSeries,
 )
 from streamlit_lightweight_charts_pro.data import (
     Annotation,
@@ -86,6 +88,7 @@ from streamlit_lightweight_charts_pro.data import (
     LineData,
     Marker,
     SingleValueData,
+    SignalData,
 )
 from streamlit_lightweight_charts_pro.data.annotation import (
     AnnotationLayer,
@@ -126,10 +129,12 @@ __all__ = [
     "HistogramSeries",
     "LineSeries",
     "Series",
+    "SignalSeries",
     # Options
     "ChartOptions",
     "LayoutOptions",
     "PaneHeightOptions",
+    "SignalOptions",
     # Data models
     "Annotation",
     "AreaData",
@@ -140,6 +145,7 @@ __all__ = [
     "LineData",
     "Marker",
     "SingleValueData",
+    "SignalData",
     # Annotation system
     "AnnotationManager",
     "AnnotationLayer",
