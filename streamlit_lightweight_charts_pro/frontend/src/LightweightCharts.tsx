@@ -338,9 +338,30 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Create series function
   const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
-    const { type, data, options = {}, priceScale, paneId, lastValueVisible: topLevelLastValueVisible, lastPriceAnimation } = seriesConfig
+    const { 
+      type, 
+      data, 
+      options = {}, 
+      priceScale, 
+      paneId, 
+      lastValueVisible: topLevelLastValueVisible, 
+      lastPriceAnimation,
+      priceLineVisible: topLevelPriceLineVisible,
+      priceLineSource: topLevelPriceLineSource,
+      priceLineWidth: topLevelPriceLineWidth,
+      priceLineColor: topLevelPriceLineColor,
+      priceLineStyle: topLevelPriceLineStyle
+    } = seriesConfig
+    
     // Check both top-level and options for lastValueVisible
     const lastValueVisible = topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible
+    
+    // Check both top-level and options for price line properties
+    const priceLineVisible = topLevelPriceLineVisible !== undefined ? topLevelPriceLineVisible : options.priceLineVisible
+    const priceLineSource = topLevelPriceLineSource !== undefined ? topLevelPriceLineSource : options.priceLineSource
+    const priceLineWidth = topLevelPriceLineWidth !== undefined ? topLevelPriceLineWidth : options.priceLineWidth
+    const priceLineColor = topLevelPriceLineColor !== undefined ? topLevelPriceLineColor : options.priceLineColor
+    const priceLineStyle = topLevelPriceLineStyle !== undefined ? topLevelPriceLineStyle : options.priceLineStyle
     
 
 
@@ -364,7 +385,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           relativeGradient: cleanedOptions.relativeGradient || false,
           invertFilledArea: cleanedOptions.invertFilledArea || false,
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0
+          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
         if (priceFormat) {
           areaOptions.priceFormat = priceFormat
@@ -395,6 +421,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             lowerFillColor: cleanedOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
             priceScaleId: cleanedOptions.priceScaleId || 'right',
             visible: cleanedOptions.visible !== false,
+            lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
+            priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+            priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+            priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+            priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+            priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
           })
           
           // Set data for band series
@@ -521,7 +553,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           bottomFillColor1: cleanedOptions.bottomFillColor1 || 'rgba(255, 82, 82, 0.4)',
           bottomFillColor2: cleanedOptions.bottomFillColor2 || 'rgba(255, 82, 82, 0.0)',
           lineWidth: cleanedOptions.lineWidth || 2,
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true
+          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
         if (priceFormat) {
           baselineOptions.priceFormat = priceFormat
@@ -541,7 +578,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             bottom: 0,
           },
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          color: cleanedOptions.color || '#2196F3'
+          color: cleanedOptions.color || '#2196F3',
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
 
         series = chart.addSeries(HistogramSeries, histogramOptions, paneId)
@@ -564,7 +606,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           crosshairMarkerBackgroundColor: lineOptionsConfig.crosshairMarkerBackgroundColor || cleanedOptions.crosshairMarkerBackgroundColor || '',
           crosshairMarkerBorderWidth: lineOptionsConfig.crosshairMarkerBorderWidth || cleanedOptions.crosshairMarkerBorderWidth || 2,
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0
+          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
         if (priceFormat) {
           lineOptions.priceFormat = priceFormat
@@ -589,7 +636,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true
+          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
         if (priceFormat) {
           barOptions.priceFormat = priceFormat
@@ -605,7 +657,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true
+          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
+          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
+          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
         }
         if (priceFormat) {
           candlestickOptions.priceFormat = priceFormat

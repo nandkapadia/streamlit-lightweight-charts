@@ -34,7 +34,7 @@ from streamlit_lightweight_charts_pro.data.data import classproperty
 from streamlit_lightweight_charts_pro.data.marker import Marker
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, PriceLineSource, LineStyle
 from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
@@ -52,6 +52,11 @@ logger = get_logger(__name__)
 @chainable_property("markers", top_level=True)
 @chainable_property("pane_id", top_level=True)
 @chainable_property("last_value_visible", top_level=True)
+@chainable_property("price_line_visible", top_level=True)
+@chainable_property("price_line_source", top_level=True)
+@chainable_property("price_line_width", top_level=True)
+@chainable_property("price_line_color", top_level=True)
+@chainable_property("price_line_style", top_level=True)
 class Series(ABC):
     # Type annotations for attributes to enable automatic type inspection
     """
@@ -179,6 +184,11 @@ class Series(ABC):
         self._pane_id = pane_id
         self._column_mapping = column_mapping
         self._last_value_visible = True
+        self._price_line_visible = True
+        self._price_line_source = PriceLineSource.LAST_BAR
+        self._price_line_width = 1
+        self._price_line_color = ""
+        self._price_line_style = LineStyle.DASHED
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:

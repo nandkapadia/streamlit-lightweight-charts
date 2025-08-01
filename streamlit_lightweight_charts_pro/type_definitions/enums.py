@@ -296,3 +296,19 @@ class TradeVisualization(str, Enum):
 class BackgroundStyle(str, Enum):
     SOLID = "solid"
     VERTICAL_GRADIENT = "gradient"
+
+
+class PriceLineSource(str, Enum):
+    """
+    Price line source enumeration.
+
+    Defines the source to use for the value of the price line.
+    Controls which data point determines the price line position.
+
+    Attributes:
+        LAST_BAR: Last bar - use the last visible bar's price.
+        LAST_VISIBLE: Last visible - use the last visible data point's price.
+    """
+
+    LAST_BAR = "lastBar"
+    LAST_VISIBLE = "lastVisible"

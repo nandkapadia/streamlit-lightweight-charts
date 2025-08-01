@@ -61,9 +61,11 @@ export interface BandSeriesOptions {
   visible: boolean
   priceScaleId: string
   lastValueVisible: boolean
+  priceLineVisible: boolean
+  priceLineSource: string
   priceLineWidth: number
   priceLineColor: string
-  priceLineStyle: string
+  priceLineStyle: number
   baseLineVisible: boolean
   baseLineWidth: number
   baseLineColor: string
@@ -113,10 +115,12 @@ const defaultOptions: BandSeriesOptions = {
   // Base options
   visible: true,
   priceScaleId: 'right',
-        lastValueVisible: false,
+  lastValueVisible: false,
+  priceLineVisible: true,
+  priceLineSource: 'lastBar',
   priceLineWidth: 1,
   priceLineColor: '#2196F3',
-  priceLineStyle: 'solid',
+  priceLineStyle: 2, // DASHED
   baseLineVisible: false,
   baseLineWidth: 1,
   baseLineColor: '#FF9800',
@@ -242,6 +246,8 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       visible: this.options.upperLineVisible,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
+      priceLineVisible: this.options.priceLineVisible,
+      priceLineSource: this.options.priceLineSource as any,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,
@@ -266,6 +272,8 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       visible: this.options.middleLineVisible,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
+      priceLineVisible: this.options.priceLineVisible,
+      priceLineSource: this.options.priceLineSource as any,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,
@@ -290,6 +298,8 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       visible: this.options.lowerLineVisible,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
+      priceLineVisible: this.options.priceLineVisible,
+      priceLineSource: this.options.priceLineSource as any,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,

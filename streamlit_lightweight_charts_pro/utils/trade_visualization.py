@@ -510,7 +510,7 @@ def create_trade_shapes_series(
         "options": {
             "priceScaleId": "right",
             "lastValueVisible": False,
-            "lastValueVisible": False,
+            "priceLineVisible": False,
         },
         "shapes": visual_elements["shapes"],
         "annotations": visual_elements["annotations"],

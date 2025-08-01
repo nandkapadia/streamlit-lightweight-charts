@@ -163,6 +163,12 @@ export interface SeriesConfig {
   // Area series specific options
   relativeGradient?: boolean
   invertFilledArea?: boolean
+  // Price line properties
+  priceLineVisible?: boolean
+  priceLineSource?: 'lastBar' | 'lastVisible'
+  priceLineWidth?: number
+  priceLineColor?: string
+  priceLineStyle?: number
 }
 
 // Enhanced Chart Configuration
