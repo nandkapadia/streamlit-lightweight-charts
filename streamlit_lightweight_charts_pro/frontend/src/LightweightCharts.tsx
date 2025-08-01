@@ -956,12 +956,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 seriesList.push(series)
                 
                 // Apply overlay price scale configuration if this series uses one
-                if (seriesConfig.options?.priceScaleId && 
-                    seriesConfig.options?.priceScaleId !== 'right' && 
-                    seriesConfig.options?.priceScaleId !== 'left' &&
-                    chartConfig.chart?.overlayPriceScales?.[seriesConfig.options.priceScaleId]) {
+                if (seriesConfig.priceScaleId && 
+                    seriesConfig.priceScaleId !== 'right' && 
+                    seriesConfig.priceScaleId !== 'left' &&
+                    chartConfig.chart?.overlayPriceScales?.[seriesConfig.priceScaleId]) {
                   
-                  const scaleConfig = chartConfig.chart.overlayPriceScales[seriesConfig.options.priceScaleId]
+                  const scaleConfig = chartConfig.chart.overlayPriceScales[seriesConfig.priceScaleId]
                   try {
                     const priceScale = series.priceScale()
                     if (priceScale) {

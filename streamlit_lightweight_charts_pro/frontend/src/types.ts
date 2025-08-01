@@ -116,6 +116,7 @@ export interface SeriesConfig {
   options?: any
   name?: string
   priceScale?: any
+  priceScaleId?: string  // Add priceScaleId support for overlay price scales
   markers?: SeriesMarker<Time>[]
   priceLines?: any[]  // Add price lines to series
   trades?: TradeConfig[]  // Add trades to series
