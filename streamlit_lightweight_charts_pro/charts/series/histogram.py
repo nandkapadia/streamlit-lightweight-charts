@@ -147,7 +147,7 @@ class HistogramSeries(Series):
             updated_mapping["value"] = volume_col
 
             volume_series = cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
-            volume_series.price_line_visible = False
+            volume_series.last_value_visible = False
             
             return volume_series
 

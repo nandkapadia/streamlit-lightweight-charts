@@ -134,7 +134,7 @@ export interface SeriesConfig {
   name?: string
   priceScale?: any
   priceScaleId?: string  // Add priceScaleId support for overlay price scales
-  priceLineVisible?: boolean  // Add priceLineVisible support for series
+  lastValueVisible?: boolean  // Add lastValueVisible support for series
   lastPriceAnimation?: number  // Add lastPriceAnimation support for series
   markers?: SeriesMarker<Time>[]
   priceLines?: any[]  // Add price lines to series
@@ -185,7 +185,7 @@ export interface ChartConfig {
   minHeight?: number
   maxWidth?: number
   maxHeight?: number
-  paneHeights?: { [key: string]: PaneHeightOptions }  // Add pane heights configuration
+  // paneHeights is now accessed from chart.layout.paneHeights
 }
 
 // Range Switcher Configuration

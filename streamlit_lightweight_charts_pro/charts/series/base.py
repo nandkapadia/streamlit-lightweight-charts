@@ -43,6 +43,7 @@ logger = get_logger(__name__)
 
 
 # pylint: disable=no-member, invalid-name
+@chainable_property("title", top_level=True)
 @chainable_property("visible", top_level=True)
 @chainable_property("price_scale_id", top_level=True)
 @chainable_property("price_scale", allow_none=True, top_level=True)
@@ -50,7 +51,7 @@ logger = get_logger(__name__)
 @chainable_property("price_lines", top_level=True)
 @chainable_property("markers", top_level=True)
 @chainable_property("pane_id", top_level=True)
-@chainable_property("price_line_visible", top_level=True)
+@chainable_property("last_value_visible", top_level=True)
 class Series(ABC):
     # Type annotations for attributes to enable automatic type inspection
     """
@@ -168,6 +169,7 @@ class Series(ABC):
                 f"got {type(data)}"
             )
 
+        self._title = None
         self._visible = visible
         self._price_scale_id = price_scale_id
         self._price_scale = None
@@ -176,7 +178,7 @@ class Series(ABC):
         self._markers = []
         self._pane_id = pane_id
         self._column_mapping = column_mapping
-        self._price_line_visible = True
+        self._last_value_visible = True
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:

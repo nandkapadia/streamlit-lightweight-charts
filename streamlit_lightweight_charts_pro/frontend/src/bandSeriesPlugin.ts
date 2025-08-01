@@ -60,7 +60,7 @@ export interface BandSeriesOptions {
   // Base options
   visible: boolean
   priceScaleId: string
-  priceLineVisible: boolean
+  lastValueVisible: boolean
   priceLineWidth: number
   priceLineColor: string
   priceLineStyle: string
@@ -113,7 +113,7 @@ const defaultOptions: BandSeriesOptions = {
   // Base options
   visible: true,
   priceScaleId: 'right',
-  priceLineVisible: false,
+        lastValueVisible: false,
   priceLineWidth: 1,
   priceLineColor: '#2196F3',
   priceLineStyle: 'solid',
@@ -241,7 +241,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       lineWidth: this.options.upperLineWidth as any,
       visible: this.options.upperLineVisible,
       priceScaleId: this.options.priceScaleId,
-      priceLineVisible: this.options.priceLineVisible,
+      lastValueVisible: this.options.lastValueVisible,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,
@@ -265,7 +265,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       lineWidth: this.options.middleLineWidth as any,
       visible: this.options.middleLineVisible,
       priceScaleId: this.options.priceScaleId,
-      priceLineVisible: this.options.priceLineVisible,
+      lastValueVisible: this.options.lastValueVisible,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,
@@ -289,7 +289,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       lineWidth: this.options.lowerLineWidth as any,
       visible: this.options.lowerLineVisible,
       priceScaleId: this.options.priceScaleId,
-      priceLineVisible: this.options.priceLineVisible,
+      lastValueVisible: this.options.lastValueVisible,
       priceLineWidth: this.options.priceLineWidth as any,
       priceLineColor: this.options.priceLineColor,
       priceLineStyle: this.options.priceLineStyle as any,

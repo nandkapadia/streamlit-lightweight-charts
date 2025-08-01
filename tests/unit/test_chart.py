@@ -576,8 +576,8 @@ class TestChartFrontendConfiguration:
         series_config = chart_config["series"][0]
         assert series_config["paneId"] == 1
 
-    def test_to_frontend_config_layout_duplication_fix(self):
-        """Test that layout duplication fix is working correctly."""
+    def test_to_frontend_config_layout_pane_heights(self):
+        """Test that paneHeights is properly configured in chart.layout."""
         from streamlit_lightweight_charts_pro.charts.options.layout_options import LayoutOptions, PaneHeightOptions
         
         # Create chart with layout options
@@ -601,10 +601,10 @@ class TestChartFrontendConfiguration:
         # Verify layout is NOT at top level (duplication fix)
         assert "layout" not in chart_config
         
-        # Verify paneHeights is extracted to top level for frontend
-        assert "paneHeights" in chart_config
-        assert chart_config["paneHeights"]["0"]["factor"] == 0.7
-        assert chart_config["paneHeights"]["1"]["factor"] == 0.3
+        # Verify paneHeights is NOT extracted to top level (frontend now uses chart.layout.paneHeights)
+        assert "paneHeights" not in chart_config
+        assert chart_config["chart"]["layout"]["paneHeights"]["0"]["factor"] == 0.7
+        assert chart_config["chart"]["layout"]["paneHeights"]["1"]["factor"] == 0.3
 
 
 class TestChartRendering:

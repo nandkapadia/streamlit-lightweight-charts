@@ -899,7 +899,7 @@ class Chart:
         for series in self.series:
             series_config = series.asdict()
             series_configs.append(series_config)
-        
+
         chart_config = (
             self.options.asdict() if self.options is not None else ChartOptions().asdict()
         )
@@ -914,7 +914,7 @@ class Chart:
                 k: (v.asdict() if hasattr(v, "asdict") else v)
                 for k, v in self.options.overlay_price_scales.items()
             }
-        
+
         annotations_config = self.annotation_manager.asdict()
         chart_obj = {
             "chartId": f"chart-{id(self)}",
@@ -922,10 +922,9 @@ class Chart:
             "series": series_configs,
             "annotations": annotations_config,
         }
-        
-        # Extract pane_heights from layout options if present
-        if chart_config.get("layout", {}).get("paneHeights"):
-            chart_obj["paneHeights"] = chart_config["layout"]["paneHeights"]
+
+        # Note: paneHeights is now accessed directly from chart.layout.paneHeights in frontend
+
         config = {
             "charts": [chart_obj],
             "syncConfig": {

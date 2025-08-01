@@ -306,7 +306,7 @@ LineSeries(
     line_width=2,
     line_type="solid",
     crosshair_marker_visible=True,
-    price_line_visible=True,
+    last_value_visible=True,
     price_line_color="#2196F3",
     price_line_width=1
 )
