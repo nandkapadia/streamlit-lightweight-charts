@@ -921,7 +921,6 @@ class Chart:
             "chart": chart_config,
             "series": series_configs,
             "annotations": annotations_config,
-            "layout": chart_config.get("layout", {}),
         }
         
         # Extract pane_heights from layout options if present

@@ -50,7 +50,7 @@ logger = get_logger(__name__)
 @chainable_property("price_lines", top_level=True)
 @chainable_property("markers", top_level=True)
 @chainable_property("pane_id", top_level=True)
-@chainable_property("last_line_visible")
+@chainable_property("price_line_visible", top_level=True)
 class Series(ABC):
     # Type annotations for attributes to enable automatic type inspection
     """
@@ -176,7 +176,7 @@ class Series(ABC):
         self._markers = []
         self._pane_id = pane_id
         self._column_mapping = column_mapping
-        self._last_line_visible = True
+        self._price_line_visible = True
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:
@@ -851,7 +851,7 @@ class Series(ABC):
         """
         return (
             hasattr(self.__class__, "_chainable_properties")
-            and attr_name in self.__class__._chainable_properties
+            and attr_name in self.__class__._chainable_properties # pylint: disable=protected-access
         )
 
     def _is_allow_none(self, attr_name: str) -> bool:
@@ -865,7 +865,7 @@ class Series(ABC):
             bool: True if the property allows None values
         """
         if self._is_chainable_property(attr_name):
-            return self.__class__._chainable_properties[attr_name]["allow_none"]
+            return self.__class__._chainable_properties[attr_name]["allow_none"] # pylint: disable=protected-access
         return False
 
     def _is_top_level(self, attr_name: str) -> bool:
@@ -879,7 +879,7 @@ class Series(ABC):
             bool: True if the attribute should be at the top level
         """
         if self._is_chainable_property(attr_name):
-            return self.__class__._chainable_properties[attr_name]["top_level"]
+            return self.__class__._chainable_properties[attr_name]["top_level"] # pylint: disable=protected-access
         return False
 
     @classproperty

@@ -482,7 +482,9 @@ class TestChartFrontendConfiguration:
         assert "chart" in chart_config
         assert "series" in chart_config
         assert "annotations" in chart_config
-        assert "layout" in chart_config
+        # Layout should be inside chart object, not at top level (after layout duplication fix)
+        assert "layout" in chart_config["chart"]
+        assert "layout" not in chart_config  # Ensure no duplicate at top level
         assert chart_config["series"] == []
         assert "syncConfig" in config
 
@@ -565,8 +567,44 @@ class TestChartFrontendConfiguration:
         config = chart.to_frontend_config()
         chart_config = config["charts"][0]
 
+        # Series height attribute should not automatically create paneHeights
+        # paneHeights should only be created from chart layout options
+        assert "paneHeights" not in chart_config
+        
+        # Verify series has the height attribute in its data
+        assert len(chart_config["series"]) == 1
+        series_config = chart_config["series"][0]
+        assert series_config["paneId"] == 1
+
+    def test_to_frontend_config_layout_duplication_fix(self):
+        """Test that layout duplication fix is working correctly."""
+        from streamlit_lightweight_charts_pro.charts.options.layout_options import LayoutOptions, PaneHeightOptions
+        
+        # Create chart with layout options
+        layout_options = LayoutOptions()
+        layout_options.pane_heights = {
+            0: PaneHeightOptions(factor=0.7),
+            1: PaneHeightOptions(factor=0.3)
+        }
+        
+        chart_options = ChartOptions()
+        chart_options.layout = layout_options
+        
+        chart = Chart(options=chart_options)
+        config = chart.to_frontend_config()
+        chart_config = config["charts"][0]
+        
+        # Verify layout is inside chart object
+        assert "layout" in chart_config["chart"]
+        assert "paneHeights" in chart_config["chart"]["layout"]
+        
+        # Verify layout is NOT at top level (duplication fix)
+        assert "layout" not in chart_config
+        
+        # Verify paneHeights is extracted to top level for frontend
         assert "paneHeights" in chart_config
-        assert chart_config["paneHeights"][1] == 200
+        assert chart_config["paneHeights"]["0"]["factor"] == 0.7
+        assert chart_config["paneHeights"]["1"]["factor"] == 0.3
 
 
 class TestChartRendering:

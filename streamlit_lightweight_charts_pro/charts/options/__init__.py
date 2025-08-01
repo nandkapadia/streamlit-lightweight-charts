@@ -25,6 +25,7 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     GridLineOptions,
     GridOptions,
     LayoutOptions,
+    PaneHeightOptions,
     WatermarkOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
@@ -60,6 +61,7 @@ __all__ = [
     "GridLineOptions",
     "GridOptions",
     "LayoutOptions",
+    "PaneHeightOptions",
     "WatermarkOptions",
     # Interaction options
     "CrosshairLineOptions",

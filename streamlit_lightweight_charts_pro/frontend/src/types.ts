@@ -109,6 +109,23 @@ export interface SignalOptions {
   visible: boolean
 }
 
+// Line Options Configuration
+export interface LineOptions {
+  color?: string
+  lineStyle?: number
+  lineWidth?: number
+  lineType?: number
+  lineVisible?: boolean
+  pointMarkersVisible?: boolean
+  pointMarkersRadius?: number
+  crosshairMarkerVisible?: boolean
+  crosshairMarkerRadius?: number
+  crosshairMarkerBorderColor?: string
+  crosshairMarkerBackgroundColor?: string
+  crosshairMarkerBorderWidth?: number
+  lastPriceAnimation?: number
+}
+
 // Enhanced Series Configuration
 export interface SeriesConfig {
   type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
@@ -117,6 +134,8 @@ export interface SeriesConfig {
   name?: string
   priceScale?: any
   priceScaleId?: string  // Add priceScaleId support for overlay price scales
+  priceLineVisible?: boolean  // Add priceLineVisible support for series
+  lastPriceAnimation?: number  // Add lastPriceAnimation support for series
   markers?: SeriesMarker<Time>[]
   priceLines?: any[]  // Add price lines to series
   trades?: TradeConfig[]  // Add trades to series
@@ -128,6 +147,22 @@ export interface SeriesConfig {
   // Signal series support
   signalData?: SignalData[]
   signalOptions?: SignalOptions
+  // Line options support
+  lineOptions?: LineOptions
+  // Line series specific options (for backward compatibility)
+  lineStyle?: number
+  lineType?: number
+  lineVisible?: boolean
+  pointMarkersVisible?: boolean
+  pointMarkersRadius?: number
+  crosshairMarkerVisible?: boolean
+  crosshairMarkerRadius?: number
+  crosshairMarkerBorderColor?: string
+  crosshairMarkerBackgroundColor?: string
+  crosshairMarkerBorderWidth?: number
+  // Area series specific options
+  relativeGradient?: boolean
+  invertFilledArea?: boolean
 }
 
 // Enhanced Chart Configuration

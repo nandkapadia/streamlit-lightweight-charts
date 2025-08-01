@@ -146,7 +146,10 @@ class HistogramSeries(Series):
             volume_col = column_mapping.get("volume", "volume")
             updated_mapping["value"] = volume_col
 
-            return cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
+            volume_series = cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
+            volume_series.price_line_visible = False
+            
+            return volume_series
 
     def __init__(
         self,

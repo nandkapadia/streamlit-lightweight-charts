@@ -180,7 +180,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               // TODO: Implement proper crosshair synchronization
               // The setCrosshairPosition method requires price which is not available in MouseEventParams
               // For now, we'll skip crosshair synchronization to avoid TypeScript errors
-              // console.log('Crosshair sync:', param.time)
             } catch (error) {
               // Ignore errors for charts without series
             }
@@ -339,7 +338,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Create series function
   const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
-    const { type, data, options = {}, priceScale, paneId } = seriesConfig
+    const { type, data, options = {}, priceScale, paneId, priceLineVisible: topLevelPriceLineVisible, lastPriceAnimation } = seriesConfig
+    // Check both top-level and options for priceLineVisible
+    const priceLineVisible = topLevelPriceLineVisible !== undefined ? topLevelPriceLineVisible : options.priceLineVisible
+    
+
 
     let series: ISeriesApi<any>
     
@@ -357,6 +360,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           topColor: cleanedOptions.topColor || 'rgba(33, 150, 243, 0.4)',
           bottomColor: cleanedOptions.bottomColor || 'rgba(33, 150, 243, 0.0)',
           lineWidth: cleanedOptions.lineWidth || 2,
+          relativeGradient: cleanedOptions.relativeGradient || false,
+          invertFilledArea: cleanedOptions.invertFilledArea || false,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
           ...cleanedOptions
         }
         if (priceFormat) {
@@ -364,6 +371,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         series = chart.addSeries(AreaSeries, areaOptions, paneId)
+        
+        // Try to apply priceLineVisible after series creation as a fallback
+        try {
+          if (priceLineVisible === false) {
+            series.applyOptions({ priceLineVisible: false })
+          }
+        } catch (error) {
+          console.warn(`❌ Failed to apply priceLineVisible after area series creation:`, error)
+        }
         break
       case 'band':
         try {
@@ -504,6 +520,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           bottomFillColor1: cleanedOptions.bottomFillColor1 || 'rgba(255, 82, 82, 0.4)',
           bottomFillColor2: cleanedOptions.bottomFillColor2 || 'rgba(255, 82, 82, 0.0)',
           lineWidth: cleanedOptions.lineWidth || 2,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           ...cleanedOptions
         }
         if (priceFormat) {
@@ -522,6 +539,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             top: 0.75,
             bottom: 0,
           },
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           ...cleanedOptions,
           color: cleanedOptions.color || '#2196F3'
         }
@@ -529,9 +547,23 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         series = chart.addSeries(HistogramSeries, histogramOptions, paneId)
         break
       case 'line':
+        // Handle LineOptions if provided, otherwise use individual properties
+        const lineOptionsConfig = seriesConfig.lineOptions || {}
         const lineOptions = {
-          color: cleanedOptions.color || '#2196F3',
-          lineWidth: cleanedOptions.lineWidth || 2,
+          color: lineOptionsConfig.color || cleanedOptions.color || '#2196F3',
+          lineWidth: lineOptionsConfig.lineWidth || cleanedOptions.lineWidth || 2,
+          lineStyle: lineOptionsConfig.lineStyle || cleanedOptions.lineStyle || 0, // LineStyle.Solid
+          lineType: lineOptionsConfig.lineType || cleanedOptions.lineType || 0, // LineType.Simple
+          lineVisible: lineOptionsConfig.lineVisible !== false && cleanedOptions.lineVisible !== false, // Default true
+          pointMarkersVisible: lineOptionsConfig.pointMarkersVisible || cleanedOptions.pointMarkersVisible || false,
+          pointMarkersRadius: lineOptionsConfig.pointMarkersRadius || cleanedOptions.pointMarkersRadius,
+          crosshairMarkerVisible: lineOptionsConfig.crosshairMarkerVisible !== false && cleanedOptions.crosshairMarkerVisible !== false, // Default true
+          crosshairMarkerRadius: lineOptionsConfig.crosshairMarkerRadius || cleanedOptions.crosshairMarkerRadius || 4,
+          crosshairMarkerBorderColor: lineOptionsConfig.crosshairMarkerBorderColor || cleanedOptions.crosshairMarkerBorderColor || '',
+          crosshairMarkerBackgroundColor: lineOptionsConfig.crosshairMarkerBackgroundColor || cleanedOptions.crosshairMarkerBackgroundColor || '',
+          crosshairMarkerBorderWidth: lineOptionsConfig.crosshairMarkerBorderWidth || cleanedOptions.crosshairMarkerBorderWidth || 2,
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
+          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
           ...cleanedOptions
         }
         if (priceFormat) {
@@ -539,6 +571,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         series = chart.addSeries(LineSeries, lineOptions, paneId)
+        
+        // Try to apply priceLineVisible after series creation as a fallback
+        try {
+          if (priceLineVisible === false) {
+            series.applyOptions({ priceLineVisible: false })
+          }
+        } catch (error) {
+          console.warn(`❌ Failed to apply priceLineVisible after series creation:`, error)
+        }
         break
       case 'bar':
         const barOptions = {
@@ -547,6 +588,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           ...cleanedOptions
         }
         if (priceFormat) {
@@ -562,6 +604,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
+          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           ...cleanedOptions
         }
         if (priceFormat) {
@@ -891,37 +934,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           }
         })
 
-        // Apply pane heights configuration if present
-        if (chartConfig.paneHeights) {
-          console.log('🔧 Applying pane heights configuration:', chartConfig.paneHeights)
-          console.log('📊 Current panes count:', existingPanes.length)
-          
-          Object.entries(chartConfig.paneHeights).forEach(([paneIdStr, heightOptions]) => {
-            const paneId = parseInt(paneIdStr)
-            console.log(`🎯 Processing pane ${paneId} with factor:`, heightOptions.factor)
-            
-            if (paneId < existingPanes.length && heightOptions.factor) {
-              try {
-                console.log(`✅ Setting stretch factor ${heightOptions.factor} for pane ${paneId}`)
-                existingPanes[paneId].setStretchFactor(heightOptions.factor)
-                console.log(`✅ Successfully set stretch factor for pane ${paneId}`)
-              } catch (error) {
-                console.warn(`❌ Failed to set stretch factor for pane ${paneId}:`, error)
-              }
-            } else {
-              console.warn(`⚠️ Skipping pane ${paneId}: paneId < existingPanes.length = ${paneId < existingPanes.length}, factor = ${heightOptions.factor}`)
-            }
-          })
-          
-          // Log final pane state
-          console.log('📋 Final panes state:', existingPanes.map((pane, index) => ({
-            paneId: index,
-            pane: pane,
-            hasSetStretchFactor: typeof pane.setStretchFactor === 'function'
-          })))
-        } else {
-          console.log('ℹ️ No pane heights configuration found')
-        }
+        // Note: Pane heights will be applied AFTER series creation to ensure all panes exist
 
         // Configure overlay price scales (volume, indicators, etc.) if they exist
         if (chartConfig.chart?.overlayPriceScales) {
@@ -993,6 +1006,26 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         seriesRefs.current[chartId] = seriesList
+
+        // Apply pane heights configuration AFTER series creation to ensure all panes exist
+        if (chartConfig.paneHeights) {
+          // Get all panes after series creation
+          const allPanes = chart.panes()
+          
+          Object.entries(chartConfig.paneHeights).forEach(([paneIdStr, heightOptions]) => {
+            const paneId = parseInt(paneIdStr)
+            
+            if (paneId < allPanes.length && heightOptions.factor) {
+              try {
+                allPanes[paneId].setStretchFactor(heightOptions.factor)
+              } catch (error) {
+                console.warn(`❌ Failed to set stretch factor for pane ${paneId}:`, error)
+              }
+            } else {
+              console.warn(`⚠️ Skipping pane ${paneId}: paneId < allPanes.length = ${paneId < allPanes.length}, factor = ${heightOptions.factor}`)
+            }
+          })
+        }
 
         // Add modular tooltip system
         addModularTooltip(chart, container, seriesList, chartConfig)

@@ -701,6 +701,25 @@ class TestSeriesBaseAdvanced:
         series.markers = markers
         assert series.markers == markers
 
+    def test_price_line_visible_property(self):
+        """Test price_line_visible property getter and setter."""
+        series = ConcreteSeries(data=[LineData(time=1640995200, value=100)])
+        
+        # Test default value (should be True)
+        assert series.price_line_visible is True
+        
+        # Test setter
+        series.price_line_visible = False
+        assert series.price_line_visible is False
+        
+        # Test that the property is properly set
+        assert series.price_line_visible is False
+        
+        # Test in asdict output
+        dict_result = series.asdict()
+        assert "priceLineVisible" in dict_result
+        assert dict_result["priceLineVisible"] is False
+
     def test_price_scale_id_included_in_to_dict(self):
         """Test that priceScaleId is included in to_dict output."""
         from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
@@ -1036,6 +1055,7 @@ class TestPriceScaleProperty:
         series.visible = False
         series.price_scale_id = "custom_id"
         series.pane_id = 2
+        series.price_line_visible = False  # Test the new price_line_visible property
 
         # Add markers and price lines
         marker = Marker(
@@ -1061,23 +1081,19 @@ class TestPriceScaleProperty:
         assert "visible" in result
         assert "priceScaleId" in result
         assert "paneId" in result
+        assert "priceLineVisible" in result  # Test the new property
         assert "markers" in result
         assert "priceLines" in result
         assert "priceScale" in result
 
-        # Verify they are NOT in options
-        assert "options" in result
-        assert "visible" not in result["options"]
-        assert "priceScaleId" not in result["options"]
-        assert "paneId" not in result["options"]
-        assert "markers" not in result["options"]
-        assert "priceLines" not in result["options"]
-        assert "priceScale" not in result["options"]
+        # Verify they are NOT in options (options object should not exist when all properties are top-level)
+        assert "options" not in result
 
         # Verify values
         assert result["visible"] is False
         assert result["priceScaleId"] == "custom_id"
         assert result["paneId"] == 2
+        assert result["priceLineVisible"] is False  # Test the new property
         assert len(result["markers"]) == 1
         assert result["markers"][0]["text"] == "Test Marker"
         assert len(result["priceLines"]) == 1
