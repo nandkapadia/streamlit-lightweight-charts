@@ -60,13 +60,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       if (lineStyle.every(val => typeof val === 'number' && val >= 0)) {
         // For custom dash patterns, we need to handle this differently
         // as LineStyle enum doesn't support custom arrays
-        console.warn('Custom dash patterns not supported in this version, using solid line.')
         return LineStyle.Solid
       }
     }
     
     // Invalid line style, return undefined to use default
-    console.warn('Invalid line style provided:', lineStyle, 'Using default solid line.')
     return undefined
   }
 
@@ -133,34 +131,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     return constrainedSize
   }
 
-  // Function to resize chart based on container
-  const resizeChart = useCallback((chart: IChartApi, container: HTMLElement, chartConfig: any) => {
-    const { width: containerWidth, height: containerHeight } = getContainerDimensions(container)
-    
-    let newWidth = chartConfig.width || containerWidth
-    let newHeight = chartConfig.height || containerHeight
-
-    // Apply auto-sizing logic
-    if (chartConfig.autoSize || chartConfig.autoWidth) {
-      newWidth = applySizeConstraints(
-        containerWidth, 
-        chartConfig.minWidth, 
-        chartConfig.maxWidth
-      )
-    }
-
-    if (chartConfig.autoSize || chartConfig.autoHeight) {
-      newHeight = applySizeConstraints(
-        containerHeight, 
-        chartConfig.minHeight, 
-        chartConfig.maxHeight
-      )
-    }
-
-    // Resize the chart
-    chart.resize(newWidth, newHeight)
-  }, [])
-
   // Function to setup auto-sizing for a chart
   const setupAutoSizing = useCallback((chart: IChartApi, container: HTMLElement, chartConfig: ChartConfig) => {
     // Auto-sizing implementation
@@ -172,9 +142,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           const newHeight = chartConfig.autoHeight ? dimensions.height : chartConfig.chart?.height || height
           
           chart.resize(newWidth, newHeight)
-        } catch (error) {
-          console.warn('Auto-sizing resize failed:', error)
-        }
+            } catch (error) {
+      // Auto-sizing resize failed
+    }
       })
       
       resizeObserver.observe(container)
@@ -219,9 +189,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 if (otherTimeScale && timeRange) {
                   otherTimeScale.setVisibleRange(timeRange)
                 }
-              } catch (error) {
-                console.warn('Time range synchronization failed:', error)
-              }
+                  } catch (error) {
+      // Time range synchronization failed
+    }
             }
           })
         })
@@ -283,12 +253,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               try {
                 timeScale.fitContent()
               } catch (error) {
-                console.warn('❌ fitContent after delay failed:', error)
+                // fitContent after delay failed
               }
             }, 100)
           }
         } catch (error) {
-          console.warn('❌ fitContent failed:', error)
+          // fitContent failed
         }
       }
 
@@ -315,7 +285,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           try {
             timeScale.fitContent()
           } catch (error) {
-            console.warn('❌ fitContent on double-click failed:', error)
+            // fitContent on double-click failed
           }
           lastClickTime = 0 // Reset to prevent triple-click
         } else {
@@ -356,8 +326,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Create series function
   const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
-    console.log(`🔧 [createSeries] Creating series for chart ${chartId}, index ${seriesIndex}`)
-    console.log(`🔧 [createSeries] Series config:`, seriesConfig)
     
     const { 
       type, 
@@ -375,18 +343,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       priceScaleId: topLevelPriceScaleId
     } = seriesConfig
     
-    console.log(`🔧 [createSeries] Extracted top-level properties:`, {
-      type,
-      paneId,
-      topLevelPriceScaleId,
-      topLevelLastValueVisible,
-      topLevelPriceLineVisible,
-      topLevelPriceLineSource,
-      topLevelPriceLineWidth,
-      topLevelPriceLineColor,
-      topLevelPriceLineStyle
-    })
-    console.log(`🔧 [createSeries] Options object:`, options)
+
+
     
     // Check both top-level and options for lastValueVisible
     const lastValueVisible = topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible
@@ -401,15 +359,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Check both top-level and options for priceScaleId
     const priceScaleId = topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId
     
-    console.log(`🔧 [createSeries] Resolved properties:`, {
-      lastValueVisible,
-      priceLineVisible,
-      priceLineSource,
-      priceLineWidth,
-      priceLineColor,
-      priceLineStyle,
-      priceScaleId
-    })
+
     
 
 
@@ -417,24 +367,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     
     // Normalize series type to handle case variations
     const normalizedType = type?.toLowerCase()
-    console.log(`🔧 [createSeries] Normalized type: ${normalizedType}`)
 
     // Extract priceFormat from options and clean line styles
     const { priceFormat, ...otherOptions } = options
     const cleanedOptions = cleanLineStyleOptions(otherOptions)
-    console.log(`🔧 [createSeries] Cleaned options:`, cleanedOptions)
-    console.log(`🔧 [createSeries] Original lineStyle values:`, {
-      upperLine: otherOptions.upperLine?.lineStyle,
-      middleLine: otherOptions.middleLine?.lineStyle,
-      lowerLine: otherOptions.lowerLine?.lineStyle,
-      lineStyle: otherOptions.lineStyle
-    })
-    console.log(`🔧 [createSeries] Cleaned lineStyle values:`, {
-      upperLine: cleanedOptions.upperLine?.lineStyle,
-      middleLine: cleanedOptions.middleLine?.lineStyle,
-      lowerLine: cleanedOptions.lowerLine?.lineStyle,
-      lineStyle: cleanedOptions.lineStyle
-    })
 
     switch (normalizedType) {
       case 'area':
@@ -467,7 +403,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             series.applyOptions({ lastValueVisible: false })
           }
         } catch (error) {
-          console.warn(`❌ Failed to apply lastValueVisible after area series creation:`, error)
+          // Failed to apply lastValueVisible after area series creation
         }
         break
       case 'band':
@@ -792,18 +728,63 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [cleanLineStyleOptions])
 
   const addTradeVisualization = useCallback((chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
-    if (!trades || trades.length === 0) return;
+    console.log('🔍 [addTradeVisualization] Starting trade visualization:', {
+      tradesCount: trades?.length,
+      options,
+      chartDataCount: chartData?.length
+    });
+
+    if (!trades || trades.length === 0) {
+      console.log('❌ [addTradeVisualization] No trades provided');
+      return;
+    }
+
+    // Check if time scale is properly initialized
+    const timeScale = chart.timeScale();
+    const visibleRange = timeScale.getVisibleRange();
+    console.log('🔍 [addTradeVisualization] Time scale visible range:', visibleRange);
+    
+    // Check if chart has data and time scale is ready
+    if (!visibleRange || !visibleRange.from || !visibleRange.to) {
+      console.warn('⚠️ [addTradeVisualization] Time scale not properly initialized, waiting...');
+      // Retry after a short delay
+      setTimeout(() => {
+        addTradeVisualization(chart, series, trades, options, chartData);
+      }, 200);
+      return;
+    }
+    
+    // Additional check: ensure the time scale has a reasonable range
+    const timeRange = Number(visibleRange.to ?? 0) - Number(visibleRange.from ?? 0);
+    if (timeRange < 1000) { // Less than 1000 seconds (about 16 minutes)
+      console.warn('⚠️ [addTradeVisualization] Time scale range too small, waiting for more data...');
+      setTimeout(() => {
+        addTradeVisualization(chart, series, trades, options, chartData);
+      }, 200);
+      return;
+    }
 
     try {
+      // Use default price scale ID for now
+      const priceScaleId = 'right';
+      console.log('🔍 [addTradeVisualization] Using price scale ID:', priceScaleId);
+      
       // Create visual elements for trade visualization
-      const visualElements = createTradeVisualElements(trades, options, chartData, 'right');
+      const visualElements = createTradeVisualElements(trades, options, chartData, priceScaleId);
+      
+      console.log('🔍 [addTradeVisualization] Visual elements created:', {
+        markersCount: visualElements.markers.length,
+        rectanglesCount: visualElements.rectangles.length,
+        annotationsCount: visualElements.annotations.length
+      });
       
       // Add markers to the series
       if (visualElements.markers.length > 0) {
         try {
           createSeriesMarkers(series, visualElements.markers);
+          console.log('✅ [addTradeVisualization] Markers added successfully');
         } catch (error) {
-          // Silent error handling
+          console.warn('❌ [addTradeVisualization] Error adding markers:', error);
         }
       }
 
@@ -813,13 +794,16 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       if (!rectanglePluginRefs.current[chartId]) {
         const rectanglePlugin = new TradeRectanglePlugin(chart, series);
         rectanglePluginRefs.current[chartId] = rectanglePlugin;
+        console.log('✅ [addTradeVisualization] Created new rectangle plugin for chart:', chartId);
       }
       
       const rectanglePlugin = rectanglePluginRefs.current[chartId];
       rectanglePlugin.clearRectangles();
       
-      visualElements.rectangles.forEach(rect => {
+      console.log('🔍 [addTradeVisualization] Adding rectangles:', visualElements.rectangles);
+      visualElements.rectangles.forEach((rect, index) => {
         rectanglePlugin.addRectangle(rect);
+        console.log(`✅ [addTradeVisualization] Added rectangle ${index}:`, rect);
       });
 
       // Add annotations to the series
@@ -834,14 +818,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               (series as any).addAnnotation(annotation);
             }
           });
+          console.log('✅ [addTradeVisualization] Annotations added successfully');
         } catch (error) {
-          console.warn('Error processing visualElements.annotations:', error)
+          console.warn('❌ [addTradeVisualization] Error processing annotations:', error)
         }
       }
     } catch (error) {
-      // Silent error handling
+      console.error('❌ [addTradeVisualization] Error in trade visualization:', error);
     }
-  }, [cleanLineStyleOptions])
+  }, [])
 
   const addAnnotations = useCallback((chart: IChartApi, annotations: Annotation[] | { layers: any }) => {
     // Handle annotation manager structure from Python side
@@ -941,7 +926,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         try {
           const layersValues = Object.values(layers.layers)
           if (Array.isArray(layersValues)) {
-            layersArray = layersValues
+            layersArray = layersValues as AnnotationLayer[];
           }
         } catch (error) {
           console.warn('Error processing layers object:', error)
@@ -1268,7 +1253,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         let chart: IChartApi
         try {
           console.log(`🔧 [createChart] Creating chart with options:`, chartOptions)
-        console.log(`🔍 [createChart] Full chart config:`, chartConfig)
+        console.log(`🔍 [createChart] Full chart config:`, JSON.stringify(chartConfig, null, 2))
           chart = createChart(container, chartOptions)
           console.log(`🔧 [createChart] Chart created successfully:`, chart)
         } catch (chartError) {
@@ -1409,7 +1394,16 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         // Add modular tooltip system
         addModularTooltip(chart, container, seriesList, chartConfig)
 
-        // Add chart-level trades
+        // Add chart-level trades with delay to ensure chart is fully initialized
+        console.log('🔍 [createChart] Checking for chart-level trades:', {
+          hasTrades: !!chartConfig.trades,
+          tradesCount: chartConfig.trades?.length,
+          hasSeries: chartConfig.series.length > 0,
+          hasTradeOptions: !!chartConfig.tradeVisualizationOptions,
+          trades: chartConfig.trades,
+          tradeOptions: chartConfig.tradeVisualizationOptions
+        });
+        
         if (chartConfig.trades && chartConfig.series.length > 0) {
           const firstSeries = seriesRefs.current[chartId][0]
           if (firstSeries) {
@@ -1421,7 +1415,25 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               exitMarkerColorProfit: '#4CAF50',
               exitMarkerColorLoss: '#F44336'
             }
-            addTradeVisualization(chart, firstSeries, chartConfig.trades, tradeOptions, chartConfig.series[0]?.data)
+            console.log('🔍 [createChart] Adding chart-level trade visualization with options:', tradeOptions);
+            
+            // Add trade visualization after a delay to ensure chart is fully initialized
+            setTimeout(() => {
+              console.log('🔍 [createChart] Adding trade visualization after delay');
+              
+              // Ensure chart is fitted to content first
+              try {
+                chart.timeScale().fitContent()
+                console.log('✅ [createChart] Chart fitted to content')
+              } catch (error) {
+                console.warn('⚠️ [createChart] Could not fit content:', error)
+              }
+              
+              // Add a small additional delay to ensure fitContent is applied
+              setTimeout(() => {
+                addTradeVisualization(chart, firstSeries, chartConfig.trades ?? [], tradeOptions, chartConfig.series[0]?.data)
+              }, 100)
+            }, 500) // 500ms delay to ensure chart data is loaded and time scale is ready
           }
         }
 
@@ -1504,7 +1516,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     isInitializedRef.current = true
-  }, [config, cleanupCharts, createSeries, addTradeVisualization, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, setupAutoSizing, setupChartSynchronization, setupFitContent, width, height])
+  }, [config, cleanupCharts, createSeries, addTradeVisualization, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanLineStyleOptions, width, height])
 
   useEffect(() => {
     // Initialize charts when component mounts

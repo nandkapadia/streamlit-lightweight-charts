@@ -160,7 +160,8 @@ class Chart:
 
         # Initialize annotation manager
         self.annotation_manager = AnnotationManager()
-
+        # Store trades for frontend processing
+        self._trades = []
         # Add initial annotations if provided
         if annotations is not None:
             if not isinstance(annotations, list):
@@ -217,10 +218,6 @@ class Chart:
                     price_scale_id,
                 )
                 # Create an empty PriceScaleOptions object
-                from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-                    PriceScaleOptions,
-                )
-
                 empty_scale = PriceScaleOptions(price_scale_id=price_scale_id)
                 self.options.overlay_price_scales[price_scale_id] = empty_scale
 
@@ -798,11 +795,11 @@ class Chart:
         """
         Add trade visualization to the chart.
 
-        Converts trade objects to visual markers and adds them to the chart for
-        visualization. Each trade will be displayed with entry and exit markers
-        based on the TradeVisualizationOptions.style configuration. The visualization
-        can include markers, rectangles, arrows, or combinations depending on the
-        style setting.
+        Converts trade objects to visual elements and adds them to the chart for
+        visualization. Each trade will be displayed with entry and exit markers,
+        rectangles, lines, arrows, or zones based on the TradeVisualizationOptions.style
+        configuration. The visualization can include markers, rectangles, arrows, or
+        combinations depending on the style setting.
 
         Args:
             trades (List[Trade]): List of Trade objects to visualize on the chart.
@@ -843,6 +840,9 @@ class Chart:
         for trade in trades:
             if not isinstance(trade, Trade):
                 raise TypeError(f"All items in trades must be Trade objects, got {type(trade)}")
+
+        # Store trades for frontend processing
+        self._trades = trades
 
         # Check if we should add markers based on TradeVisualizationOptions style
         should_add_markers = False
@@ -924,7 +924,6 @@ class Chart:
         }
 
         # Note: paneHeights is now accessed directly from chart.layout.paneHeights in frontend
-
         config = {
             "charts": [chart_obj],
             "syncConfig": {
@@ -933,6 +932,7 @@ class Chart:
                 "timeRange": False,
             },
         }
+
         return config
 
     def render(self, key: Optional[str] = None) -> Any:
