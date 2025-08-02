@@ -50,8 +50,8 @@ class GridOptions(Options):
 class PaneOptions(Options):
     """Pane configuration for chart."""
 
-    separator_color: str = "#e1e3ea"
-    separator_hover_color: str = "#ffffff"
+    separator_color: str = "#333333"
+    separator_hover_color: str = "#9999cc"
     enable_resize: bool = True
 
 
