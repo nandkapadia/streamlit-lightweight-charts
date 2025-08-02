@@ -236,7 +236,7 @@ class TestChartPaneHeights:
         )
         
         config = chart.to_frontend_config()
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         
         assert "paneHeights" in layout
         assert layout["paneHeights"] == {
@@ -254,7 +254,7 @@ class TestChartPaneHeights:
         )
         
         config = chart.to_frontend_config()
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         
         # Should not have paneHeights if not configured
         assert "paneHeights" not in layout
@@ -283,7 +283,7 @@ class TestChartPaneHeights:
         )
         
         config = chart.to_frontend_config()
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         
         assert "paneHeights" in layout
         assert layout["paneHeights"] == {
@@ -326,7 +326,7 @@ class TestChartPaneHeights:
         )
         
         config = chart.to_frontend_config()
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         
         assert "paneHeights" in layout
         assert layout["paneHeights"]["0"]["factor"] == 3.0
@@ -496,7 +496,7 @@ class TestPaneHeightsIntegration:
         )
         
         config = chart.to_frontend_config()
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         
         # Verify pane heights configuration
         assert "paneHeights" in layout
@@ -544,7 +544,7 @@ class TestPaneHeightsIntegration:
         chart_config = config["charts"][0]
         
         # Focus on testing pane_heights functionality
-        layout = chart_config["layout"]
+        layout = chart_config["chart"]["layout"]
         assert "paneHeights" in layout
         
         # Verify pane_heights configuration
@@ -656,7 +656,7 @@ class TestPaneHeightsPerformance:
         assert total_time < 5.0
         
         # Verify configuration is correct
-        layout = config["charts"][0]["layout"]
+        layout = config["charts"][0]["chart"]["layout"]
         assert "paneHeights" in layout
         assert len(layout["paneHeights"]) == 5
         assert len(config["charts"][0]["series"]) == 5

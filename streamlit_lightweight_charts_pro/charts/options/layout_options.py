@@ -19,6 +19,7 @@ from streamlit_lightweight_charts_pro.type_definitions.enums import (
     VertAlign,
 )
 from streamlit_lightweight_charts_pro.utils import chainable_field
+from streamlit_lightweight_charts_pro.type_definitions.colors import _is_valid_color as is_valid_color
 
 
 @dataclass
@@ -50,8 +51,8 @@ class GridOptions(Options):
 class PaneOptions(Options):
     """Pane configuration for chart."""
 
-    separator_color: str = "#333333"
-    separator_hover_color: str = "#9999cc"
+    separator_color: str = "#e1e3ea"
+    separator_hover_color: str = "#ffffff"
     enable_resize: bool = True
 
 
@@ -88,6 +89,13 @@ class LayoutOptions(Options):
     pane_options: Optional[PaneOptions] = None
     pane_heights: Optional[Dict[int, PaneHeightOptions]] = None
     attribution_logo: bool = False
+
+    @staticmethod
+    def _validate_color_static(color: str, property_name: str) -> str:
+        """Validate color format."""
+        if not is_valid_color(color):
+            raise ValueError(f"Invalid color format for {property_name}")
+        return color
 
 
 @dataclass

@@ -846,6 +846,7 @@ class Series(ABC):
                     if attr_value != "":
                         options[key] = attr_value
 
+        # Only include options field if it's not empty
         if options:
             config["options"] = options
 

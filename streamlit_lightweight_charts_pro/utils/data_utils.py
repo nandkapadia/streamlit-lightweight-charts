@@ -116,6 +116,7 @@ def is_valid_color(color: str) -> bool:
     Example:
         ```python
         is_valid_color("#FF0000")  # True
+        is_valid_color("rgb(255, 0, 0)")  # True
         is_valid_color("rgba(255, 0, 0, 1)")  # True
         is_valid_color("")  # True (no color)
         is_valid_color("invalid")  # False
@@ -133,8 +134,8 @@ def is_valid_color(color: str) -> bool:
         hex_pattern = r"^#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{1,5})?$"
         return bool(re.match(hex_pattern, color))
 
-    # Check for rgba colors only (not rgb)
-    rgba_pattern = r"^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$"
+    # Check for rgb/rgba colors
+    rgba_pattern = r"^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[\d.]+\s*)?\)$"
     return bool(re.match(rgba_pattern, color))
 
 

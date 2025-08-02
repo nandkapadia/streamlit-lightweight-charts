@@ -149,8 +149,7 @@ def test_type_validation_in_chainable_methods():
     with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_color("invalid_color")
 
-    with pytest.raises(ValueError, match="Invalid color format"):
-        opts.set_color("rgb(255,0,0)")
+    # Note: rgb(255,0,0) is now a valid color
 
     # Test line_width validation
     with pytest.raises(TypeError, match="line_width must be of type"):
@@ -188,13 +187,9 @@ def test_color_validation_in_chainable_methods():
         opts.set_color("notacolor")
 
     with pytest.raises(ValueError, match="Invalid color format"):
-        opts.set_color("rgb(255,0,0)")
-
-    with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_crosshair_marker_border_color("notacolor")
 
-    with pytest.raises(ValueError, match="Invalid color format"):
-        opts.set_crosshair_marker_background_color("rgb(255,0,0)")
+    # Note: rgb(255,0,0) is now a valid color
 
 
 def test_both_property_styles_work():
@@ -253,5 +248,4 @@ def test_static_color_validator():
     with pytest.raises(ValueError, match="Invalid color format for test"):
         LineOptions._validate_color_static("notacolor", "test")
 
-    with pytest.raises(ValueError, match="Invalid color format for test"):
-        LineOptions._validate_color_static("rgb(255,0,0)", "test")
+    # Note: rgb(255,0,0) is now a valid color

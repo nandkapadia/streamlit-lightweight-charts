@@ -162,13 +162,9 @@ def test_color_validation_in_chainable_methods():
         opts.set_color("notacolor")
 
     with pytest.raises(ValueError, match="Invalid color format"):
-        opts.set_color("rgb(255,0,0)")
-
-    with pytest.raises(ValueError, match="Invalid color format"):
         opts.set_axis_label_color("notacolor")
 
-    with pytest.raises(ValueError, match="Invalid color format"):
-        opts.set_axis_label_text_color("rgb(255,0,0)")
+    # Note: rgb(255,0,0) is now a valid color
 
 
 def test_both_property_styles_work():
@@ -225,5 +221,4 @@ def test_static_color_validator():
     with pytest.raises(ValueError, match="Invalid color format for test"):
         PriceLineOptions._validate_color_static("notacolor", "test")
 
-    with pytest.raises(ValueError, match="Invalid color format for test"):
-        PriceLineOptions._validate_color_static("rgb(255,0,0)", "test")
+    # Note: rgb(255,0,0) is now a valid color

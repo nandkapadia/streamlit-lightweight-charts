@@ -985,8 +985,241 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [])
 
   const addLegend = useCallback((chart: IChartApi, legendConfig: LegendConfig, seriesList: ISeriesApi<any>[]) => {
-    // Legend implementation will be added here
-    // For now, this is a placeholder
+    console.log("🎯 [addLegend] Starting legend creation with config:", legendConfig)
+    console.log("🎯 [addLegend] Series list length:", seriesList.length)
+    if (!legendConfig.visible || seriesList.length === 0) {
+      return
+    }
+
+    // Group series by pane
+    const seriesByPane = new Map<number, ISeriesApi<any>[]>()
+    seriesList.forEach((series, index) => {
+      // Try to get paneId from series options or fallback to index-based assignment
+      let paneId = 0
+      
+      // Check if series has paneId in its options
+      const seriesOptions = series.options()
+      if (seriesOptions && (seriesOptions as any).paneId !== undefined) {
+        paneId = (seriesOptions as any).paneId
+      } else {
+        // Fallback: assign based on series index (this should match the Python configuration)
+        // Series 0,1,2 -> pane 0 (main chart)
+        // Series 3 -> pane 1 (RSI)
+        // Series 4,5 -> pane 2 (volume)
+        if (index <= 2) paneId = 0
+        else if (index === 3) paneId = 1
+        else paneId = 2
+      }
+      
+      console.log(`🎯 [addLegend] Series ${index} assigned to pane ${paneId}`)
+      
+      if (!seriesByPane.has(paneId)) {
+        seriesByPane.set(paneId, [])
+      }
+      seriesByPane.get(paneId)!.push(series)
+    })
+
+    console.log("🎯 [addLegend] Series by pane:", Object.fromEntries(seriesByPane))
+
+    // Create a legend for each pane
+    seriesByPane.forEach((paneSeries, paneId) => {
+      console.log(`🎯 [addLegend] Creating legend for pane ${paneId} with ${paneSeries.length} series`)
+
+      // Create legend container for this pane
+      const legendContainer = document.createElement('div')
+      legendContainer.className = `chart-legend-pane-${paneId}`
+                          // Use TradingView's styling approach
+                    legendContainer.style.cssText = `
+                      position: absolute;
+                      z-index: ${legendConfig.zIndex || 1};
+                      font-family: ${legendConfig.fontFamily || 'sans-serif'};
+                      font-size: ${legendConfig.fontSize || 14}px;
+                      font-weight: ${legendConfig.fontWeight || '300'};
+                      line-height: 18px;
+                      color: ${legendConfig.color || '#131722'};
+                      background-color: ${legendConfig.backgroundColor || 'rgba(255, 255, 255, 0.95)'};
+                      border: ${legendConfig.borderWidth || 1}px solid ${legendConfig.borderColor || '#e1e3e6'};
+                      border-radius: ${legendConfig.borderRadius || 4}px;
+                      padding: ${legendConfig.padding || 8}px;
+                      margin: ${legendConfig.margin || 4}px;
+                      pointer-events: none;
+                      user-select: none;
+                      min-width: 120px;
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    `
+
+                  // Position the legend within the specific pane area
+            const position = legendConfig.position || 'top-right'
+            const paneMargin = 12 // Use TradingView's margin
+            
+            // Calculate pane boundaries using the chart's layout
+            const chartElement = chart.chartElement()
+            const chartRect = chartElement.getBoundingClientRect()
+            const chartHeight = chartRect.height
+            
+            // Use the actual relative factors from Python: [3.0, 1.5, 1.0] / 5.5
+            const paneHeights = [3.0/5.5, 1.5/5.5, 1.0/5.5] // Exact relative heights from Python config
+            let paneTopOffset = 0
+            
+            // Calculate the top offset for this pane
+            for (let i = 0; i < paneId; i++) {
+              paneTopOffset += paneHeights[i] * chartHeight
+            }
+            
+            const paneHeight = paneHeights[paneId] * chartHeight
+            
+            // Position legend within the calculated pane boundaries
+            switch (position) {
+              case 'top-left':
+                legendContainer.style.top = `${paneTopOffset + paneMargin}px`
+                legendContainer.style.left = `${paneMargin}px`
+                break
+              case 'top-right':
+                legendContainer.style.top = `${paneTopOffset + paneMargin}px`
+                legendContainer.style.right = `${paneMargin}px`
+                break
+              case 'bottom-left':
+                legendContainer.style.top = `${paneTopOffset + paneHeight - 80}px` // Fixed height for legend
+                legendContainer.style.left = `${paneMargin}px`
+                break
+              case 'bottom-right':
+                legendContainer.style.top = `${paneTopOffset + paneHeight - 80}px` // Fixed height for legend
+                legendContainer.style.right = `${paneMargin}px`
+                break
+            }
+
+                          // Add pane title using TradingView's style
+                    const paneTitle = document.createElement('div')
+                    paneTitle.style.cssText = `
+                      font-size: 16px;
+                      font-weight: 600;
+                      margin-bottom: 8px;
+                      color: #131722;
+                      border-bottom: 1px solid #e1e3e6;
+                      padding-bottom: 4px;
+                    `
+                    
+                    // Set descriptive pane titles
+                    let paneTitleText = ''
+                    switch (paneId) {
+                      case 0:
+                        paneTitleText = 'Main Chart'
+                        break
+                      case 1:
+                        paneTitleText = 'RSI Indicator'
+                        break
+                      case 2:
+                        paneTitleText = 'Volume'
+                        break
+                      default:
+                        paneTitleText = `Pane ${paneId}`
+                    }
+                    
+                    paneTitle.textContent = paneTitleText
+                    legendContainer.appendChild(paneTitle)
+
+      // Create legend items for each series in this pane
+      paneSeries.forEach((series, index) => {
+        const seriesOptions = series.options()
+        const seriesType = series.seriesType()
+        
+        // Get series name or generate one
+        const seriesName = seriesOptions.title || `${seriesType} ${index + 1}`
+        
+        // Get series color
+        let seriesColor = '#2196f3' // default
+        if (seriesOptions.color) {
+          seriesColor = seriesOptions.color
+        } else if (seriesType === 'Candlestick') {
+          seriesColor = '#26a69a'
+        } else if (seriesType === 'Histogram') {
+          seriesColor = '#ff9800'
+        } else if (seriesType === 'Area') {
+          seriesColor = seriesOptions.topColor || '#4caf50'
+        }
+
+        // Create legend item
+        const item = document.createElement('div')
+        item.style.cssText = `
+          display: flex;
+          align-items: center;
+          margin-bottom: 4px;
+          white-space: nowrap;
+        `
+
+        // Color indicator
+        const colorIndicator = document.createElement('span')
+        colorIndicator.style.cssText = `
+          width: 12px;
+          height: 2px;
+          background-color: ${seriesColor};
+          margin-right: 6px;
+          display: inline-block;
+        `
+        item.appendChild(colorIndicator)
+
+        // Series name
+        const nameSpan = document.createElement('span')
+        nameSpan.textContent = seriesName
+        item.appendChild(nameSpan)
+
+                      // Add last value if configured
+              if (legendConfig.showLastValue) {
+                try {
+                  const data = series.data()
+                  if (data && data.length > 0) {
+                    const lastDataPoint = data[data.length - 1]
+                    let lastValue = null
+                    
+                    // Extract value based on series type
+                    if (lastDataPoint && typeof lastDataPoint === 'object') {
+                      if ('value' in lastDataPoint) {
+                        lastValue = lastDataPoint.value
+                      } else if ('close' in lastDataPoint) {
+                        lastValue = lastDataPoint.close
+                      } else if ('high' in lastDataPoint) {
+                        lastValue = lastDataPoint.high
+                      }
+                    }
+                    
+                    if (lastValue !== null && lastValue !== undefined) {
+                      const valueSpan = document.createElement('span')
+                      valueSpan.style.cssText = `
+                        margin-left: 8px;
+                        color: ${seriesColor};
+                        font-weight: bold;
+                      `
+                      valueSpan.textContent = typeof lastValue === 'number' ? lastValue.toFixed(2) : String(lastValue)
+                      item.appendChild(valueSpan)
+                    }
+                  }
+                } catch (error) {
+                  console.warn(`Could not get last value for series ${seriesName}:`, error)
+                }
+              }
+
+        legendContainer.appendChild(item)
+      })
+
+      // Add legend to chart container but position it within the specific pane area
+      const chartContainer = chart.chartElement()
+      if (chartContainer) {
+        chartContainer.appendChild(legendContainer)
+        console.log(`✅ [addLegend] Legend for pane ${paneId} added to chart container successfully`)
+        console.log(`🔍 [addLegend] Legend container HTML for pane ${paneId}:`, legendContainer.outerHTML)
+        console.log(`🔍 [addLegend] Legend container computed styles for pane ${paneId}:`, {
+          position: window.getComputedStyle(legendContainer).position,
+          top: window.getComputedStyle(legendContainer).top,
+          right: window.getComputedStyle(legendContainer).right,
+          zIndex: window.getComputedStyle(legendContainer).zIndex,
+          display: window.getComputedStyle(legendContainer).display,
+          visibility: window.getComputedStyle(legendContainer).visibility,
+          opacity: window.getComputedStyle(legendContainer).opacity
+        })
+      } else {
+        console.warn(`❌ [addLegend] Could not find chart container for pane ${paneId}`)
+      }
+    })
   }, [])
 
   // Initialize charts
@@ -1035,6 +1268,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         let chart: IChartApi
         try {
           console.log(`🔧 [createChart] Creating chart with options:`, chartOptions)
+        console.log(`🔍 [createChart] Full chart config:`, chartConfig)
           chart = createChart(container, chartOptions)
           console.log(`🔧 [createChart] Chart created successfully:`, chart)
         } catch (chartError) {
@@ -1217,11 +1451,22 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         // Add legend if configured
+        console.log("🔍 [createChart] Legend check:", {
+          hasChart: !!chartConfig.chart,
+          hasLegend: !!chartConfig.chart?.legend,
+          legendVisible: chartConfig.chart?.legend?.visible,
+          legendConfig: chartConfig.chart?.legend
+        })
+        console.log("🔍 [createChart] Full legend config:", JSON.stringify(chartConfig.chart?.legend, null, 2))
+        
         if (chartConfig.chart?.legend && chartConfig.chart.legend.visible) {
+          console.log("✅ [createChart] Adding legend with config:", chartConfig.chart.legend)
           // Add legend after a short delay to ensure chart is fully initialized
           setTimeout(() => {
             addLegend(chart, chartConfig.chart.legend, seriesList)
           }, 100)
+        } else {
+          console.log("❌ [createChart] Legend not added - missing or not visible")
         }
 
         // Setup auto-sizing for the chart

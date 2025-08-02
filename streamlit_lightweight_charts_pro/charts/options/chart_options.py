@@ -26,6 +26,7 @@ from streamlit_lightweight_charts_pro.charts.options.time_scale_options import T
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
 from streamlit_lightweight_charts_pro.utils import chainable_field
 
 
@@ -48,6 +49,7 @@ from streamlit_lightweight_charts_pro.utils import chainable_field
 @chainable_field("tracking_mode", TrackingModeOptions)
 @chainable_field("localization", LocalizationOptions)
 @chainable_field("add_default_pane", bool)
+@chainable_field("legend", LegendOptions)
 @chainable_field("trade_visualization", TradeVisualizationOptions)
 class ChartOptions(Options):
     """
@@ -75,6 +77,7 @@ class ChartOptions(Options):
         tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and tooltips.
         localization (Optional[LocalizationOptions]): Localization settings for date/time formatting.
         add_default_pane (bool): Whether to add a default pane to the chart.
+        legend (Optional[LegendOptions]): Legend configuration for displaying series information.
         trade_visualization (Optional[TradeVisualizationOptions]): Trade visualization
             configuration options.
 
@@ -121,7 +124,8 @@ class ChartOptions(Options):
 
     # Localization and UI
     localization: Optional[LocalizationOptions] = None
-    add_default_pane: bool = False
+    add_default_pane: bool = True
+    legend: Optional[LegendOptions] = None
 
     # Trade visualization options
     trade_visualization: Optional[TradeVisualizationOptions] = None

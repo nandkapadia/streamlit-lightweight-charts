@@ -304,13 +304,12 @@ class TestColorValidation:
             opts.set_color("notacolor")
 
         with pytest.raises(ValueError, match="Invalid color format"):
-            opts.set_color("rgb(255,0,0)")
-
-        with pytest.raises(ValueError, match="Invalid color format"):
             opts.set_color("hsl(0,100%,50%)")
 
         with pytest.raises(ValueError, match="Invalid color format"):
             opts.set_color("red")
+
+        # Note: rgb(255,0,0) is now a valid color
 
         # Test hex validation
         with pytest.raises(ValueError, match="Invalid color format"):
@@ -470,13 +469,11 @@ class TestStaticValidators:
             # Valid colors
             assert cls._validate_color_static("#123456", "test") == "#123456"
             assert cls._validate_color_static("rgba(1,2,3,0.5)", "test") == "rgba(1,2,3,0.5)"
+            assert cls._validate_color_static("rgb(255,0,0)", "test") == "rgb(255,0,0)"
 
             # Invalid colors
             with pytest.raises(ValueError, match="Invalid color format for test"):
                 cls._validate_color_static("notacolor", "test")
-
-            with pytest.raises(ValueError, match="Invalid color format for test"):
-                cls._validate_color_static("rgb(255,0,0)", "test")
 
     def test_builtin_color_validator(self):
         """Test built-in color validator via chainable_field."""
@@ -503,9 +500,6 @@ class TestStaticValidators:
             if hasattr(instance, "set_border_color"):
                 with pytest.raises(ValueError, match="Invalid color format"):
                     instance.set_border_color("notacolor")
-
-                with pytest.raises(ValueError, match="Invalid color format"):
-                    instance.set_border_color("rgb(255,0,0)")
 
             # Test other color fields if they exist
             if hasattr(instance, "set_text_color"):

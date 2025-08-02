@@ -10,10 +10,22 @@ import pytest
 
 from streamlit_lightweight_charts_pro.charts.options.price_format_options import PriceFormatOptions
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+    PriceScaleMargins,
+    PriceScaleOptions,
+)
 from streamlit_lightweight_charts_pro.charts.series.base import Series
+from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
 from streamlit_lightweight_charts_pro.data.line_data import LineData
 from streamlit_lightweight_charts_pro.data.marker import Marker
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    ChartType,
+    LineStyle,
+    MarkerPosition,
+    MarkerShape,
+    PriceScaleMode,
+)
+from tests.unit.utils import _get_enum_value
 
 
 class ConcreteSeries(Series):
@@ -24,8 +36,6 @@ class ConcreteSeries(Series):
     @property
     def chart_type(self):
         """Return chart type for testing."""
-        from streamlit_lightweight_charts_pro.type_definitions.enums import ChartType
-
         return ChartType.LINE
 
     def __init__(self, data, **kwargs):
@@ -150,9 +160,8 @@ class TestSeriesBase:
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
 
-        result = series.set_visible(False)
+        series.visible = False
 
-        assert result is series  # Method chaining
         assert series._visible is False
 
     def test_add_marker_method(self):
@@ -407,9 +416,9 @@ class TestSeriesBase:
         series = ConcreteSeries(data=data)
 
         # Test chaining multiple methods
+        series.visible = False
         result = (
-            series.set_visible(False)
-            .add_marker(
+            series.add_marker(
                 time=1640995200,
                 position=MarkerPosition.ABOVE_BAR,
                 color="#ff0000",
@@ -475,8 +484,6 @@ class TestSeriesBaseAdvanced:
 
     def test_get_enum_value_helper_function(self):
         """Test the _get_enum_value helper function."""
-        from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
-        from tests.unit.utils import _get_enum_value
 
         # Test with enum object
         result = _get_enum_value(LineStyle.SOLID, LineStyle)
@@ -530,7 +537,8 @@ class TestSeriesBaseAdvanced:
         # Should not include price_format in options
         assert "type" in result
         assert "data" in result
-        assert "options" in result
+        # options should not be present when all properties are None/empty
+        assert "options" not in result
 
     def test_to_dict_with_empty_options(self):
         """Test to_dict method with empty options."""
@@ -546,9 +554,9 @@ class TestSeriesBaseAdvanced:
 
         assert "type" in result
         assert "data" in result
-        assert "options" in result
-        # ConcreteSeries always includes priceLines and markers even when empty
-        # Note: Our fix excludes empty lists, so these should not be present
+        # options should not be present when all properties are empty
+        assert "options" not in result
+        # Empty lists should not be included
         assert "priceLines" not in result
         assert "markers" not in result
 
@@ -704,17 +712,17 @@ class TestSeriesBaseAdvanced:
     def test_last_value_visible_property(self):
         """Test last_value_visible property getter and setter."""
         series = ConcreteSeries(data=[LineData(time=1640995200, value=100)])
-        
+
         # Test default value (should be True)
         assert series.last_value_visible is True
-        
+
         # Test setter
         series.last_value_visible = False
         assert series.last_value_visible is False
-        
+
         # Test that the property is properly set
         assert series.last_value_visible is False
-        
+
         # Test in asdict output
         dict_result = series.asdict()
         assert "lastValueVisible" in dict_result
@@ -722,8 +730,6 @@ class TestSeriesBaseAdvanced:
 
     def test_price_scale_id_included_in_to_dict(self):
         """Test that priceScaleId is included in to_dict output."""
-        from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
-        from streamlit_lightweight_charts_pro.data import LineData
 
         # Create series with custom price_scale_id
         data = [LineData("2024-01-01", 100)]
@@ -772,8 +778,8 @@ class TestSeriesBaseAdvanced:
         # Verify empty priceScaleId is at top level, not in options
         assert "priceScaleId" in result
         assert result["priceScaleId"] == ""
-        assert "options" in result
-        assert "priceScaleId" not in result["options"]
+        # options should not be present when only empty strings are in options
+        assert "options" not in result
 
 
 class TestPriceScaleProperty:
@@ -781,9 +787,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_property_setter(self):
         """Test price_scale property setter."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -811,9 +814,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_property_getter(self):
         """Test price_scale property getter."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -828,9 +828,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_property_allow_none(self):
         """Test that price_scale property allows None values."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -850,9 +847,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_in_asdict_output(self):
         """Test that price_scale is included in asdict output at top level."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -876,9 +870,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_not_in_options_when_set(self):
         """Test that price_scale is not included in options when set."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -892,8 +883,8 @@ class TestPriceScaleProperty:
 
         # Verify priceScale is at top level, not in options
         assert "priceScale" in result
-        assert "options" in result
-        assert "priceScale" not in result["options"]
+        # options should not be present when only top-level properties are set
+        assert "options" not in result
 
     def test_price_scale_none_not_in_asdict(self):
         """Test that price_scale is not included in asdict when None."""
@@ -911,26 +902,18 @@ class TestPriceScaleProperty:
 
     def test_price_scale_method_chaining(self):
         """Test price_scale property with method chaining."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
 
         price_scale = PriceScaleOptions(price_scale_id="chained")
 
-        # Test method chaining
-        result = series.set_price_scale(price_scale)
-        assert result is series
+        # Test property setting
+        series.price_scale = price_scale
         assert series.price_scale == price_scale
 
     def test_price_scale_with_scale_margins(self):
         """Test price_scale with scale margins configuration."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleMargins,
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -966,9 +949,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_and_price_scale_id_coexistence(self):
         """Test that price_scale and price_scale_id can coexist."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -990,11 +970,6 @@ class TestPriceScaleProperty:
 
     def test_price_scale_complete_configuration(self):
         """Test price_scale with complete configuration."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleMargins,
-            PriceScaleOptions,
-        )
-        from streamlit_lightweight_charts_pro.type_definitions.enums import PriceScaleMode
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -1044,9 +1019,6 @@ class TestPriceScaleProperty:
 
     def test_top_level_properties_in_asdict(self):
         """Test that properties with top_level=True are placed at top level in asdict."""
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
@@ -1086,7 +1058,8 @@ class TestPriceScaleProperty:
         assert "priceLines" in result
         assert "priceScale" in result
 
-        # Verify they are NOT in options (options object should not exist when all properties are top-level)
+        # Verify they are NOT in options (options object should not exist when 
+        # all properties are top-level)
         assert "options" not in result
 
         # Verify values
@@ -1103,9 +1076,6 @@ class TestPriceScaleProperty:
 
     def test_non_top_level_properties_in_options(self):
         """Test that properties without top_level=True are placed in options."""
-        from streamlit_lightweight_charts_pro.charts.options.price_format_options import (
-            PriceFormatOptions,
-        )
 
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
