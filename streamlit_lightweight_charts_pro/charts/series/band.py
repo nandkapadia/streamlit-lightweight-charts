@@ -20,8 +20,8 @@ Example:
 
     # Create band series with styling
     series = BandSeries(data=data)
-    series.upper_line_options.color = "#4CAF50"
-    series.lower_line_options.color = "#F44336"
+    series.upper_line.color = "#4CAF50"
+    series.lower_line.color = "#F44336"
     series.upper_fill_color = "rgba(76, 175, 80, 0.1)"
     series.lower_fill_color = "rgba(244, 67, 54, 0.1)"
 """
@@ -39,9 +39,9 @@ from streamlit_lightweight_charts_pro.type_definitions import (
 from streamlit_lightweight_charts_pro.utils import chainable_property
 
 
-@chainable_property("upper_line_options", LineOptions, allow_none=True)
-@chainable_property("middle_line_options", LineOptions, allow_none=True)
-@chainable_property("lower_line_options", LineOptions, allow_none=True)
+@chainable_property("upper_line", LineOptions, allow_none=True)
+@chainable_property("middle_line", LineOptions, allow_none=True)
+@chainable_property("lower_line", LineOptions, allow_none=True)
 @chainable_property("upper_fill_color", str, validator="color")
 @chainable_property("lower_fill_color", str, validator="color")
 class BandSeries(Series):
@@ -56,9 +56,9 @@ class BandSeries(Series):
     for each band via LineOptions, fill colors, and gradient effects.
 
     Attributes:
-        upper_line_options: LineOptions instance for upper band styling.
-        middle_line_options: LineOptions instance for middle band styling.
-        lower_line_options: LineOptions instance for lower band styling.
+        upper_line: LineOptions instance for upper band styling.
+        middle_line: LineOptions instance for middle band styling.
+        lower_line: LineOptions instance for lower band styling.
         upper_fill_color: Fill color for upper band area.
         lower_fill_color: Fill color for lower band area.
         price_lines: List of PriceLineOptions for price lines (set after construction)
@@ -95,9 +95,9 @@ class BandSeries(Series):
         )
 
         # Initialize line options with default values
-        self._upper_line_options = LineOptions(color="#4CAF50", line_width=2, line_style="solid")
-        self._middle_line_options = LineOptions(color="#2196F3", line_width=2, line_style="solid")
-        self._lower_line_options = LineOptions(color="#F44336", line_width=2, line_style="solid")
+        self._upper_line = LineOptions(color="#4CAF50", line_width=2, line_style="solid")
+        self._middle_line = LineOptions(color="#2196F3", line_width=2, line_style="solid")
+        self._lower_line = LineOptions(color="#F44336", line_width=2, line_style="solid")
 
         # Initialize fill colors
         self._upper_fill_color = "rgba(76, 175, 80, 0.1)"

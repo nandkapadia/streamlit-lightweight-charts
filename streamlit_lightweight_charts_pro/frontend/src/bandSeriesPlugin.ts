@@ -18,44 +18,31 @@ export interface BandData extends LineData {
   lower: number
 }
 
+// Line style options interface
+export interface LineStyleOptions {
+  color?: string
+  lineStyle?: number
+  lineWidth?: number
+  lineVisible?: boolean
+  lineType?: number
+  crosshairMarkerVisible?: boolean
+  crosshairMarkerRadius?: number
+  crosshairMarkerBorderColor?: string
+  crosshairMarkerBackgroundColor?: string
+  crosshairMarkerBorderWidth?: number
+  lastPriceAnimation?: number
+}
+
 // Band series options
 export interface BandSeriesOptions {
-  // Line colors
-  upperLineColor: string
-  middleLineColor: string
-  lowerLineColor: string
-  
-  // Line styles
-  upperLineStyle: number
-  middleLineStyle: number
-  lowerLineStyle: number
-  
-  // Line widths
-  upperLineWidth: number
-  middleLineWidth: number
-  lowerLineWidth: number
-  
-  // Line visibility
-  upperLineVisible: boolean
-  middleLineVisible: boolean
-  lowerLineVisible: boolean
+  // Line style options
+  upperLine?: LineStyleOptions
+  middleLine?: LineStyleOptions
+  lowerLine?: LineStyleOptions
   
   // Fill colors
   upperFillColor: string
   lowerFillColor: string
-  
-  // Line type
-  lineType: number
-  
-  // Crosshair markers
-  crosshairMarkerVisible: boolean
-  crosshairMarkerRadius: number
-  crosshairMarkerBorderColor: string
-  crosshairMarkerBackgroundColor: string
-  crosshairMarkerBorderWidth: number
-  
-  // Animation
-  lastPriceAnimation: number
   
   // Base options
   visible: boolean
@@ -75,42 +62,50 @@ export interface BandSeriesOptions {
 
 // Default options
 const defaultOptions: BandSeriesOptions = {
-  // Line colors
-  upperLineColor: '#4CAF50',
-  middleLineColor: '#2196F3',
-  lowerLineColor: '#F44336',
-  
-  // Line styles
-  upperLineStyle: 0, // SOLID
-  middleLineStyle: 0, // SOLID
-  lowerLineStyle: 0, // SOLID
-  
-  // Line widths
-  upperLineWidth: 2,
-  middleLineWidth: 2,
-  lowerLineWidth: 2,
-  
-  // Line visibility
-  upperLineVisible: true,
-  middleLineVisible: true,
-  lowerLineVisible: true,
+  // Line style options
+  upperLine: {
+    color: '#4CAF50',
+    lineStyle: 0, // SOLID
+    lineWidth: 2,
+    lineVisible: true,
+    lineType: 0, // SIMPLE
+    crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
+    crosshairMarkerBorderColor: '',
+    crosshairMarkerBackgroundColor: '',
+    crosshairMarkerBorderWidth: 2,
+    lastPriceAnimation: 0, // DISABLED
+  },
+  middleLine: {
+    color: '#2196F3',
+    lineStyle: 0, // SOLID
+    lineWidth: 2,
+    lineVisible: true,
+    lineType: 0, // SIMPLE
+    crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
+    crosshairMarkerBorderColor: '',
+    crosshairMarkerBackgroundColor: '',
+    crosshairMarkerBorderWidth: 2,
+    lastPriceAnimation: 0, // DISABLED
+  },
+  lowerLine: {
+    color: '#F44336',
+    lineStyle: 0, // SOLID
+    lineWidth: 2,
+    lineVisible: true,
+    lineType: 0, // SIMPLE
+    crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
+    crosshairMarkerBorderColor: '',
+    crosshairMarkerBackgroundColor: '',
+    crosshairMarkerBorderWidth: 2,
+    lastPriceAnimation: 0, // DISABLED
+  },
   
   // Fill colors
   upperFillColor: 'rgba(76, 175, 80, 0.1)',
   lowerFillColor: 'rgba(244, 67, 54, 0.1)',
-  
-  // Line type
-  lineType: 0, // SIMPLE
-  
-  // Crosshair markers
-  crosshairMarkerVisible: true,
-  crosshairMarkerRadius: 4,
-  crosshairMarkerBorderColor: '',
-  crosshairMarkerBackgroundColor: '',
-  crosshairMarkerBorderWidth: 2,
-  
-  // Animation
-  lastPriceAnimation: 0, // DISABLED
   
   // Base options
   visible: true,
@@ -234,16 +229,19 @@ export class BandSeries implements ISeriesPrimitive<Time> {
   private _paneViews: BandPrimitivePaneView[]
 
   constructor(chart: IChartApi, options: Partial<BandSeriesOptions> = {}) {
+    console.log(`🔧 [BandSeries] Creating band series with options:`, options)
     this.chart = chart
     this.options = { ...defaultOptions, ...options }
+    console.log(`🔧 [BandSeries] Final options after merge:`, this.options)
     this._paneViews = [new BandPrimitivePaneView(this)]
     
     // Create the three line series
+    console.log(`🔧 [BandSeries] Creating upper series with priceScaleId: ${this.options.priceScaleId}`)
     this.upperSeries = chart.addSeries(LineSeries, {
-      color: this.options.upperLineColor,
-      lineStyle: this.options.upperLineStyle,
-      lineWidth: this.options.upperLineWidth as any,
-      visible: this.options.upperLineVisible,
+      color: this.options.upperLine?.color || '#4CAF50',
+      lineStyle: this.options.upperLine?.lineStyle || 0,
+      lineWidth: (this.options.upperLine?.lineWidth || 2) as any,
+      visible: this.options.upperLine?.lineVisible !== false,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
       priceLineVisible: this.options.priceLineVisible,
@@ -256,20 +254,21 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       baseLineColor: this.options.baseLineColor,
       baseLineStyle: this.options.baseLineStyle as any,
       priceFormat: this.options.priceFormat,
-      crosshairMarkerVisible: this.options.crosshairMarkerVisible,
-      crosshairMarkerRadius: this.options.crosshairMarkerRadius,
-      crosshairMarkerBorderColor: this.options.crosshairMarkerBorderColor,
-      crosshairMarkerBackgroundColor: this.options.crosshairMarkerBackgroundColor,
-      crosshairMarkerBorderWidth: this.options.crosshairMarkerBorderWidth,
-      lastPriceAnimation: this.options.lastPriceAnimation,
-      lineType: this.options.lineType,
+      crosshairMarkerVisible: this.options.upperLine?.crosshairMarkerVisible !== false,
+      crosshairMarkerRadius: this.options.upperLine?.crosshairMarkerRadius || 4,
+      crosshairMarkerBorderColor: this.options.upperLine?.crosshairMarkerBorderColor || '',
+      crosshairMarkerBackgroundColor: this.options.upperLine?.crosshairMarkerBackgroundColor || '',
+      crosshairMarkerBorderWidth: this.options.upperLine?.crosshairMarkerBorderWidth || 2,
+      lastPriceAnimation: this.options.upperLine?.lastPriceAnimation || 0,
+      lineType: this.options.upperLine?.lineType || 0,
     })
 
+    console.log(`🔧 [BandSeries] Creating middle series with priceScaleId: ${this.options.priceScaleId}`)
     this.middleSeries = chart.addSeries(LineSeries, {
-      color: this.options.middleLineColor,
-      lineStyle: this.options.middleLineStyle,
-      lineWidth: this.options.middleLineWidth as any,
-      visible: this.options.middleLineVisible,
+      color: this.options.middleLine?.color || '#2196F3',
+      lineStyle: this.options.middleLine?.lineStyle || 0,
+      lineWidth: (this.options.middleLine?.lineWidth || 2) as any,
+      visible: this.options.middleLine?.lineVisible !== false,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
       priceLineVisible: this.options.priceLineVisible,
@@ -282,20 +281,21 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       baseLineColor: this.options.baseLineColor,
       baseLineStyle: this.options.baseLineStyle as any,
       priceFormat: this.options.priceFormat,
-      crosshairMarkerVisible: this.options.crosshairMarkerVisible,
-      crosshairMarkerRadius: this.options.crosshairMarkerRadius,
-      crosshairMarkerBorderColor: this.options.crosshairMarkerBorderColor,
-      crosshairMarkerBackgroundColor: this.options.crosshairMarkerBackgroundColor,
-      crosshairMarkerBorderWidth: this.options.crosshairMarkerBorderWidth,
-      lastPriceAnimation: this.options.lastPriceAnimation,
-      lineType: this.options.lineType,
+      crosshairMarkerVisible: this.options.middleLine?.crosshairMarkerVisible !== false,
+      crosshairMarkerRadius: this.options.middleLine?.crosshairMarkerRadius || 4,
+      crosshairMarkerBorderColor: this.options.middleLine?.crosshairMarkerBorderColor || '',
+      crosshairMarkerBackgroundColor: this.options.middleLine?.crosshairMarkerBackgroundColor || '',
+      crosshairMarkerBorderWidth: this.options.middleLine?.crosshairMarkerBorderWidth || 2,
+      lastPriceAnimation: this.options.middleLine?.lastPriceAnimation || 0,
+      lineType: this.options.middleLine?.lineType || 0,
     })
 
+    console.log(`🔧 [BandSeries] Creating lower series with priceScaleId: ${this.options.priceScaleId}`)
     this.lowerSeries = chart.addSeries(LineSeries, {
-      color: this.options.lowerLineColor,
-      lineStyle: this.options.lowerLineStyle,
-      lineWidth: this.options.lowerLineWidth as any,
-      visible: this.options.lowerLineVisible,
+      color: this.options.lowerLine?.color || '#F44336',
+      lineStyle: this.options.lowerLine?.lineStyle || 0,
+      lineWidth: (this.options.lowerLine?.lineWidth || 2) as any,
+      visible: this.options.lowerLine?.lineVisible !== false,
       priceScaleId: this.options.priceScaleId,
       lastValueVisible: this.options.lastValueVisible,
       priceLineVisible: this.options.priceLineVisible,
@@ -308,17 +308,18 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       baseLineColor: this.options.baseLineColor,
       baseLineStyle: this.options.baseLineStyle as any,
       priceFormat: this.options.priceFormat,
-      crosshairMarkerVisible: this.options.crosshairMarkerVisible,
-      crosshairMarkerRadius: this.options.crosshairMarkerRadius,
-      crosshairMarkerBorderColor: this.options.crosshairMarkerBorderColor,
-      crosshairMarkerBackgroundColor: this.options.crosshairMarkerBackgroundColor,
-      crosshairMarkerBorderWidth: this.options.crosshairMarkerBorderWidth,
-      lastPriceAnimation: this.options.lastPriceAnimation,
-      lineType: this.options.lineType,
+      crosshairMarkerVisible: this.options.lowerLine?.crosshairMarkerVisible !== false,
+      crosshairMarkerRadius: this.options.lowerLine?.crosshairMarkerRadius || 4,
+      crosshairMarkerBorderColor: this.options.lowerLine?.crosshairMarkerBorderColor || '',
+      crosshairMarkerBackgroundColor: this.options.lowerLine?.crosshairMarkerBackgroundColor || '',
+      crosshairMarkerBorderWidth: this.options.lowerLine?.crosshairMarkerBorderWidth || 2,
+      lastPriceAnimation: this.options.lowerLine?.lastPriceAnimation || 0,
+      lineType: this.options.lowerLine?.lineType || 0,
     })
 
     // Attach the primitive to the middle series for rendering
     this.middleSeries.attachPrimitive(this)
+    console.log(`🔧 [BandSeries] Band series created successfully with ${this.options.priceScaleId} price scale`)
   }
 
   // Getter for options
@@ -367,6 +368,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
   }
 
   setData(data: BandData[]): void {
+    console.log(`🔧 [BandSeries] Setting data:`, data)
     this.data = data
     
     // Extract individual series data
@@ -414,34 +416,52 @@ export class BandSeries implements ISeriesPrimitive<Time> {
     this.options = { ...this.options, ...options }
     
     // Update line series options
-    if (options.upperLineColor !== undefined) {
-      this.upperSeries.applyOptions({ color: options.upperLineColor })
-    }
-    if (options.middleLineColor !== undefined) {
-      this.middleSeries.applyOptions({ color: options.middleLineColor })
-    }
-    if (options.lowerLineColor !== undefined) {
-      this.lowerSeries.applyOptions({ color: options.lowerLineColor })
-    }
-    
-    if (options.upperLineWidth !== undefined) {
-      this.upperSeries.applyOptions({ lineWidth: options.upperLineWidth as any })
-    }
-    if (options.middleLineWidth !== undefined) {
-      this.middleSeries.applyOptions({ lineWidth: options.middleLineWidth as any })
-    }
-    if (options.lowerLineWidth !== undefined) {
-      this.lowerSeries.applyOptions({ lineWidth: options.lowerLineWidth as any })
+    if (options.upperLine !== undefined) {
+      this.upperSeries.applyOptions({
+        color: options.upperLine.color,
+        lineStyle: options.upperLine.lineStyle,
+        lineWidth: options.upperLine.lineWidth as any,
+        visible: options.upperLine.lineVisible,
+        lineType: options.upperLine.lineType,
+        crosshairMarkerVisible: options.upperLine.crosshairMarkerVisible,
+        crosshairMarkerRadius: options.upperLine.crosshairMarkerRadius,
+        crosshairMarkerBorderColor: options.upperLine.crosshairMarkerBorderColor,
+        crosshairMarkerBackgroundColor: options.upperLine.crosshairMarkerBackgroundColor,
+        crosshairMarkerBorderWidth: options.upperLine.crosshairMarkerBorderWidth,
+        lastPriceAnimation: options.upperLine.lastPriceAnimation,
+      })
     }
     
-    if (options.upperLineVisible !== undefined) {
-      this.upperSeries.applyOptions({ visible: options.upperLineVisible })
+    if (options.middleLine !== undefined) {
+      this.middleSeries.applyOptions({
+        color: options.middleLine.color,
+        lineStyle: options.middleLine.lineStyle,
+        lineWidth: options.middleLine.lineWidth as any,
+        visible: options.middleLine.lineVisible,
+        lineType: options.middleLine.lineType,
+        crosshairMarkerVisible: options.middleLine.crosshairMarkerVisible,
+        crosshairMarkerRadius: options.middleLine.crosshairMarkerRadius,
+        crosshairMarkerBorderColor: options.middleLine.crosshairMarkerBorderColor,
+        crosshairMarkerBackgroundColor: options.middleLine.crosshairMarkerBackgroundColor,
+        crosshairMarkerBorderWidth: options.middleLine.crosshairMarkerBorderWidth,
+        lastPriceAnimation: options.middleLine.lastPriceAnimation,
+      })
     }
-    if (options.middleLineVisible !== undefined) {
-      this.middleSeries.applyOptions({ visible: options.middleLineVisible })
-    }
-    if (options.lowerLineVisible !== undefined) {
-      this.lowerSeries.applyOptions({ visible: options.lowerLineVisible })
+    
+    if (options.lowerLine !== undefined) {
+      this.lowerSeries.applyOptions({
+        color: options.lowerLine.color,
+        lineStyle: options.lowerLine.lineStyle,
+        lineWidth: options.lowerLine.lineWidth as any,
+        visible: options.lowerLine.lineVisible,
+        lineType: options.lowerLine.lineType,
+        crosshairMarkerVisible: options.lowerLine.crosshairMarkerVisible,
+        crosshairMarkerRadius: options.lowerLine.crosshairMarkerRadius,
+        crosshairMarkerBorderColor: options.lowerLine.crosshairMarkerBorderColor,
+        crosshairMarkerBackgroundColor: options.lowerLine.crosshairMarkerBackgroundColor,
+        crosshairMarkerBorderWidth: options.lowerLine.crosshairMarkerBorderWidth,
+        lastPriceAnimation: options.lowerLine.lastPriceAnimation,
+      })
     }
 
     // Update the primitive view

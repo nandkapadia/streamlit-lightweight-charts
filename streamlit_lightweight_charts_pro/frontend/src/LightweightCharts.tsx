@@ -91,6 +91,24 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       cleaned.style = cleanLineStyleOptions(cleaned.style)
     }
     
+    // Clean nested line objects (for band series)
+    if (cleaned.upperLine && typeof cleaned.upperLine === 'object') {
+      cleaned.upperLine = cleanLineStyleOptions(cleaned.upperLine)
+    }
+    if (cleaned.middleLine && typeof cleaned.middleLine === 'object') {
+      cleaned.middleLine = cleanLineStyleOptions(cleaned.middleLine)
+    }
+    if (cleaned.lowerLine && typeof cleaned.lowerLine === 'object') {
+      cleaned.lowerLine = cleanLineStyleOptions(cleaned.lowerLine)
+    }
+    
+    // Recursively clean any other nested objects
+    for (const key in cleaned) {
+      if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
+        cleaned[key] = cleanLineStyleOptions(cleaned[key])
+      }
+    }
+    
     return cleaned
   }, [])
 
@@ -338,6 +356,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Create series function
   const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
+    console.log(`🔧 [createSeries] Creating series for chart ${chartId}, index ${seriesIndex}`)
+    console.log(`🔧 [createSeries] Series config:`, seriesConfig)
+    
     const { 
       type, 
       data, 
@@ -350,8 +371,22 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       priceLineSource: topLevelPriceLineSource,
       priceLineWidth: topLevelPriceLineWidth,
       priceLineColor: topLevelPriceLineColor,
-      priceLineStyle: topLevelPriceLineStyle
+      priceLineStyle: topLevelPriceLineStyle,
+      priceScaleId: topLevelPriceScaleId
     } = seriesConfig
+    
+    console.log(`🔧 [createSeries] Extracted top-level properties:`, {
+      type,
+      paneId,
+      topLevelPriceScaleId,
+      topLevelLastValueVisible,
+      topLevelPriceLineVisible,
+      topLevelPriceLineSource,
+      topLevelPriceLineWidth,
+      topLevelPriceLineColor,
+      topLevelPriceLineStyle
+    })
+    console.log(`🔧 [createSeries] Options object:`, options)
     
     // Check both top-level and options for lastValueVisible
     const lastValueVisible = topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible
@@ -363,16 +398,43 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     const priceLineColor = topLevelPriceLineColor !== undefined ? topLevelPriceLineColor : options.priceLineColor
     const priceLineStyle = topLevelPriceLineStyle !== undefined ? topLevelPriceLineStyle : options.priceLineStyle
     
+    // Check both top-level and options for priceScaleId
+    const priceScaleId = topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId
+    
+    console.log(`🔧 [createSeries] Resolved properties:`, {
+      lastValueVisible,
+      priceLineVisible,
+      priceLineSource,
+      priceLineWidth,
+      priceLineColor,
+      priceLineStyle,
+      priceScaleId
+    })
+    
 
 
     let series: ISeriesApi<any>
     
     // Normalize series type to handle case variations
     const normalizedType = type?.toLowerCase()
+    console.log(`🔧 [createSeries] Normalized type: ${normalizedType}`)
 
     // Extract priceFormat from options and clean line styles
     const { priceFormat, ...otherOptions } = options
     const cleanedOptions = cleanLineStyleOptions(otherOptions)
+    console.log(`🔧 [createSeries] Cleaned options:`, cleanedOptions)
+    console.log(`🔧 [createSeries] Original lineStyle values:`, {
+      upperLine: otherOptions.upperLine?.lineStyle,
+      middleLine: otherOptions.middleLine?.lineStyle,
+      lowerLine: otherOptions.lowerLine?.lineStyle,
+      lineStyle: otherOptions.lineStyle
+    })
+    console.log(`🔧 [createSeries] Cleaned lineStyle values:`, {
+      upperLine: cleanedOptions.upperLine?.lineStyle,
+      middleLine: cleanedOptions.middleLine?.lineStyle,
+      lowerLine: cleanedOptions.lowerLine?.lineStyle,
+      lineStyle: cleanedOptions.lineStyle
+    })
 
     switch (normalizedType) {
       case 'area':
@@ -384,6 +446,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           lineWidth: cleanedOptions.lineWidth || 2,
           relativeGradient: cleanedOptions.relativeGradient || false,
           invertFilledArea: cleanedOptions.invertFilledArea || false,
+          priceScaleId: priceScaleId || '',
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
           lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
           priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
@@ -408,18 +471,31 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
         break
       case 'band':
+        console.log(`🔧 [createSeries] Creating band series`)
         try {
           // Create band series using the custom plugin
-          const bandSeries = createBandSeries(chart, {
-            upperLineColor: cleanedOptions.upperLineColor || '#4CAF50',
-            middleLineColor: cleanedOptions.middleLineColor || '#2196F3',
-            lowerLineColor: cleanedOptions.lowerLineColor || '#F44336',
-            upperLineWidth: cleanedOptions.upperLineWidth || 2,
-            middleLineWidth: cleanedOptions.middleLineWidth || 2,
-            lowerLineWidth: cleanedOptions.lowerLineWidth || 2,
+          const bandSeriesOptions = {
+            upperLine: cleanedOptions.upperLine || {
+              color: '#4CAF50',
+              lineStyle: 0,
+              lineWidth: 2,
+              lineVisible: true,
+            },
+            middleLine: cleanedOptions.middleLine || {
+              color: '#2196F3',
+              lineStyle: 0,
+              lineWidth: 2,
+              lineVisible: true,
+            },
+            lowerLine: cleanedOptions.lowerLine || {
+              color: '#F44336',
+              lineStyle: 0,
+              lineWidth: 2,
+              lineVisible: true,
+            },
             upperFillColor: cleanedOptions.upperFillColor || 'rgba(76, 175, 80, 0.1)',
             lowerFillColor: cleanedOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
-            priceScaleId: cleanedOptions.priceScaleId || 'right',
+            priceScaleId: priceScaleId || 'right',
             visible: cleanedOptions.visible !== false,
             lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
             priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
@@ -427,7 +503,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
             priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
             priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-          })
+          }
+          console.log(`🔧 [createSeries] Band series options:`, bandSeriesOptions)
+          const bandSeries = createBandSeries(chart, bandSeriesOptions)
           
           // Set data for band series
           if (data && data.length > 0) {
@@ -459,7 +537,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             },
             priceScale: () => {
               try {
-                return chart.priceScale(cleanedOptions.priceScaleId || 'right')
+                return chart.priceScale(priceScaleId || 'right')
               } catch (error) {
                 return null
               }
@@ -524,7 +602,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             },
             priceScale: () => {
               try {
-                return chart.priceScale(cleanedOptions.priceScaleId || 'right')
+                return chart.priceScale(priceScaleId || 'right')
               } catch (error) {
                 return null
               }
@@ -553,6 +631,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           bottomFillColor1: cleanedOptions.bottomFillColor1 || 'rgba(255, 82, 82, 0.4)',
           bottomFillColor2: cleanedOptions.bottomFillColor2 || 'rgba(255, 82, 82, 0.0)',
           lineWidth: cleanedOptions.lineWidth || 2,
+          priceScaleId: priceScaleId || '',
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
           priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
@@ -572,7 +651,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           priceFormat: priceFormat || {
             type: 'volume',
           },
-          priceScaleId: cleanedOptions.priceScaleId || '',
+          priceScaleId: priceScaleId || '',
           scaleMargins: cleanedOptions.scaleMargins || {
             top: 0.75,
             bottom: 0,
@@ -605,6 +684,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           crosshairMarkerBorderColor: lineOptionsConfig.crosshairMarkerBorderColor || cleanedOptions.crosshairMarkerBorderColor || '',
           crosshairMarkerBackgroundColor: lineOptionsConfig.crosshairMarkerBackgroundColor || cleanedOptions.crosshairMarkerBackgroundColor || '',
           crosshairMarkerBorderWidth: lineOptionsConfig.crosshairMarkerBorderWidth || cleanedOptions.crosshairMarkerBorderWidth || 2,
+          priceScaleId: priceScaleId || '',
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
           lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
           priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
@@ -636,6 +716,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
+          priceScaleId: priceScaleId || '',
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
           priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
@@ -657,6 +738,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           borderVisible: cleanedOptions.borderVisible !== false,
           wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
           wickDownColor: cleanedOptions.wickDownColor || '#F44336',
+          priceScaleId: priceScaleId || '',
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
           priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
           priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
@@ -952,7 +1034,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         let chart: IChartApi
         try {
+          console.log(`🔧 [createChart] Creating chart with options:`, chartOptions)
           chart = createChart(container, chartOptions)
+          console.log(`🔧 [createChart] Chart created successfully:`, chart)
         } catch (chartError) {
           console.error(`Failed to create chart for ${chartId}:`, chartError)
           return
@@ -1014,14 +1098,17 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         const seriesList: ISeriesApi<any>[] = []
         
         if (chartConfig.series && Array.isArray(chartConfig.series)) {
+          console.log(`🔧 [createChart] Creating ${chartConfig.series.length} series`)
           chartConfig.series.forEach((seriesConfig: SeriesConfig, seriesIndex: number) => {
             try {
+              console.log(`🔧 [createChart] Creating series ${seriesIndex}:`, seriesConfig)
               if (!seriesConfig || typeof seriesConfig !== 'object') {
                 console.warn(`Invalid series config at index ${seriesIndex}:`, seriesConfig)
                 return
               }
 
               const series = createSeries(chart, seriesConfig, chartId, seriesIndex)
+              console.log(`🔧 [createChart] Series ${seriesIndex} created:`, series)
               if (series) {
                 seriesList.push(series)
                 
