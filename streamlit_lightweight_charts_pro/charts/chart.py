@@ -791,7 +791,7 @@ class Chart:
 
         return chart
 
-    def add_trade_visualization(self, trades: List[Trade]) -> "Chart":
+    def add_trades(self, trades: List[Trade]) -> "Chart":
         """
         Add trade visualization to the chart.
 

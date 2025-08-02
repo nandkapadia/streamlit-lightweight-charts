@@ -33,10 +33,11 @@ class Trade:
     """
 
     entry_time: Union[pd.Timestamp, datetime, str, int, float]
-    entry_price: Union[float, str, int]
+    entry_price: Union[float, int]
     exit_time: Union[pd.Timestamp, datetime, str, int, float]
-    exit_price: Union[float, str, int]
-    quantity: Union[float, str, int]
+    exit_price: Union[float, int]
+    quantity: Union[float, int]
+    pnl: Union[float]
     trade_type: Union[TradeType, str] = TradeType.LONG
     id: Optional[str] = None
     notes: Optional[str] = None
@@ -196,20 +197,3 @@ class Trade:
         markers.append(exit_marker)
 
         return markers
-
-    def asdict(self) -> dict:
-        """Convert trade to dictionary for serialization."""
-        return {
-            "entryTime": self.entry_timestamp,
-            "entryPrice": self.entry_price,
-            "exitTime": self.exit_timestamp,
-            "exitPrice": self.exit_price,
-            "quantity": self.quantity,
-            "tradeType": self.trade_type.value,
-            "id": self.id,
-            "notes": self.notes,
-            "text": self.text,
-            "pnl": self.pnl,
-            "pnlPercentage": self.pnl_percentage,
-            "isProfitable": self.is_profitable,
-        }

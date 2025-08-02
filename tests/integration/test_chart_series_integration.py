@@ -5,16 +5,27 @@ This module tests the integration between Chart and Series classes,
 ensuring they work together correctly in real-world scenarios.
 """
 
+import gc
 import json
 from typing import List
 
 import numpy as np
 import pandas as pd
+import psutil
 import pytest
 
 from streamlit_lightweight_charts_pro.charts.chart import Chart
 from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
+from streamlit_lightweight_charts_pro.charts.options.price_line_options import (
+    PriceLineOptions,
+)
+from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
+    PriceScaleOptions,
+)
+from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
+    TradeVisualizationOptions,
+)
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     CandlestickSeries,
@@ -169,10 +180,6 @@ class TestChartSeriesIntegration:
         )
 
         # Add price line
-        from streamlit_lightweight_charts_pro.charts.options.price_line_options import (
-            PriceLineOptions,
-        )
-
         price_line = PriceLineOptions(price=100, color="blue", line_width=2, title="Support Level")
         line_series.add_price_line(price_line)
 
@@ -255,10 +262,6 @@ class TestChartSeriesIntegration:
         candlestick_series = CandlestickSeries(data=candlestick_data)
 
         # Create chart with trade visualization options
-        from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
-            TradeVisualizationOptions,
-        )
-
         trade_viz_options = TradeVisualizationOptions(style=TradeVisualization.MARKERS)
         chart_options = ChartOptions(trade_visualization=trade_viz_options)
 
@@ -276,7 +279,7 @@ class TestChartSeriesIntegration:
             )
         ]
 
-        chart.add_trade_visualization(trades)
+        chart.add_trades(trades)
 
         # Verify trade visualization is added
         config = chart.to_frontend_config()
@@ -301,10 +304,6 @@ class TestChartSeriesIntegration:
         chart = Chart(series=[line_series, candlestick_series])
 
         # Add overlay price scale
-        from streamlit_lightweight_charts_pro.charts.options.price_scale_options import (
-            PriceScaleOptions,
-        )
-
         overlay_options = PriceScaleOptions(
             visible=True, auto_scale=True, mode=PriceScaleMode.NORMAL
         )
@@ -566,10 +565,6 @@ class TestChartSeriesDataFlowIntegration:
 
     def test_memory_usage_in_data_processing_pipeline(self):
         """Test memory usage in data processing pipeline."""
-        import gc
-
-        import psutil
-
         process = psutil.Process()
         initial_memory = process.memory_info().rss
 

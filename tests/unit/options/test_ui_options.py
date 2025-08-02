@@ -89,7 +89,7 @@ class TestLegendOptions:
         """Test construction with default values."""
         options = LegendOptions()
         assert options.visible is True
-        assert options.position == "top"
+        assert options.position == "top-right"
 
     def test_custom_construction(self):
         """Test construction with custom values."""

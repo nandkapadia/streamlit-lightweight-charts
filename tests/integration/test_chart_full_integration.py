@@ -98,7 +98,7 @@ def test_chart_with_annotations_and_trades():
         )
     ]
     chart.options.trade_visualization = TradeVisualizationOptions()
-    chart.add_trade_visualization(trades)
+    chart.add_trades(trades)
     config = chart.to_frontend_config()
     assert "annotations" in config["charts"][0]
     assert len(config["charts"][0]["annotations"]) >= 1

@@ -419,13 +419,13 @@ class TestChartTradeVisualizationEdgeCases:
         chart = Chart()
 
         with pytest.raises(TypeError):
-            chart.add_trade_visualization(None)
+            chart.add_trades(None)
 
     def test_add_trade_visualization_with_empty_trades(self):
         """Test adding trade visualization with empty trades list."""
         chart = Chart()
 
-        chart.add_trade_visualization([])
+        chart.add_trades([])
         # Should handle empty list gracefully
         assert len(chart.series) == 0
 
@@ -434,7 +434,7 @@ class TestChartTradeVisualizationEdgeCases:
         chart = Chart()
 
         with pytest.raises(TypeError):
-            chart.add_trade_visualization([{"not": "a_trade"}])
+            chart.add_trades([{"not": "a_trade"}])
 
     def test_add_trade_visualization_with_mixed_valid_invalid_trades(self):
         """Test adding trade visualization with mix of valid and invalid trades."""
@@ -449,7 +449,7 @@ class TestChartTradeVisualizationEdgeCases:
         )
 
         with pytest.raises(TypeError):
-            chart.add_trade_visualization([valid_trade, "invalid_trade"])
+            chart.add_trades([valid_trade, "invalid_trade"])
 
     def test_add_trade_visualization_without_series(self):
         """Test adding trade visualization to chart without series."""
@@ -464,7 +464,7 @@ class TestChartTradeVisualizationEdgeCases:
         )
 
         # Should handle chart without series gracefully
-        chart.add_trade_visualization([trade])
+        chart.add_trades([trade])
         assert len(chart.series) == 0
 
     def test_add_trade_visualization_with_series_without_markers(self):
@@ -490,7 +490,7 @@ class TestChartTradeVisualizationEdgeCases:
         )
 
         # Should handle series without markers gracefully
-        chart.add_trade_visualization([trade])
+        chart.add_trades([trade])
 
 
 class TestChartFrontendConfigurationEdgeCases:

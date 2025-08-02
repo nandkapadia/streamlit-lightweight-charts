@@ -284,7 +284,7 @@ def main():
         # Add any other properties that need to be updated
 
     # Add trade visualization
-    chart.add_trade_visualization(trades)
+    chart.add_trades(trades)
     # Display the chart
     chart.render(key="trade_viz_options_chart")
 
