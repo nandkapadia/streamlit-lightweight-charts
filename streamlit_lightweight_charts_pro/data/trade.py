@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 
 import pandas as pd
 
@@ -93,16 +93,6 @@ class TradeData:
             tooltip_parts.append(f"Notes: {self.notes}")
 
         return "\n".join(tooltip_parts)
-
-    @property
-    def entry_timestamp(self) -> Union[int, str]:
-        """Get entry time as UTC timestamp."""
-        return self._entry_timestamp
-
-    @property
-    def exit_timestamp(self) -> Union[int, str]:
-        """Get exit time as UTC timestamp."""
-        return self._exit_timestamp
 
     @property
     def pnl(self) -> float:
@@ -196,3 +186,37 @@ class TradeData:
         markers.append(exit_marker)
 
         return markers
+
+    def asdict(self) -> Dict[str, Any]:
+        """
+        Serialize the trade data to a dict with camelCase keys for frontend.
+
+        Converts the trade to a dictionary format suitable for frontend
+        communication. Returns the trade data in the format expected by
+        the frontend TradeConfig interface.
+
+        Returns:
+            Dict[str, Any]: Serialized trade with camelCase keys ready for
+                frontend consumption.
+        """
+        trade_dict = {
+            "entryTime": self._entry_timestamp,
+            "entryPrice": self.entry_price,
+            "exitTime": self._exit_timestamp,
+            "exitPrice": self.exit_price,
+            "quantity": self.quantity,
+            "tradeType": self.trade_type.value.lower(),
+            "isProfitable": self.is_profitable,
+            "pnl": self.pnl,
+            "pnlPercentage": self.pnl_percentage,
+        }
+
+        # Add optional fields if they exist
+        if self.id:
+            trade_dict["id"] = self.id
+        if self.notes:
+            trade_dict["notes"] = self.notes
+        if self.text:
+            trade_dict["text"] = self.text
+
+        return trade_dict

@@ -87,11 +87,8 @@ def test_invalid_color_formats(invalid_color):
 #### **Critical Missing Exception Tests:**
 
 **Trade Visualization (16% coverage):**
-- ❌ **No tests for `trades_to_visual_elements()` function**
-- ❌ **No tests for `create_trade_rectangle()` function**
-- ❌ **No tests for `create_trade_line()` function**
-- ❌ **No tests for `create_trade_arrow()` function**
-- ❌ **No tests for `create_trade_zone()` function**
+- ✅ **Removed unused `trade_visualization.py` utility functions**
+- ✅ **Trade visualization now handled by frontend plugins**
 
 **Annotation System (59% coverage):**
 - ❌ **No tests for complex annotation positioning**
@@ -101,24 +98,9 @@ def test_invalid_color_formats(invalid_color):
 #### **Recommended Exception Tests:**
 
 ```python
-# Trade Visualization Exception Tests
-def test_trades_to_visual_elements_empty_trades():
-    """Test trades_to_visual_elements with empty trades list."""
-    options = TradeVisualizationOptions()
-    result = trades_to_visual_elements([], options)
-    assert result == {"markers": [], "shapes": [], "annotations": []}
-
-def test_trades_to_visual_elements_invalid_trade_type():
-    """Test trades_to_visual_elements with invalid trade objects."""
-    options = TradeVisualizationOptions()
-    with pytest.raises(TypeError):
-        trades_to_visual_elements([{"not": "a_trade"}], options)
-
-def test_create_trade_rectangle_invalid_trade():
-    """Test create_trade_rectangle with invalid trade data."""
-    options = TradeVisualizationOptions()
-    with pytest.raises(ValueError):
-        create_trade_rectangle(None, options)
+# Trade Visualization - Now handled by frontend plugins
+# Trade visualization utility functions have been removed
+# Trade visualization is now handled by frontend plugins (RectangleOverlayPlugin)
 
 # Annotation Exception Tests
 def test_annotation_with_invalid_position():
@@ -435,36 +417,9 @@ class TestFrontendCompatibilityIntegration:
 #### **1. Trade Visualization Tests (CRITICAL)**
 ```python
 # Create comprehensive trade visualization test suite
-class TestTradeVisualization:
-    """Comprehensive tests for trade visualization functionality."""
-    
-    def test_trades_to_visual_elements_all_styles(self):
-        """Test all visualization styles."""
-        trades = create_sample_trades(10)
-        
-        for style in TradeVisualization:
-            options = TradeVisualizationOptions(style=style)
-            result = trades_to_visual_elements(trades, options)
-            
-            assert isinstance(result, dict)
-            assert "markers" in result
-            assert "shapes" in result
-            assert "annotations" in result
-    
-    def test_create_trade_rectangle_all_scenarios(self):
-        """Test rectangle creation for all trade scenarios."""
-        # Test profitable long trades
-        # Test losing short trades
-        # Test trades with zero P&L
-        # Test trades with extreme values
-        pass
-    
-    def test_create_trade_line_edge_cases(self):
-        """Test line creation with edge cases."""
-        # Test trades with same entry/exit time
-        # Test trades with extreme price differences
-        # Test trades with zero duration
-        pass
+# Trade visualization utility functions have been removed
+# Trade visualization is now handled by frontend plugins (RectangleOverlayPlugin)
+# No backend utility functions to test - functionality moved to frontend
 ```
 
 #### **2. Annotation System Tests (HIGH)**

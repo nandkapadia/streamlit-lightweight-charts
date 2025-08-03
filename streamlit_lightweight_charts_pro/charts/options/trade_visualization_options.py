@@ -85,7 +85,7 @@ class TradeVisualizationOptions(Options):
         annotation_background: Background color for annotations
     """
 
-    style: TradeVisualization = TradeVisualization.BOTH
+    style: TradeVisualization = TradeVisualization.RECTANGLES
 
     # Marker options
     entry_marker_color_long: str = "#2196F3"

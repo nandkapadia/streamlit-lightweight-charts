@@ -74,8 +74,10 @@ class ChartOptions(Options):
         handle_scroll (bool): Whether to enable scroll interactions.
         handle_scale (bool): Whether to enable scale interactions.
         kinetic_scroll (Optional[KineticScrollOptions]): Kinetic scroll options.
-        tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and tooltips.
-        localization (Optional[LocalizationOptions]): Localization settings for date/time formatting.
+        tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and 
+                                                       tooltips.
+        localization (Optional[LocalizationOptions]): Localization settings for date/time
+                                                      formatting.
         add_default_pane (bool): Whether to add a default pane to the chart.
         legend (Optional[LegendOptions]): Legend configuration for displaying series information.
         trade_visualization (Optional[TradeVisualizationOptions]): Trade visualization

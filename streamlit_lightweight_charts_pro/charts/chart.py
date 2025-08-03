@@ -916,12 +916,26 @@ class Chart:
             }
 
         annotations_config = self.annotation_manager.asdict()
+
+        # Add trades to chart configuration if they exist
+        trades_config = None
+        if hasattr(self, "_trades") and self._trades:
+            trades_config = [trade.asdict() for trade in self._trades]
+
         chart_obj = {
             "chartId": f"chart-{id(self)}",
             "chart": chart_config,
             "series": series_configs,
             "annotations": annotations_config,
         }
+
+        # Add trades to chart configuration if they exist
+        if trades_config:
+            chart_obj["trades"] = trades_config
+
+            # Add trade visualization options if they exist
+            if self.options and self.options.trade_visualization:
+                chart_obj["tradeVisualizationOptions"] = self.options.trade_visualization.asdict()
 
         # Note: paneHeights is now accessed directly from chart.layout.paneHeights in frontend
         config = {

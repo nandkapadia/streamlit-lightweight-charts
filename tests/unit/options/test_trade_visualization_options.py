@@ -20,7 +20,7 @@ class TestTradeVisualizationOptionsConstruction:
         """Test construction with default values."""
         options = TradeVisualizationOptions()
 
-        assert options.style == TradeVisualization.BOTH
+        assert options.style == TradeVisualization.RECTANGLES
         assert options.entry_marker_color_long == "#2196F3"
         assert options.entry_marker_color_short == "#FF9800"
         assert options.exit_marker_color_profit == "#4CAF50"
@@ -154,7 +154,7 @@ class TestTradeVisualizationOptionsSerialization:
         options = TradeVisualizationOptions()
         result = options.asdict()
 
-        assert result["style"] == "both"
+        assert result["style"] == "rectangles"
         assert result["entryMarkerColorLong"] == "#2196F3"
         assert result["entryMarkerColorShort"] == "#FF9800"
         assert result["exitMarkerColorProfit"] == "#4CAF50"

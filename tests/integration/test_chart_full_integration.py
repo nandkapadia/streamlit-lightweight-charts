@@ -102,11 +102,11 @@ def test_chart_with_annotations_and_trades():
     config = chart.to_frontend_config()
     assert "annotations" in config["charts"][0]
     assert len(config["charts"][0]["annotations"]) >= 1
-    # Check that trade visualization markers were added to series
-    series_with_markers = [
-        s for s in config["charts"][0]["series"] if "markers" in s and len(s["markers"]) > 0
-    ]
-    assert len(series_with_markers) > 0
+    # Check that trades were added to chart configuration
+    assert "trades" in config["charts"][0]
+    assert len(config["charts"][0]["trades"]) > 0
+    # Check that trade visualization options were added
+    assert "tradeVisualizationOptions" in config["charts"][0]
 
 
 def test_serialization_idempotency():

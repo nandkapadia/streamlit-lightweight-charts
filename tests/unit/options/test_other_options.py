@@ -546,7 +546,7 @@ class TestTradeVisualizationOptions:
         """Test construction with default values."""
         options = TradeVisualizationOptions()
 
-        assert options.style == TradeVisualization.BOTH
+        assert options.style == TradeVisualization.RECTANGLES
 
     def test_custom_construction(self):
         """Test construction with custom values."""

@@ -8,7 +8,8 @@ import {
   SeriesAttachedParameter,
   IChartApi,
   ISeriesApi,
-  Coordinate
+  Coordinate,
+  LineSeries
 } from 'lightweight-charts'
 import { TradeConfig, TradeVisualizationOptions } from './types'
 
@@ -189,17 +190,41 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
 // Trade rectangle plugin class
 export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
   private chart: IChartApi
-  private series: ISeriesApi<any>
+  private dummySeries: ISeriesApi<'Line'>
   private rectangles: TradeRectangleData[] = []
   private _paneViews: TradeRectanglePaneView[]
+  private isAttached: boolean = false
 
-  constructor(chart: IChartApi, series: ISeriesApi<any>) {
+  constructor(chart: IChartApi, priceScaleId: string = 'right') {
     this.chart = chart
-    this.series = series
     this._paneViews = [new TradeRectanglePaneView(this)]
     
-    // Attach the primitive to the series for rendering
-    this.series.attachPrimitive(this)
+    console.log('🔍 [TradeRectanglePlugin] Constructor called for chart:', chart.chartElement().id);
+    console.log('🔍 [TradeRectanglePlugin] Using price scale ID:', priceScaleId);
+    
+    // Create a dummy line series to attach the primitive to (following official pattern)
+    this.dummySeries = chart.addSeries(LineSeries, {
+      color: 'transparent',
+      lineWidth: 0 as any,
+      visible: false,
+      priceScaleId: priceScaleId,
+    });
+
+    // Add minimal dummy data to ensure the time scale is properly initialized
+    const dummyData = [{
+      time: Math.floor(Date.now() / 1000) as UTCTimestamp,
+      value: 0
+    }];
+    this.dummySeries.setData(dummyData);
+
+    // Attach the primitive to the dummy series for rendering
+    try {
+      this.dummySeries.attachPrimitive(this)
+      this.isAttached = true;
+      console.log('✅ [TradeRectanglePlugin] Successfully attached primitive to dummy series');
+    } catch (error) {
+      console.error('❌ [TradeRectanglePlugin] Failed to attach primitive to dummy series:', error);
+    }
   }
 
   // Getter methods
@@ -207,8 +232,8 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
     return this.chart
   }
 
-  getSeries(): ISeriesApi<any> {
-    return this.series
+  getSeries(): ISeriesApi<'Line'> {
+    return this.dummySeries
   }
 
   getRectangles(): TradeRectangleData[] {
@@ -217,7 +242,7 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
 
   // ISeriesPrimitive implementation
   attached(param: SeriesAttachedParameter<Time>): void {
-    // Primitive is attached to the series
+    console.log('✅ [TradeRectanglePlugin] Primitive attached to series with param:', param);
   }
 
   detached(): void {
@@ -254,7 +279,12 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
   }
 
   destroy(): void {
-    this.series.detachPrimitive(this)
+    if (this.isAttached) {
+      this.dummySeries.detachPrimitive(this)
+      this.isAttached = false;
+    }
+    // Remove the dummy series from the chart
+    this.chart.removeSeries(this.dummySeries);
   }
 }
 

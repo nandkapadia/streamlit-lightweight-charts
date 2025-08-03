@@ -2,7 +2,7 @@
 
 from .chainable import chainable_field, chainable_property
 
-# Note: trade_visualization functions are imported directly where needed
+# Trade visualization utilities have been removed - functionality is handled by frontend plugins
 # to avoid circular imports with the options module
 
 __all__ = [

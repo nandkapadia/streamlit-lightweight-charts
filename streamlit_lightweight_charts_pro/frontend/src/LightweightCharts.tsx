@@ -13,7 +13,8 @@ import {
   LineStyle
 } from 'lightweight-charts'
 import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualizationOptions, Annotation, AnnotationLayer, LegendConfig, SyncConfig, PaneHeightOptions } from './types'
-import { createTradeVisualElements, TradeRectanglePlugin } from './tradeVisualization'
+import { createTradeVisualElements } from './tradeVisualization'
+import { RectangleOverlayPlugin } from './rectanglePlugin'
 import { createAnnotationVisualElements } from './annotationSystem'
 import { createBandSeries, BandData } from './bandSeriesPlugin'
 import { createSignalSeriesPlugin, SignalSeries } from './signalSeriesPlugin'
@@ -27,8 +28,9 @@ interface LightweightChartsProps {
 const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 400, width = null }) => {
   const chartRefs = useRef<{ [key: string]: IChartApi }>({})
   const seriesRefs = useRef<{ [key: string]: ISeriesApi<any>[] }>({})
-  const rectanglePluginRefs = useRef<{ [key: string]: TradeRectanglePlugin }>({})
+  const rectanglePluginRefs = useRef<{ [key: string]: any }>({})
   const signalPluginRefs = useRef<{ [key: string]: SignalSeries }>({})
+  const chartConfigs = useRef<{ [key: string]: ChartConfig }>({})
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
   const isInitializedRef = useRef<boolean>(false)
   const fitContentTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -208,50 +210,62 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     const doubleClickThreshold = 300 // milliseconds
 
     // Check if fitContent on load is enabled
-    const shouldFitContentOnLoad = chartConfig.chart?.timeScale?.fitContentOnLoad !== false && 
-                                  chartConfig.chart?.fitContentOnLoad !== false
+        const shouldFitContentOnLoad = chartConfig.chart?.timeScale?.fitContentOnLoad !== false &&
+                                   chartConfig.chart?.fitContentOnLoad !== false
+
+    console.log('🔍 [setupFitContent] shouldFitContentOnLoad:', shouldFitContentOnLoad, 'for chart:', chart.chartElement().id);
 
     if (shouldFitContentOnLoad) {
       // Wait for data to be loaded and then fit content
-      const handleDataLoaded = () => {
+              const handleDataLoaded = async (retryCount = 0) => {
+        const maxRetries = 50; // Prevent infinite loops
+        const currentChartId = chart.chartElement().id || 'default';
+        console.log('🔍 [handleDataLoaded] Starting data loaded check for chart:', currentChartId, 'retry:', retryCount);
+        
+        if (retryCount >= maxRetries) {
+          console.error('❌ [handleDataLoaded] Max retries exceeded, giving up on chart initialization');
+          return;
+        }
+        
         try {
           // Check if chart has series with data
           const series = Object.values(seriesRefs.current).flat()
+          console.log('🔍 [handleDataLoaded] Series count:', series.length);
+          
+          // Log chart state for debugging
+          console.log('🔍 [handleDataLoaded] Chart state:', {
+            chartId: currentChartId,
+            timeScale: !!chart.timeScale(),
+            seriesCount: series.length,
+            storedConfig: !!chartConfigs.current[currentChartId],
+            storedConfigTrades: chartConfigs.current[currentChartId]?.trades?.length || 0
+          });
+          
           if (series.length === 0) {
             // No series yet, try again after a delay
-            setTimeout(handleDataLoaded, 100)
+            console.log('🔍 [handleDataLoaded] No series yet, retrying...');
+            setTimeout(() => handleDataLoaded(retryCount + 1), 100)
             return
           }
 
-          // Check if any series has data
-          let hasData = false
-          for (const s of series) {
-            try {
-              const data = s.dataByIndex(0, 1)
-              if (data && data.length > 0) {
-                hasData = true
-                break
-              }
-            } catch (error) {
-              // Series might not have data method or be disposed
-            }
-          }
-
-          if (!hasData) {
-            // No data yet, try again after a delay
-            setTimeout(handleDataLoaded, 100)
-            return
-          }
-
-          // Check if chart has a visible range
+          // Check if chart has a visible range (more reliable than checking series data)
           const visibleRange = timeScale.getVisibleRange()
+          console.log('🔍 [handleDataLoaded] Visible range:', visibleRange);
+          
           if (visibleRange && visibleRange.from && visibleRange.to) {
+            console.log('✅ [handleDataLoaded] Chart is ready, calling fitContent and trade visualization');
             timeScale.fitContent()
+            
+            // Add trade visualization when chart is ready
+            await addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
           } else {
             // If no visible range, try again after a short delay
-            setTimeout(() => {
+            console.log('🔍 [handleDataLoaded] No visible range, retrying...');
+            setTimeout(async () => {
               try {
                 timeScale.fitContent()
+                // Add trade visualization when chart is ready
+                await addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
               } catch (error) {
                 // fitContent after delay failed
               }
@@ -268,7 +282,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       }
 
       // Call fitContent after a longer delay to ensure data is loaded
-      fitContentTimeoutRef.current = setTimeout(handleDataLoaded, 500)
+      console.log('🔍 [setupFitContent] Setting up handleDataLoaded timeout for chart:', chart.chartElement().id);
+      fitContentTimeoutRef.current = setTimeout(async () => {
+        console.log('🔍 [setupFitContent] handleDataLoaded timeout triggered');
+        await handleDataLoaded();
+      }, 500)
     }
 
     // Setup double-click to fit content
@@ -322,6 +340,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     chartRefs.current = {}
     seriesRefs.current = {}
     rectanglePluginRefs.current = {}
+    chartConfigs.current = {}
   }, [])
 
   // Create series function
@@ -727,7 +746,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     return series
   }, [cleanLineStyleOptions])
 
-  const addTradeVisualization = useCallback((chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
+  const addTradeVisualization = useCallback(async (chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
     console.log('🔍 [addTradeVisualization] Starting trade visualization:', {
       tradesCount: trades?.length,
       options,
@@ -739,28 +758,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       return;
     }
 
-    // Check if time scale is properly initialized
+    // Verify chart is ready (should be guaranteed by lifecycle method)
     const timeScale = chart.timeScale();
     const visibleRange = timeScale.getVisibleRange();
     console.log('🔍 [addTradeVisualization] Time scale visible range:', visibleRange);
     
-    // Check if chart has data and time scale is ready
     if (!visibleRange || !visibleRange.from || !visibleRange.to) {
-      console.warn('⚠️ [addTradeVisualization] Time scale not properly initialized, waiting...');
-      // Retry after a short delay
-      setTimeout(() => {
-        addTradeVisualization(chart, series, trades, options, chartData);
-      }, 200);
-      return;
-    }
-    
-    // Additional check: ensure the time scale has a reasonable range
-    const timeRange = Number(visibleRange.to ?? 0) - Number(visibleRange.from ?? 0);
-    if (timeRange < 1000) { // Less than 1000 seconds (about 16 minutes)
-      console.warn('⚠️ [addTradeVisualization] Time scale range too small, waiting for more data...');
-      setTimeout(() => {
-        addTradeVisualization(chart, series, trades, options, chartData);
-      }, 200);
+      console.error('❌ [addTradeVisualization] Chart not ready - time scale not initialized');
       return;
     }
 
@@ -788,23 +792,39 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
       }
 
-      // Add rectangles using the robust plugin
+      // Add rectangles using the canvas overlay approach (following official example)
       const chartId = chart.chartElement().id || 'default';
       
+      // Use the RectangleOverlayPlugin instead of TradeRectanglePlugin
       if (!rectanglePluginRefs.current[chartId]) {
-        const rectanglePlugin = new TradeRectanglePlugin(chart, series);
+        console.log('🔍 [addTradeVisualization] Creating new rectangle overlay plugin for chart:', chartId);
+        const rectanglePlugin = new RectangleOverlayPlugin();
+        rectanglePlugin.setChart(chart, series);
         rectanglePluginRefs.current[chartId] = rectanglePlugin;
-        console.log('✅ [addTradeVisualization] Created new rectangle plugin for chart:', chartId);
+        console.log('✅ [addTradeVisualization] Created new rectangle overlay plugin for chart:', chartId);
+      } else {
+        console.log('🔍 [addTradeVisualization] Using existing rectangle overlay plugin for chart:', chartId);
       }
       
       const rectanglePlugin = rectanglePluginRefs.current[chartId];
+      
+      // Clear existing rectangles and add new ones
       rectanglePlugin.clearRectangles();
       
-      console.log('🔍 [addTradeVisualization] Adding rectangles:', visualElements.rectangles);
-      visualElements.rectangles.forEach((rect, index) => {
-        rectanglePlugin.addRectangle(rect);
-        console.log(`✅ [addTradeVisualization] Added rectangle ${index}:`, rect);
-      });
+      console.log('🔍 [addTradeVisualization] Adding rectangles:', visualElements.rectangles.length);
+      console.log('🔍 [addTradeVisualization] Rectangle data:', visualElements.rectangles);
+      if (visualElements.rectangles.length > 0) {
+        visualElements.rectangles.forEach((rect, index) => {
+          rectanglePlugin.addRectangle(rect);
+          console.log(`✅ [addTradeVisualization] Added rectangle ${index}:`, rect);
+        });
+        
+        // Force redraw of the canvas overlay
+        rectanglePlugin.scheduleRedraw();
+        console.log('✅ [addTradeVisualization] Scheduled rectangle overlay redraw');
+      } else {
+        console.log('⚠️ [addTradeVisualization] No rectangles to add');
+      }
 
       // Add annotations to the series
       if (visualElements.annotations && Array.isArray(visualElements.annotations) && visualElements.annotations.length > 0) {
@@ -827,6 +847,109 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       console.error('❌ [addTradeVisualization] Error in trade visualization:', error);
     }
   }, [])
+
+  const addTradeVisualizationWhenReady = useCallback(async (chart: IChartApi, chartConfig: ChartConfig) => {
+    const chartId = chart.chartElement().id || 'default'
+    
+    console.log('🔍 [addTradeVisualizationWhenReady] Chart is ready, adding trade visualization:', {
+      chartId,
+      hasTrades: !!chartConfig.trades,
+      tradesCount: chartConfig.trades?.length,
+      hasTradeOptions: !!chartConfig.tradeVisualizationOptions,
+      chartDisposed: !chart || chart.chartElement() === null,
+      seriesRefsKeys: Object.keys(seriesRefs.current),
+      seriesRefsForChart: seriesRefs.current[chartId]?.length || 0
+    });
+
+    if (!chartConfig.trades || chartConfig.trades.length === 0) {
+      console.log('⚠️ [addTradeVisualizationWhenReady] No trades to visualize');
+      return;
+    }
+
+    // Wait for series to be available and find the candlestick series
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    while (retryCount < maxRetries) {
+      const seriesList = seriesRefs.current[chartId];
+      if (seriesList && seriesList.length > 0) {
+        console.log('✅ [addTradeVisualizationWhenReady] Found series for trade visualization');
+        break;
+      }
+      
+      console.log(`🔍 [addTradeVisualizationWhenReady] Waiting for series (attempt ${retryCount + 1}/${maxRetries})`);
+      console.log(`🔍 [addTradeVisualizationWhenReady] Current seriesRefs:`, {
+        keys: Object.keys(seriesRefs.current),
+        chartId,
+        seriesForChart: seriesRefs.current[chartId]?.length || 0
+      });
+      await new Promise(resolve => setTimeout(resolve, 100));
+      retryCount++;
+    }
+    
+    // Check if chart is still valid
+    if (!chart || !chart.chartElement()) {
+      console.log('⚠️ [addTradeVisualizationWhenReady] Chart is disposed, cannot add trade visualization');
+      return;
+    }
+    
+    const seriesList = seriesRefs.current[chartId];
+    if (!seriesList || seriesList.length === 0) {
+      console.log('⚠️ [addTradeVisualizationWhenReady] No series available for trade visualization after retries');
+      return;
+    }
+
+    // Find the candlestick series specifically
+    let candlestickSeries = null;
+    let candlestickSeriesIndex = -1;
+    
+    for (let i = 0; i < seriesList.length; i++) {
+      const series = seriesList[i];
+      try {
+        // Check if this is a candlestick series by looking at its type
+        const seriesType = series.seriesType();
+        if (seriesType === 'Candlestick') {
+          candlestickSeries = series;
+          candlestickSeriesIndex = i;
+          console.log(`✅ [addTradeVisualizationWhenReady] Found candlestick series at index ${i}`);
+          break;
+        }
+      } catch (error) {
+        // Series might be disposed, continue to next
+        continue;
+      }
+    }
+    
+    if (!candlestickSeries) {
+      console.log('⚠️ [addTradeVisualizationWhenReady] No candlestick series found, using first series as fallback');
+      candlestickSeries = seriesList[0];
+      candlestickSeriesIndex = 0;
+    }
+    
+    // Check if series is still valid
+    try {
+      candlestickSeries.priceScale();
+      console.log('✅ [addTradeVisualizationWhenReady] Candlestick series is valid and accessible');
+    } catch (error) {
+      console.log('⚠️ [addTradeVisualizationWhenReady] Candlestick series is disposed or invalid:', error);
+      return;
+    }
+
+    // Use trade visualization options from chart config or default
+    const tradeOptions = chartConfig.tradeVisualizationOptions || {
+      style: 'markers',
+      entryMarkerColorLong: '#2196F3',
+      entryMarkerColorShort: '#FF9800',
+      exitMarkerColorProfit: '#4CAF50',
+      exitMarkerColorLoss: '#F44336'
+    };
+
+    console.log('✅ [addTradeVisualizationWhenReady] Adding trade visualization to candlestick series with options:', tradeOptions);
+    
+    // Add trade visualization now that chart is ready - use candlestick series data
+    const candlestickSeriesData = chartConfig.series?.[candlestickSeriesIndex]?.data || chartConfig.series?.[0]?.data;
+    await addTradeVisualization(chart, candlestickSeries, chartConfig.trades, tradeOptions, candlestickSeriesData);
+  }, [addTradeVisualization])
 
   const addAnnotations = useCallback((chart: IChartApi, annotations: Annotation[] | { layers: any }) => {
     // Handle annotation manager structure from Python side
@@ -1267,6 +1390,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           return
         }
 
+        // Set the chart element's ID so we can retrieve it later
+        const chartElement = chart.chartElement()
+        if (chartElement) {
+          chartElement.id = chartId
+          console.log(`✅ [createChart] Set chart element ID to: ${chartId}`)
+        }
+
         chartRefs.current[chartId] = chart
 
         // Apply layout.panes options if present
@@ -1394,48 +1524,14 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         // Add modular tooltip system
         addModularTooltip(chart, container, seriesList, chartConfig)
 
-        // Add chart-level trades with delay to ensure chart is fully initialized
-        console.log('🔍 [createChart] Checking for chart-level trades:', {
+        // Store chart config for trade visualization when chart is ready
+        chartConfigs.current[chartId] = chartConfig
+        console.log('🔍 [createChart] Stored chart config for trade visualization:', {
+          chartId,
           hasTrades: !!chartConfig.trades,
           tradesCount: chartConfig.trades?.length,
-          hasSeries: chartConfig.series.length > 0,
-          hasTradeOptions: !!chartConfig.tradeVisualizationOptions,
-          trades: chartConfig.trades,
-          tradeOptions: chartConfig.tradeVisualizationOptions
+          hasTradeOptions: !!chartConfig.tradeVisualizationOptions
         });
-        
-        if (chartConfig.trades && chartConfig.series.length > 0) {
-          const firstSeries = seriesRefs.current[chartId][0]
-          if (firstSeries) {
-            // Use trade visualization options from chart config or default
-            const tradeOptions = chartConfig.tradeVisualizationOptions || {
-              style: 'markers',
-              entryMarkerColorLong: '#2196F3',
-              entryMarkerColorShort: '#FF9800',
-              exitMarkerColorProfit: '#4CAF50',
-              exitMarkerColorLoss: '#F44336'
-            }
-            console.log('🔍 [createChart] Adding chart-level trade visualization with options:', tradeOptions);
-            
-            // Add trade visualization after a delay to ensure chart is fully initialized
-            setTimeout(() => {
-              console.log('🔍 [createChart] Adding trade visualization after delay');
-              
-              // Ensure chart is fitted to content first
-              try {
-                chart.timeScale().fitContent()
-                console.log('✅ [createChart] Chart fitted to content')
-              } catch (error) {
-                console.warn('⚠️ [createChart] Could not fit content:', error)
-              }
-              
-              // Add a small additional delay to ensure fitContent is applied
-              setTimeout(() => {
-                addTradeVisualization(chart, firstSeries, chartConfig.trades ?? [], tradeOptions, chartConfig.series[0]?.data)
-              }, 100)
-            }, 500) // 500ms delay to ensure chart data is loaded and time scale is ready
-          }
-        }
 
         // Add chart-level annotations
         if (chartConfig.annotations) {
