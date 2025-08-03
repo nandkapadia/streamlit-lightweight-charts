@@ -107,7 +107,7 @@ def update_chart():
 legend_options = LegendOptions(
     visible=True,
     position="top-right",
-    fontSize=12
+    font_size=12
 )
 ```
 

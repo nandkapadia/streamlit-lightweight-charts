@@ -115,12 +115,12 @@ basic_chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=12,
-            backgroundColor="rgba(255, 255, 255, 0.9)",
-            borderColor="#e1e3e6",
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=True,
+            font_size=12,
+            background_color="rgba(255, 255, 255, 0.9)",
+            border_color="#e1e3e6",
+            border_width=1,
+            border_radius=4,
             padding=8
         )
     ),
@@ -145,12 +145,12 @@ chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=12,
-            backgroundColor="rgba(255, 255, 255, 0.9)",
-            borderColor="#e1e3e6",
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=True,
+            font_size=12,
+            background_color="rgba(255, 255, 255, 0.9)",
+            border_color="#e1e3e6",
+            border_width=1,
+            border_radius=4,
             padding=8
         )
     ),
@@ -179,12 +179,12 @@ multi_pane_chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=11,
-            backgroundColor="rgba(255, 255, 255, 0.95)",
-            borderColor="#cccccc",
-            borderWidth=1,
-            borderRadius=6,
+            show_last_value=True,
+            font_size=11,
+            background_color="rgba(255, 255, 255, 0.95)",
+            border_color="#cccccc",
+            border_width=1,
+            border_radius=6,
             padding=10,
             margin=8
         )
@@ -239,12 +239,12 @@ chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=11,
-            backgroundColor="rgba(255, 255, 255, 0.95)",
-            borderColor="#cccccc",
-            borderWidth=1,
-            borderRadius=6,
+            show_last_value=True,
+            font_size=11,
+            background_color="rgba(255, 255, 255, 0.95)",
+            border_color="#cccccc",
+            border_width=1,
+            border_radius=6,
             padding=10,
             margin=8
         )
@@ -274,10 +274,10 @@ with col1:
             legend=LegendOptions(
                 visible=True,
                 position="top-left",
-                showLastValue=False,
-                fontSize=10,
-                backgroundColor="rgba(255, 255, 255, 0.9)",
-                borderColor="#e1e3e6"
+                show_last_value=False,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#e1e3e6"
             )
         ),
         series=[
@@ -296,11 +296,11 @@ with col2:
             legend=LegendOptions(
                 visible=True,
                 position="bottom-right",
-                showLastValue=True,
-                fontSize=10,
-                backgroundColor="rgba(0, 0, 0, 0.8)",
+                show_last_value=True,
+                font_size=10,
+                background_color="rgba(0, 0, 0, 0.8)",
                 color="#ffffff",
-                borderColor="#666666"
+                border_color="#666666"
             )
         ),
         series=[
@@ -331,12 +331,12 @@ area_chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=12,
-            backgroundColor="rgba(255, 255, 255, 0.9)",
-            borderColor="#e1e3e6",
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=True,
+            font_size=12,
+            background_color="rgba(255, 255, 255, 0.9)",
+            border_color="#e1e3e6",
+            border_width=1,
+            border_radius=4,
             padding=8
         )
     ),
@@ -366,12 +366,12 @@ chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=12,
-            backgroundColor="rgba(255, 255, 255, 0.9)",
-            borderColor="#e1e3e6",
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=True,
+            font_size=12,
+            background_color="rgba(255, 255, 255, 0.9)",
+            border_color="#e1e3e6",
+            border_width=1,
+            border_radius=4,
             padding=8
         )
     ),
@@ -388,18 +388,18 @@ st.markdown("""
 
 - **visible**: Show/hide the legend (default: true)
 - **position**: Legend position - 'top-left', 'top-right', 'bottom-left', 'bottom-right' (default: 'top')
-- **showLastValue**: Show the last value for each series (default: false)
-- **fontSize**: Font size in pixels (default: 12)
-- **fontFamily**: Font family (default: 'Arial, sans-serif')
-- **fontWeight**: Font weight (default: 'normal')
+- **show_last_value**: Show the last value for each series (default: false)
+- **font_size**: Font size in pixels (default: 12)
+- **font_family**: Font family (default: 'Arial, sans-serif')
+- **font_weight**: Font weight (default: 'normal')
 - **color**: Text color (default: '#131722')
-- **backgroundColor**: Background color (default: 'rgba(255, 255, 255, 0.9)')
-- **borderColor**: Border color (default: '#e1e3e6')
-- **borderWidth**: Border width in pixels (default: 1)
-- **borderRadius**: Border radius in pixels (default: 4)
+- **background_color**: Background color (default: 'rgba(255, 255, 255, 0.9)')
+- **border_color**: Border color (default: '#e1e3e6')
+- **border_width**: Border width in pixels (default: 1)
+- **border_radius**: Border radius in pixels (default: 4)
 - **padding**: Internal padding in pixels (default: 8)
 - **margin**: External margin in pixels (default: 4)
-- **zIndex**: CSS z-index (default: 1000)
+- **z_index**: CSS z-index (default: 1000)
 """)
 
 # Interactive legend configuration
@@ -434,12 +434,12 @@ interactive_chart = Chart(
         legend=LegendOptions(
             visible=True,
             position=legend_position,
-            showLastValue=show_last_value,
-            fontSize=legend_font_size,
-            backgroundColor=legend_bg_color,
-            borderColor=legend_border_color,
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=show_last_value,
+            font_size=legend_font_size,
+            background_color=legend_bg_color,
+            border_color=legend_border_color,
+            border_width=1,
+            border_radius=4,
             padding=legend_padding,
             margin=4
         )

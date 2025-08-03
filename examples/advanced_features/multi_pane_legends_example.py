@@ -186,15 +186,15 @@ multi_pane_chart = Chart(
         legend=LegendOptions(
             visible=True,
             position=legend_position,
-            showLastValue=show_last_value,
-            fontSize=legend_font_size,
-            backgroundColor=legend_bg_color,
-            borderColor=legend_border_color,
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=show_last_value,
+            font_size=legend_font_size,
+            background_color=legend_bg_color,
+            border_color=legend_border_color,
+            border_width=1,
+            border_radius=4,
             padding=legend_padding,
             margin=4,
-            zIndex=1000,
+            z_index=1000,
         ),
     ),
     series=[
@@ -269,12 +269,12 @@ chart = Chart(
         legend=LegendOptions(
             visible=True,
             position="top-right",
-            showLastValue=True,
-            fontSize=12,
-            backgroundColor="rgba(255, 255, 255, 0.9)",
-            borderColor="#e1e3e6",
-            borderWidth=1,
-            borderRadius=4,
+            show_last_value=True,
+            font_size=12,
+            background_color="rgba(255, 255, 255, 0.9)",
+            border_color="#e1e3e6",
+            border_width=1,
+            border_radius=4,
             padding=8,
             margin=4
         )
@@ -320,18 +320,18 @@ st.markdown(
 
 - **visible**: Show/hide the legend (default: true)
 - **position**: 'top-left', 'top-right', 'bottom-left', 'bottom-right'
-- **showLastValue**: Display the last value for each series
-- **fontSize**: Font size in pixels
-- **fontFamily**: Font family (default: 'Arial, sans-serif')
-- **fontWeight**: Font weight (default: 'normal')
+- **show_last_value**: Display the last value for each series
+- **font_size**: Font size in pixels
+- **font_family**: Font family (default: 'Arial, sans-serif')
+- **font_weight**: Font weight (default: 'normal')
 - **color**: Text color (default: '#131722')
-- **backgroundColor**: Background color (supports rgba for transparency)
-- **borderColor**: Border color
-- **borderWidth**: Border width in pixels
-- **borderRadius**: Border radius in pixels
+- **background_color**: Background color (supports rgba for transparency)
+- **border_color**: Border color
+- **border_width**: Border width in pixels
+- **border_radius**: Border radius in pixels
 - **padding**: Internal padding in pixels
 - **margin**: External margin in pixels
-- **zIndex**: CSS z-index for layering
+- **z_index**: CSS z-index for layering
 
 ### Best Practices:
 

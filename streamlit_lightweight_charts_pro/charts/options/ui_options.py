@@ -31,43 +31,43 @@ class RangeSwitcherOptions(Options):
 @chainable_field("visible", bool)
 @chainable_field("type", str)
 @chainable_field("position", str)
-@chainable_field("symbolName", str)
-@chainable_field("fontSize", int)
-@chainable_field("fontFamily", str)
-@chainable_field("fontWeight", str)
+@chainable_field("symbol_name", str)
+@chainable_field("font_size", int)
+@chainable_field("font_family", str)
+@chainable_field("font_weight", str)
 @chainable_field("color", str)
-@chainable_field("backgroundColor", str)
-@chainable_field("borderColor", str)
-@chainable_field("borderWidth", int)
-@chainable_field("borderRadius", int)
+@chainable_field("background_color", str)
+@chainable_field("border_color", str)
+@chainable_field("border_width", int)
+@chainable_field("border_radius", int)
 @chainable_field("padding", int)
 @chainable_field("margin", int)
-@chainable_field("zIndex", int)
-@chainable_field("showLastValue", bool)
-@chainable_field("showTime", bool)
-@chainable_field("showSymbol", bool)
-@chainable_field("priceFormat", str)
-@chainable_field("customTemplate", str)
+@chainable_field("z_index", int)
+@chainable_field("show_last_value", bool)
+@chainable_field("show_time", bool)
+@chainable_field("show_symbol", bool)
+@chainable_field("price_format", str)
+@chainable_field("custom_template", str)
 class LegendOptions(Options):
     """Legend configuration."""
 
     visible: bool = True
     type: str = "simple"
     position: str = "top-right"
-    symbolName: str = ""
-    fontSize: int = 12
-    fontFamily: str = "Arial, sans-serif"
-    fontWeight: str = "normal"
+    symbol_name: str = ""
+    font_size: int = 12
+    font_family: str = "Arial, sans-serif"
+    font_weight: str = "normal"
     color: str = "#131722"
-    backgroundColor: str = "rgba(255, 255, 255, 0.9)"
-    borderColor: str = "#e1e3e6"
-    borderWidth: int = 1
-    borderRadius: int = 4
+    background_color: str = "rgba(255, 255, 255, 0.9)"
+    border_color: str = "#e1e3e6"
+    border_width: int = 1
+    border_radius: int = 4
     padding: int = 8
     margin: int = 4
-    zIndex: int = 1000
-    showLastValue: bool = False
-    showTime: bool = False
-    showSymbol: bool = True
-    priceFormat: str = ""
-    customTemplate: str = ""
+    z_index: int = 1000
+    show_last_value: bool = False
+    show_time: bool = False
+    show_symbol: bool = True
+    price_format: str = ""
+    custom_template: str = ""

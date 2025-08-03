@@ -229,6 +229,9 @@ class MarkerPosition(str, Enum):
     ABOVE_BAR = "aboveBar"
     BELOW_BAR = "belowBar"
     IN_BAR = "inBar"
+    AT_PRICE_TOP = "atPriceTop"
+    AT_PRICE_BOTTOM = "atPriceBottom"
+    AT_PRICE_MIDDLE = "atPriceMiddle"
 
 
 class MarkerShape(str, Enum):
