@@ -10,7 +10,7 @@ from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
 from streamlit_lightweight_charts_pro.data.annotation import Annotation
 from streamlit_lightweight_charts_pro.data.line_data import LineData
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
-from streamlit_lightweight_charts_pro.data.trade import Trade
+from streamlit_lightweight_charts_pro.data.trade import TradeData
 
 
 def create_sample_ohlcv_data(n=10):
@@ -88,7 +88,7 @@ def test_chart_with_annotations_and_trades():
     chart.add_annotation(annotation)
     # Add trade visualization
     trades = [
-        Trade(
+        TradeData(
             entry_time=1640995200,
             entry_price=100,
             exit_time=1640998800,

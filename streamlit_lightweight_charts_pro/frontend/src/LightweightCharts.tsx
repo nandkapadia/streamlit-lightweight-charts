@@ -142,9 +142,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           const newHeight = chartConfig.autoHeight ? dimensions.height : chartConfig.chart?.height || height
           
           chart.resize(newWidth, newHeight)
-            } catch (error) {
+        } catch (error) {
       // Auto-sizing resize failed
-    }
+        }
       })
       
       resizeObserver.observe(container)
@@ -189,9 +189,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 if (otherTimeScale && timeRange) {
                   otherTimeScale.setVisibleRange(timeRange)
                 }
-                  } catch (error) {
+              } catch (error) {
       // Time range synchronization failed
-    }
+              }
             }
           })
         })
@@ -496,12 +496,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           const signalSeries = createSignalSeriesPlugin(chart, {
             type: 'signal',
             data: data || [],
-                              options: {
-                    color0: cleanedOptions.color0 || '#ffffff',
-                    color1: cleanedOptions.color1 || '#ff0000',
-                    color2: cleanedOptions.color2,
-                    visible: cleanedOptions.visible !== false,
-                  }
+            options: {
+              neutralColor: cleanedOptions.neutralColor || '#f0f0f0',
+              signalColor: cleanedOptions.signalColor || '#ff0000',
+              alertColor: cleanedOptions.alertColor,
+              visible: cleanedOptions.visible !== false,
+            }
           })
           
           // Store reference for cleanup
@@ -527,9 +527,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             applyOptions: (options: any) => {
               try {
                 signalSeries.updateOptions({
-                  color0: options.color0 || '#ffffff',
-                  color1: options.color1 || '#ff0000',
-                  color2: options.color2,
+                  neutralColor: options.neutralColor || '#f0f0f0',
+                  signalColor: options.signalColor || '#ff0000',
+                  alertColor: options.alertColor,
                   visible: options.visible !== false,
                 })
               } catch (error) {

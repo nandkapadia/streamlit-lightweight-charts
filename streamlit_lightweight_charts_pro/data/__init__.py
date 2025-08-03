@@ -49,7 +49,7 @@ from streamlit_lightweight_charts_pro.data.single_value_data import SingleValueD
 
 # Import trade classes
 from streamlit_lightweight_charts_pro.data.trade import (
-    Trade,
+    TradeData,
     TradeType,
 )
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeVisualization
@@ -77,7 +77,7 @@ __all__ = [
     # Marker classes
     "Marker",
     # Trade classes
-    "Trade",
+    "TradeData",
     "TradeType",
     "TradeVisualization",
     "TradeVisualizationOptions",

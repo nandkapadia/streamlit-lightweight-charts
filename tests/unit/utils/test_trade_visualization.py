@@ -1,7 +1,7 @@
 """
 Tests for trade visualization utilities.
 
-This module tests the trade visualization functionality that converts Trade objects
+This module tests the trade visualization functionality that converts TradeData objects
 into visual elements for chart display. This addresses the critical coverage gap
 in the trade_visualization.py module.
 """
@@ -13,7 +13,7 @@ import pytest
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
-from streamlit_lightweight_charts_pro.data import Trade
+from streamlit_lightweight_charts_pro.data import TradeData
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType, TradeVisualization
 from streamlit_lightweight_charts_pro.utils.trade_visualization import (
     add_trades_to_series,
@@ -32,10 +32,10 @@ class TestTradesToVisualElements:
     """Test the main trades_to_visual_elements function."""
 
     @pytest.fixture
-    def sample_trades(self) -> List[Trade]:
+    def sample_trades(self) -> List[TradeData]:
         """Create sample trades for testing."""
         return [
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 10:00:00",
                 entry_price=100.0,
                 exit_time="2024-01-01 15:00:00",
@@ -43,7 +43,7 @@ class TestTradesToVisualElements:
                 quantity=100,
                 trade_type=TradeType.LONG,
             ),
-            Trade(
+            TradeData(
                 entry_time="2024-01-02 10:00:00",
                 entry_price=110.0,
                 exit_time="2024-01-02 14:00:00",
@@ -198,9 +198,9 @@ class TestCreateTradeRectangle:
     """Test the create_trade_rectangle function."""
 
     @pytest.fixture
-    def sample_trade(self) -> Trade:
+    def sample_trade(self) -> TradeData:
         """Create a sample trade for testing."""
-        return Trade(
+        return TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -240,7 +240,7 @@ class TestCreateTradeRectangle:
 
     def test_losing_short_trade_colors(self):
         """Test colors for losing short trade."""
-        losing_short_trade = Trade(
+        losing_short_trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=110.0,
             exit_time="2024-01-01 15:00:00",
@@ -281,9 +281,9 @@ class TestCreateTradeLine:
     """Test the create_trade_line function."""
 
     @pytest.fixture
-    def sample_trade(self) -> Trade:
+    def sample_trade(self) -> TradeData:
         """Create a sample trade for testing."""
-        return Trade(
+        return TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -325,7 +325,7 @@ class TestCreateTradeLine:
 
     def test_losing_trade_line_color(self):
         """Test line color for losing trade."""
-        losing_trade = Trade(
+        losing_trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -347,9 +347,9 @@ class TestCreateTradeArrow:
     """Test the create_trade_arrow function."""
 
     @pytest.fixture
-    def sample_trade(self) -> Trade:
+    def sample_trade(self) -> TradeData:
         """Create a sample trade for testing."""
-        return Trade(
+        return TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -392,9 +392,9 @@ class TestCreateTradeZone:
     """Test the create_trade_zone function."""
 
     @pytest.fixture
-    def sample_trade(self) -> Trade:
+    def sample_trade(self) -> TradeData:
         """Create a sample trade for testing."""
-        return Trade(
+        return TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -456,9 +456,9 @@ class TestCreateTradeAnnotation:
     """Test the create_trade_annotation function."""
 
     @pytest.fixture
-    def sample_trade(self) -> Trade:
+    def sample_trade(self) -> TradeData:
         """Create a sample trade for testing."""
-        return Trade(
+        return TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -558,10 +558,10 @@ class TestCreateTradeShapesSeries:
     """Test the create_trade_shapes_series function."""
 
     @pytest.fixture
-    def sample_trades(self) -> List[Trade]:
+    def sample_trades(self) -> List[TradeData]:
         """Create sample trades for testing."""
         return [
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 10:00:00",
                 entry_price=100.0,
                 exit_time="2024-01-01 15:00:00",
@@ -615,10 +615,10 @@ class TestAddTradesToSeries:
         return {"type": "candlestick", "data": [], "options": {}}
 
     @pytest.fixture
-    def sample_trades(self) -> List[Trade]:
+    def sample_trades(self) -> List[TradeData]:
         """Create sample trades for testing."""
         return [
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 10:00:00",
                 entry_price=100.0,
                 exit_time="2024-01-01 15:00:00",
@@ -671,7 +671,7 @@ class TestTradeVisualizationEdgeCases:
     def test_trade_with_same_entry_exit_time(self):
         """Test trade with same entry and exit time."""
         # Test with slightly different times to avoid validation error
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 10:01:00",  # 1 minute later
@@ -689,7 +689,7 @@ class TestTradeVisualizationEdgeCases:
 
     def test_trade_with_extreme_price_values(self):
         """Test trade with extreme price values."""
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=0.0001,  # Very small price
             exit_time="2024-01-01 15:00:00",
@@ -707,7 +707,7 @@ class TestTradeVisualizationEdgeCases:
 
     def test_trade_with_zero_quantity(self):
         """Test trade with zero quantity."""
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -725,7 +725,7 @@ class TestTradeVisualizationEdgeCases:
 
     def test_trade_with_negative_prices(self):
         """Test trade with negative prices."""
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=-100.0,  # Negative price
             exit_time="2024-01-01 15:00:00",
@@ -752,7 +752,7 @@ class TestTradeVisualizationPerformance:
         for i in range(1000):
             # Use modulo to ensure valid dates (max 31 days)
             day = (i % 31) + 1
-            trade = Trade(
+            trade = TradeData(
                 entry_time=f"2024-01-{day:02d} 10:00:00",
                 entry_price=100.0 + i,
                 exit_time=f"2024-01-{day:02d} 15:00:00",
@@ -791,7 +791,7 @@ class TestTradeVisualizationPerformance:
         for i in range(1000):
             # Use modulo to ensure valid dates (max 31 days)
             day = (i % 31) + 1
-            trade = Trade(
+            trade = TradeData(
                 entry_time=f"2024-01-{day:02d} 10:00:00",
                 entry_price=100.0 + i,
                 exit_time=f"2024-01-{day:02d} 15:00:00",

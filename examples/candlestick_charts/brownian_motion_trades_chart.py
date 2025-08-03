@@ -17,7 +17,7 @@ import streamlit as st
 
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.data import OhlcvData
-from streamlit_lightweight_charts_pro.data.trade import Trade
+from streamlit_lightweight_charts_pro.data.trade import TradeData
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType
 
 
@@ -97,7 +97,7 @@ def identify_trades(ohlcv_data, num_trades=10):
         num_trades: Number of trades to identify
 
     Returns:
-        List of Trade objects
+        List of TradeData objects
     """
     trades = []
     n_periods = len(ohlcv_data)
@@ -121,7 +121,7 @@ def identify_trades(ohlcv_data, num_trades=10):
         trade_type = TradeType.LONG if exit_price > entry_price else TradeType.SHORT
 
         # Create trade object
-        trade = Trade(
+        trade = TradeData(
             entry_time=entry_data.time,
             exit_time=exit_data.time,
             entry_price=round(entry_price, 2),
@@ -256,7 +256,7 @@ def create_custom_trade_markers(trades, options):
     Create custom trade markers based on user options.
 
     Args:
-        trades: List of Trade objects
+        trades: List of TradeData objects
         options: Trade visualization options
 
     Returns:

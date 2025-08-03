@@ -16,7 +16,7 @@ from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 from streamlit_lightweight_charts_pro.charts.series import (
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.data import LineData, OhlcvData, Trade
+from streamlit_lightweight_charts_pro.data import LineData, OhlcvData, TradeData
 from streamlit_lightweight_charts_pro.data.annotation import Annotation
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType
 
@@ -439,7 +439,7 @@ class TestChartTradeVisualizationEdgeCases:
     def test_add_trade_visualization_with_mixed_valid_invalid_trades(self):
         """Test adding trade visualization with mix of valid and invalid trades."""
         chart = Chart()
-        valid_trade = Trade(
+        valid_trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -454,7 +454,7 @@ class TestChartTradeVisualizationEdgeCases:
     def test_add_trade_visualization_without_series(self):
         """Test adding trade visualization to chart without series."""
         chart = Chart()
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",
@@ -477,10 +477,10 @@ class TestChartTradeVisualizationEdgeCases:
         series_without_markers = LineSeries(data=[LineData(time=1640995200, value=100)])
         chart.add_series(series_without_markers)
 
-        from streamlit_lightweight_charts_pro.data.trade import Trade
+        from streamlit_lightweight_charts_pro.data.trade import TradeData
         from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType
 
-        trade = Trade(
+        trade = TradeData(
             entry_time="2024-01-01 10:00:00",
             entry_price=100.0,
             exit_time="2024-01-01 15:00:00",

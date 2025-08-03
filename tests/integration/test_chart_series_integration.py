@@ -32,7 +32,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
     HistogramSeries,
     LineSeries,
 )
-from streamlit_lightweight_charts_pro.data import Annotation, LineData, OhlcvData, Trade
+from streamlit_lightweight_charts_pro.data import Annotation, LineData, OhlcvData, TradeData
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LineStyle,
     MarkerPosition,
@@ -69,10 +69,10 @@ class TestChartSeriesIntegration:
         ]
 
     @pytest.fixture
-    def sample_trades(self) -> List[Trade]:
+    def sample_trades(self) -> List[TradeData]:
         """Create sample trades for testing."""
         return [
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 10:00:00",
                 entry_price=100.0,
                 exit_time="2024-01-01 12:00:00",
@@ -80,7 +80,7 @@ class TestChartSeriesIntegration:
                 quantity=100,
                 trade_type=TradeType.LONG,
             ),
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 13:00:00",
                 entry_price=103.0,
                 exit_time="2024-01-01 14:00:00",
@@ -269,7 +269,7 @@ class TestChartSeriesIntegration:
 
         # Add trade visualization
         trades = [
-            Trade(
+            TradeData(
                 entry_time="2024-01-01 10:00:00",
                 entry_price=100.0,
                 exit_time="2024-01-01 11:00:00",

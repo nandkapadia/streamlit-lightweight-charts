@@ -46,7 +46,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
 from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
-from streamlit_lightweight_charts_pro.data.trade import Trade
+from streamlit_lightweight_charts_pro.data.trade import TradeData
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     ColumnNames,
@@ -791,30 +791,30 @@ class Chart:
 
         return chart
 
-    def add_trades(self, trades: List[Trade]) -> "Chart":
+    def add_trades(self, trades: List[TradeData]) -> "Chart":
         """
         Add trade visualization to the chart.
 
-        Converts trade objects to visual elements and adds them to the chart for
+        Converts TradeData objects to visual elements and adds them to the chart for
         visualization. Each trade will be displayed with entry and exit markers,
         rectangles, lines, arrows, or zones based on the TradeVisualizationOptions.style
         configuration. The visualization can include markers, rectangles, arrows, or
         combinations depending on the style setting.
 
         Args:
-            trades (List[Trade]): List of Trade objects to visualize on the chart.
+            trades (List[TradeData]): List of TradeData objects to visualize on the chart.
 
         Returns:
             Chart: Self for method chaining.
 
         Example:
             ```python
-            from streamlit_lightweight_charts_pro.data import Trade
+            from streamlit_lightweight_charts_pro.data import TradeData
             from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType
 
-            # Create trade objects
+            # Create TradeData objects
             trades = [
-                Trade(
+                TradeData(
                     entry_time="2024-01-01 10:00:00",
                     entry_price=100.0,
                     exit_time="2024-01-01 15:00:00",
@@ -836,10 +836,10 @@ class Chart:
         if not isinstance(trades, list):
             raise TypeError(f"trades must be a list, got {type(trades)}")
 
-        # Validate that all items are Trade objects
+        # Validate that all items are TradeData objects
         for trade in trades:
-            if not isinstance(trade, Trade):
-                raise TypeError(f"All items in trades must be Trade objects, got {type(trade)}")
+            if not isinstance(trade, TradeData):
+                raise TypeError(f"All items in trades must be TradeData objects, got {type(trade)}")
 
         # Store trades for frontend processing
         self._trades = trades

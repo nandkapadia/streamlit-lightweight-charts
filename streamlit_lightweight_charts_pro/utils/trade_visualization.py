@@ -6,7 +6,7 @@ visual elements that can be displayed on financial charts. It supports multiple
 visualization styles including markers, rectangles, lines, arrows, and zones,
 with extensive customization options for colors, sizes, and annotations.
 
-The module handles the conversion of Trade objects into frontend-compatible
+The module handles the conversion of TradeData objects into frontend-compatible
 visual representations that can be rendered by the charting library.
 """
 
@@ -15,14 +15,14 @@ from typing import Any, Dict, List, Optional
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
-from streamlit_lightweight_charts_pro.data import Trade
+from streamlit_lightweight_charts_pro.data import TradeData
 from streamlit_lightweight_charts_pro.type_definitions import ColumnNames
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeVisualization
 from streamlit_lightweight_charts_pro.utils.data_utils import to_utc_timestamp
 
 
 def trades_to_visual_elements(
-    trades: List["Trade"],
+    trades: List["TradeData"],
     options: "TradeVisualizationOptions",
     chart_data: Optional[List[Dict]] = None,
 ) -> Dict[str, Any]:
@@ -35,7 +35,7 @@ def trades_to_visual_elements(
     generate different types of visual representations for the same trade data.
 
     Args:
-        trades: List of Trade objects to visualize. Each trade should have
+        trades: List of TradeData objects to visualize. Each trade should have
             entry/exit timestamps, prices, and trade type information.
         options: TradeVisualizationOptions object containing styling preferences
             and visualization configuration.
@@ -76,10 +76,10 @@ def trades_to_visual_elements(
 
     result = {"markers": [], "shapes": [], "annotations": []}
 
-    # Validate that all trades are Trade objects
+    # Validate that all trades are TradeData objects
     for trade in trades:
-        if not isinstance(trade, Trade):
-            raise TypeError(f"All items in trades must be Trade objects, got {type(trade)}")
+        if not isinstance(trade, TradeData):
+            raise TypeError(f"All items in trades must be TradeData objects, got {type(trade)}")
 
     for trade in trades:
         # Add markers if marker style is enabled
@@ -131,7 +131,7 @@ def trades_to_visual_elements(
     return result
 
 
-def create_trade_rectangle(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
+def create_trade_rectangle(trade: "TradeData", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create rectangle shape for trade visualization.
 
@@ -193,7 +193,7 @@ def create_trade_rectangle(trade: "Trade", options: "TradeVisualizationOptions")
     }
 
 
-def create_trade_line(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
+def create_trade_line(trade: "TradeData", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create line shape for trade visualization.
 
@@ -242,7 +242,7 @@ def create_trade_line(trade: "Trade", options: "TradeVisualizationOptions") -> D
     }
 
 
-def create_trade_arrow(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
+def create_trade_arrow(trade: "TradeData", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create arrow shape for trade visualization.
 
@@ -296,7 +296,7 @@ def create_trade_arrow(trade: "Trade", options: "TradeVisualizationOptions") -> 
 
 
 def create_trade_zone(
-    trade: "Trade",
+    trade: "TradeData",
     options: "TradeVisualizationOptions",
     chart_data: Optional[List[Dict]] = None,
 ) -> Dict[str, Any]:
@@ -403,7 +403,7 @@ def create_trade_zone(
     }
 
 
-def create_trade_annotation(trade: "Trade", options: "TradeVisualizationOptions") -> Dict[str, Any]:
+def create_trade_annotation(trade: "TradeData", options: "TradeVisualizationOptions") -> Dict[str, Any]:
     """
     Create annotation for trade visualization.
 
@@ -493,7 +493,7 @@ def get_line_style_value(style: str) -> int:
 
 
 def create_trade_shapes_series(
-    trades: List["Trade"], options: "TradeVisualizationOptions"
+    trades: List["TradeData"], options: "TradeVisualizationOptions"
 ) -> Dict[str, Any]:
     """
     Create a shapes series configuration for trades.
@@ -519,7 +519,7 @@ def create_trade_shapes_series(
 
 def add_trades_to_series(
     series_config: Dict[str, Any],
-    trades: List["Trade"],
+    trades: List["TradeData"],
     options: "TradeVisualizationOptions",
 ) -> Dict[str, Any]:
     """

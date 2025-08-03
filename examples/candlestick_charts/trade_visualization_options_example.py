@@ -17,7 +17,7 @@ from streamlit_lightweight_charts_pro.charts.options import ChartOptions
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
-from streamlit_lightweight_charts_pro.data import OhlcvData, Trade
+from streamlit_lightweight_charts_pro.data import OhlcvData, TradeData
 from streamlit_lightweight_charts_pro.type_definitions.enums import TradeType, TradeVisualization
 
 
@@ -84,7 +84,7 @@ def create_sample_trades(ohlcv_data):
 
         trade_type = TradeType.LONG if exit_price > entry_price else TradeType.SHORT
 
-        trade = Trade(
+        trade = TradeData(
             entry_time=int(entry_data.time),  # Ensure Python int
             exit_time=int(exit_data.time),  # Ensure Python int
             entry_price=float(round(entry_price, 2)),  # Ensure Python float

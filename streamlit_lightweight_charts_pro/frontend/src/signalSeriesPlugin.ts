@@ -20,14 +20,15 @@ import {
 } from 'lightweight-charts';
 
 export interface SignalData {
-  time: string;
+  time: string | number;
   value: number;
+  color?: string;
 }
 
 export interface SignalOptions {
-  color0: string;
-  color1: string;
-  color2?: string;
+  neutralColor?: string;
+  signalColor?: string;
+  alertColor?: string;
   visible: boolean;
 }
 
@@ -59,32 +60,59 @@ class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
     this._viewData = data;
   }
 
-  draw() {}
+  draw(target: any) {
+    this.drawBackground(target);
+  }
 
   drawBackground(target: any) {
     const points: SignalRendererData[] = this._viewData.data;
-    if (points.length === 0) return;
+    console.log('🔧 drawBackground called with points:', points.length);
+    
+    if (points.length === 0) {
+      console.log('🔧 No points to draw');
+      return;
+    }
 
     target.useBitmapCoordinateSpace((scope: any) => {
       const ctx = scope.context;
       ctx.scale(scope.horizontalPixelRatio, scope.verticalPixelRatio);
 
-      // Draw background bands
+      console.log('🔧 Drawing background bands...');
+      
+      // Draw background bands - following TradingView's approach
       for (let i = 0; i < points.length; i += 2) {
         if (i + 1 < points.length) {
           const startPoint = points[i];
           const endPoint = points[i + 1];
 
-          ctx.fillStyle = startPoint.color;
+          console.log(`🔧 Drawing band ${i/2}:`, {
+            startX: startPoint.x,
+            startY: startPoint.y1,
+            endX: endPoint.x,
+            endY: startPoint.y2,
+            color: startPoint.color
+          });
+
+          // Use the color exactly as provided by the backend
+          const fillStyle = startPoint.color;
+          
+          ctx.fillStyle = fillStyle;
+          
+          // Draw the background rectangle
+          const width = Math.max(1, endPoint.x - startPoint.x); // Ensure minimum width
+          const height = startPoint.y2 - startPoint.y1;
+          
+          console.log(`🔧 Drawing rectangle: x=${startPoint.x}, y=${startPoint.y1}, width=${width}, height=${height}, color=${fillStyle}`);
           
           ctx.fillRect(
             startPoint.x,
             startPoint.y1,
-            endPoint.x - startPoint.x,
-            startPoint.y2 - startPoint.y1
+            width,
+            height
           );
         }
       }
+      console.log('🔧 Background drawing complete');
     });
   }
 }
@@ -103,20 +131,34 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
   }
 
   update() {
+    console.log('🔧 SignalPrimitivePaneView update called');
     const timeScale = this._source.getChart().timeScale();
     const priceScale = this._source.getChart().priceScale('left');
     
-    if (!timeScale || !priceScale) return;
+    if (!timeScale || !priceScale) {
+      console.log('🔧 No timeScale or priceScale available');
+      return;
+    }
 
+    // Debug time scale information
+    const visibleRange = timeScale.getVisibleRange();
+    console.log('🔧 Time scale visible range:', visibleRange);
+    
     const bands = this._source.getBackgroundBands();
+    console.log('🔧 Background bands for rendering:', bands.length);
+    
     const renderData: SignalRendererData[] = [];
 
-    bands.forEach(band => {
+    bands.forEach((band, index) => {
+      console.log(`🔧 Band ${index} times: startTime=${band.startTime}, endTime=${band.endTime}`);
       const startX = timeScale.timeToCoordinate(band.startTime);
       const endX = timeScale.timeToCoordinate(band.endTime);
       
+      console.log(`🔧 Band ${index}: startX=${startX}, endX=${endX}, color=${band.color}`);
+      
+      // Handle cases where coordinates are null (outside visible range)
       if (startX !== null && endX !== null) {
-        // Get the full height of the chart
+        // Both coordinates are valid
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
         
         renderData.push({
@@ -132,10 +174,55 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
           y2: chartHeight,
           color: band.color,
         });
+        
+        console.log(`🔧 Added render data for band ${index}: startX=${startX}, endX=${endX}, height=${chartHeight}`);
+      } else if (startX !== null && endX === null) {
+        // Start is visible but end is outside - extend to chart edge
+        const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
+        const chartWidth = this._source.getChart().chartElement()?.clientWidth || 800;
+        
+        renderData.push({
+          x: startX,
+          y1: 0,
+          y2: chartHeight,
+          color: band.color,
+        });
+        
+        renderData.push({
+          x: chartWidth,
+          y1: 0,
+          y2: chartHeight,
+          color: band.color,
+        });
+        
+        console.log(`🔧 Added render data for band ${index}: startX=${startX}, endX=chartWidth (${chartWidth}), height=${chartHeight}`);
+      } else if (startX === null && endX !== null) {
+        // End is visible but start is outside - extend from chart edge
+        const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
+        
+        renderData.push({
+          x: 0,
+          y1: 0,
+          y2: chartHeight,
+          color: band.color,
+        });
+        
+        renderData.push({
+          x: endX,
+          y1: 0,
+          y2: chartHeight,
+          color: band.color,
+        });
+        
+        console.log(`🔧 Added render data for band ${index}: startX=0, endX=${endX}, height=${chartHeight}`);
+      } else {
+        // Both coordinates are null - band is completely outside visible range
+        console.log(`🔧 Skipping band ${index}: both coordinates are null (outside visible range)`);
       }
     });
 
     this._data.data = renderData;
+    console.log('🔧 Final render data length:', renderData.length);
   }
 
   renderer() {
@@ -161,10 +248,14 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
   private _paneViews: SignalPrimitivePaneView[];
 
   constructor(chart: IChartApi, config: SignalSeriesConfig) {
+    console.log('🔧 SignalSeries constructor called with config:', config);
     this.chart = chart;
     this.options = config.options;
     this.signalData = config.data;
     this._paneViews = [new SignalPrimitivePaneView(this)];
+    
+    console.log('🔧 SignalSeries options:', this.options);
+    console.log('🔧 SignalSeries data length:', this.signalData.length);
     
     // Create a dummy line series to attach the primitive to
     this.dummySeries = chart.addSeries(LineSeries, {
@@ -174,86 +265,193 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       priceScaleId: 'left',
     });
 
+    // Add some dummy data to ensure the time scale is properly initialized
+    if (this.signalData.length > 0) {
+      const dummyData = this.signalData.map(signal => ({
+        time: this.parseTime(signal.time),
+        value: 0
+      }));
+      this.dummySeries.setData(dummyData);
+    }
+
     // Process signal data to create background bands
     this.processSignalData();
 
     // Attach the primitive to the dummy series for rendering
     this.dummySeries.attachPrimitive(this);
+    console.log('🔧 SignalSeries primitive attached, background bands:', this.backgroundBands.length);
   }
 
   /**
    * Process signal data to create background bands
    */
   private processSignalData(): void {
+    console.log('🔧 processSignalData called, data length:', this.signalData.length);
     this.backgroundBands = [];
     
-    if (this.signalData.length === 0) return;
-
-    // Group consecutive signals with the same value
-    let currentBand = {
-      value: this.signalData[0].value,
-      startTime: this.timeToTimestamp(this.signalData[0].time),
-      endTime: this.timeToTimestamp(this.signalData[0].time),
-    };
-
-    for (let i = 1; i < this.signalData.length; i++) {
-      const signal = this.signalData[i];
-      
-      if (signal.value === currentBand.value) {
-        // Extend current band
-        currentBand.endTime = this.timeToTimestamp(signal.time);
-      } else {
-        // End current band and start new one
-        this.addBackgroundBand(currentBand);
-        currentBand = {
-          value: signal.value,
-          startTime: this.timeToTimestamp(signal.time),
-          endTime: this.timeToTimestamp(signal.time),
-        };
-      }
+    if (this.signalData.length === 0) {
+      console.log('🔧 No signal data to process');
+      return;
     }
 
-    // Add the last band
-    this.addBackgroundBand(currentBand);
+    // Sort signals by time to ensure proper ordering
+    const sortedSignals = [...this.signalData].sort((a, b) => {
+      const timeA = this.parseTime(a.time);
+      const timeB = this.parseTime(b.time);
+      return timeA - timeB;
+    });
+
+    // Create non-overlapping background bands with individual color support
+    console.log('🔧 Processing signals with values:', sortedSignals.map(s => s.value));
+    
+    let currentBandStart: UTCTimestamp | null = null;
+    let currentBandValue: number | null = null;
+    let currentBandColor: string | undefined = undefined;
+    
+    for (let i = 0; i < sortedSignals.length; i++) {
+      const signal = sortedSignals[i];
+      const signalTime = this.parseTime(signal.time);
+      const signalColor = signal.color || this.getColorForValue(signal.value) || undefined;
+      
+      // If this is the first signal or the value/color has changed, start a new band
+      const shouldStartNewBand = currentBandStart === null || 
+                                signal.value !== currentBandValue ||
+                                signalColor !== currentBandColor;
+      
+      if (shouldStartNewBand) {
+        // End the previous band if it exists
+        if (currentBandStart !== null && currentBandValue !== null) {
+          const band = {
+            value: currentBandValue,
+            startTime: currentBandStart,
+            endTime: signalTime,
+            individualColor: currentBandColor,
+          };
+          this.addBackgroundBand(band);
+        }
+        
+        // Start a new band
+        currentBandStart = signalTime;
+        currentBandValue = signal.value;
+        currentBandColor = signalColor;
+      }
+    }
+    
+    // End the last band
+    if (currentBandStart !== null && currentBandValue !== null) {
+      const band = {
+        value: currentBandValue,
+        startTime: currentBandStart,
+        endTime: currentBandStart, // Don't extend beyond the last signal
+        individualColor: currentBandColor,
+      };
+      this.addBackgroundBand(band);
+    }
+    
+    console.log('🔧 processSignalData complete, background bands:', this.backgroundBands.length);
   }
 
   /**
    * Add a background band
    */
-  private addBackgroundBand(band: { value: number; startTime: UTCTimestamp; endTime: UTCTimestamp }): void {
-    const color = this.getColorForValue(band.value);
-    if (!color) return;
+  private addBackgroundBand(band: { value: number; startTime: UTCTimestamp; endTime: UTCTimestamp; individualColor?: string }): void {
+    console.log('🔧 addBackgroundBand called with:', band);
+    
+    // Use individual color if available, otherwise fall back to series-level colors
+    let color = band.individualColor;
+    if (!color) {
+      const seriesColor = this.getColorForValue(band.value);
+      console.log(`🔧 No individual color, using series color for value ${band.value}:`, seriesColor);
+      if (seriesColor) {
+        color = seriesColor;
+      }
+    } else {
+      console.log(`🔧 Using individual color:`, color);
+    }
+    
+    if (!color) {
+      console.log('🔧 No color available, skipping band');
+      return;
+    }
 
-    this.backgroundBands.push({
+    const backgroundBand = {
       startTime: band.startTime,
       endTime: band.endTime,
       value: band.value,
       color: color,
-    });
+    };
+    
+    this.backgroundBands.push(backgroundBand);
+    console.log('🔧 Added background band:', backgroundBand);
   }
 
   /**
    * Get color for a signal value
    */
   private getColorForValue(value: number): string | null {
+    console.log(`🔧 getColorForValue called with value: ${value}, options:`, this.options);
+    
+    let color: string | null = null;
     switch (value) {
       case 0:
-        return this.options.color0;
+        color = this.options.neutralColor || null;
+        break;
       case 1:
-        return this.options.color1;
+        color = this.options.signalColor || null;
+        break;
       case 2:
-        return this.options.color2 || null;
+        // For value 2, try alertColor first, then fall back to signalColor if alertColor is not set
+        color = this.options.alertColor || this.options.signalColor || null;
+        break;
       default:
-        return null;
+        color = null;
     }
+    
+    console.log(`🔧 getColorForValue returning: ${color} for value ${value}`);
+    return color;
   }
 
   /**
-   * Convert time string to timestamp
+   * Parse time value to timestamp
+   * Handles both string dates and numeric timestamps
    */
-  private timeToTimestamp(timeStr: string): UTCTimestamp {
-    const date = new Date(timeStr);
-    return (date.getTime() / 1000) as UTCTimestamp;
+  private parseTime(time: string | number): UTCTimestamp {
+    try {
+      // If it's already a number (Unix timestamp), convert to seconds if needed
+      if (typeof time === 'number') {
+        // If timestamp is in milliseconds, convert to seconds
+        if (time > 1000000000000) {
+          return Math.floor(time / 1000) as UTCTimestamp;
+        }
+        return Math.floor(time) as UTCTimestamp;
+      }
+      
+      // If it's a string, try to parse as date
+      if (typeof time === 'string') {
+        // First try to parse as Unix timestamp string
+        const timestamp = parseInt(time, 10);
+        if (!isNaN(timestamp)) {
+          // It's a numeric string (Unix timestamp)
+          if (timestamp > 1000000000000) {
+            return Math.floor(timestamp / 1000) as UTCTimestamp;
+          }
+          return Math.floor(timestamp) as UTCTimestamp;
+        }
+        
+        // Try to parse as date string
+        const date = new Date(time);
+        if (isNaN(date.getTime())) {
+          console.warn(`Failed to parse time: ${time}`);
+          return 0 as UTCTimestamp;
+        }
+        return Math.floor(date.getTime() / 1000) as UTCTimestamp;
+      }
+      
+      return 0 as UTCTimestamp;
+    } catch (error) {
+      console.error(`Error parsing time ${time}:`, error);
+      return 0 as UTCTimestamp;
+    }
   }
 
   // Getter methods

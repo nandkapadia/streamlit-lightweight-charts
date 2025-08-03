@@ -16,7 +16,7 @@ from streamlit_lightweight_charts_pro.utils.data_utils import from_utc_timestamp
 
 
 @dataclass
-class Trade:
+class TradeData:
     """
     Represents a single trade with entry and exit information.
 
@@ -37,7 +37,6 @@ class Trade:
     exit_time: Union[pd.Timestamp, datetime, str, int, float]
     exit_price: Union[float, int]
     quantity: Union[float, int]
-    pnl: Union[float]
     trade_type: Union[TradeType, str] = TradeType.LONG
     id: Optional[str] = None
     notes: Optional[str] = None

@@ -128,7 +128,7 @@ export interface LineOptions {
 
 // Enhanced Series Configuration
 export interface SeriesConfig {
-  type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick'
+  type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick' | 'signal'
   data: any[]
   options?: any
   name?: string

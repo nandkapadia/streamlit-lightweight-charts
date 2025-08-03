@@ -87,6 +87,7 @@ from streamlit_lightweight_charts_pro.data import (
     HistogramData,
     LineData,
     Marker,
+    OhlcvData,
     SingleValueData,
     SignalData,
 )
@@ -98,7 +99,7 @@ from streamlit_lightweight_charts_pro.data.annotation import (
     create_text_annotation,
 )
 from streamlit_lightweight_charts_pro.data.trade import (
-    Trade,
+    TradeData,
     TradeType,
 )
 
@@ -144,6 +145,7 @@ __all__ = [
     "HistogramData",
     "LineData",
     "Marker",
+    "OhlcvData",
     "SingleValueData",
     "SignalData",
     # Annotation system
@@ -153,7 +155,7 @@ __all__ = [
     "create_arrow_annotation",
     "create_shape_annotation",
     # Trade visualization
-    "Trade",
+    "TradeData",
     "TradeType",
     "TradeVisualizationOptions",
     "TradeVisualization",

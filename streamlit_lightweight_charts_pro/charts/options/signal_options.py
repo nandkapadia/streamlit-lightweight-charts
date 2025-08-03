@@ -74,28 +74,46 @@ class SignalOptions(Options):
     @staticmethod
     def _is_valid_hex_color(color: str) -> bool:
         """
-        Validate if a string is a valid hex color.
+        Validate if a string is a valid hex color or rgba color.
         
         Args:
             color (str): Color string to validate.
         
         Returns:
-            bool: True if valid hex color, False otherwise.
+            bool: True if valid color, False otherwise.
         """
         if not isinstance(color, str):
             return False
         
-        if not color.startswith("#"):
-            return False
+        # Check for hex colors
+        if color.startswith("#"):
+            if len(color) not in [4, 7, 9]:  # #RGB, #RRGGBB, #RRGGBBAA
+                return False
+            try:
+                int(color[1:], 16)
+                return True
+            except ValueError:
+                return False
         
-        if len(color) not in [4, 7, 9]:  # #RGB, #RRGGBB, #RRGGBBAA
-            return False
+        # Check for rgba colors
+        if color.startswith("rgba(") and color.endswith(")"):
+            try:
+                # Extract rgba values
+                rgba_str = color[5:-1]  # Remove "rgba(" and ")"
+                values = [x.strip() for x in rgba_str.split(",")]
+                if len(values) != 4:
+                    return False
+                
+                # Validate each component
+                r, g, b, a = values
+                if not (0 <= int(r) <= 255 and 0 <= int(g) <= 255 and 
+                       0 <= int(b) <= 255 and 0 <= float(a) <= 1):
+                    return False
+                return True
+            except (ValueError, IndexError):
+                return False
         
-        try:
-            int(color[1:], 16)
-            return True
-        except ValueError:
-            return False
+        return False
     
     @chainable_field
     def set_color_0(self, color: str) -> "SignalOptions":
@@ -156,8 +174,6 @@ class SignalOptions(Options):
         
         self.color_2 = color
         return self
-    
-
     
     @chainable_field
     def set_visible(self, visible: bool) -> "SignalOptions":
