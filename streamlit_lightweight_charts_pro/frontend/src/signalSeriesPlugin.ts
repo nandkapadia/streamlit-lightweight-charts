@@ -36,6 +36,7 @@ export interface SignalSeriesConfig {
   type: 'signal';
   data: SignalData[];
   options: SignalOptions;
+  paneId?: number;
 }
 
 // Signal renderer data interface
@@ -149,40 +150,50 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
     
     const renderData: SignalRendererData[] = [];
 
+    // Get bar spacing to properly align with bars
+    const barSpacing = timeScale.options().barSpacing || 6;
+    const halfBarSpacing = barSpacing / 2;
+    
     bands.forEach((band, index) => {
       console.log(`🔧 Band ${index} times: startTime=${band.startTime}, endTime=${band.endTime}`);
       const startX = timeScale.timeToCoordinate(band.startTime);
       const endX = timeScale.timeToCoordinate(band.endTime);
       
-      console.log(`🔧 Band ${index}: startX=${startX}, endX=${endX}, color=${band.color}`);
+      console.log(`🔧 Band ${index}: startX=${startX}, endX=${endX}, color=${band.color}, barSpacing=${barSpacing}`);
       
       // Handle cases where coordinates are null (outside visible range)
       if (startX !== null && endX !== null) {
-        // Both coordinates are valid
+        // Both coordinates are valid - adjust for bar alignment
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
         
+        // Adjust start and end coordinates to align with bar boundaries
+        const adjustedStartX = startX - halfBarSpacing;
+        const adjustedEndX = endX + halfBarSpacing;
+        
         renderData.push({
-          x: startX,
+          x: adjustedStartX,
           y1: 0,
           y2: chartHeight,
           color: band.color,
         });
         
         renderData.push({
-          x: endX,
+          x: adjustedEndX,
           y1: 0,
           y2: chartHeight,
           color: band.color,
         });
         
-        console.log(`🔧 Added render data for band ${index}: startX=${startX}, endX=${endX}, height=${chartHeight}`);
+        console.log(`🔧 Added render data for band ${index}: adjustedStartX=${adjustedStartX}, adjustedEndX=${adjustedEndX}, height=${chartHeight}`);
       } else if (startX !== null && endX === null) {
         // Start is visible but end is outside - extend to chart edge
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
         const chartWidth = this._source.getChart().chartElement()?.clientWidth || 800;
         
+        const adjustedStartX = startX - halfBarSpacing;
+        
         renderData.push({
-          x: startX,
+          x: adjustedStartX,
           y1: 0,
           y2: chartHeight,
           color: band.color,
@@ -195,10 +206,12 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
           color: band.color,
         });
         
-        console.log(`🔧 Added render data for band ${index}: startX=${startX}, endX=chartWidth (${chartWidth}), height=${chartHeight}`);
+        console.log(`🔧 Added render data for band ${index}: adjustedStartX=${adjustedStartX}, endX=chartWidth (${chartWidth}), height=${chartHeight}`);
       } else if (startX === null && endX !== null) {
         // End is visible but start is outside - extend from chart edge
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
+        
+        const adjustedEndX = endX + halfBarSpacing;
         
         renderData.push({
           x: 0,
@@ -208,13 +221,13 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
         });
         
         renderData.push({
-          x: endX,
+          x: adjustedEndX,
           y1: 0,
           y2: chartHeight,
           color: band.color,
         });
         
-        console.log(`🔧 Added render data for band ${index}: startX=0, endX=${endX}, height=${chartHeight}`);
+        console.log(`🔧 Added render data for band ${index}: startX=0, adjustedEndX=${adjustedEndX}, height=${chartHeight}`);
       } else {
         // Both coordinates are null - band is completely outside visible range
         console.log(`🔧 Skipping band ${index}: both coordinates are null (outside visible range)`);
@@ -246,12 +259,14 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
   private signalData: SignalData[] = [];
   private backgroundBands: BackgroundBand[] = [];
   private _paneViews: SignalPrimitivePaneView[];
+  private paneId: number;
 
   constructor(chart: IChartApi, config: SignalSeriesConfig) {
     console.log('🔧 SignalSeries constructor called with config:', config);
     this.chart = chart;
     this.options = config.options;
     this.signalData = config.data;
+    this.paneId = config.paneId || 0;
     this._paneViews = [new SignalPrimitivePaneView(this)];
     
     console.log('🔧 SignalSeries options:', this.options);
@@ -263,7 +278,7 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       lineWidth: 0 as any,
       visible: false,
       priceScaleId: 'left',
-    });
+    }, this.paneId);
 
     // Add some dummy data to ensure the time scale is properly initialized
     if (this.signalData.length > 0) {
@@ -337,12 +352,17 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       }
     }
     
-    // End the last band
+    // End the last band - extend it to a reasonable future time
     if (currentBandStart !== null && currentBandValue !== null) {
+      // Extend the last band by adding a reasonable time offset (e.g., 1 day)
+      const lastSignalTime = sortedSignals[sortedSignals.length - 1];
+      const lastTime = this.parseTime(lastSignalTime.time);
+      const extendedEndTime = lastTime + (24 * 60 * 60); // Add 24 hours
+      
       const band = {
         value: currentBandValue,
         startTime: currentBandStart,
-        endTime: currentBandStart, // Don't extend beyond the last signal
+        endTime: extendedEndTime as UTCTimestamp,
         individualColor: currentBandColor,
       };
       this.addBackgroundBand(band);

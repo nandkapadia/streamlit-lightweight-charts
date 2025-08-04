@@ -520,7 +520,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               signalColor: cleanedOptions.signalColor || '#ff0000',
               alertColor: cleanedOptions.alertColor,
               visible: cleanedOptions.visible !== false,
-            }
+            },
+            paneId: paneId
           })
           
           // Store reference for cleanup
