@@ -31,7 +31,7 @@ from streamlit_lightweight_charts_pro.charts.options import (
 )
 from streamlit_lightweight_charts_pro.data import Data
 from streamlit_lightweight_charts_pro.data.data import classproperty
-from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.data.marker import MarkerBase, PriceMarker, BarMarker, Marker
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, PriceLineSource, LineStyle
@@ -49,7 +49,7 @@ logger = get_logger(__name__)
 @chainable_property("price_scale", allow_none=True, top_level=True)
 @chainable_property("price_format")
 @chainable_property("price_lines", top_level=True)
-@chainable_property("markers", top_level=True)
+@chainable_property("markers", List[MarkerBase], allow_none=True, top_level=True)
 @chainable_property("pane_id", top_level=True)
 @chainable_property("last_value_visible", top_level=True)
 @chainable_property("price_line_visible", top_level=True)
@@ -57,6 +57,7 @@ logger = get_logger(__name__)
 @chainable_property("price_line_width", top_level=True)
 @chainable_property("price_line_color", top_level=True)
 @chainable_property("price_line_style", top_level=True)
+@chainable_property("tooltip", allow_none=True, top_level=True)
 class Series(ABC):
     # Type annotations for attributes to enable automatic type inspection
     """
@@ -189,6 +190,7 @@ class Series(ABC):
         self._price_line_width = 1
         self._price_line_color = ""
         self._price_line_style = LineStyle.DASHED
+        self._tooltip = None
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:
@@ -426,87 +428,83 @@ class Series(ABC):
         # Fallback: return as-is
         return self.data
 
-    def add_marker(
-        self,
-        time: Union[str, int, float, pd.Timestamp],
-        position: MarkerPosition,
-        color: str,
-        shape: MarkerShape,
-        text: Optional[str] = None,
-        size: Optional[int] = None,
-    ) -> "Series":
+    def add_marker(self, marker: MarkerBase) -> "Series":
         """
         Add a marker to this series.
 
-        Creates and adds a marker to the series for highlighting specific data points
-        or events. Markers can be positioned above, below, or on the data point and
-        support various shapes and colors.
+        Adds a marker object to the series for highlighting specific data points
+        or events. The marker must be a valid MarkerBase subclass (BarMarker or PriceMarker).
 
         Args:
-            time (Union[str, int, float, pd.Timestamp]): Time for the marker in various
-                formats (timestamp, datetime string, or numeric).
-            position (MarkerPosition): Position of the marker relative to the data point
-                (e.g., above, below, on).
-            color (str): Color of the marker in CSS color format (hex, rgb, named).
-            shape (MarkerShape): Shape of the marker (circle, square, arrow, etc.).
-            text (Optional[str], optional): Optional text to display with the marker.
-                Defaults to None.
-            size (Optional[int], optional): Optional size of the marker in pixels.
-                Defaults to None.
+            marker (MarkerBase): The marker object to add. Must be a BarMarker or PriceMarker.
 
         Returns:
             Series: Self for method chaining.
 
+        Raises:
+            ValueError: If the marker position is not valid for its type.
+
         Example:
             ```python
-            from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-            from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape
+            from streamlit_lightweight_charts_pro.data.marker import BarMarker, PriceMarker
+            from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
-            # Add a simple marker
-            series.add_marker(
+            # Add a bar marker
+            bar_marker = BarMarker(
                 time="2024-01-01 10:00:00",
-                position=MarkerPosition.ABOVE,
+                position=MarkerPosition.ABOVE_BAR,
                 color="red",
-                shape=MarkerShape.CIRCLE
+                shape=MarkerShape.CIRCLE,
+                text="Buy Signal"
             )
+            series.add_marker(bar_marker)
 
-            # Add a marker with text and size
-            series.add_marker(
+            # Add a price marker
+            price_marker = PriceMarker(
                 time=1640995200,
-                position=MarkerPosition.BELOW,
+                position=MarkerPosition.AT_PRICE_TOP,
                 color="#00ff00",
                 shape=MarkerShape.ARROW_UP,
-                text="Buy Signal",
-                size=12
+                price=100.50,
+                text="Resistance Level"
             )
+            series.add_marker(price_marker)
 
             # Method chaining
             series.add_marker(marker1).add_marker(marker2)
             ```
         """
-        marker = Marker(
-            time=time,
-            position=position,
-            color=color,
-            shape=shape,
-            text=text,
-            size=size,
-        )
+        # Validate the marker position
+        if not marker.validate_position():
+            raise ValueError(
+                f"Invalid position '{marker.position}' for marker type {type(marker).__name__}"
+            )
+        
         self._markers.append(marker)
         return self
 
-    def add_markers(self, markers: List[Marker]) -> "Series":
+    def add_markers(self, markers: List[MarkerBase]) -> "Series":
         """
         Add multiple markers to this series.
 
         Adds a list of markers to the series. Returns self for method chaining.
 
         Args:
-            markers: List of marker objects to add.
+            markers: List of marker objects to add. Must be MarkerBase subclasses.
 
         Returns:
             Series: Self for method chaining.
+
+        Raises:
+            ValueError: If any marker position is not valid for its type.
         """
+        # Validate all markers before adding
+        for marker in markers:
+            if not marker.validate_position():
+                raise ValueError(
+                    f"Invalid position '{marker.position}' for marker type {type(marker).__name__}"
+                )
+        
         self._markers.extend(markers)
         return self
 

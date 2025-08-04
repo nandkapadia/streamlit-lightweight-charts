@@ -21,7 +21,7 @@ from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
-from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     LineStyle,
     MarkerPosition,
@@ -98,7 +98,7 @@ avg_line = PriceLineOptions(
 )
 
 # Create markers
-support_marker = Marker(
+support_marker = BarMarker(
     time=min_point.time,
     position=MarkerPosition.BELOW_BAR,
     color="#26a69a",
@@ -107,7 +107,7 @@ support_marker = Marker(
     size=12,
 )
 
-resistance_marker = Marker(
+resistance_marker = BarMarker(
     time=max_point.time,
     position=MarkerPosition.ABOVE_BAR,
     color="#ef5350",
@@ -116,7 +116,7 @@ resistance_marker = Marker(
     size=12,
 )
 
-trend_marker = Marker(
+trend_marker = BarMarker(
     time=mid_point.time,
     position=MarkerPosition.IN_BAR,
     color="#9c27b0",

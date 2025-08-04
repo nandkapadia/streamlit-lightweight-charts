@@ -6,7 +6,7 @@ for properties and dataclass fields, allowing both direct assignment and
 method chaining styles with optional type validation.
 """
 
-from typing import Any, Callable, Optional, Type, Union
+from typing import Any, Callable, Optional, Type, Union, List, get_origin, get_args
 
 from .data_utils import (
     is_valid_color,
@@ -14,6 +14,40 @@ from .data_utils import (
     validate_precision,
     validate_price_format_type,
 )
+
+
+def _is_list_of_markers(value_type) -> bool:
+    """Check if the type is List[MarkerBase] or similar."""
+    if get_origin(value_type) is list:
+        args = get_args(value_type)
+        if args:
+            arg_type = args[0]
+            # Check if it's MarkerBase or a subclass
+            try:
+                from streamlit_lightweight_charts_pro.data.marker import MarkerBase
+                return issubclass(arg_type, MarkerBase) if hasattr(arg_type, '__mro__') else False
+            except ImportError:
+                # If we can't import MarkerBase, check the name
+                return hasattr(arg_type, '__name__') and 'Marker' in arg_type.__name__
+
+
+def _validate_list_of_markers(value, attr_name: str) -> bool:
+    """Validate that a value is a list of markers."""
+    if not isinstance(value, list):
+        raise TypeError(f"{attr_name} must be a list")
+    
+    try:
+        from streamlit_lightweight_charts_pro.data.marker import MarkerBase
+        for item in value:
+            if not isinstance(item, MarkerBase):
+                raise TypeError(f"All items in {attr_name} must be instances of MarkerBase")
+        return True
+    except ImportError:
+        # If we can't import MarkerBase, just check that all items have marker-like attributes
+        for item in value:
+            if not hasattr(item, 'time') or not hasattr(item, 'position'):
+                raise TypeError(f"All items in {attr_name} must be valid markers")
+        return True
 
 
 def chainable_property(
@@ -144,6 +178,9 @@ def chainable_property(
                 if value_type == bool:
                     # For boolean properties, convert truthy/falsy values to bool
                     value = bool(value)
+                elif _is_list_of_markers(value_type):
+                    # Special handling for List[MarkerBase] and similar types
+                    _validate_list_of_markers(value, attr_name)
                 elif not isinstance(value, value_type):
                     # Create user-friendly error message
                     if value_type == str:
@@ -263,7 +300,10 @@ def chainable_field(
         def setter_method(self, value):
             # Apply type validation if specified
             if value_type is not None:
-                if not isinstance(value, value_type):
+                if _is_list_of_markers(value_type):
+                    # Special handling for List[MarkerBase] and similar types
+                    _validate_list_of_markers(value, field_name)
+                elif not isinstance(value, value_type):
                     raise TypeError(f"{field_name} must be of type {value_type}, got {type(value)}")
 
             # Apply custom validation if specified

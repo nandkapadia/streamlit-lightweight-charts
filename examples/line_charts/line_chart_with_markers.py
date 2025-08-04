@@ -17,7 +17,7 @@ from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro import Chart
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
-from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -48,7 +48,7 @@ markers = []
 
 # Minimum point marker (support level)
 markers.append(
-    Marker(
+    BarMarker(
         time=min_point.time,
         position=MarkerPosition.BELOW_BAR,
         color="#26a69a",
@@ -60,7 +60,7 @@ markers.append(
 
 # Maximum point marker (resistance level)
 markers.append(
-    Marker(
+    BarMarker(
         time=max_point.time,
         position=MarkerPosition.ABOVE_BAR,
         color="#ef5350",
@@ -74,7 +74,7 @@ markers.append(
 if above_avg_points:
     first_above = above_avg_points[0]
     markers.append(
-        Marker(
+        BarMarker(
             time=first_above.time,
             position=MarkerPosition.ABOVE_BAR,
             color="#4caf50",
@@ -88,7 +88,7 @@ if above_avg_points:
 if below_avg_points:
     first_below = below_avg_points[0]
     markers.append(
-        Marker(
+        BarMarker(
             time=first_below.time,
             position=MarkerPosition.BELOW_BAR,
             color="#ff9800",
@@ -101,7 +101,7 @@ if below_avg_points:
 # Add a trend change marker (simplified - using middle point)
 mid_point = line_data[len(line_data) // 2]
 markers.append(
-    Marker(
+    BarMarker(
         time=mid_point.time,
         position=MarkerPosition.IN_BAR,
         color="#9c27b0",

@@ -102,12 +102,7 @@ export interface SignalData {
   value: number
 }
 
-export interface SignalOptions {
-  color0: string
-  color1: string
-  color2?: string
-  visible: boolean
-}
+
 
 // Line Options Configuration
 export interface LineOptions {
@@ -146,7 +141,7 @@ export interface SeriesConfig {
   paneId?: number // Add support for multi-pane charts
   // Signal series support
   signalData?: SignalData[]
-  signalOptions?: SignalOptions
+
   // Line options support
   lineOptions?: LineOptions
   // Line series specific options (for backward compatibility)
@@ -183,6 +178,7 @@ export interface ChartConfig {
   rangeSwitcher?: RangeSwitcherConfig
   legend?: LegendConfig
   tooltip?: TooltipConfig  // Add chart-level tooltip configuration
+  tooltipConfigs?: Record<string, TooltipConfig>  // Add multiple tooltip configurations
   tradeVisualizationOptions?: TradeVisualizationOptions  // Add chart-level trade visualization options
   autoSize?: boolean
   autoWidth?: boolean
@@ -277,4 +273,11 @@ export interface TooltipConfig {
   dateFormat?: string
   showTime?: boolean
   timeFormat?: string
+}
+
+// Extend Window interface for chart plugins
+declare global {
+  interface Window {
+    chartPlugins?: Map<any, any>
+  }
 } 

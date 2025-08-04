@@ -70,7 +70,7 @@ line_series = (LineSeries(data=line_data)
 
 **Key Code**:
 ```python
-from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 # Create markers

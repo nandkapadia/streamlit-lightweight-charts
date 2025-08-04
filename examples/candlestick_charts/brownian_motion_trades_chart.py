@@ -262,7 +262,7 @@ def create_custom_trade_markers(trades, options):
     Returns:
         List of Marker objects
     """
-    from streamlit_lightweight_charts_pro.data import Marker
+    from streamlit_lightweight_charts_pro.data.marker import BarMarker
     from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
     markers = []
@@ -326,7 +326,7 @@ def create_custom_trade_markers(trades, options):
         exit_text = " - ".join(exit_text_parts)
 
         # Create entry marker
-        entry_marker = Marker(
+        entry_marker = BarMarker(
             time=trade.entry_timestamp,
             position=entry_position,
             shape=shape_mapping[options["shapes"]["entry"]],
@@ -336,7 +336,7 @@ def create_custom_trade_markers(trades, options):
         markers.append(entry_marker)
 
         # Create exit marker
-        exit_marker = Marker(
+        exit_marker = BarMarker(
             time=trade.exit_timestamp,
             position=exit_position,
             shape=shape_mapping[options["shapes"]["exit"]],

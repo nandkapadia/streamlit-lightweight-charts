@@ -317,3 +317,45 @@ class PriceLineSource(str, Enum):
 
     LAST_BAR = "lastBar"
     LAST_VISIBLE = "lastVisible"
+
+
+class TooltipType(str, Enum):
+    """
+    Tooltip type enumeration.
+
+    Defines the types of tooltips supported by the system.
+    Each type corresponds to a specific data format and display style.
+
+    Attributes:
+        OHLC: OHLC tooltip - displays open, high, low, close, and volume data.
+        SINGLE: Single value tooltip - displays a single data value.
+        MULTI: Multi-series tooltip - displays data from multiple series.
+        CUSTOM: Custom tooltip - displays custom content using templates.
+        TRADE: Trade tooltip - displays trade information (entry, exit, P&L).
+        MARKER: Marker tooltip - displays marker-specific information.
+    """
+
+    OHLC = "ohlc"
+    SINGLE = "single"
+    MULTI = "multi"
+    CUSTOM = "custom"
+    TRADE = "trade"
+    MARKER = "marker"
+
+
+class TooltipPosition(str, Enum):
+    """
+    Tooltip position enumeration.
+
+    Defines how tooltips should be positioned relative to the cursor
+    or chart elements.
+
+    Attributes:
+        CURSOR: Cursor position - tooltip follows the mouse cursor.
+        FIXED: Fixed position - tooltip appears at a fixed location.
+        AUTO: Auto position - tooltip position is automatically determined.
+    """
+
+    CURSOR = "cursor"
+    FIXED = "fixed"
+    AUTO = "auto"

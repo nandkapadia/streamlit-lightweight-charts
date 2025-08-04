@@ -1083,8 +1083,34 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [addAnnotations])
 
   const addModularTooltip = useCallback((chart: IChartApi, container: HTMLElement, seriesList: ISeriesApi<any>[], chartConfig: ChartConfig) => {
-    // Tooltip implementation will be added here
-    // For now, this is a placeholder
+    console.log("🎯 [addModularTooltip] Starting tooltip setup with config:", chartConfig.tooltipConfigs)
+    
+    if (!chartConfig.tooltipConfigs || Object.keys(chartConfig.tooltipConfigs).length === 0) {
+      console.log("🎯 [addModularTooltip] No tooltip configurations found")
+      return
+    }
+
+    try {
+      // Import tooltip plugin dynamically
+      import('./tooltipPlugin').then(({ createTooltipPlugin }) => {
+        const tooltipPlugin = createTooltipPlugin(chart, container, chartConfig.tooltipConfigs)
+        
+        // Enable tooltip
+        tooltipPlugin.enable()
+        
+        console.log("🎯 [addModularTooltip] Tooltip plugin created and enabled")
+        
+        // Store plugin reference for cleanup
+        if (!window.chartPlugins) {
+          window.chartPlugins = new Map()
+        }
+        window.chartPlugins.set(chart, tooltipPlugin)
+      }).catch(error => {
+        console.error("🎯 [addModularTooltip] Error loading tooltip plugin:", error)
+      })
+    } catch (error) {
+      console.error("🎯 [addModularTooltip] Error setting up tooltip:", error)
+    }
   }, [])
 
   const addRangeSwitcher = useCallback((chart: IChartApi, rangeConfig: any) => {

@@ -1,7 +1,7 @@
 """
-Unit tests for the Marker class.
+Unit tests for the Marker classes.
 
-This module tests the Marker class functionality including
+This module tests the MarkerBase, PriceMarker, and BarMarker class functionality including
 construction, validation, and serialization.
 """
 
@@ -14,16 +14,16 @@ from streamlit_lightweight_charts_pro.charts.options.line_options import LineOpt
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
 from streamlit_lightweight_charts_pro.data.data import Data
 from streamlit_lightweight_charts_pro.data.line_data import LineData
-from streamlit_lightweight_charts_pro.data.marker import Marker
+from streamlit_lightweight_charts_pro.data.marker import MarkerBase, PriceMarker, BarMarker, Marker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 
-class TestMarkerConstruction:
-    """Test cases for Marker construction."""
+class TestMarkerBaseConstruction:
+    """Test cases for MarkerBase construction."""
 
     def test_standard_construction(self):
-        """Test standard Marker construction."""
-        marker = Marker(
+        """Test standard MarkerBase construction."""
+        marker = MarkerBase(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -37,7 +37,8 @@ class TestMarkerConstruction:
         assert marker.color == "#ff0000"
         assert marker.shape == MarkerShape.CIRCLE
         assert marker.text is None
-        assert marker.size == 8  # Default size
+        assert marker.size == 1  # Default size
+        assert marker.id is None
 
     def test_construction_with_defaults(self):
         """Test Marker construction with only time (using all defaults)."""
@@ -50,17 +51,18 @@ class TestMarkerConstruction:
         assert marker.color == "#2196F3"  # Default color
         assert marker.shape == MarkerShape.CIRCLE  # Default shape
         assert marker.text is None
-        assert marker.size == 8  # Default size
+        assert marker.size == 1  # Default size
 
     def test_construction_with_optional_fields(self):
-        """Test Marker construction with optional fields."""
-        marker = Marker(
+        """Test MarkerBase construction with optional fields."""
+        marker = MarkerBase(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
             text="Test Marker",
             size=10,
+            id="test_id",
         )
 
         # Time is normalized to UNIX timestamp format
@@ -71,6 +73,7 @@ class TestMarkerConstruction:
         assert marker.shape == MarkerShape.CIRCLE
         assert marker.text == "Test Marker"
         assert marker.size == 10
+        assert marker.id == "test_id"
 
     def test_construction_with_string_enums(self):
         """Test Marker construction with string enum values."""
@@ -79,7 +82,7 @@ class TestMarkerConstruction:
         assert marker.position == MarkerPosition.ABOVE_BAR
         assert marker.shape == MarkerShape.CIRCLE
         assert marker.color == "#ff0000"
-        assert marker.size == 8  # Default size
+        assert marker.size == 1  # Default size
 
     def test_construction_with_time_string(self):
         """Test Marker construction with time string."""
@@ -251,12 +254,164 @@ class TestMarkerValidation:
         assert marker.time == -1000
 
 
+class TestPriceMarkerConstruction:
+    """Test cases for PriceMarker construction."""
+
+    def test_standard_construction(self):
+        """Test standard PriceMarker construction."""
+        marker = PriceMarker(
+            time=1640995200,
+            position=MarkerPosition.AT_PRICE_TOP,
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+            price=100.50,
+        )
+
+        assert isinstance(marker.time, int)
+        assert marker.time == 1640995200
+        assert marker.position == MarkerPosition.AT_PRICE_TOP
+        assert marker.color == "#ff0000"
+        assert marker.shape == MarkerShape.CIRCLE
+        assert marker.price == 100.50
+        assert marker.text is None
+        assert marker.size == 1
+        assert marker.id is None
+
+    def test_construction_with_optional_fields(self):
+        """Test PriceMarker construction with optional fields."""
+        marker = PriceMarker(
+            time=1640995200,
+            position=MarkerPosition.AT_PRICE_BOTTOM,
+            color="#00ff00",
+            shape=MarkerShape.ARROW_UP,
+            price=200.75,
+            text="Resistance Level",
+            size=12,
+            id="resistance_1",
+        )
+
+        assert marker.time == 1640995200
+        assert marker.position == MarkerPosition.AT_PRICE_BOTTOM
+        assert marker.color == "#00ff00"
+        assert marker.shape == MarkerShape.ARROW_UP
+        assert marker.price == 200.75
+        assert marker.text == "Resistance Level"
+        assert marker.size == 12
+        assert marker.id == "resistance_1"
+
+    def test_missing_price_raises_error(self):
+        """Test that PriceMarker without price raises an error."""
+        with pytest.raises(ValueError, match="Price is required for PriceMarker"):
+            PriceMarker(
+                time=1640995200,
+                position=MarkerPosition.AT_PRICE_TOP,
+                color="#ff0000",
+                shape=MarkerShape.CIRCLE,
+                price=0.0,  # Default value that triggers error
+            )
+
+    def test_invalid_position_for_price_marker(self):
+        """Test that PriceMarker with invalid position fails validation."""
+        marker = PriceMarker(
+            time=1640995200,
+            position=MarkerPosition.ABOVE_BAR,  # Invalid for PriceMarker
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+            price=100.50,
+        )
+        
+        # The validation should fail
+        assert not marker.validate_position()
+
+    def test_valid_positions_for_price_marker(self):
+        """Test that PriceMarker with valid positions passes validation."""
+        valid_positions = [
+            MarkerPosition.AT_PRICE_TOP,
+            MarkerPosition.AT_PRICE_BOTTOM,
+            MarkerPosition.AT_PRICE_MIDDLE,
+        ]
+        
+        for position in valid_positions:
+            marker = PriceMarker(
+                time=1640995200,
+                position=position,
+                color="#ff0000",
+                shape=MarkerShape.CIRCLE,
+                price=100.50,
+            )
+            assert marker.validate_position()
+
+
+class TestBarMarkerConstruction:
+    """Test cases for BarMarker construction."""
+
+    def test_standard_construction(self):
+        """Test standard BarMarker construction."""
+        marker = BarMarker(
+            time=1640995200,
+            position=MarkerPosition.ABOVE_BAR,
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+        )
+
+        assert isinstance(marker.time, int)
+        assert marker.time == 1640995200
+        assert marker.position == MarkerPosition.ABOVE_BAR
+        assert marker.color == "#ff0000"
+        assert marker.shape == MarkerShape.CIRCLE
+        assert marker.price is None
+        assert marker.text is None
+        assert marker.size == 1
+        assert marker.id is None
+
+    def test_construction_with_optional_price(self):
+        """Test BarMarker construction with optional price."""
+        marker = BarMarker(
+            time=1640995200,
+            position=MarkerPosition.ABOVE_BAR,
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+            price=100.50,
+        )
+
+        assert marker.price == 100.50
+
+    def test_invalid_position_for_bar_marker(self):
+        """Test that BarMarker with invalid position fails validation."""
+        marker = BarMarker(
+            time=1640995200,
+            position=MarkerPosition.AT_PRICE_TOP,  # Invalid for BarMarker
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+        )
+        
+        # The validation should fail
+        assert not marker.validate_position()
+
+    def test_valid_positions_for_bar_marker(self):
+        """Test that BarMarker with valid positions passes validation."""
+        valid_positions = [
+            MarkerPosition.ABOVE_BAR,
+            MarkerPosition.BELOW_BAR,
+            MarkerPosition.IN_BAR,
+        ]
+        
+        for position in valid_positions:
+            marker = BarMarker(
+                time=1640995200,
+                position=position,
+                color="#ff0000",
+                shape=MarkerShape.CIRCLE,
+            )
+            assert marker.validate_position()
+
+
 class TestMarkerSerialization:
     """Test cases for Marker serialization."""
 
     def test_to_dict_basic(self):
-        """Test Marker to_dict with basic fields."""
-        marker = Marker(
+        """Test BarMarker to_dict with basic fields."""
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -270,12 +425,12 @@ class TestMarkerSerialization:
         assert marker_dict["position"] == "aboveBar"
         assert marker_dict["color"] == "#ff0000"
         assert marker_dict["shape"] == "circle"
-        assert marker_dict["size"] == 8  # Default size
+        assert marker_dict["size"] == 1  # Default size
         assert "text" not in marker_dict
 
     def test_to_dict_with_defaults(self):
-        """Test Marker to_dict with only time (using all defaults)."""
-        marker = Marker(time=1640995200)
+        """Test BarMarker to_dict with only time (using all defaults)."""
+        marker = BarMarker(time=1640995200)
 
         marker_dict = marker.asdict()
 
@@ -284,7 +439,7 @@ class TestMarkerSerialization:
         assert marker_dict["position"] == "aboveBar"  # Default position
         assert marker_dict["color"] == "#2196F3"  # Default color
         assert marker_dict["shape"] == "circle"  # Default shape
-        assert marker_dict["size"] == 8  # Default size
+        assert marker_dict["size"] == 1  # Default size
         assert "text" not in marker_dict
 
     def test_to_dict_with_optional_fields(self):
@@ -461,7 +616,7 @@ class TestMarkerAttributes:
         assert marker.position == MarkerPosition.ABOVE_BAR
         assert marker.color == "#2196F3"
         assert marker.shape == MarkerShape.CIRCLE
-        assert marker.size == 8
+        assert marker.size == 1
         assert marker.text is None
 
 
@@ -717,7 +872,7 @@ class TestMarkerDataHandling:
             assert isinstance(marker.position, MarkerPosition)
             assert isinstance(marker.color, str)
             assert isinstance(marker.shape, MarkerShape)
-            assert marker.size == 8  # Default size
+            assert marker.size == 1  # Default size
 
     def test_marker_list_serialization(self):
         """Test serialization of a list of markers."""

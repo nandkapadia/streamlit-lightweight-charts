@@ -16,6 +16,7 @@ from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
 from streamlit_lightweight_charts_pro.charts.series import LineSeries
+from streamlit_lightweight_charts_pro.data.marker import BarMarker, PriceMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -37,30 +38,36 @@ def main():
 
     # Add various types of markers
     series_with_markers.add_marker(
-        time="2018-12-25",
-        position=MarkerPosition.ABOVE_BAR,
-        color="#FF0000",
-        shape=MarkerShape.CIRCLE,
-        text="Peak",
-        size=12,
+        BarMarker(
+            time="2018-12-25",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#FF0000",
+            shape=MarkerShape.CIRCLE,
+            text="Peak",
+            size=12,
+        )
     )
 
     series_with_markers.add_marker(
-        time="2018-12-30",
-        position=MarkerPosition.BELOW_BAR,
-        color="#00FF00",
-        shape=MarkerShape.SQUARE,
-        text="Low",
-        size=10,
+        BarMarker(
+            time="2018-12-30",
+            position=MarkerPosition.BELOW_BAR,
+            color="#00FF00",
+            shape=MarkerShape.SQUARE,
+            text="Low",
+            size=10,
+        )
     )
 
     series_with_markers.add_marker(
-        time="2018-12-27",
-        position=MarkerPosition.IN_BAR,
-        color="#0000FF",
-        shape=MarkerShape.TRIANGLE,
-        text="Important",
-        size=8,
+        BarMarker(
+            time="2018-12-27",
+            position=MarkerPosition.IN_BAR,
+            color="#0000FF",
+            shape=MarkerShape.TRIANGLE,
+            text="Important",
+            size=8,
+        )
     )
 
     chart = Chart(series=series_with_markers)
@@ -75,7 +82,13 @@ def main():
         st.subheader("Above Bar Markers")
         above_series = LineSeries(data=data)
         above_series.add_marker(
-            "2018-12-25", MarkerPosition.ABOVE_BAR, "#FF0000", MarkerShape.CIRCLE, "Above"
+            BarMarker(
+                time="2018-12-25",
+                position=MarkerPosition.ABOVE_BAR,
+                color="#FF0000",
+                shape=MarkerShape.CIRCLE,
+                text="Above"
+            )
         )
         above_chart = Chart(series=above_series)
         above_chart.render()
@@ -84,7 +97,13 @@ def main():
         st.subheader("Below Bar Markers")
         below_series = LineSeries(data=data)
         below_series.add_marker(
-            "2018-12-25", MarkerPosition.BELOW_BAR, "#00FF00", MarkerShape.SQUARE, "Below"
+            BarMarker(
+                time="2018-12-25",
+                position=MarkerPosition.BELOW_BAR,
+                color="#00FF00",
+                shape=MarkerShape.SQUARE,
+                text="Below"
+            )
         )
         below_chart = Chart(series=below_series)
         below_chart.render()
@@ -96,16 +115,40 @@ def main():
 
     # Add markers with different shapes
     shapes_series.add_marker(
-        "2018-12-22", MarkerPosition.ABOVE_BAR, "#FF0000", MarkerShape.CIRCLE, "Circle"
+        BarMarker(
+            time="2018-12-22",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#FF0000",
+            shape=MarkerShape.CIRCLE,
+            text="Circle"
+        )
     )
     shapes_series.add_marker(
-        "2018-12-24", MarkerPosition.ABOVE_BAR, "#00FF00", MarkerShape.SQUARE, "Square"
+        BarMarker(
+            time="2018-12-24",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#00FF00",
+            shape=MarkerShape.SQUARE,
+            text="Square"
+        )
     )
     shapes_series.add_marker(
-        "2018-12-26", MarkerPosition.ABOVE_BAR, "#0000FF", MarkerShape.TRIANGLE, "Triangle"
+        BarMarker(
+            time="2018-12-26",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#0000FF",
+            shape=MarkerShape.TRIANGLE,
+            text="Triangle"
+        )
     )
     shapes_series.add_marker(
-        "2018-12-28", MarkerPosition.ABOVE_BAR, "#FFFF00", MarkerShape.ARROW_DOWN, "Arrow"
+        BarMarker(
+            time="2018-12-28",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#FFFF00",
+            shape=MarkerShape.ARROW_DOWN,
+            text="Arrow"
+        )
     )
 
     chart = Chart(series=shapes_series)
@@ -162,10 +205,22 @@ def main():
 
     # Add markers
     combined_series.add_marker(
-        "2018-12-25", MarkerPosition.ABOVE_BAR, "#FF0000", MarkerShape.CIRCLE, "Peak"
+        BarMarker(
+            time="2018-12-25",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#FF0000",
+            shape=MarkerShape.CIRCLE,
+            text="Peak"
+        )
     )
     combined_series.add_marker(
-        "2018-12-30", MarkerPosition.BELOW_BAR, "#00FF00", MarkerShape.SQUARE, "Low"
+        BarMarker(
+            time="2018-12-30",
+            position=MarkerPosition.BELOW_BAR,
+            color="#00FF00",
+            shape=MarkerShape.SQUARE,
+            text="Low"
+        )
     )
 
     # Add price lines
@@ -184,7 +239,13 @@ def main():
 
     # Add initial markers and price lines
     management_series.add_marker(
-        "2018-12-25", MarkerPosition.ABOVE_BAR, "#FF0000", MarkerShape.CIRCLE, "Initial"
+        BarMarker(
+            time="2018-12-25",
+            position=MarkerPosition.ABOVE_BAR,
+            color="#FF0000",
+            shape=MarkerShape.CIRCLE,
+            text="Initial"
+        )
     )
     management_series.add_price_line(PriceLineOptions(price=30.0, color="#FF0000", title="Initial"))
 

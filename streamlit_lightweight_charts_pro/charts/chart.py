@@ -162,6 +162,8 @@ class Chart:
         self.annotation_manager = AnnotationManager()
         # Store trades for frontend processing
         self._trades = []
+        # Store tooltip manager
+        self._tooltip_manager = None
         # Add initial annotations if provided
         if annotations is not None:
             if not isinstance(annotations, list):
@@ -869,6 +871,47 @@ class Chart:
 
         return self
 
+    def set_tooltip_manager(self, tooltip_manager) -> "Chart":
+        """
+        Set the tooltip manager for the chart.
+        
+        Args:
+            tooltip_manager: TooltipManager instance to handle tooltip functionality.
+            
+        Returns:
+            Chart: Self for method chaining.
+        """
+        from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
+        
+        if not isinstance(tooltip_manager, TooltipManager):
+            raise TypeError("tooltip_manager must be a TooltipManager instance")
+        
+        self._tooltip_manager = tooltip_manager
+        return self
+
+    def add_tooltip_config(self, name: str, config) -> "Chart":
+        """
+        Add a tooltip configuration to the chart.
+        
+        Args:
+            name: Name for the tooltip configuration.
+            config: TooltipConfig instance.
+            
+        Returns:
+            Chart: Self for method chaining.
+        """
+        from streamlit_lightweight_charts_pro.data.tooltip import TooltipConfig
+        
+        if not isinstance(config, TooltipConfig):
+            raise TypeError("config must be a TooltipConfig instance")
+        
+        if self._tooltip_manager is None:
+            from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
+            self._tooltip_manager = TooltipManager()
+        
+        self._tooltip_manager.add_config(name, config)
+        return self
+
     def to_frontend_config(self) -> Dict[str, Any]:
         """
         Convert chart to frontend configuration dictionary.
@@ -936,6 +979,13 @@ class Chart:
             # Add trade visualization options if they exist
             if self.options and self.options.trade_visualization:
                 chart_obj["tradeVisualizationOptions"] = self.options.trade_visualization.asdict()
+
+        # Add tooltip configurations if they exist
+        if self._tooltip_manager:
+            tooltip_configs = {}
+            for name, config in self._tooltip_manager.configs.items():
+                tooltip_configs[name] = config.asdict()
+            chart_obj["tooltipConfigs"] = tooltip_configs
 
         # Note: paneHeights is now accessed directly from chart.layout.paneHeights in frontend
         config = {

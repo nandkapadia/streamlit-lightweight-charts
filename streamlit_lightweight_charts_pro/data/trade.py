@@ -6,7 +6,7 @@ from typing import Optional, Union, Dict, Any
 
 import pandas as pd
 
-from streamlit_lightweight_charts_pro.data import Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     MarkerPosition,
     MarkerShape,
@@ -146,7 +146,7 @@ class TradeData:
         if self.id:
             entry_text = f"{self.id} - {entry_text}"
 
-        entry_marker = Marker(
+        entry_marker = BarMarker(
             time=self._entry_timestamp,
             position=(
                 MarkerPosition.BELOW_BAR
@@ -168,7 +168,7 @@ class TradeData:
         if show_pnl:
             exit_text += f" (P&L: ${self.pnl:.2f}, {self.pnl_percentage:+.1f}%)"
 
-        exit_marker = Marker(
+        exit_marker = BarMarker(
             time=self._exit_timestamp,
             position=(
                 MarkerPosition.ABOVE_BAR

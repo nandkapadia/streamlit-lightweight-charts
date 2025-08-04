@@ -203,13 +203,15 @@ class TestBarSeriesSerialization:
         """Test to_dict with markers."""
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position="aboveBar",
             color="#FF0000",
             shape="circle",
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         result = series.asdict()
 
@@ -240,13 +242,15 @@ class TestBarSeriesMethods:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position="aboveBar",
             color="#FF0000",
             shape="circle",
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         assert len(series.markers) == 1
         assert series.markers[0].time == 1640995200
@@ -269,8 +273,15 @@ class TestBarSeriesMethods:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
 
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
+            time=1640995200,
+            position="aboveBar",
+            color="#FF0000",
+            shape="circle"
+        )
         result = (
-            series.add_marker(time=1640995200, position="aboveBar", color="#FF0000", shape="circle")
+            series.add_marker(marker)
             .add_price_line(PriceLineOptions(None, 100, "#FF0000"))
             .set_visible(False)
         )
@@ -522,13 +533,15 @@ class TestBarSeriesJsonStructure:
         """Test markers JSON structure."""
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position="aboveBar",
             color="#FF0000",
             shape="circle",
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         result = series.asdict()
 
@@ -573,7 +586,14 @@ class TestBarSeriesJsonStructure:
         series.thin_bars = False
 
         # Add markers and price lines
-        series.add_marker(time=1640995200, position="aboveBar", color="#FF0000", shape="circle")
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
+            time=1640995200,
+            position="aboveBar",
+            color="#FF0000",
+            shape="circle"
+        )
+        series.add_marker(marker)
         series.add_price_line(PriceLineOptions(None, 100, "#FF0000"))
 
         result = series.asdict()

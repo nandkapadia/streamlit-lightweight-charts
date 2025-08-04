@@ -211,7 +211,8 @@ class TestAreaSeriesSerialization:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -219,6 +220,7 @@ class TestAreaSeriesSerialization:
             text="Test",
             size=10,
         )
+        series.add_marker(marker)
 
         result = series.asdict()
 
@@ -261,7 +263,8 @@ class TestAreaSeriesMethods:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -269,6 +272,7 @@ class TestAreaSeriesMethods:
             text="Test",
             size=10,
         )
+        series.add_marker(marker)
 
         assert len(series.markers) == 1
         marker = series.markers[0]
@@ -302,14 +306,16 @@ class TestAreaSeriesMethods:
         series = AreaSeries(data=data)
 
         # Test chaining add_marker and add_price_line
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
             text="Test",
             size=10,
-        ).add_price_line(PriceLineOptions(price=100, color="#ff0000"))
+        )
+        series.add_marker(marker).add_price_line(PriceLineOptions(price=100, color="#ff0000"))
 
         assert len(series.markers) == 1
         assert len(series.price_lines) == 1
@@ -555,7 +561,8 @@ class TestAreaSeriesJsonStructure:
         data = [SingleValueData(time=1640995200, value=100)]
         series = AreaSeries(data=data)
 
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -563,6 +570,7 @@ class TestAreaSeriesJsonStructure:
             text="Test Marker",
             size=10,
         )
+        series.add_marker(marker)
 
         result = series.asdict()
 
@@ -622,7 +630,8 @@ class TestAreaSeriesJsonStructure:
         series.bottom_color = "#00ff00"
 
         # Add marker
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -630,6 +639,7 @@ class TestAreaSeriesJsonStructure:
             text="Test",
             size=10,
         )
+        series.add_marker(marker)
 
         # Add price line
         price_line = PriceLineOptions(

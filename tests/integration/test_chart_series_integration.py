@@ -171,13 +171,15 @@ class TestChartSeriesIntegration:
         line_series = LineSeries(data=[LineData(time=1640995200, value=100)])
 
         # Add markers
-        line_series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="red",
             shape=MarkerShape.CIRCLE,
             text="Important Point",
         )
+        line_series.add_marker(marker)
 
         # Add price line
         price_line = PriceLineOptions(price=100, color="blue", line_width=2, title="Support Level")

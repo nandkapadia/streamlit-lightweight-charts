@@ -231,13 +231,15 @@ class TestHistogramChartIntegration:
 
         # Add markers to volume series
         volume_series = chart.series[1]
-        volume_series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time="2024-01-01 01:00:00",
             position="aboveBar",
             color="#FF0000",
             shape="arrowDown",
             text="High Volume",
         )
+        volume_series.add_marker(marker)
 
         # Verify marker was added
         assert len(volume_series.markers) == 1

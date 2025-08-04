@@ -392,7 +392,8 @@ class TestBaselineSeriesSerialization:
         series = BaselineSeries(data=data)
 
         # Add a marker using the correct method signature
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
@@ -400,6 +401,7 @@ class TestBaselineSeriesSerialization:
             size=1,
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         result = series.asdict()
         assert "markers" in result
@@ -444,7 +446,8 @@ class TestBaselineSeriesMethods:
         series = BaselineSeries(data=data)
 
         # Add marker using the correct method signature
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
@@ -452,6 +455,7 @@ class TestBaselineSeriesMethods:
             size=1,
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         assert len(series.markers) == 1
         assert series.markers[0].time == 1640995200
@@ -477,14 +481,16 @@ class TestBaselineSeriesMethods:
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
 
         # Test chaining
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
             shape=MarkerShape.CIRCLE,
             size=1,
             text="Test Marker",
-        ).add_price_line(price_line)
+        )
+        series.add_marker(marker).add_price_line(price_line)
 
         assert len(series.markers) == 1
         assert len(series.price_lines) == 1
@@ -669,7 +675,8 @@ class TestBaselineSeriesJsonStructure:
         series = BaselineSeries(data=data)
 
         # Add marker using the correct method signature
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
@@ -677,6 +684,7 @@ class TestBaselineSeriesJsonStructure:
             size=1,
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         result = series.asdict()
         assert "markers" in result
@@ -710,7 +718,8 @@ class TestBaselineSeriesJsonStructure:
         series = BaselineSeries(data=data)
 
         # Add marker and price line using correct method signatures
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
@@ -718,6 +727,7 @@ class TestBaselineSeriesJsonStructure:
             size=1,
             text="Test Marker",
         )
+        series.add_marker(marker)
 
         price_line = PriceLineOptions(price=150.0, color="#FF0000")
         series.add_price_line(price_line)

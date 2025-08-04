@@ -169,7 +169,8 @@ class TestSeriesBase:
         data = [LineData(time=1640995200, value=100)]
         series = ConcreteSeries(data=data)
 
-        result = series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
@@ -177,6 +178,7 @@ class TestSeriesBase:
             text="Test",
             size=10,
         )
+        result = series.add_marker(marker)
 
         assert result is series  # Method chaining
         assert len(series.markers) == 1
@@ -220,12 +222,14 @@ class TestSeriesBase:
         series = ConcreteSeries(data=data)
 
         # Add some markers first
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
         )
+        series.add_marker(marker)
 
         assert len(series.markers) == 1
 
@@ -417,13 +421,15 @@ class TestSeriesBase:
 
         # Test chaining multiple methods
         series.visible = False
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
+            time=1640995200,
+            position=MarkerPosition.ABOVE_BAR,
+            color="#ff0000",
+            shape=MarkerShape.CIRCLE,
+        )
         result = (
-            series.add_marker(
-                time=1640995200,
-                position=MarkerPosition.ABOVE_BAR,
-                color="#ff0000",
-                shape=MarkerShape.CIRCLE,
-            )
+            series.add_marker(marker)
             .add_price_line(PriceLineOptions(price=100, color="#ff0000"))
             .clear_markers()
             .clear_price_lines()
@@ -509,12 +515,14 @@ class TestSeriesBaseAdvanced:
         # Add complex options
         series.price_format = PriceFormatOptions(type="price", precision=2)
         series.add_price_line(PriceLineOptions(price=100, color="#ff0000"))
-        series.add_marker(
+        from streamlit_lightweight_charts_pro.data.marker import BarMarker
+        marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
         )
+        series.add_marker(marker)
 
         result = series.asdict()
 
