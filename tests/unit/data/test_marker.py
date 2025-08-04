@@ -14,7 +14,7 @@ from streamlit_lightweight_charts_pro.charts.options.line_options import LineOpt
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
 from streamlit_lightweight_charts_pro.data.data import Data
 from streamlit_lightweight_charts_pro.data.line_data import LineData
-from streamlit_lightweight_charts_pro.data.marker import MarkerBase, PriceMarker, BarMarker, Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker, Marker, MarkerBase, PriceMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 
@@ -319,7 +319,7 @@ class TestPriceMarkerConstruction:
             shape=MarkerShape.CIRCLE,
             price=100.50,
         )
-        
+
         # The validation should fail
         assert not marker.validate_position()
 
@@ -330,7 +330,7 @@ class TestPriceMarkerConstruction:
             MarkerPosition.AT_PRICE_BOTTOM,
             MarkerPosition.AT_PRICE_MIDDLE,
         ]
-        
+
         for position in valid_positions:
             marker = PriceMarker(
                 time=1640995200,
@@ -384,7 +384,7 @@ class TestBarMarkerConstruction:
             color="#ff0000",
             shape=MarkerShape.CIRCLE,
         )
-        
+
         # The validation should fail
         assert not marker.validate_position()
 
@@ -395,7 +395,7 @@ class TestBarMarkerConstruction:
             MarkerPosition.BELOW_BAR,
             MarkerPosition.IN_BAR,
         ]
-        
+
         for position in valid_positions:
             marker = BarMarker(
                 time=1640995200,

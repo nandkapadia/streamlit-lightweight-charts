@@ -9,10 +9,10 @@ import pytest
 
 from streamlit_lightweight_charts_pro.data.annotation import Annotation
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
-    AnnotationType,
     AnnotationPosition,
+    AnnotationType,
     HorzAlign,
-    VertAlign
+    VertAlign,
 )
 
 
@@ -21,11 +21,7 @@ class TestAnnotation:
 
     def test_default_construction(self):
         """Test Annotation construction with default values."""
-        annotation = Annotation(
-            time=1640995200,
-            price=100.0,
-            text="Test annotation"
-        )
+        annotation = Annotation(time=1640995200, price=100.0, text="Test annotation")
 
         assert annotation.timestamp == 1640995200
         assert annotation.price == 100.0
@@ -44,9 +40,9 @@ class TestAnnotation:
             text_color="#FFFFFF",
             background_color="#000000",
             border_color="#FF0000",
-            border_width=2
+            border_width=2,
         )
-        
+
         assert annotation.timestamp == 1640995200
         assert annotation.price == 100.0
         assert annotation.text == "Test annotation"
@@ -72,11 +68,11 @@ class TestAnnotation:
             text_color="#FFFFFF",
             background_color="#000000",
             border_color="#FF0000",
-            border_width=2
+            border_width=2,
         )
-        
+
         result = annotation.asdict()
-        
+
         assert result["time"] == 1640995200
         assert result["price"] == 100.0
         assert result["text"] == "Test annotation"
@@ -91,14 +87,10 @@ class TestAnnotation:
 
     def test_asdict_with_none_values(self):
         """Test asdict method handles None values correctly."""
-        annotation = Annotation(
-            time=1640995200,
-            price=100.0,
-            text="Test annotation"
-        )
-        
+        annotation = Annotation(time=1640995200, price=100.0, text="Test annotation")
+
         result = annotation.asdict()
-        
+
         # Only non-None values should be included
         assert "time" in result
         assert "price" in result
@@ -117,11 +109,11 @@ class TestAnnotation:
         # Missing time
         with pytest.raises(TypeError):  # Missing required positional argument
             Annotation(price=100.0, text="Test annotation")
-        
+
         # Missing price
         with pytest.raises(TypeError):  # Missing required positional argument
             Annotation(time=1640995200, text="Test annotation")
-        
+
         # Missing text
         with pytest.raises(TypeError):  # Missing required positional argument
             Annotation(time=1640995200, price=100.0)
@@ -131,11 +123,11 @@ class TestAnnotation:
         # Valid positive price
         annotation = Annotation(time=1640995200, price=100.0, text="Test")
         assert annotation.price == 100.0
-        
+
         # Valid zero price
         annotation = Annotation(time=1640995200, price=0.0, text="Test")
         assert annotation.price == 0.0
-        
+
         # Valid negative price
         annotation = Annotation(time=1640995200, price=-100.0, text="Test")
         assert annotation.price == -100.0
@@ -145,11 +137,11 @@ class TestAnnotation:
         # Valid positive font size
         annotation = Annotation(time=1640995200, price=100.0, text="Test", font_size=10)
         assert annotation.font_size == 10
-        
+
         # Invalid zero font size
         with pytest.raises(ValueError, match="Font size must be positive"):
             Annotation(time=1640995200, price=100.0, text="Test", font_size=0)
-        
+
         # Invalid negative font size
         with pytest.raises(ValueError, match="Font size must be positive"):
             Annotation(time=1640995200, price=100.0, text="Test", font_size=-5)
@@ -159,11 +151,11 @@ class TestAnnotation:
         # Valid positive font size
         annotation = Annotation(time=1640995200, price=100.0, text="Test", font_size=12)
         assert annotation.font_size == 12
-        
+
         # Invalid zero font size
         with pytest.raises(ValueError, match="Font size must be positive"):
             Annotation(time=1640995200, price=100.0, text="Test", font_size=0)
-        
+
         # Invalid negative font size
         with pytest.raises(ValueError, match="Font size must be positive"):
             Annotation(time=1640995200, price=100.0, text="Test", font_size=-12)
@@ -173,11 +165,11 @@ class TestAnnotation:
         # Valid positive border width
         annotation = Annotation(time=1640995200, price=100.0, text="Test", border_width=2)
         assert annotation.border_width == 2
-        
+
         # Valid zero border width
         annotation = Annotation(time=1640995200, price=100.0, text="Test", border_width=0)
         assert annotation.border_width == 0
-        
+
         # Invalid negative border width
         with pytest.raises(ValueError, match="Border width must be non-negative"):
             Annotation(time=1640995200, price=100.0, text="Test", border_width=-2)
@@ -192,13 +184,13 @@ class TestAnnotation:
             color="#FF0000",
             text_color="#FFFFFF",
             background_color="#000000",
-            border_color="#FF0000"
+            border_color="#FF0000",
         )
         assert annotation.color == "#FF0000"
         assert annotation.text_color == "#FFFFFF"
         assert annotation.background_color == "#000000"
         assert annotation.border_color == "#FF0000"
-        
+
         # Invalid color format - Annotation doesn't validate color format
         # This test verifies that invalid colors are accepted (no validation)
         annotation = Annotation(time=1640995200, price=100.0, text="Test", color="invalid_color")
@@ -213,12 +205,8 @@ class TestAnnotation:
 
     def test_validation_positions(self):
         """Test validation of position parameter."""
-        positions = [
-            AnnotationPosition.ABOVE,
-            AnnotationPosition.BELOW,
-            AnnotationPosition.INLINE
-        ]
-        
+        positions = [AnnotationPosition.ABOVE, AnnotationPosition.BELOW, AnnotationPosition.INLINE]
+
         for position in positions:
             annotation = Annotation(time=1640995200, price=100.0, text="Test", position=position)
             assert annotation.position == position
@@ -241,28 +229,20 @@ class TestAnnotation:
         """Test edge cases and boundary conditions."""
         # Very large numbers
         annotation = Annotation(
-            time=1640995200,
-            price=999999.99,
-            text="Test",
-            font_size=999999,
-            border_width=999999
+            time=1640995200, price=999999.99, text="Test", font_size=999999, border_width=999999
         )
         assert annotation.price == 999999.99
         assert annotation.font_size == 999999
         assert annotation.border_width == 999999
-        
+
         # Very small numbers
         annotation = Annotation(
-            time=1640995200,
-            price=0.0001,
-            text="Test",
-            font_size=1,
-            border_width=1
+            time=1640995200, price=0.0001, text="Test", font_size=1, border_width=1
         )
         assert annotation.price == 0.0001
         assert annotation.font_size == 1
         assert annotation.border_width == 1
-        
+
         # Long text
         long_text = "A" * 1000
         annotation = Annotation(time=1640995200, price=100.0, text=long_text)
@@ -276,12 +256,12 @@ class TestAnnotation:
             text="Test annotation",
             annotation_type=AnnotationType.TEXT,
             position=AnnotationPosition.ABOVE,
-            color="#FF0000"
+            color="#FF0000",
         )
-        
+
         result1 = annotation.asdict()
         result2 = annotation.asdict()
-        
+
         assert result1 == result2
 
     def test_copy_method(self):
@@ -292,9 +272,9 @@ class TestAnnotation:
             text="Test annotation",
             annotation_type=AnnotationType.TEXT,
             position=AnnotationPosition.ABOVE,
-            color="#FF0000"
+            color="#FF0000",
         )
-        
+
         # Since Annotation doesn't have a copy method, we'll test that
         # we can create a new instance with the same values
         copied = Annotation(
@@ -303,9 +283,9 @@ class TestAnnotation:
             text=original.text,
             annotation_type=original.annotation_type,
             position=original.position,
-            color=original.color
+            color=original.color,
         )
-        
+
         assert copied is not original
         assert copied.timestamp == original.timestamp
         assert copied.price == original.price
@@ -319,7 +299,7 @@ class TestAnnotation:
         annotation1 = Annotation(time=1640995200, price=100.0, text="Test")
         annotation2 = Annotation(time=1640995200, price=100.0, text="Test")
         annotation3 = Annotation(time=1640995200, price=100.0, text="Different")
-        
+
         # Annotation doesn't implement __eq__, so instances are not equal
         assert annotation1 != annotation2
         assert annotation1 != annotation3
@@ -330,9 +310,9 @@ class TestAnnotation:
             time=1640995200,
             price=100.0,
             text="Test annotation",
-            annotation_type=AnnotationType.TEXT
+            annotation_type=AnnotationType.TEXT,
         )
-        
+
         str_repr = str(annotation)
         # Annotation doesn't implement custom __str__, so it uses default object representation
         assert "Annotation" in str_repr
@@ -347,11 +327,11 @@ class TestAnnotation:
             text="Peak",
             annotation_type=AnnotationType.TEXT,
             position=AnnotationPosition.ABOVE,
-            color="#FF0000"
+            color="#FF0000",
         )
         assert text_annotation.annotation_type == AnnotationType.TEXT
         assert text_annotation.position == AnnotationPosition.ABOVE
-        
+
         # Arrow annotation below bar
         arrow_annotation = Annotation(
             time=1640995200,
@@ -359,11 +339,11 @@ class TestAnnotation:
             text="Valley",
             annotation_type=AnnotationType.ARROW,
             position=AnnotationPosition.BELOW,
-            color="#00FF00"
+            color="#00FF00",
         )
         assert arrow_annotation.annotation_type == AnnotationType.ARROW
         assert arrow_annotation.position == AnnotationPosition.BELOW
-        
+
         # Shape annotation inline
         shape_annotation = Annotation(
             time=1640995200,
@@ -371,7 +351,7 @@ class TestAnnotation:
             text="Breakout",
             annotation_type=AnnotationType.SHAPE,
             position=AnnotationPosition.INLINE,
-            color="#0000FF"
+            color="#0000FF",
         )
         assert shape_annotation.annotation_type == AnnotationType.SHAPE
-        assert shape_annotation.position == AnnotationPosition.INLINE 
+        assert shape_annotation.position == AnnotationPosition.INLINE

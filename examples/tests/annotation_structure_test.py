@@ -6,7 +6,6 @@ annotations from the Python AnnotationManager are properly processed
 by the frontend.
 """
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st

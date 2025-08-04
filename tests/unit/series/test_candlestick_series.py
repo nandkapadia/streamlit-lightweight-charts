@@ -11,7 +11,6 @@ import pytest
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
 from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries
 from streamlit_lightweight_charts_pro.data.candlestick_data import CandlestickData
-from streamlit_lightweight_charts_pro.data.marker import Marker
 from streamlit_lightweight_charts_pro.type_definitions import ChartType, MarkerPosition, MarkerShape
 
 
@@ -337,11 +336,12 @@ class TestCandlestickSeriesSerialization:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.BELOW_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
         series.add_marker(marker)
 
@@ -373,16 +373,18 @@ class TestCandlestickSeriesMethods:
         series = CandlestickSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.BELOW_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
         series.add_marker(marker)
 
         assert len(series.markers) == 1
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         assert isinstance(series.markers[0], BarMarker)
         assert series.markers[0].time == 1640995200
         assert series.markers[0].position == MarkerPosition.BELOW_BAR
@@ -408,13 +410,16 @@ class TestCandlestickSeriesMethods:
         series = CandlestickSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.BELOW_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
-        result = series.add_marker(marker).add_price_line(PriceLineOptions(price=100, color="#FF0000"))
+        result = series.add_marker(marker).add_price_line(
+            PriceLineOptions(price=100, color="#FF0000")
+        )
 
         assert result is series
         assert len(series.markers) == 1
@@ -718,11 +723,12 @@ class TestCandlestickSeriesJsonStructure:
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.BELOW_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
         series.add_marker(marker)
 
@@ -765,11 +771,12 @@ class TestCandlestickSeriesJsonStructure:
 
         # Add markers and price lines
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.BELOW_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
         series.add_marker(marker)
         series.add_price_line(PriceLineOptions(price=100, color="#FF0000"))

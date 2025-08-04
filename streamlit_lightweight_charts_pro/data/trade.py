@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
 
 import pandas as pd
 

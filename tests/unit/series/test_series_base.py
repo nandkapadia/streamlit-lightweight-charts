@@ -170,6 +170,7 @@ class TestSeriesBase:
         series = ConcreteSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -223,6 +224,7 @@ class TestSeriesBase:
 
         # Add some markers first
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -422,6 +424,7 @@ class TestSeriesBase:
         # Test chaining multiple methods
         series.visible = False
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -516,6 +519,7 @@ class TestSeriesBaseAdvanced:
         series.price_format = PriceFormatOptions(type="price", precision=2)
         series.add_price_line(PriceLineOptions(price=100, color="#ff0000"))
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -1066,7 +1070,7 @@ class TestPriceScaleProperty:
         assert "priceLines" in result
         assert "priceScale" in result
 
-        # Verify they are NOT in options (options object should not exist when 
+        # Verify they are NOT in options (options object should not exist when
         # all properties are top-level)
         assert "options" not in result
 

@@ -194,7 +194,7 @@ class TestUIOptionsIntegration:
         ranges = [
             RangeConfig(text="1D", tooltip="1 Day"),
             RangeConfig(text="1W", tooltip="1 Week"),
-            RangeConfig(text="1M", tooltip="1 Month")
+            RangeConfig(text="1M", tooltip="1 Month"),
         ]
         range_switcher = RangeSwitcherOptions(visible=True, ranges=ranges)
 
@@ -208,7 +208,7 @@ class TestUIOptionsIntegration:
         """Test UI options objects in dictionaries."""
         config = {
             "range_switcher": RangeSwitcherOptions(visible=True, ranges=[]),
-            "legend": LegendOptions(visible=False, position="top")
+            "legend": LegendOptions(visible=False, position="top"),
         }
 
         # Test that they can be accessed and serialized
@@ -283,6 +283,7 @@ class TestUIOptionsPerformance:
     def test_construction_performance(self):
         """Test performance of UI options construction."""
         import time
+
         start_time = time.time()
 
         # Create many UI options objects
@@ -297,6 +298,7 @@ class TestUIOptionsPerformance:
     def test_serialization_performance(self):
         """Test performance of UI options serialization."""
         import time
+
         ranges = [RangeConfig(text="1D", tooltip="1 Day") for _ in range(100)]
         range_switcher = RangeSwitcherOptions(visible=True, ranges=ranges)
         legend = LegendOptions(visible=True, position="top")
@@ -313,8 +315,8 @@ class TestUIOptionsPerformance:
 
     def test_memory_usage(self):
         """Test memory usage of UI options."""
-        import sys
         import gc
+        import sys
 
         # Force garbage collection
         gc.collect()
@@ -368,7 +370,16 @@ class TestUIOptionsValidation:
     def test_legend_validation_edge_cases(self):
         """Test edge case validation for LegendOptions."""
         # Test with various position values
-        positions = ["top", "bottom", "left", "right", "top-left", "top-right", "bottom-left", "bottom-right"]
+        positions = [
+            "top",
+            "bottom",
+            "left",
+            "right",
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+        ]
         for position in positions:
             options = LegendOptions(position=position)
             assert options.position == position
@@ -383,7 +394,7 @@ class TestUIOptionsValidation:
         ranges = [
             RangeConfig(text="1D", tooltip="1 Day"),
             RangeConfig(text="1W", tooltip="1 Week"),
-            RangeConfig(text="1M", tooltip="1 Month")
+            RangeConfig(text="1M", tooltip="1 Month"),
         ]
         range_switcher = RangeSwitcherOptions(visible=True, ranges=ranges)
         legend = LegendOptions(visible=False, position="top-right")

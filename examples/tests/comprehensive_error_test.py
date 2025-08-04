@@ -5,7 +5,6 @@ This example tests all the error handling improvements to ensure that
 the library handles various error scenarios gracefully.
 """
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st

@@ -5,7 +5,6 @@ This module tests the dictionary-based update functionality for both
 Options and Series classes, including nested object handling.
 """
 
-
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
 from streamlit_lightweight_charts_pro.data.line_data import LineData

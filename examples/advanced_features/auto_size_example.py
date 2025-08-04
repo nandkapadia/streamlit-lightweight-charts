@@ -5,7 +5,6 @@ This example demonstrates the auto-size functionality and double-click to fit co
 features of the streamlit-lightweight-charts-pro library.
 """
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st

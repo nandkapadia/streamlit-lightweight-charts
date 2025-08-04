@@ -148,7 +148,7 @@ class HistogramSeries(Series):
 
             volume_series = cls.from_dataframe(df, column_mapping=updated_mapping, **kwargs)
             volume_series.last_value_visible = False
-            
+
             return volume_series
 
     def __init__(

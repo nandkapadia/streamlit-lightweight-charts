@@ -5,8 +5,6 @@ This module tests the TimeScaleOptions class functionality including
 construction, validation, and serialization.
 """
 
-import pytest
-
 from streamlit_lightweight_charts_pro.charts.options.time_scale_options import TimeScaleOptions
 
 
@@ -16,7 +14,7 @@ class TestTimeScaleOptions:
     def test_default_construction(self):
         """Test TimeScaleOptions construction with default values."""
         options = TimeScaleOptions()
-        
+
         assert options.visible is True
         assert options.time_visible is True
         assert options.seconds_visible is False
@@ -59,9 +57,9 @@ class TestTimeScaleOptions:
             fit_content_on_load=False,
             handle_double_click=False,
             handle_scale=False,
-            handle_scroll=False
+            handle_scroll=False,
         )
-        
+
         assert options.visible is False
         assert options.time_visible is False
         assert options.seconds_visible is True
@@ -93,11 +91,11 @@ class TestTimeScaleOptions:
             bar_spacing=10,
             min_bar_spacing=0.5,
             border_visible=False,
-            border_color="#FF0000"
+            border_color="#FF0000",
         )
-        
+
         result = options.asdict()
-        
+
         assert result["visible"] is False
         assert result["timeVisible"] is False
         assert result["secondsVisible"] is True
@@ -111,7 +109,7 @@ class TestTimeScaleOptions:
     def test_method_chaining(self):
         """Test method chaining functionality."""
         options = TimeScaleOptions()
-        
+
         result = (
             options.set_visible(False)
             .set_time_visible(False)
@@ -123,7 +121,7 @@ class TestTimeScaleOptions:
             .set_border_visible(False)
             .set_border_color("#FF0000")
         )
-        
+
         assert result is options
         assert options.visible is False
         assert options.time_visible is False
@@ -140,7 +138,7 @@ class TestTimeScaleOptions:
         # Valid color
         options = TimeScaleOptions(border_color="#FF0000")
         assert options.border_color == "#FF0000"
-        
+
         # Valid rgba color
         options = TimeScaleOptions(border_color="rgba(255, 0, 0, 0.5)")
         assert options.border_color == "rgba(255, 0, 0, 0.5)"
@@ -148,12 +146,14 @@ class TestTimeScaleOptions:
     def test_edge_cases(self):
         """Test edge cases and boundary conditions."""
         # Zero values
-        options = TimeScaleOptions(right_offset=0, left_offset=0, bar_spacing=0, min_bar_spacing=0.0)
+        options = TimeScaleOptions(
+            right_offset=0, left_offset=0, bar_spacing=0, min_bar_spacing=0.0
+        )
         assert options.right_offset == 0
         assert options.left_offset == 0
         assert options.bar_spacing == 0
         assert options.min_bar_spacing == 0.0
-        
+
         # Negative values
         options = TimeScaleOptions(right_offset=-5, left_offset=-3, bar_spacing=-10)
         assert options.right_offset == -5
@@ -167,12 +167,12 @@ class TestTimeScaleOptions:
             time_visible=False,
             right_offset=5,
             bar_spacing=10,
-            border_color="#FF0000"
+            border_color="#FF0000",
         )
-        
+
         result1 = options.asdict()
         result2 = options.asdict()
-        
+
         assert result1 == result2
 
     def test_copy_method(self):
@@ -182,9 +182,9 @@ class TestTimeScaleOptions:
             time_visible=False,
             right_offset=5,
             bar_spacing=10,
-            border_color="#FF0000"
+            border_color="#FF0000",
         )
-        
+
         # Since TimeScaleOptions doesn't have a copy method, we'll test that
         # we can create a new instance with the same values
         copied = TimeScaleOptions(
@@ -200,9 +200,9 @@ class TestTimeScaleOptions:
             lock_visible_time_range_on_resize=original.lock_visible_time_range_on_resize,
             right_bar_stays_on_scroll=original.right_bar_stays_on_scroll,
             border_visible=original.border_visible,
-            border_color=original.border_color
+            border_color=original.border_color,
         )
-        
+
         assert copied is not original
         assert copied.visible == original.visible
         assert copied.time_visible == original.time_visible
@@ -213,7 +213,9 @@ class TestTimeScaleOptions:
         assert copied.min_bar_spacing == original.min_bar_spacing
         assert copied.fix_left_edge == original.fix_left_edge
         assert copied.fix_right_edge == original.fix_right_edge
-        assert copied.lock_visible_time_range_on_resize == original.lock_visible_time_range_on_resize
+        assert (
+            copied.lock_visible_time_range_on_resize == original.lock_visible_time_range_on_resize
+        )
         assert copied.right_bar_stays_on_scroll == original.right_bar_stays_on_scroll
         assert copied.border_visible == original.border_visible
-        assert copied.border_color == original.border_color 
+        assert copied.border_color == original.border_color

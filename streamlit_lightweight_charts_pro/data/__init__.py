@@ -43,19 +43,12 @@ from streamlit_lightweight_charts_pro.data.histogram_data import HistogramData
 from streamlit_lightweight_charts_pro.data.line_data import LineData
 
 # Import marker classes
-from streamlit_lightweight_charts_pro.data.marker import MarkerBase, PriceMarker, BarMarker, Marker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker, Marker, MarkerBase, PriceMarker
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
-from streamlit_lightweight_charts_pro.data.single_value_data import SingleValueData
-
-# Import trade classes
-from streamlit_lightweight_charts_pro.data.trade import (
-    TradeData,
-    TradeType,
-)
-from streamlit_lightweight_charts_pro.type_definitions.enums import TradeVisualization
 
 # Import signal data classes
 from streamlit_lightweight_charts_pro.data.signal_data import SignalData
+from streamlit_lightweight_charts_pro.data.single_value_data import SingleValueData
 
 # Import tooltip classes
 from streamlit_lightweight_charts_pro.data.tooltip import (
@@ -70,10 +63,17 @@ from streamlit_lightweight_charts_pro.data.tooltip import (
     create_trade_tooltip,
 )
 
+# Import trade classes
+from streamlit_lightweight_charts_pro.data.trade import (
+    TradeData,
+    TradeType,
+)
+
 # Import tooltip enums from type_definitions
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     TooltipPosition,
     TooltipType,
+    TradeVisualization,
 )
 
 # Re-export all classes for backward compatibility
@@ -95,7 +95,7 @@ __all__ = [
     "BandData",
     # Marker classes
     "MarkerBase",
-    "PriceMarker", 
+    "PriceMarker",
     "BarMarker",
     "Marker",
     # Trade classes

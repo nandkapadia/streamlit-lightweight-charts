@@ -232,6 +232,7 @@ class TestHistogramChartIntegration:
         # Add markers to volume series
         volume_series = chart.series[1]
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time="2024-01-01 01:00:00",
             position="aboveBar",

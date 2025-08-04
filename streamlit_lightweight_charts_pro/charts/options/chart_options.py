@@ -74,7 +74,7 @@ class ChartOptions(Options):
         handle_scroll (bool): Whether to enable scroll interactions.
         handle_scale (bool): Whether to enable scale interactions.
         kinetic_scroll (Optional[KineticScrollOptions]): Kinetic scroll options.
-        tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and 
+        tracking_mode (Optional[TrackingModeOptions]): Mouse tracking mode for crosshair and
                                                        tooltips.
         localization (Optional[LocalizationOptions]): Localization settings for date/time
                                                       formatting.

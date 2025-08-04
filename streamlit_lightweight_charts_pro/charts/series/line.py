@@ -36,7 +36,6 @@ import pandas as pd
 from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data.line_data import LineData
-from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 from streamlit_lightweight_charts_pro.type_definitions import (
     ChartType,
 )

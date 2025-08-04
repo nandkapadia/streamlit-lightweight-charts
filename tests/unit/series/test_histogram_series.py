@@ -164,6 +164,7 @@ class TestHistogramSeriesSerialization:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position="aboveBar",
@@ -215,12 +216,9 @@ class TestHistogramSeriesMethods:
         series = HistogramSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
-            time=1640995200,
-            position="aboveBar",
-            color="#FF0000",
-            shape="circle",
-            text="Test"
+            time=1640995200, position="aboveBar", color="#FF0000", shape="circle", text="Test"
         )
         series.add_marker(marker)
 
@@ -247,18 +245,11 @@ class TestHistogramSeriesMethods:
 
         price_line = PriceLineOptions(price=150.0, color="#00FF00")
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
-            time=1640995200,
-            position="aboveBar",
-            color="#FF0000",
-            shape="circle",
-            text="Test"
+            time=1640995200, position="aboveBar", color="#FF0000", shape="circle", text="Test"
         )
-        result = (
-            series.add_marker(marker)
-            .add_price_line(price_line)
-            .set_visible(False)
-        )
+        result = series.add_marker(marker).add_price_line(price_line).set_visible(False)
 
         assert result is series
         assert len(series.markers) == 1
@@ -465,12 +456,9 @@ class TestHistogramSeriesJsonStructure:
         data = [HistogramData(time=1640995200, value=100.5)]
         series = HistogramSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
-            time=1640995200,
-            position="aboveBar",
-            color="#FF0000",
-            shape="circle",
-            text="Test"
+            time=1640995200, position="aboveBar", color="#FF0000", shape="circle", text="Test"
         )
         series.add_marker(marker)
 
@@ -508,6 +496,7 @@ class TestHistogramSeriesJsonStructure:
         series.color = "#FF0000"
         series.base = 10.5
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position="aboveBar",

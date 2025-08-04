@@ -5,13 +5,23 @@ This module tests the PaneHeightOptions class and its integration with
 LayoutOptions and Chart configuration.
 """
 
-import pytest
 import time
 
+import pytest
+
 from streamlit_lightweight_charts_pro import (
-    Chart, ChartOptions, LayoutOptions, PaneHeightOptions,
-    LineSeries, LineData, CandlestickSeries, CandlestickData,
-    HistogramSeries, HistogramData, AreaSeries, AreaData
+    AreaData,
+    AreaSeries,
+    CandlestickData,
+    CandlestickSeries,
+    Chart,
+    ChartOptions,
+    HistogramData,
+    HistogramSeries,
+    LayoutOptions,
+    LineData,
+    LineSeries,
+    PaneHeightOptions,
 )
 
 
@@ -53,14 +63,14 @@ class TestPaneHeightOptions:
         """Test chainable setter methods."""
         options = PaneHeightOptions()
         result = options.set_factor(2.5)
-        
+
         assert result is options  # Method chaining
         assert options.factor == 2.5
 
     def test_chainable_method_validation(self):
         """Test validation in chainable methods."""
         options = PaneHeightOptions()
-        
+
         # The set_factor method doesn't validate negative values at runtime
         # Validation only happens during construction
         result = options.set_factor(-1.0)
@@ -72,7 +82,7 @@ class TestPaneHeightOptions:
         options1 = PaneHeightOptions(factor=2.0)
         options2 = PaneHeightOptions(factor=2.0)
         options3 = PaneHeightOptions(factor=3.0)
-        
+
         assert options1 == options2
         assert options1 != options3
         # PaneHeightOptions doesn't support hashing, so skip hash test
@@ -81,7 +91,7 @@ class TestPaneHeightOptions:
         """Test string representation."""
         options = PaneHeightOptions(factor=2.5)
         repr_str = repr(options)
-        
+
         assert "PaneHeightOptions" in repr_str
         assert "factor=2.5" in repr_str
 
@@ -90,11 +100,11 @@ class TestPaneHeightOptions:
         # Very small positive value
         options1 = PaneHeightOptions(factor=0.001)
         assert options1.factor == 0.001
-        
+
         # Very large value
         options2 = PaneHeightOptions(factor=1000.0)
         assert options2.factor == 1000.0
-        
+
         # Exactly 1.0
         options3 = PaneHeightOptions(factor=1.0)
         assert options3.factor == 1.0
@@ -114,7 +124,7 @@ class TestLayoutOptionsPaneHeights:
             pane_heights={
                 0: PaneHeightOptions(factor=2.0),
                 1: PaneHeightOptions(factor=1.0),
-                2: PaneHeightOptions(factor=1.5)
+                2: PaneHeightOptions(factor=1.5),
             }
         )
         assert layout.pane_heights is not None
@@ -126,17 +136,11 @@ class TestLayoutOptionsPaneHeights:
     def test_layout_options_serialization(self):
         """Test LayoutOptions serialization with pane_heights."""
         layout = LayoutOptions(
-            pane_heights={
-                0: PaneHeightOptions(factor=2.0),
-                1: PaneHeightOptions(factor=1.0)
-            }
+            pane_heights={0: PaneHeightOptions(factor=2.0), 1: PaneHeightOptions(factor=1.0)}
         )
         result = layout.asdict()
         assert "paneHeights" in result
-        assert result["paneHeights"] == {
-            "0": {"factor": 2.0},
-            "1": {"factor": 1.0}
-        }
+        assert result["paneHeights"] == {"0": {"factor": 2.0}, "1": {"factor": 1.0}}
 
     def test_layout_options_no_pane_heights(self):
         """Test LayoutOptions without pane_heights."""
@@ -147,11 +151,8 @@ class TestLayoutOptionsPaneHeights:
     def test_layout_options_update_pane_heights(self):
         """Test updating pane_heights after construction."""
         layout = LayoutOptions()
-        layout.pane_heights = {
-            0: PaneHeightOptions(factor=2.0),
-            1: PaneHeightOptions(factor=1.0)
-        }
-        
+        layout.pane_heights = {0: PaneHeightOptions(factor=2.0), 1: PaneHeightOptions(factor=1.0)}
+
         result = layout.asdict()
         assert result["paneHeights"]["0"]["factor"] == 2.0
         assert result["paneHeights"]["1"]["factor"] == 1.0
@@ -165,11 +166,11 @@ class TestLayoutOptionsPaneHeights:
             pane_heights={
                 0: PaneHeightOptions(factor=1.0),
                 10: PaneHeightOptions(factor=2.0),
-                100: PaneHeightOptions(factor=3.0)
+                100: PaneHeightOptions(factor=3.0),
             }
         )
         result = layout.asdict()
-        
+
         assert result["paneHeights"]["0"]["factor"] == 1.0
         assert result["paneHeights"]["10"]["factor"] == 2.0
         assert result["paneHeights"]["100"]["factor"] == 3.0
@@ -177,11 +178,8 @@ class TestLayoutOptionsPaneHeights:
     def test_layout_options_update_pane_heights(self):
         """Test updating pane_heights after construction."""
         layout = LayoutOptions()
-        layout.pane_heights = {
-            0: PaneHeightOptions(factor=2.0),
-            1: PaneHeightOptions(factor=1.0)
-        }
-        
+        layout.pane_heights = {0: PaneHeightOptions(factor=2.0), 1: PaneHeightOptions(factor=1.0)}
+
         result = layout.asdict()
         assert result["paneHeights"]["0"]["factor"] == 2.0
         assert result["paneHeights"]["1"]["factor"] == 1.0
@@ -193,7 +191,7 @@ class TestChartPaneHeights:
     def test_chart_with_pane_heights(self):
         """Test Chart with pane_heights configuration."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -201,23 +199,20 @@ class TestChartPaneHeights:
                 layout=LayoutOptions(
                     pane_heights={
                         0: PaneHeightOptions(factor=2.0),
-                        1: PaneHeightOptions(factor=1.0)
+                        1: PaneHeightOptions(factor=1.0),
                     }
-                )
+                ),
             ),
-            series=[
-                LineSeries(data=data, pane_id=0),
-                LineSeries(data=data, pane_id=1)
-            ]
+            series=[LineSeries(data=data, pane_id=0), LineSeries(data=data, pane_id=1)],
         )
-        
+
         assert chart.options.layout.pane_heights is not None
         assert len(chart.options.layout.pane_heights) == 2
 
     def test_chart_frontend_config_with_pane_heights(self):
         """Test Chart frontend config includes pane_heights."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -225,44 +220,37 @@ class TestChartPaneHeights:
                 layout=LayoutOptions(
                     pane_heights={
                         0: PaneHeightOptions(factor=2.0),
-                        1: PaneHeightOptions(factor=1.0)
+                        1: PaneHeightOptions(factor=1.0),
                     }
-                )
+                ),
             ),
-            series=[
-                LineSeries(data=data, pane_id=0),
-                LineSeries(data=data, pane_id=1)
-            ]
+            series=[LineSeries(data=data, pane_id=0), LineSeries(data=data, pane_id=1)],
         )
-        
+
         config = chart.to_frontend_config()
         layout = config["charts"][0]["chart"]["layout"]
-        
+
         assert "paneHeights" in layout
-        assert layout["paneHeights"] == {
-            "0": {"factor": 2.0},
-            "1": {"factor": 1.0}
-        }
+        assert layout["paneHeights"] == {"0": {"factor": 2.0}, "1": {"factor": 1.0}}
 
     def test_chart_without_pane_heights(self):
         """Test Chart without pane_heights configuration."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
-            options=ChartOptions(width=800, height=600),
-            series=[LineSeries(data=data, pane_id=0)]
+            options=ChartOptions(width=800, height=600), series=[LineSeries(data=data, pane_id=0)]
         )
-        
+
         config = chart.to_frontend_config()
         layout = config["charts"][0]["chart"]["layout"]
-        
+
         # Should not have paneHeights if not configured
         assert "paneHeights" not in layout
 
     def test_chart_mixed_pane_series(self):
         """Test Chart with series in different panes."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -271,27 +259,27 @@ class TestChartPaneHeights:
                     pane_heights={
                         0: PaneHeightOptions(factor=3.0),
                         1: PaneHeightOptions(factor=1.0),
-                        2: PaneHeightOptions(factor=2.0)
+                        2: PaneHeightOptions(factor=2.0),
                     }
-                )
+                ),
             ),
             series=[
                 LineSeries(data=data, pane_id=0),  # Main chart
                 LineSeries(data=data, pane_id=1),  # Volume
-                LineSeries(data=data, pane_id=2)   # Indicator
-            ]
+                LineSeries(data=data, pane_id=2),  # Indicator
+            ],
         )
-        
+
         config = chart.to_frontend_config()
         layout = config["charts"][0]["chart"]["layout"]
-        
+
         assert "paneHeights" in layout
         assert layout["paneHeights"] == {
             "0": {"factor": 3.0},
             "1": {"factor": 1.0},
-            "2": {"factor": 2.0}
+            "2": {"factor": 2.0},
         }
-        
+
         # Check that series have correct pane_id
         series_configs = config["charts"][0]["series"]
         assert len(series_configs) == 3
@@ -305,7 +293,7 @@ class TestChartPaneHeights:
         candlestick_data = [CandlestickData(time=1640995200, open=100, high=110, low=90, close=105)]
         volume_data = [HistogramData(time=1640995200, value=1000)]
         area_data = [AreaData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -314,20 +302,20 @@ class TestChartPaneHeights:
                     pane_heights={
                         0: PaneHeightOptions(factor=3.0),  # Main chart
                         1: PaneHeightOptions(factor=1.0),  # Volume
-                        2: PaneHeightOptions(factor=1.5)   # Area
+                        2: PaneHeightOptions(factor=1.5),  # Area
                     }
-                )
+                ),
             ),
             series=[
                 CandlestickSeries(data=candlestick_data, pane_id=0),
                 HistogramSeries(data=volume_data, pane_id=1),
-                AreaSeries(data=area_data, pane_id=2)
-            ]
+                AreaSeries(data=area_data, pane_id=2),
+            ],
         )
-        
+
         config = chart.to_frontend_config()
         layout = config["charts"][0]["chart"]["layout"]
-        
+
         assert "paneHeights" in layout
         assert layout["paneHeights"]["0"]["factor"] == 3.0
         assert layout["paneHeights"]["1"]["factor"] == 1.0
@@ -336,7 +324,7 @@ class TestChartPaneHeights:
     def test_chart_series_without_pane_id(self):
         """Test Chart with series that don't specify pane_id."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -344,19 +332,19 @@ class TestChartPaneHeights:
                 layout=LayoutOptions(
                     pane_heights={
                         0: PaneHeightOptions(factor=2.0),
-                        1: PaneHeightOptions(factor=1.0)
+                        1: PaneHeightOptions(factor=1.0),
                     }
-                )
+                ),
             ),
             series=[
                 LineSeries(data=data),  # No pane_id specified
-                LineSeries(data=data, pane_id=1)
-            ]
+                LineSeries(data=data, pane_id=1),
+            ],
         )
-        
+
         config = chart.to_frontend_config()
         series_configs = config["charts"][0]["series"]
-        
+
         # Series without pane_id should default to pane 0
         assert series_configs[0]["paneId"] == 0
         assert series_configs[1]["paneId"] == 1
@@ -380,10 +368,7 @@ class TestPaneHeightsEdgeCases:
     def test_large_factor_values(self):
         """Test large factor values."""
         layout = LayoutOptions(
-            pane_heights={
-                0: PaneHeightOptions(factor=10.0),
-                1: PaneHeightOptions(factor=0.1)
-            }
+            pane_heights={0: PaneHeightOptions(factor=10.0), 1: PaneHeightOptions(factor=0.1)}
         )
         result = layout.asdict()
         assert result["paneHeights"]["0"]["factor"] == 10.0
@@ -392,10 +377,7 @@ class TestPaneHeightsEdgeCases:
     def test_string_pane_ids(self):
         """Test that pane IDs are converted to strings in serialization."""
         layout = LayoutOptions(
-            pane_heights={
-                0: PaneHeightOptions(factor=2.0),
-                1: PaneHeightOptions(factor=1.0)
-            }
+            pane_heights={0: PaneHeightOptions(factor=2.0), 1: PaneHeightOptions(factor=1.0)}
         )
         result = layout.asdict()
         assert "0" in result["paneHeights"]
@@ -405,10 +387,7 @@ class TestPaneHeightsEdgeCases:
     def test_negative_pane_ids(self):
         """Test negative pane IDs."""
         layout = LayoutOptions(
-            pane_heights={
-                -1: PaneHeightOptions(factor=1.0),
-                -2: PaneHeightOptions(factor=2.0)
-            }
+            pane_heights={-1: PaneHeightOptions(factor=1.0), -2: PaneHeightOptions(factor=2.0)}
         )
         result = layout.asdict()
         assert "-1" in result["paneHeights"]
@@ -419,7 +398,7 @@ class TestPaneHeightsEdgeCases:
         layout = LayoutOptions(
             pane_heights={
                 999999: PaneHeightOptions(factor=1.0),
-                1000000: PaneHeightOptions(factor=2.0)
+                1000000: PaneHeightOptions(factor=2.0),
             }
         )
         result = layout.asdict()
@@ -432,7 +411,7 @@ class TestPaneHeightsEdgeCases:
             pane_heights={
                 0: PaneHeightOptions(factor=1.0),
                 "1": PaneHeightOptions(factor=2.0),  # String key
-                2: PaneHeightOptions(factor=3.0)
+                2: PaneHeightOptions(factor=3.0),
             }
         )
         result = layout.asdict()
@@ -445,7 +424,7 @@ class TestPaneHeightsEdgeCases:
         layout = LayoutOptions(
             pane_heights={
                 0: PaneHeightOptions(factor=1.0),
-                0: PaneHeightOptions(factor=2.0)  # Overwrites the first
+                0: PaneHeightOptions(factor=2.0),  # Overwrites the first
             }
         )
         result = layout.asdict()
@@ -454,11 +433,7 @@ class TestPaneHeightsEdgeCases:
     def test_invalid_pane_height_options(self):
         """Test with invalid PaneHeightOptions objects."""
         with pytest.raises(ValueError, match="must be positive"):
-            LayoutOptions(
-                pane_heights={
-                    0: PaneHeightOptions(factor=-1.0)
-                }
-            )
+            LayoutOptions(pane_heights={0: PaneHeightOptions(factor=-1.0)})
 
 
 class TestPaneHeightsIntegration:
@@ -473,7 +448,7 @@ class TestPaneHeightsIntegration:
             for i in range(10)
         ]
         volume_data = [HistogramData(time=1640995200 + i, value=1000 + i) for i in range(10)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=1200,
@@ -483,21 +458,21 @@ class TestPaneHeightsIntegration:
                         0: PaneHeightOptions(factor=4.0),  # Main price chart
                         1: PaneHeightOptions(factor=1.0),  # Volume
                         2: PaneHeightOptions(factor=2.0),  # Indicator 1
-                        3: PaneHeightOptions(factor=2.0)   # Indicator 2
+                        3: PaneHeightOptions(factor=2.0),  # Indicator 2
                     }
-                )
+                ),
             ),
             series=[
                 CandlestickSeries(data=candlestick_data, pane_id=0),
                 HistogramSeries(data=volume_data, pane_id=1),
                 LineSeries(data=line_data, pane_id=2),
-                LineSeries(data=line_data, pane_id=3)
-            ]
+                LineSeries(data=line_data, pane_id=3),
+            ],
         )
-        
+
         config = chart.to_frontend_config()
         layout = config["charts"][0]["chart"]["layout"]
-        
+
         # Verify pane heights configuration
         assert "paneHeights" in layout
         pane_heights = layout["paneHeights"]
@@ -505,7 +480,7 @@ class TestPaneHeightsIntegration:
         assert pane_heights["1"]["factor"] == 1.0
         assert pane_heights["2"]["factor"] == 2.0
         assert pane_heights["3"]["factor"] == 2.0
-        
+
         # Verify series pane assignments
         series_configs = config["charts"][0]["series"]
         assert len(series_configs) == 4
@@ -517,7 +492,7 @@ class TestPaneHeightsIntegration:
     def test_pane_heights_with_chart_options(self):
         """Test pane_heights with other chart options."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=800,
@@ -530,28 +505,25 @@ class TestPaneHeightsIntegration:
                     text_color="#000000",
                     pane_heights={
                         0: PaneHeightOptions(factor=2.0),
-                        1: PaneHeightOptions(factor=1.0)
-                    }
-                )
+                        1: PaneHeightOptions(factor=1.0),
+                    },
+                ),
             ),
-            series=[
-                LineSeries(data=data, pane_id=0),
-                LineSeries(data=data, pane_id=1)
-            ]
+            series=[LineSeries(data=data, pane_id=0), LineSeries(data=data, pane_id=1)],
         )
-        
+
         config = chart.to_frontend_config()
         chart_config = config["charts"][0]
-        
+
         # Focus on testing pane_heights functionality
         layout = chart_config["chart"]["layout"]
         assert "paneHeights" in layout
-        
+
         # Verify pane_heights configuration
         pane_heights = layout["paneHeights"]
         assert pane_heights["0"]["factor"] == 2.0
         assert pane_heights["1"]["factor"] == 1.0
-        
+
         # Verify series have correct pane assignments
         series_configs = chart_config["series"]
         assert len(series_configs) == 2
@@ -564,20 +536,20 @@ class TestPaneHeightsIntegration:
             pane_heights={
                 0: PaneHeightOptions(factor=2.0),
                 1: PaneHeightOptions(factor=1.0),
-                2: PaneHeightOptions(factor=1.5)
+                2: PaneHeightOptions(factor=1.5),
             }
         )
-        
+
         # Serialize multiple times
         result1 = layout.asdict()
         result2 = layout.asdict()
         result3 = layout.asdict()
-        
+
         # All results should be identical
         assert result1 == result2
         assert result2 == result3
         assert result1 == result3
-        
+
         # Pane heights should be consistent
         assert result1["paneHeights"] == result2["paneHeights"]
         assert result2["paneHeights"] == result3["paneHeights"]
@@ -589,15 +561,15 @@ class TestPaneHeightsPerformance:
     def test_pane_heights_construction_performance(self):
         """Test performance of pane_heights construction."""
         start_time = time.time()
-        
+
         # Create many pane height options
         pane_heights = {}
         for i in range(100):
             pane_heights[i] = PaneHeightOptions(factor=1.0 + (i * 0.1))
-        
+
         layout = LayoutOptions(pane_heights=pane_heights)
         construction_time = time.time() - start_time
-        
+
         # Should complete quickly (less than 1 second)
         assert construction_time < 1.0
         assert len(layout.pane_heights) == 100
@@ -608,13 +580,13 @@ class TestPaneHeightsPerformance:
         pane_heights = {}
         for i in range(100):
             pane_heights[i] = PaneHeightOptions(factor=1.0 + (i * 0.1))
-        
+
         layout = LayoutOptions(pane_heights=pane_heights)
-        
+
         start_time = time.time()
         result = layout.asdict()
         serialization_time = time.time() - start_time
-        
+
         # Should complete quickly (less than 1 second)
         assert serialization_time < 1.0
         assert len(result["paneHeights"]) == 100
@@ -623,9 +595,9 @@ class TestPaneHeightsPerformance:
         """Test performance of large chart with pane_heights."""
         # Create large dataset
         data = [LineData(time=1640995200 + i, value=100 + i) for i in range(1000)]
-        
+
         start_time = time.time()
-        
+
         chart = Chart(
             options=ChartOptions(
                 width=1200,
@@ -636,25 +608,25 @@ class TestPaneHeightsPerformance:
                         1: PaneHeightOptions(factor=1.0),
                         2: PaneHeightOptions(factor=2.0),
                         3: PaneHeightOptions(factor=1.5),
-                        4: PaneHeightOptions(factor=1.0)
+                        4: PaneHeightOptions(factor=1.0),
                     }
-                )
+                ),
             ),
             series=[
                 LineSeries(data=data, pane_id=0),
                 LineSeries(data=data, pane_id=1),
                 LineSeries(data=data, pane_id=2),
                 LineSeries(data=data, pane_id=3),
-                LineSeries(data=data, pane_id=4)
-            ]
+                LineSeries(data=data, pane_id=4),
+            ],
         )
-        
+
         config = chart.to_frontend_config()
         total_time = time.time() - start_time
-        
+
         # Should complete in reasonable time (less than 5 seconds)
         assert total_time < 5.0
-        
+
         # Verify configuration is correct
         layout = config["charts"][0]["chart"]["layout"]
         assert "paneHeights" in layout
@@ -670,69 +642,57 @@ class TestPaneHeightsValidation:
         # Test very small positive values
         options1 = PaneHeightOptions(factor=0.0001)
         assert options1.factor == 0.0001
-        
+
         # Test very large values
         options2 = PaneHeightOptions(factor=999999.0)
         assert options2.factor == 999999.0
-        
+
         # Test exactly zero (should fail)
         with pytest.raises(ValueError, match="must be positive"):
             PaneHeightOptions(factor=0.0)
-        
+
         # Test negative values (should fail)
         with pytest.raises(ValueError, match="must be positive"):
             PaneHeightOptions(factor=-0.1)
-        
+
         with pytest.raises(ValueError, match="must be positive"):
             PaneHeightOptions(factor=-100.0)
 
     def test_layout_options_pane_heights_validation(self):
         """Test validation when setting pane_heights in LayoutOptions."""
         layout = LayoutOptions()
-        
+
         # Valid pane_heights
-        layout.pane_heights = {
-            0: PaneHeightOptions(factor=1.0),
-            1: PaneHeightOptions(factor=2.0)
-        }
+        layout.pane_heights = {0: PaneHeightOptions(factor=1.0), 1: PaneHeightOptions(factor=2.0)}
         assert layout.pane_heights is not None
-        
+
         # Invalid pane_heights (should fail during construction)
         with pytest.raises(ValueError, match="must be positive"):
-            layout.pane_heights = {
-                0: PaneHeightOptions(factor=-1.0)
-            }
+            layout.pane_heights = {0: PaneHeightOptions(factor=-1.0)}
 
     def test_chart_pane_heights_validation(self):
         """Test validation when creating charts with pane_heights."""
         data = [LineData(time=1640995200, value=100)]
-        
+
         # Valid chart with pane_heights
         chart = Chart(
             options=ChartOptions(
                 layout=LayoutOptions(
                     pane_heights={
                         0: PaneHeightOptions(factor=2.0),
-                        1: PaneHeightOptions(factor=1.0)
+                        1: PaneHeightOptions(factor=1.0),
                     }
                 )
             ),
-            series=[
-                LineSeries(data=data, pane_id=0),
-                LineSeries(data=data, pane_id=1)
-            ]
+            series=[LineSeries(data=data, pane_id=0), LineSeries(data=data, pane_id=1)],
         )
         assert chart.options.layout.pane_heights is not None
-        
+
         # Invalid chart with pane_heights (should fail during construction)
         with pytest.raises(ValueError, match="must be positive"):
             Chart(
                 options=ChartOptions(
-                    layout=LayoutOptions(
-                        pane_heights={
-                            0: PaneHeightOptions(factor=-1.0)
-                        }
-                    )
+                    layout=LayoutOptions(pane_heights={0: PaneHeightOptions(factor=-1.0)})
                 ),
-                series=[LineSeries(data=data, pane_id=0)]
-            ) 
+                series=[LineSeries(data=data, pane_id=0)],
+            )

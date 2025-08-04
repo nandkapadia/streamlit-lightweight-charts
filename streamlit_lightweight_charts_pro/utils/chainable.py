@@ -6,7 +6,7 @@ for properties and dataclass fields, allowing both direct assignment and
 method chaining styles with optional type validation.
 """
 
-from typing import Any, Callable, Optional, Type, Union, List, get_origin, get_args
+from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from .data_utils import (
     is_valid_color,
@@ -25,19 +25,21 @@ def _is_list_of_markers(value_type) -> bool:
             # Check if it's MarkerBase or a subclass
             try:
                 from streamlit_lightweight_charts_pro.data.marker import MarkerBase
-                return issubclass(arg_type, MarkerBase) if hasattr(arg_type, '__mro__') else False
+
+                return issubclass(arg_type, MarkerBase) if hasattr(arg_type, "__mro__") else False
             except ImportError:
                 # If we can't import MarkerBase, check the name
-                return hasattr(arg_type, '__name__') and 'Marker' in arg_type.__name__
+                return hasattr(arg_type, "__name__") and "Marker" in arg_type.__name__
 
 
 def _validate_list_of_markers(value, attr_name: str) -> bool:
     """Validate that a value is a list of markers."""
     if not isinstance(value, list):
         raise TypeError(f"{attr_name} must be a list")
-    
+
     try:
         from streamlit_lightweight_charts_pro.data.marker import MarkerBase
+
         for item in value:
             if not isinstance(item, MarkerBase):
                 raise TypeError(f"All items in {attr_name} must be instances of MarkerBase")
@@ -45,7 +47,7 @@ def _validate_list_of_markers(value, attr_name: str) -> bool:
     except ImportError:
         # If we can't import MarkerBase, just check that all items have marker-like attributes
         for item in value:
-            if not hasattr(item, 'time') or not hasattr(item, 'position'):
+            if not hasattr(item, "time") or not hasattr(item, "position"):
                 raise TypeError(f"All items in {attr_name} must be valid markers")
         return True
 

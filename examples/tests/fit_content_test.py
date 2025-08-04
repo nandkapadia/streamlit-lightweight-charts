@@ -5,7 +5,6 @@ This example specifically tests the fitContent functionality to ensure
 charts properly rescale to show all data on load.
 """
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st

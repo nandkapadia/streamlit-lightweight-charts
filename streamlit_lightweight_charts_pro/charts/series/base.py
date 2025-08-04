@@ -31,10 +31,12 @@ from streamlit_lightweight_charts_pro.charts.options import (
 )
 from streamlit_lightweight_charts_pro.data import Data
 from streamlit_lightweight_charts_pro.data.data import classproperty
-from streamlit_lightweight_charts_pro.data.marker import MarkerBase, PriceMarker, BarMarker, Marker
+from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 from streamlit_lightweight_charts_pro.logging_config import get_logger
-from streamlit_lightweight_charts_pro.type_definitions import MarkerPosition
-from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerShape, PriceLineSource, LineStyle
+from streamlit_lightweight_charts_pro.type_definitions.enums import (
+    LineStyle,
+    PriceLineSource,
+)
 from streamlit_lightweight_charts_pro.utils import chainable_property
 from streamlit_lightweight_charts_pro.utils.data_utils import snake_to_camel
 
@@ -479,7 +481,7 @@ class Series(ABC):
             raise ValueError(
                 f"Invalid position '{marker.position}' for marker type {type(marker).__name__}"
             )
-        
+
         self._markers.append(marker)
         return self
 
@@ -504,7 +506,7 @@ class Series(ABC):
                 raise ValueError(
                     f"Invalid position '{marker.position}' for marker type {type(marker).__name__}"
                 )
-        
+
         self._markers.extend(markers)
         return self
 
@@ -862,7 +864,8 @@ class Series(ABC):
         """
         return (
             hasattr(self.__class__, "_chainable_properties")
-            and attr_name in self.__class__._chainable_properties # pylint: disable=protected-access
+            and attr_name
+            in self.__class__._chainable_properties  # pylint: disable=protected-access
         )
 
     def _is_allow_none(self, attr_name: str) -> bool:
@@ -876,7 +879,9 @@ class Series(ABC):
             bool: True if the property allows None values
         """
         if self._is_chainable_property(attr_name):
-            return self.__class__._chainable_properties[attr_name]["allow_none"] # pylint: disable=protected-access
+            return self.__class__._chainable_properties[attr_name][
+                "allow_none"
+            ]  # pylint: disable=protected-access
         return False
 
     def _is_top_level(self, attr_name: str) -> bool:
@@ -890,7 +895,9 @@ class Series(ABC):
             bool: True if the attribute should be at the top level
         """
         if self._is_chainable_property(attr_name):
-            return self.__class__._chainable_properties[attr_name]["top_level"] # pylint: disable=protected-access
+            return self.__class__._chainable_properties[attr_name][
+                "top_level"
+            ]  # pylint: disable=protected-access
         return False
 
     @classproperty

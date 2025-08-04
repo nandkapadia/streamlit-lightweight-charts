@@ -57,7 +57,7 @@ class MarkerBase(Data):
     def validate_position(self) -> bool:
         """
         Validate that the position is valid for this marker type.
-        
+
         Returns:
             bool: True if position is valid, False otherwise.
         """
@@ -92,7 +92,7 @@ class PriceMarker(MarkerBase):
     def __post_init__(self):
         """Post-initialization processing."""
         super().__post_init__()
-        
+
         # Validate that price is provided
         if self.price == 0.0:
             raise ValueError("Price is required for PriceMarker")
@@ -100,14 +100,14 @@ class PriceMarker(MarkerBase):
     def validate_position(self) -> bool:
         """
         Validate that the position is valid for price markers.
-        
+
         Returns:
             bool: True if position is valid, False otherwise.
         """
         valid_positions = {
             MarkerPosition.AT_PRICE_TOP,
             MarkerPosition.AT_PRICE_BOTTOM,
-            MarkerPosition.AT_PRICE_MIDDLE
+            MarkerPosition.AT_PRICE_MIDDLE,
         }
         return self.position in valid_positions
 
@@ -139,14 +139,14 @@ class BarMarker(MarkerBase):
     def validate_position(self) -> bool:
         """
         Validate that the position is valid for bar markers.
-        
+
         Returns:
             bool: True if position is valid, False otherwise.
         """
         valid_positions = {
             MarkerPosition.ABOVE_BAR,
             MarkerPosition.BELOW_BAR,
-            MarkerPosition.IN_BAR
+            MarkerPosition.IN_BAR,
         }
         return self.position in valid_positions
 

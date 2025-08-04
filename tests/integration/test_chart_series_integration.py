@@ -172,6 +172,7 @@ class TestChartSeriesIntegration:
 
         # Add markers
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,

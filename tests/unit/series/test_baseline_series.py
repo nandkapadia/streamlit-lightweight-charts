@@ -393,6 +393,7 @@ class TestBaselineSeriesSerialization:
 
         # Add a marker using the correct method signature
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -447,6 +448,7 @@ class TestBaselineSeriesMethods:
 
         # Add marker using the correct method signature
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -482,6 +484,7 @@ class TestBaselineSeriesMethods:
 
         # Test chaining
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -676,6 +679,7 @@ class TestBaselineSeriesJsonStructure:
 
         # Add marker using the correct method signature
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -719,6 +723,7 @@ class TestBaselineSeriesJsonStructure:
 
         # Add marker and price line using correct method signatures
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,

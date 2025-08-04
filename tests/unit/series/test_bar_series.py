@@ -204,6 +204,7 @@ class TestBarSeriesSerialization:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position="aboveBar",
@@ -243,6 +244,7 @@ class TestBarSeriesMethods:
         series = BarSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position="aboveBar",
@@ -274,12 +276,8 @@ class TestBarSeriesMethods:
         series = BarSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
-        marker = BarMarker(
-            time=1640995200,
-            position="aboveBar",
-            color="#FF0000",
-            shape="circle"
-        )
+
+        marker = BarMarker(time=1640995200, position="aboveBar", color="#FF0000", shape="circle")
         result = (
             series.add_marker(marker)
             .add_price_line(PriceLineOptions(None, 100, "#FF0000"))
@@ -534,6 +532,7 @@ class TestBarSeriesJsonStructure:
         data = [BarData(time=1640995200, open=100, high=110, low=95, close=105)]
         series = BarSeries(data=data)
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position="aboveBar",
@@ -587,12 +586,8 @@ class TestBarSeriesJsonStructure:
 
         # Add markers and price lines
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
-        marker = BarMarker(
-            time=1640995200,
-            position="aboveBar",
-            color="#FF0000",
-            shape="circle"
-        )
+
+        marker = BarMarker(time=1640995200, position="aboveBar", color="#FF0000", shape="circle")
         series.add_marker(marker)
         series.add_price_line(PriceLineOptions(None, 100, "#FF0000"))
 

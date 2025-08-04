@@ -264,6 +264,7 @@ class TestBandSeriesSerialization:
         series = BandSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -326,13 +327,16 @@ class TestBandSeriesSerialization:
 
         # Test chaining add_marker and add_price_line
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
-        result = series.add_marker(marker).add_price_line(PriceLineOptions(price=105.0, color="#FF0000"))
+        result = series.add_marker(marker).add_price_line(
+            PriceLineOptions(price=105.0, color="#FF0000")
+        )
 
         assert result is series
         assert len(series.markers) == 1
@@ -589,6 +593,7 @@ class TestBandSeriesJsonStructure:
         series = BandSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -634,11 +639,12 @@ class TestBandSeriesJsonStructure:
         series = BandSeries(data=data)
         # Add markers and price lines
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
-            shape=MarkerShape.CIRCLE
+            shape=MarkerShape.CIRCLE,
         )
         series.add_marker(marker)
         series.add_price_line(PriceLineOptions(price=105.0, color="#FF0000"))

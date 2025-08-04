@@ -16,7 +16,7 @@ from examples.data_samples import get_line_data
 from streamlit_lightweight_charts_pro.charts import Chart
 from streamlit_lightweight_charts_pro.charts.options.price_line_options import PriceLineOptions
 from streamlit_lightweight_charts_pro.charts.series import LineSeries
-from streamlit_lightweight_charts_pro.data.marker import BarMarker, PriceMarker
+from streamlit_lightweight_charts_pro.data.marker import BarMarker
 from streamlit_lightweight_charts_pro.type_definitions.enums import MarkerPosition, MarkerShape
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -87,7 +87,7 @@ def main():
                 position=MarkerPosition.ABOVE_BAR,
                 color="#FF0000",
                 shape=MarkerShape.CIRCLE,
-                text="Above"
+                text="Above",
             )
         )
         above_chart = Chart(series=above_series)
@@ -102,7 +102,7 @@ def main():
                 position=MarkerPosition.BELOW_BAR,
                 color="#00FF00",
                 shape=MarkerShape.SQUARE,
-                text="Below"
+                text="Below",
             )
         )
         below_chart = Chart(series=below_series)
@@ -120,7 +120,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
             shape=MarkerShape.CIRCLE,
-            text="Circle"
+            text="Circle",
         )
     )
     shapes_series.add_marker(
@@ -129,7 +129,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#00FF00",
             shape=MarkerShape.SQUARE,
-            text="Square"
+            text="Square",
         )
     )
     shapes_series.add_marker(
@@ -138,7 +138,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#0000FF",
             shape=MarkerShape.TRIANGLE,
-            text="Triangle"
+            text="Triangle",
         )
     )
     shapes_series.add_marker(
@@ -147,7 +147,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#FFFF00",
             shape=MarkerShape.ARROW_DOWN,
-            text="Arrow"
+            text="Arrow",
         )
     )
 
@@ -210,7 +210,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
             shape=MarkerShape.CIRCLE,
-            text="Peak"
+            text="Peak",
         )
     )
     combined_series.add_marker(
@@ -219,7 +219,7 @@ def main():
             position=MarkerPosition.BELOW_BAR,
             color="#00FF00",
             shape=MarkerShape.SQUARE,
-            text="Low"
+            text="Low",
         )
     )
 
@@ -244,7 +244,7 @@ def main():
             position=MarkerPosition.ABOVE_BAR,
             color="#FF0000",
             shape=MarkerShape.CIRCLE,
-            text="Initial"
+            text="Initial",
         )
     )
     management_series.add_price_line(PriceLineOptions(price=30.0, color="#FF0000", title="Initial"))

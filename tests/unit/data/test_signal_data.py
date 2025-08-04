@@ -5,9 +5,9 @@ This module contains comprehensive tests for the SignalData class, which is used
 for creating signal-based background coloring in financial charts.
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime
+
+import pytest
 
 from streamlit_lightweight_charts_pro.data.signal_data import SignalData
 
@@ -133,7 +133,7 @@ class TestSignalData:
         """Test that SignalData objects are hashable."""
         signal1 = SignalData("2024-01-01", 1, color="#ff0000")
         signal2 = SignalData("2024-01-01", 1, color="#ff0000")
-        
+
         # SignalData objects are not hashable by default (dataclass with mutable fields)
         # This is expected behavior
         with pytest.raises(TypeError, match="unhashable type"):
@@ -141,11 +141,7 @@ class TestSignalData:
 
     def test_from_dict(self):
         """Test creating SignalData from dictionary."""
-        data_dict = {
-            "time": "2024-01-01",
-            "value": 1,
-            "color": "#ff0000"
-        }
+        data_dict = {"time": "2024-01-01", "value": 1, "color": "#ff0000"}
         signal = SignalData(**data_dict)
         # Time is automatically normalized to timestamp
         assert signal.time == 1704067200  # 2024-01-01 timestamp
@@ -163,14 +159,14 @@ class TestSignalData:
     def test_inheritance_from_single_value_data(self):
         """Test that SignalData properly inherits from SingleValueData."""
         signal = SignalData("2024-01-01", 1)
-        
+
         # Should have SingleValueData attributes
-        assert hasattr(signal, 'time')
-        assert hasattr(signal, 'value')
-        assert hasattr(signal, 'color')
-        
+        assert hasattr(signal, "time")
+        assert hasattr(signal, "value")
+        assert hasattr(signal, "color")
+
         # Should have SingleValueData methods
-        assert hasattr(signal, '__post_init__')
+        assert hasattr(signal, "__post_init__")
 
     def test_edge_cases(self):
         """Test edge cases for SignalData."""
@@ -186,4 +182,4 @@ class TestSignalData:
 
         # Test with special characters in color
         signal = SignalData("2024-01-01", 1, color="rgba(255, 255, 255, 0.123456789)")
-        assert signal.color == "rgba(255, 255, 255, 0.123456789)" 
+        assert signal.color == "rgba(255, 255, 255, 0.123456789)"

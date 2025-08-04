@@ -12,26 +12,25 @@ them to background colors for specific time periods. The background bands
 appear across all chart panes and provide visual context for the data.
 """
 from datetime import datetime, timedelta
-import pandas as pd
-import numpy as np
 
+import numpy as np
+import pandas as pd
 import streamlit as st
 
 from streamlit_lightweight_charts_pro import (
+    CandlestickSeries,
     Chart,
     ChartOptions,
-    LayoutOptions,
-    PaneHeightOptions,
-    LineSeries,
-    CandlestickSeries,
-    HistogramSeries,
-    SignalSeries,
-    SignalData,
-    LineData,
-    OhlcvData,
     HistogramData,
+    HistogramSeries,
+    LayoutOptions,
+    LineData,
+    LineSeries,
+    OhlcvData,
+    PaneHeightOptions,
+    SignalData,
+    SignalSeries,
 )
-from streamlit_lightweight_charts_pro.charts.options.line_options import LineOptions
 
 # Page configuration
 st.set_page_config(
@@ -441,7 +440,7 @@ with tab5:
     mixed_signal_data = []
     for i, date in enumerate(dates):
         value = i % 3  # Cycles through 0, 1, 2
-        
+
         # Only assign individual colors to some signals (every 3rd signal)
         if i % 3 == 0:
             # Signal with individual color
@@ -451,7 +450,7 @@ with tab5:
                 individual_color = "#ffe8e8"  # Light red
             else:
                 individual_color = "#e8e8ff"  # Light blue
-                
+
             mixed_signal_data.append(
                 SignalData(time=date.strftime("%Y-%m-%d"), value=value, color=individual_color)
             )
@@ -492,10 +491,10 @@ with tab5:
     mixed_df = pd.DataFrame(
         [
             {
-                "Date": s.time, 
-                "Value": s.value, 
+                "Date": s.time,
+                "Value": s.value,
                 "Individual Color": s.color if s.color else "None (uses series color)",
-                "Color Source": "Individual" if s.color else "Series"
+                "Color Source": "Individual" if s.color else "Series",
             }
             for s in mixed_signal_data[:15]  # Show first 15 entries
         ]
@@ -521,7 +520,7 @@ with tab5:
         st.markdown("- Value 0: White (`#f0f0f0`)")
         st.markdown("- Value 1: Red (`#ff0000`)")
         st.markdown("- Value 2: Green (`#00ff00`)")
-    
+
     with col2:
         st.markdown("**Individual Colors:**")
         st.markdown("- Value 0: Light Green (`#e8f5e8`)")

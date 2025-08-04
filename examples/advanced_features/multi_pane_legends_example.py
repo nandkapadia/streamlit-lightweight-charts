@@ -1,21 +1,22 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 
+import numpy as np
+import pandas as pd
+import streamlit as st
+
 from streamlit_lightweight_charts_pro import (
+    CandlestickSeries,
     Chart,
     ChartOptions,
-    CandlestickSeries,
-    LineSeries,
     HistogramSeries,
+    LineSeries,
 )
 from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     LayoutOptions,
     PaneHeightOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
-from streamlit_lightweight_charts_pro.data import CandlestickData, LineData, HistogramData
+from streamlit_lightweight_charts_pro.data import CandlestickData, HistogramData, LineData
 
 # Page configuration
 st.set_page_config(page_title="Multi-Pane Legends Example", page_icon="📊", layout="wide")

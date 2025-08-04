@@ -15,7 +15,6 @@ from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.data.signal_data import SignalData
 from streamlit_lightweight_charts_pro.type_definitions import ChartType
 from streamlit_lightweight_charts_pro.utils import chainable_property
-from streamlit_lightweight_charts_pro.utils.data_utils import is_valid_color
 
 
 @chainable_property("neutral_color", str, validator="color")
@@ -106,8 +105,6 @@ class SignalSeries(Series):
         self._neutral_color = neutral_color
         self._signal_color = signal_color
         self._alert_color = alert_color
-
-
 
     def __repr__(self) -> str:
         """String representation of the signal series."""

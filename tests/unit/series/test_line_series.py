@@ -8,6 +8,7 @@ This module combines all tests for LineSeries functionality including:
 """
 
 import json
+
 import pandas as pd
 import pytest
 
@@ -125,7 +126,9 @@ class TestLineSeriesBasic:
         assert series.data[0].value == 100.0
 
     def test_nan_handling(self, line_options):
-        df = pd.DataFrame({"datetime": ["2024-01-01"], "close": [float("nan")], "color": ["#2196F3"]})
+        df = pd.DataFrame(
+            {"datetime": ["2024-01-01"], "close": [float("nan")], "color": ["#2196F3"]}
+        )
         mapping = {"time": "datetime", "value": "close", "color": "color"}
         series = LineSeries.from_dataframe(df, mapping)
         assert series.data[0].value == 0.0

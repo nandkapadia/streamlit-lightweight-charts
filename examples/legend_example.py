@@ -5,33 +5,37 @@ This example demonstrates how to use legends with different chart configurations
 including multi-pane charts with legends for each pane.
 """
 
-import streamlit as st
-import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+import pandas as pd
+import streamlit as st
 
-from streamlit_lightweight_charts_pro import Chart, ChartOptions, LineSeries, CandlestickSeries, HistogramSeries, AreaSeries
-from streamlit_lightweight_charts_pro.charts.options.layout_options import LayoutOptions, PaneHeightOptions
-from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
-from streamlit_lightweight_charts_pro.data import (
-    LineData, CandlestickData, HistogramData, AreaData
+from streamlit_lightweight_charts_pro import (
+    AreaSeries,
+    CandlestickSeries,
+    Chart,
+    ChartOptions,
+    HistogramSeries,
+    LineSeries,
 )
+from streamlit_lightweight_charts_pro.charts.options.layout_options import (
+    LayoutOptions,
+    PaneHeightOptions,
+)
+from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
+from streamlit_lightweight_charts_pro.data import AreaData, CandlestickData, HistogramData, LineData
 
 # Page configuration
-st.set_page_config(
-    page_title="Legend Examples",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="Legend Examples", page_icon="📊", layout="wide")
 
 st.title("📊 Legend Examples for Multi-Pane Charts")
 st.markdown("This example demonstrates legends for each pane in multi-pane charts.")
 
+
 # Generate sample data
 def generate_sample_data():
     """Generate sample data for demonstration."""
-    dates = pd.date_range(start='2024-01-01', end='2024-01-31', freq='D')
-    
+    dates = pd.date_range(start="2024-01-01", end="2024-01-31", freq="D")
+
     # Price data
     base_price = 100
     price_data = []
@@ -43,63 +47,59 @@ def generate_sample_data():
         high_price = base_price + abs(np.random.normal(0, 3))
         low_price = base_price - abs(np.random.normal(0, 3))
         close_price = base_price + np.random.normal(0, 1)
-        
-        price_data.append(CandlestickData(
-            time=date,
-            open=open_price,
-            high=high_price,
-            low=low_price,
-            close=close_price
-        ))
-    
+
+        price_data.append(
+            CandlestickData(
+                time=date, open=open_price, high=high_price, low=low_price, close=close_price
+            )
+        )
+
     # Volume data
     volume_data = []
     for i, date in enumerate(dates):
         volume = int(np.random.uniform(1000, 10000))
-        volume_data.append(HistogramData(
-            time=date,
-            value=volume
-        ))
-    
+        volume_data.append(HistogramData(time=date, value=volume))
+
     # Moving averages
     ma20_data = []
     ma50_data = []
     for i, date in enumerate(dates):
         if i >= 19:  # 20-day MA
-            ma20 = sum([price_data[j].close for j in range(i-19, i+1)]) / 20
+            ma20 = sum([price_data[j].close for j in range(i - 19, i + 1)]) / 20
             ma20_data.append(LineData(time=date, value=ma20))
-        
+
         if i >= 49:  # 50-day MA
-            ma50 = sum([price_data[j].close for j in range(i-49, i+1)]) / 50
+            ma50 = sum([price_data[j].close for j in range(i - 49, i + 1)]) / 50
             ma50_data.append(LineData(time=date, value=ma50))
-    
+
     # RSI data
     rsi_data = []
     for i, date in enumerate(dates):
         if i >= 14:  # 14-day RSI
             gains = []
             losses = []
-            for j in range(i-13, i+1):
-                change = price_data[j].close - price_data[j-1].close
+            for j in range(i - 13, i + 1):
+                change = price_data[j].close - price_data[j - 1].close
                 if change > 0:
                     gains.append(change)
                     losses.append(0)
                 else:
                     gains.append(0)
                     losses.append(abs(change))
-            
+
             avg_gain = sum(gains) / 14
             avg_loss = sum(losses) / 14
-            
+
             if avg_loss == 0:
                 rsi = 100
             else:
                 rs = avg_gain / avg_loss
                 rsi = 100 - (100 / (1 + rs))
-            
+
             rsi_data.append(LineData(time=date, value=rsi))
-    
+
     return price_data, volume_data, ma20_data, ma50_data, rsi_data
+
 
 # Generate data
 price_data, volume_data, ma20_data, ma50_data, rsi_data = generate_sample_data()
@@ -121,24 +121,19 @@ basic_chart = Chart(
             border_color="#e1e3e6",
             border_width=1,
             border_radius=4,
-            padding=8
-        )
+            padding=8,
+        ),
     ),
     series=[
-        LineSeries(
-            data=ma20_data,
-            title="20-Day MA"
-        ).set_color("#2196f3"),
-        LineSeries(
-            data=ma50_data,
-            title="50-Day MA"
-        ).set_color("#ff9800")
-    ]
+        LineSeries(data=ma20_data, title="20-Day MA").set_color("#2196f3"),
+        LineSeries(data=ma50_data, title="50-Day MA").set_color("#ff9800"),
+    ],
 )
 
 basic_chart.render(key="basic_legend")
 
-st.code("""
+st.code(
+    """
 # Basic Legend Configuration
 chart = Chart(
     options=ChartOptions(
@@ -159,7 +154,9 @@ chart = Chart(
         LineSeries(data=ma50_data, title="50-Day MA").set_color("#ff9800")
     ]
 )
-""", language="python")
+""",
+    language="python",
+)
 
 # Example 2: Multi-Pane Chart with Legends
 st.header("2. Multi-Pane Chart with Legends")
@@ -173,7 +170,7 @@ multi_pane_chart = Chart(
             pane_heights={
                 0: PaneHeightOptions(factor=3.0),  # Main chart
                 1: PaneHeightOptions(factor=1.0),  # Volume
-                2: PaneHeightOptions(factor=1.5)   # RSI
+                2: PaneHeightOptions(factor=1.5),  # RSI
             }
         ),
         legend=LegendOptions(
@@ -186,46 +183,25 @@ multi_pane_chart = Chart(
             border_width=1,
             border_radius=6,
             padding=10,
-            margin=8
-        )
+            margin=8,
+        ),
     ),
     series=[
         # Main chart pane (pane_id=0)
-        CandlestickSeries(
-            data=price_data,
-            pane_id=0,
-            title="Price"
-        ),
-        LineSeries(
-            data=ma20_data,
-            pane_id=0,
-            title="MA20"
-        ).set_color("#2196f3"),
-        LineSeries(
-            data=ma50_data,
-            pane_id=0,
-            title="MA50"
-        ).set_color("#ff9800"),
-        
+        CandlestickSeries(data=price_data, pane_id=0, title="Price"),
+        LineSeries(data=ma20_data, pane_id=0, title="MA20").set_color("#2196f3"),
+        LineSeries(data=ma50_data, pane_id=0, title="MA50").set_color("#ff9800"),
         # Volume pane (pane_id=1)
-        HistogramSeries(
-            data=volume_data,
-            pane_id=1,
-            title="Volume"
-        ).set_color("#4caf50"),
-        
+        HistogramSeries(data=volume_data, pane_id=1, title="Volume").set_color("#4caf50"),
         # RSI pane (pane_id=2)
-        LineSeries(
-            data=rsi_data,
-            pane_id=2,
-            title="RSI"
-        ).set_color("#9c27b0")
-    ]
+        LineSeries(data=rsi_data, pane_id=2, title="RSI").set_color("#9c27b0"),
+    ],
 )
 
 multi_pane_chart.render(key="multi_pane_legend")
 
-st.code("""
+st.code(
+    """
 # Multi-Pane Chart with Legend
 chart = Chart(
     options=ChartOptions(
@@ -257,7 +233,9 @@ chart = Chart(
         LineSeries(data=rsi_data, pane_id=2, title="RSI").set_color("#9c27b0")
     ]
 )
-""", language="python")
+""",
+    language="python",
+)
 
 # Example 3: Different Legend Positions
 st.header("3. Legend Position Examples")
@@ -277,13 +255,13 @@ with col1:
                 show_last_value=False,
                 font_size=10,
                 background_color="rgba(255, 255, 255, 0.9)",
-                border_color="#e1e3e6"
-            )
+                border_color="#e1e3e6",
+            ),
         ),
         series=[
             LineSeries(data=ma20_data, title="MA20").set_color("#2196f3"),
-            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800")
-        ]
+            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800"),
+        ],
     )
     top_left_chart.render(key="top_left_legend")
 
@@ -300,13 +278,13 @@ with col2:
                 font_size=10,
                 background_color="rgba(0, 0, 0, 0.8)",
                 color="#ffffff",
-                border_color="#666666"
-            )
+                border_color="#666666",
+            ),
         ),
         series=[
             LineSeries(data=ma20_data, title="MA20").set_color("#2196f3"),
-            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800")
-        ]
+            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800"),
+        ],
     )
     bottom_right_chart.render(key="bottom_right_legend")
 
@@ -317,12 +295,14 @@ st.markdown("Area chart demonstrating legend with fill colors.")
 # Generate area data
 area_data = []
 for i, date in enumerate(ma20_data):
-    area_data.append(AreaData(
-        time=date.time,
-        value=date.value,
-        topColor="rgba(33, 150, 243, 0.3)",
-        bottomColor="rgba(33, 150, 243, 0.1)"
-    ))
+    area_data.append(
+        AreaData(
+            time=date.time,
+            value=date.value,
+            topColor="rgba(33, 150, 243, 0.3)",
+            bottomColor="rgba(33, 150, 243, 0.1)",
+        )
+    )
 
 area_chart = Chart(
     options=ChartOptions(
@@ -337,20 +317,16 @@ area_chart = Chart(
             border_color="#e1e3e6",
             border_width=1,
             border_radius=4,
-            padding=8
-        )
+            padding=8,
+        ),
     ),
-    series=[
-        AreaSeries(
-            data=area_data,
-            title="Price Area"
-        )
-    ]
+    series=[AreaSeries(data=area_data, title="Price Area")],
 )
 
 area_chart.render(key="area_legend")
 
-st.code("""
+st.code(
+    """
 # Area Chart with Legend
 area_data = [
     AreaData(
@@ -379,11 +355,14 @@ chart = Chart(
         AreaSeries(data=area_data, title="Price Area")
     ]
 )
-""", language="python")
+""",
+    language="python",
+)
 
 # Example 5: Legend Configuration Options
 st.header("5. Legend Configuration Options")
-st.markdown("""
+st.markdown(
+    """
 ### Available Legend Options:
 
 - **visible**: Show/hide the legend (default: true)
@@ -400,7 +379,8 @@ st.markdown("""
 - **padding**: Internal padding in pixels (default: 8)
 - **margin**: External margin in pixels (default: 4)
 - **z_index**: CSS z-index (default: 1000)
-""")
+"""
+)
 
 # Interactive legend configuration
 st.header("6. Interactive Legend Configuration")
@@ -410,20 +390,20 @@ col1, col2 = st.columns(2)
 
 with col1:
     legend_position = st.selectbox(
-        "Legend Position",
-        ["top-left", "top-right", "bottom-left", "bottom-right"],
-        index=1
+        "Legend Position", ["top-left", "top-right", "bottom-left", "bottom-right"], index=1
     )
-    
+
     show_last_value = st.checkbox("Show Last Value", value=True)
-    
+
     legend_font_size = st.slider("Font Size", 8, 20, 12)
 
 with col2:
-    legend_bg_color = st.color_picker("Background Color", "#ffffff", help="Use rgba for transparency")
-    
+    legend_bg_color = st.color_picker(
+        "Background Color", "#ffffff", help="Use rgba for transparency"
+    )
+
     legend_border_color = st.color_picker("Border Color", "#e1e3e6")
-    
+
     legend_padding = st.slider("Padding", 4, 16, 8)
 
 # Create interactive chart
@@ -441,20 +421,21 @@ interactive_chart = Chart(
             border_width=1,
             border_radius=4,
             padding=legend_padding,
-            margin=4
-        )
+            margin=4,
+        ),
     ),
     series=[
         LineSeries(data=ma20_data, title="20-Day Moving Average").set_color("#2196f3"),
         LineSeries(data=ma50_data, title="50-Day Moving Average").set_color("#ff9800"),
-        LineSeries(data=rsi_data, title="RSI (14)").set_color("#9c27b0")
-    ]
+        LineSeries(data=rsi_data, title="RSI (14)").set_color("#9c27b0"),
+    ],
 )
 
 interactive_chart.render(key="interactive_legend")
 
 st.markdown("---")
-st.markdown("""
+st.markdown(
+    """
 ### Key Features:
 
 1. **Multi-Pane Support**: Legends work with multi-pane charts, showing series from all panes
@@ -471,4 +452,5 @@ st.markdown("""
 - Use semi-transparent backgrounds for better chart visibility
 - Consider font size and padding for different screen sizes
 - Use consistent color schemes between series and legend indicators
-""") 
+"""
+)

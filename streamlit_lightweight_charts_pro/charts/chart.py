@@ -874,41 +874,42 @@ class Chart:
     def set_tooltip_manager(self, tooltip_manager) -> "Chart":
         """
         Set the tooltip manager for the chart.
-        
+
         Args:
             tooltip_manager: TooltipManager instance to handle tooltip functionality.
-            
+
         Returns:
             Chart: Self for method chaining.
         """
         from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
-        
+
         if not isinstance(tooltip_manager, TooltipManager):
             raise TypeError("tooltip_manager must be a TooltipManager instance")
-        
+
         self._tooltip_manager = tooltip_manager
         return self
 
     def add_tooltip_config(self, name: str, config) -> "Chart":
         """
         Add a tooltip configuration to the chart.
-        
+
         Args:
             name: Name for the tooltip configuration.
             config: TooltipConfig instance.
-            
+
         Returns:
             Chart: Self for method chaining.
         """
         from streamlit_lightweight_charts_pro.data.tooltip import TooltipConfig
-        
+
         if not isinstance(config, TooltipConfig):
             raise TypeError("config must be a TooltipConfig instance")
-        
+
         if self._tooltip_manager is None:
             from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
+
             self._tooltip_manager = TooltipManager()
-        
+
         self._tooltip_manager.add_config(name, config)
         return self
 

@@ -212,6 +212,7 @@ class TestAreaSeriesSerialization:
         series = AreaSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -264,6 +265,7 @@ class TestAreaSeriesMethods:
         series = AreaSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -307,6 +309,7 @@ class TestAreaSeriesMethods:
 
         # Test chaining add_marker and add_price_line
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -562,6 +565,7 @@ class TestAreaSeriesJsonStructure:
         series = AreaSeries(data=data)
 
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,
@@ -631,6 +635,7 @@ class TestAreaSeriesJsonStructure:
 
         # Add marker
         from streamlit_lightweight_charts_pro.data.marker import BarMarker
+
         marker = BarMarker(
             time=1640995200,
             position=MarkerPosition.ABOVE_BAR,

@@ -4,7 +4,6 @@ Error Handling Test Example
 This example tests the error handling improvements for annotations and other features.
 """
 
-
 import numpy as np
 import pandas as pd
 import streamlit as st

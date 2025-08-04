@@ -142,8 +142,10 @@ class Options(ABC):
                 continue
 
             # Handle nested Options objects and complex type annotations
-            contains_options, options_class, is_dict_type = self._analyze_type_for_options(field_info.type)
-            
+            contains_options, options_class, is_dict_type = self._analyze_type_for_options(
+                field_info.type
+            )
+
             if contains_options and isinstance(value, dict):
                 if options_class is not None and not is_dict_type:
                     # Handle direct Options types (e.g., MyOptions, Optional[MyOptions])
@@ -197,8 +199,7 @@ class Options(ABC):
             return data.asdict()
         elif isinstance(data, dict):
             return {
-                snake_to_camel(str(k)): self._process_dict_recursively(v) 
-                for k, v in data.items()
+                snake_to_camel(str(k)): self._process_dict_recursively(v) for k, v in data.items()
             }
         elif isinstance(data, list):
             return [self._process_dict_recursively(item) for item in data]
@@ -245,10 +246,11 @@ class Options(ABC):
         elif origin is not None:  # Union types
             # Check if any non-None arg is a Dict type
             is_dict_type = any(
-                hasattr(arg, "__origin__") and arg.__origin__ is dict 
-                for arg in args if arg is not type(None)
+                hasattr(arg, "__origin__") and arg.__origin__ is dict
+                for arg in args
+                if arg is not type(None)
             )
-            
+
             # Check each non-None argument
             for arg in args:
                 if arg is type(None):

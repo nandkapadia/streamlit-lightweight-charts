@@ -5,9 +5,7 @@ This module tests the tooltip data structures, configuration, and formatting
 functionality to ensure proper operation of the tooltip system.
 """
 
-import pytest
 import pandas as pd
-from datetime import datetime
 
 from streamlit_lightweight_charts_pro.data.tooltip import (
     TooltipConfig,
@@ -16,11 +14,11 @@ from streamlit_lightweight_charts_pro.data.tooltip import (
     TooltipPosition,
     TooltipStyle,
     TooltipType,
-    create_ohlc_tooltip,
     create_custom_tooltip,
-    create_trade_tooltip,
-    create_single_value_tooltip,
     create_multi_series_tooltip,
+    create_ohlc_tooltip,
+    create_single_value_tooltip,
+    create_trade_tooltip,
 )
 
 
@@ -45,7 +43,7 @@ class TestTooltipField:
             font_weight="bold",
             prefix="$",
             suffix="K",
-            precision=2
+            precision=2,
         )
         assert field.label == "Volume"
         assert field.value_key == "volume"
@@ -76,6 +74,7 @@ class TestTooltipField:
 
     def test_format_value_with_custom_formatter(self):
         """Test value formatting with custom formatter."""
+
         def volume_formatter(value):
             if value >= 1000000:
                 return f"{value/1000000:.1f}M"
@@ -119,7 +118,7 @@ class TestTooltipStyle:
             font_family="monospace",
             color="#ffffff",
             box_shadow="0 4px 8px rgba(0, 0, 0, 0.3)",
-            z_index=2000
+            z_index=2000,
         )
         assert style.background_color == "rgba(0, 0, 0, 0.9)"
         assert style.border_color == "#00ff00"
@@ -152,10 +151,10 @@ class TestTooltipConfig:
         """Test custom tooltip construction."""
         fields = [
             TooltipField("Price", "price", precision=2, prefix="$"),
-            TooltipField("Volume", "volume")
+            TooltipField("Volume", "volume"),
         ]
         style = TooltipStyle(background_color="rgba(0, 0, 0, 0.9)")
-        
+
         config = TooltipConfig(
             enabled=False,
             type=TooltipType.CUSTOM,
@@ -165,9 +164,9 @@ class TestTooltipConfig:
             offset={"x": 10, "y": -10},
             style=style,
             show_date=False,
-            show_time=False
+            show_time=False,
         )
-        
+
         assert config.enabled is False
         assert config.type == TooltipType.CUSTOM
         assert config.template == "Price: ${price}"
@@ -185,10 +184,10 @@ class TestTooltipConfig:
             template="Price: {price}, Volume: {volume}",
             fields=[
                 TooltipField("Price", "price", precision=2, prefix="$"),
-                TooltipField("Volume", "volume")
-            ]
+                TooltipField("Volume", "volume"),
+            ],
         )
-        
+
         data = {"price": 100.50, "volume": 1500}
         result = config.format_tooltip(data)
         assert "Price: $100.50" in result
@@ -200,10 +199,10 @@ class TestTooltipConfig:
             type=TooltipType.SINGLE,
             fields=[
                 TooltipField("Price", "price", precision=2, prefix="$"),
-                TooltipField("Volume", "volume")
-            ]
+                TooltipField("Volume", "volume"),
+            ],
         )
-        
+
         data = {"price": 100.50, "volume": 1500}
         result = config.format_tooltip(data)
         assert "Price: $100.50" in result
@@ -217,9 +216,9 @@ class TestTooltipConfig:
             show_date=True,
             show_time=True,
             date_format="%Y-%m-%d",
-            time_format="%H:%M"
+            time_format="%H:%M",
         )
-        
+
         data = {"price": 100.50}
         time_value = 1640995200  # 2022-01-01 00:00:00 UTC
         result = config.format_tooltip(data, time_value)
@@ -232,9 +231,9 @@ class TestTooltipConfig:
             type=TooltipType.SINGLE,
             fields=[TooltipField("Price", "price")],
             show_date=True,
-            show_time=True
+            show_time=True,
         )
-        
+
         data = {"price": 100.50}
         time_value = pd.Timestamp("2022-01-01 12:30:00")
         result = config.format_tooltip(data, time_value)
@@ -245,7 +244,7 @@ class TestTooltipConfig:
         """Test tooltip config serialization."""
         fields = [TooltipField("Price", "price", precision=2, prefix="$")]
         style = TooltipStyle(background_color="rgba(0, 0, 0, 0.9)")
-        
+
         config = TooltipConfig(
             enabled=True,
             type=TooltipType.CUSTOM,
@@ -257,11 +256,11 @@ class TestTooltipConfig:
             show_date=True,
             show_time=True,
             date_format="%Y-%m-%d",
-            time_format="%H:%M"
+            time_format="%H:%M",
         )
-        
+
         result = config.asdict()
-        
+
         assert result["enabled"] is True
         assert result["type"] == "custom"
         assert result["template"] == "Price: ${price}"
@@ -287,7 +286,7 @@ class TestTooltipManager:
         """Test adding tooltip configuration."""
         manager = TooltipManager()
         config = TooltipConfig(type=TooltipType.OHLC)
-        
+
         result = manager.add_config("default", config)
         assert result is manager  # Method chaining
         assert "default" in manager.configs
@@ -298,10 +297,10 @@ class TestTooltipManager:
         manager = TooltipManager()
         config = TooltipConfig(type=TooltipType.OHLC)
         manager.add_config("default", config)
-        
+
         result = manager.get_config("default")
         assert result == config
-        
+
         result = manager.get_config("nonexistent")
         assert result is None
 
@@ -310,21 +309,21 @@ class TestTooltipManager:
         manager = TooltipManager()
         config = TooltipConfig(type=TooltipType.OHLC)
         manager.add_config("default", config)
-        
+
         result = manager.remove_config("default")
         assert result is True
         assert "default" not in manager.configs
-        
+
         result = manager.remove_config("nonexistent")
         assert result is False
 
     def test_add_custom_formatter(self):
         """Test adding custom formatter."""
         manager = TooltipManager()
-        
+
         def volume_formatter(value):
             return f"{value/1000:.1f}K"
-        
+
         result = manager.add_custom_formatter("volume", volume_formatter)
         assert result is manager  # Method chaining
         assert "volume" in manager.custom_formatters
@@ -335,10 +334,10 @@ class TestTooltipManager:
         config = TooltipConfig(
             type=TooltipType.CUSTOM,
             template="Price: {price}",
-            fields=[TooltipField("Price", "price", precision=2, prefix="$")]
+            fields=[TooltipField("Price", "price", precision=2, prefix="$")],
         )
         manager.add_config("default", config)
-        
+
         data = {"price": 100.50}
         result = manager.format_tooltip("default", data)
         assert "Price: $100.50" in result
@@ -347,7 +346,7 @@ class TestTooltipManager:
         """Test creating OHLC tooltip."""
         manager = TooltipManager()
         config = manager.create_ohlc_tooltip("price")
-        
+
         assert config.type == TooltipType.OHLC
         assert "price" in manager.configs
         assert manager.configs["price"] == config
@@ -356,7 +355,7 @@ class TestTooltipManager:
         """Test creating trade tooltip."""
         manager = TooltipManager()
         config = manager.create_trade_tooltip("trade")
-        
+
         assert config.type == TooltipType.TRADE
         assert "trade" in manager.configs
         assert manager.configs["trade"] == config
@@ -365,7 +364,7 @@ class TestTooltipManager:
         """Test creating custom tooltip."""
         manager = TooltipManager()
         config = manager.create_custom_tooltip("Price: ${price}", "custom")
-        
+
         assert config.type == TooltipType.CUSTOM
         assert config.template == "Price: ${price}"
         assert "custom" in manager.configs
@@ -413,21 +412,21 @@ class TestTooltipIntegration:
         """Test tooltip integration with chart series."""
         from streamlit_lightweight_charts_pro import Chart, LineSeries
         from streamlit_lightweight_charts_pro.data import SingleValueData
-        
+
         # Create data
         data = [
             SingleValueData(time="2024-01-01", value=100),
             SingleValueData(time="2024-01-02", value=105),
         ]
-        
+
         # Create series with tooltip
         series = LineSeries(data=data)
         tooltip_config = create_single_value_tooltip()
         series.tooltip = tooltip_config
-        
+
         # Create chart
         chart = Chart(series=series)
-        
+
         # Verify tooltip is set
         assert series.tooltip == tooltip_config
 
@@ -435,23 +434,23 @@ class TestTooltipIntegration:
         """Test tooltip integration with chart tooltip manager."""
         from streamlit_lightweight_charts_pro import Chart, LineSeries
         from streamlit_lightweight_charts_pro.data import SingleValueData
-        
+
         # Create data
         data = [
             SingleValueData(time="2024-01-01", value=100),
             SingleValueData(time="2024-01-02", value=105),
         ]
-        
+
         # Create chart
         chart = Chart(series=LineSeries(data=data))
-        
+
         # Create tooltip manager
         tooltip_manager = TooltipManager()
         tooltip_manager.create_ohlc_tooltip("default")
-        
+
         # Set tooltip manager
         chart.set_tooltip_manager(tooltip_manager)
-        
+
         # Verify tooltip manager is set
         assert chart._tooltip_manager == tooltip_manager
 
@@ -467,11 +466,11 @@ class TestTooltipIntegration:
             show_date=True,
             show_time=True,
             date_format="%Y-%m-%d",
-            time_format="%H:%M"
+            time_format="%H:%M",
         )
-        
+
         result = config.asdict()
-        
+
         # Verify all fields are properly serialized
         assert "enabled" in result
         assert "type" in result
@@ -484,7 +483,7 @@ class TestTooltipIntegration:
         assert "showTime" in result
         assert "dateFormat" in result
         assert "timeFormat" in result
-        
+
         # Verify field serialization
         assert len(result["fields"]) == 1
         field = result["fields"][0]
@@ -492,7 +491,7 @@ class TestTooltipIntegration:
         assert field["valueKey"] == "price"
         assert field["precision"] == 2
         assert field["prefix"] == "$"
-        
+
         # Verify style serialization
         style = result["style"]
-        assert style["backgroundColor"] == "rgba(0, 0, 0, 0.9)" 
+        assert style["backgroundColor"] == "rgba(0, 0, 0, 0.9)"

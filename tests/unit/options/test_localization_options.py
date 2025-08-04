@@ -5,8 +5,6 @@ This module tests the LocalizationOptions class functionality including
 construction, validation, and serialization.
 """
 
-import pytest
-
 from streamlit_lightweight_charts_pro.charts.options.localization_options import LocalizationOptions
 
 
@@ -16,7 +14,7 @@ class TestLocalizationOptions:
     def test_default_construction(self):
         """Test LocalizationOptions construction with default values."""
         options = LocalizationOptions()
-        
+
         assert options.locale == "en-US"
         assert options.date_format == "yyyy-MM-dd"
         assert options.time_format == "HH:mm:ss"
@@ -25,23 +23,17 @@ class TestLocalizationOptions:
 
     def test_construction_with_parameters(self):
         """Test LocalizationOptions construction with custom parameters."""
-        options = LocalizationOptions(
-            locale="en-US",
-            date_format="yyyy-MM-dd"
-        )
-        
+        options = LocalizationOptions(locale="en-US", date_format="yyyy-MM-dd")
+
         assert options.locale == "en-US"
         assert options.date_format == "yyyy-MM-dd"
 
     def test_asdict_method(self):
         """Test the asdict method returns correct structure."""
-        options = LocalizationOptions(
-            locale="en-US",
-            date_format="yyyy-MM-dd"
-        )
-        
+        options = LocalizationOptions(locale="en-US", date_format="yyyy-MM-dd")
+
         result = options.asdict()
-        
+
         assert result["locale"] == "en-US"
         assert result["dateFormat"] == "yyyy-MM-dd"
 
@@ -49,7 +41,7 @@ class TestLocalizationOptions:
         """Test asdict method handles None values correctly."""
         options = LocalizationOptions()
         result = options.asdict()
-        
+
         # Should contain default values
         assert result["locale"] == "en-US"
         assert result["dateFormat"] == "yyyy-MM-dd"
@@ -60,12 +52,9 @@ class TestLocalizationOptions:
     def test_method_chaining(self):
         """Test method chaining functionality."""
         options = LocalizationOptions()
-        
-        result = (
-            options.set_locale("en-US")
-            .set_date_format("yyyy-MM-dd")
-        )
-        
+
+        result = options.set_locale("en-US").set_date_format("yyyy-MM-dd")
+
         assert result is options
         assert options.locale == "en-US"
         assert options.date_format == "yyyy-MM-dd"
@@ -75,11 +64,11 @@ class TestLocalizationOptions:
         # Valid locale
         options = LocalizationOptions(locale="en-US")
         assert options.locale == "en-US"
-        
+
         # Valid locale with different format
         options = LocalizationOptions(locale="fr-FR")
         assert options.locale == "fr-FR"
-        
+
         # Valid locale with region only
         options = LocalizationOptions(locale="en")
         assert options.locale == "en"
@@ -89,11 +78,11 @@ class TestLocalizationOptions:
         # Valid date format
         options = LocalizationOptions(date_format="yyyy-MM-dd")
         assert options.date_format == "yyyy-MM-dd"
-        
+
         # Valid date format with time
         options = LocalizationOptions(date_format="yyyy-MM-dd HH:mm:ss")
         assert options.date_format == "yyyy-MM-dd HH:mm:ss"
-        
+
         # Valid date format with different separators
         options = LocalizationOptions(date_format="MM/dd/yyyy")
         assert options.date_format == "MM/dd/yyyy"
@@ -104,7 +93,7 @@ class TestLocalizationOptions:
         options = LocalizationOptions(locale="", date_format="")
         assert options.locale == ""
         assert options.date_format == ""
-        
+
         # Special characters in locale
         options = LocalizationOptions(locale="zh-CN", date_format="yyyy年MM月dd日")
         assert options.locale == "zh-CN"
@@ -112,23 +101,17 @@ class TestLocalizationOptions:
 
     def test_serialization_consistency(self):
         """Test that serialization is consistent across multiple calls."""
-        options = LocalizationOptions(
-            locale="en-US",
-            date_format="yyyy-MM-dd"
-        )
-        
+        options = LocalizationOptions(locale="en-US", date_format="yyyy-MM-dd")
+
         result1 = options.asdict()
         result2 = options.asdict()
-        
+
         assert result1 == result2
 
     def test_copy_method(self):
         """Test the copy method creates a new instance with same values."""
-        original = LocalizationOptions(
-            locale="en-US",
-            date_format="yyyy-MM-dd"
-        )
-        
+        original = LocalizationOptions(locale="en-US", date_format="yyyy-MM-dd")
+
         # Since LocalizationOptions doesn't have a copy method, we'll test that
         # we can create a new instance with the same values
         copied = LocalizationOptions(
@@ -136,9 +119,9 @@ class TestLocalizationOptions:
             date_format=original.date_format,
             time_format=original.time_format,
             price_formatter=original.price_formatter,
-            percentage_formatter=original.percentage_formatter
+            percentage_formatter=original.percentage_formatter,
         )
-        
+
         assert copied is not original
         assert copied.locale == original.locale
         assert copied.date_format == original.date_format
@@ -150,7 +133,7 @@ class TestLocalizationOptions:
         """Test common locale formats."""
         locales = [
             "en-US",
-            "en-GB", 
+            "en-GB",
             "fr-FR",
             "de-DE",
             "es-ES",
@@ -160,9 +143,9 @@ class TestLocalizationOptions:
             "ja-JP",
             "ko-KR",
             "zh-CN",
-            "zh-TW"
+            "zh-TW",
         ]
-        
+
         for locale in locales:
             options = LocalizationOptions(locale=locale)
             assert options.locale == locale
@@ -179,9 +162,9 @@ class TestLocalizationOptions:
             "MMM dd, yyyy",
             "yyyy年MM月dd日",
             "dd.MM.yyyy",
-            "yyyy-MM-dd'T'HH:mm:ss"
+            "yyyy-MM-dd'T'HH:mm:ss",
         ]
-        
+
         for date_format in date_formats:
             options = LocalizationOptions(date_format=date_format)
             assert options.date_format == date_format
@@ -197,7 +180,7 @@ class TestLocalizationOptions:
         assert result["locale"] == "fr-FR"
         assert result["dateFormat"] == "yyyy-MM-dd"  # Default
         assert result["timeFormat"] == "HH:mm:ss"  # Default
-        
+
         # Only date format (other values will be defaults)
         options = LocalizationOptions(date_format="MM/dd/yyyy")
         result = options.asdict()
@@ -206,4 +189,4 @@ class TestLocalizationOptions:
         assert "timeFormat" in result  # Default value
         assert result["dateFormat"] == "MM/dd/yyyy"
         assert result["locale"] == "en-US"  # Default
-        assert result["timeFormat"] == "HH:mm:ss"  # Default 
+        assert result["timeFormat"] == "HH:mm:ss"  # Default

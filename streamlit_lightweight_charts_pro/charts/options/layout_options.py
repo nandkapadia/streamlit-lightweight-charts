@@ -13,13 +13,15 @@ from streamlit_lightweight_charts_pro.type_definitions.colors import (
     BackgroundGradient,
     BackgroundSolid,
 )
+from streamlit_lightweight_charts_pro.type_definitions.colors import (
+    _is_valid_color as is_valid_color,
+)
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
     HorzAlign,
     LineStyle,
     VertAlign,
 )
 from streamlit_lightweight_charts_pro.utils import chainable_field
-from streamlit_lightweight_charts_pro.type_definitions.colors import _is_valid_color as is_valid_color
 
 
 @dataclass
@@ -114,5 +116,3 @@ class WatermarkOptions(Options):
     horz_align: HorzAlign = HorzAlign.CENTER
     vert_align: VertAlign = VertAlign.CENTER
     color: str = "rgba(255, 255, 255, 0.1)"
-
-
