@@ -125,13 +125,8 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
     const timeScale = this._source.getChart().timeScale()
     const series = this._source.getSeries()
     
-    console.log(`🔍 [TradeRectanglePaneView] Updating ${this._source.getRectangles().length} rectangles`);
-    console.log(`🔍 [TradeRectanglePaneView] Time scale:`, timeScale);
-    console.log(`🔍 [TradeRectanglePaneView] Series:`, series);
-    
     // Get visible range for debugging
     const visibleRange = timeScale.getVisibleRange()
-    console.log(`🔍 [TradeRectanglePaneView] Visible range:`, visibleRange);
     
     this._data.data = this._source.getRectangles().map((rect, index) => {
       // Convert timestamps to coordinates
@@ -144,19 +139,7 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
       const validCoordinates = x1 !== null && y1 !== null && x2 !== null && y2 !== null;
       const positiveCoordinates = validCoordinates && x1 >= 0 && x2 >= 0 && y1 >= 0 && y2 >= 0;
       
-      console.log(`🔍 [TradeRectanglePaneView] Rectangle ${index} coordinates:`, {
-        time1: rect.time1, time2: rect.time2,
-        price1: rect.price1, price2: rect.price2,
-        x1, y1, x2, y2,
-        validCoordinates,
-        positiveCoordinates,
-        timeScaleVisibleRange: visibleRange,
-        priceScaleVisibleRange: series.priceScale()?.getVisibleRange(),
-        // Add more debugging info
-        time1Date: new Date(rect.time1 * 1000).toISOString(),
-        time2Date: new Date(rect.time2 * 1000).toISOString(),
-        chartWidth: this._source.getChart().chartElement().clientWidth
-      });
+
       
       // Only return valid coordinates
       if (!validCoordinates || !positiveCoordinates) {
@@ -199,8 +182,7 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
     this.chart = chart
     this._paneViews = [new TradeRectanglePaneView(this)]
     
-    console.log('🔍 [TradeRectanglePlugin] Constructor called for chart:', chart.chartElement().id);
-    console.log('🔍 [TradeRectanglePlugin] Using price scale ID:', priceScaleId);
+
     
     // Create a dummy line series to attach the primitive to (following official pattern)
     this.dummySeries = chart.addSeries(LineSeries, {
@@ -221,7 +203,6 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
     try {
       this.dummySeries.attachPrimitive(this)
       this.isAttached = true;
-      console.log('✅ [TradeRectanglePlugin] Successfully attached primitive to dummy series');
     } catch (error) {
       console.error('❌ [TradeRectanglePlugin] Failed to attach primitive to dummy series:', error);
     }
@@ -242,7 +223,6 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
 
   // ISeriesPrimitive implementation
   attached(param: SeriesAttachedParameter<Time>): void {
-    console.log('✅ [TradeRectanglePlugin] Primitive attached to series with param:', param);
   }
 
   detached(): void {
@@ -292,12 +272,7 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
 function createTradeRectangles(trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]): TradeRectangleData[] {
   const rectangles: TradeRectangleData[] = []
 
-  console.log(`🔍 [createTradeRectangles] Creating rectangles for ${trades.length} trades`);
-  console.log(`🔍 [createTradeRectangles] Options style:`, options.style);
-  console.log(`🔍 [createTradeRectangles] Chart data length:`, chartData?.length);
-
   trades.forEach((trade, index) => {
-    console.log(`🔍 [createTradeRectangles] Processing trade ${index}:`, trade);
     
     // Validate trade data
     if (!trade.entryTime || !trade.exitTime || 
@@ -310,7 +285,7 @@ function createTradeRectangles(trades: TradeConfig[], options: TradeVisualizatio
     const time1 = parseTime(trade.entryTime)
     const time2 = parseTime(trade.exitTime)
     
-    console.log(`🔍 [createTradeRectangles] Parsed times for trade ${index}:`, { time1, time2 });
+
     
     if (time1 === null || time2 === null || time1 === time2) {
       console.warn(`❌ [createTradeRectangles] Invalid times for trade ${index}:`, { time1, time2 });
@@ -522,10 +497,8 @@ export function createTradeVisualElements(
   }
 
   // Create rectangles if enabled
-  console.log(`🔍 [createTradeVisualElements] Style check: options.style=${options.style}, should create rectangles: ${options.style === 'rectangles' || options.style === 'both'}`);
   if (options.style === 'rectangles' || options.style === 'both') {
     const newRectangles = createTradeRectangles(trades, options, chartData)
-    console.log(`🔍 [createTradeVisualElements] Created ${newRectangles.length} rectangles`);
     rectangles.push(...newRectangles)
   }
 

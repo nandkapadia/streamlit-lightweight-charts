@@ -67,32 +67,20 @@ class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
 
   drawBackground(target: any) {
     const points: SignalRendererData[] = this._viewData.data;
-    console.log('🔧 drawBackground called with points:', points.length);
     
     if (points.length === 0) {
-      console.log('🔧 No points to draw');
       return;
     }
 
     target.useBitmapCoordinateSpace((scope: any) => {
       const ctx = scope.context;
       ctx.scale(scope.horizontalPixelRatio, scope.verticalPixelRatio);
-
-      console.log('🔧 Drawing background bands...');
       
       // Draw background bands - following TradingView's approach
       for (let i = 0; i < points.length; i += 2) {
         if (i + 1 < points.length) {
           const startPoint = points[i];
           const endPoint = points[i + 1];
-
-          console.log(`🔧 Drawing band ${i/2}:`, {
-            startX: startPoint.x,
-            startY: startPoint.y1,
-            endX: endPoint.x,
-            endY: startPoint.y2,
-            color: startPoint.color
-          });
 
           // Use the color exactly as provided by the backend
           const fillStyle = startPoint.color;
@@ -103,8 +91,6 @@ class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
           const width = Math.max(1, endPoint.x - startPoint.x); // Ensure minimum width
           const height = startPoint.y2 - startPoint.y1;
           
-          console.log(`🔧 Drawing rectangle: x=${startPoint.x}, y=${startPoint.y1}, width=${width}, height=${height}, color=${fillStyle}`);
-          
           ctx.fillRect(
             startPoint.x,
             startPoint.y1,
@@ -113,7 +99,6 @@ class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
           );
         }
       }
-      console.log('🔧 Background drawing complete');
     });
   }
 }
@@ -132,21 +117,17 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
   }
 
   update() {
-    console.log('🔧 SignalPrimitivePaneView update called');
     const timeScale = this._source.getChart().timeScale();
     const priceScale = this._source.getChart().priceScale('left');
     
     if (!timeScale || !priceScale) {
-      console.log('🔧 No timeScale or priceScale available');
       return;
     }
 
     // Debug time scale information
     const visibleRange = timeScale.getVisibleRange();
-    console.log('🔧 Time scale visible range:', visibleRange);
     
     const bands = this._source.getBackgroundBands();
-    console.log('🔧 Background bands for rendering:', bands.length);
     
     const renderData: SignalRendererData[] = [];
 
@@ -155,11 +136,8 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
     const halfBarSpacing = barSpacing / 2;
     
     bands.forEach((band, index) => {
-      console.log(`🔧 Band ${index} times: startTime=${band.startTime}, endTime=${band.endTime}`);
       const startX = timeScale.timeToCoordinate(band.startTime);
       const endX = timeScale.timeToCoordinate(band.endTime);
-      
-      console.log(`🔧 Band ${index}: startX=${startX}, endX=${endX}, color=${band.color}, barSpacing=${barSpacing}`);
       
       // Handle cases where coordinates are null (outside visible range)
       if (startX !== null && endX !== null) {
@@ -184,7 +162,7 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
           color: band.color,
         });
         
-        console.log(`🔧 Added render data for band ${index}: adjustedStartX=${adjustedStartX}, adjustedEndX=${adjustedEndX}, height=${chartHeight}`);
+
       } else if (startX !== null && endX === null) {
         // Start is visible but end is outside - extend to chart edge
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
@@ -206,7 +184,6 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
           color: band.color,
         });
         
-        console.log(`🔧 Added render data for band ${index}: adjustedStartX=${adjustedStartX}, endX=chartWidth (${chartWidth}), height=${chartHeight}`);
       } else if (startX === null && endX !== null) {
         // End is visible but start is outside - extend from chart edge
         const chartHeight = this._source.getChart().chartElement()?.clientHeight || 400;
@@ -226,16 +203,12 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
           y2: chartHeight,
           color: band.color,
         });
-        
-        console.log(`🔧 Added render data for band ${index}: startX=0, adjustedEndX=${adjustedEndX}, height=${chartHeight}`);
       } else {
         // Both coordinates are null - band is completely outside visible range
-        console.log(`🔧 Skipping band ${index}: both coordinates are null (outside visible range)`);
       }
     });
 
     this._data.data = renderData;
-    console.log('🔧 Final render data length:', renderData.length);
   }
 
   renderer() {
@@ -247,7 +220,7 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
 interface BackgroundBand {
   startTime: UTCTimestamp;
   endTime: UTCTimestamp;
-  value: number;
+  value: number | boolean;
   color: string;
 }
 
@@ -262,15 +235,11 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
   private paneId: number;
 
   constructor(chart: IChartApi, config: SignalSeriesConfig) {
-    console.log('🔧 SignalSeries constructor called with config:', config);
     this.chart = chart;
     this.options = config.options;
     this.signalData = config.data;
     this.paneId = config.paneId || 0;
     this._paneViews = [new SignalPrimitivePaneView(this)];
-    
-    console.log('🔧 SignalSeries options:', this.options);
-    console.log('🔧 SignalSeries data length:', this.signalData.length);
     
     // Create a dummy line series to attach the primitive to
     this.dummySeries = chart.addSeries(LineSeries, {
@@ -294,18 +263,15 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
 
     // Attach the primitive to the dummy series for rendering
     this.dummySeries.attachPrimitive(this);
-    console.log('🔧 SignalSeries primitive attached, background bands:', this.backgroundBands.length);
   }
 
   /**
    * Process signal data to create background bands
    */
   private processSignalData(): void {
-    console.log('🔧 processSignalData called, data length:', this.signalData.length);
     this.backgroundBands = [];
     
     if (this.signalData.length === 0) {
-      console.log('🔧 No signal data to process');
       return;
     }
 
@@ -315,9 +281,6 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       const timeB = this.parseTime(b.time);
       return timeA - timeB;
     });
-
-    // Create non-overlapping background bands with individual color support
-    console.log('🔧 Processing signals with values:', sortedSignals.map(s => s.value));
     
     let currentBandStart: UTCTimestamp | null = null;
     let currentBandValue: number | null = null;
@@ -326,14 +289,9 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
     for (let i = 0; i < sortedSignals.length; i++) {
       const signal = sortedSignals[i];
       const signalTime = this.parseTime(signal.time);
-      const signalColor = signal.color || this.getColorForValue(signal.value) || undefined;
       
-      // If this is the first signal or the value/color has changed, start a new band
-      const shouldStartNewBand = currentBandStart === null || 
-                                signal.value !== currentBandValue ||
-                                signalColor !== currentBandColor;
-      
-      if (shouldStartNewBand) {
+      // Only calculate color if we need to start a new band
+      if (currentBandStart === null || signal.value !== currentBandValue) {
         // End the previous band if it exists
         if (currentBandStart !== null && currentBandValue !== null) {
           const band = {
@@ -348,7 +306,7 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
         // Start a new band
         currentBandStart = signalTime;
         currentBandValue = signal.value;
-        currentBandColor = signalColor;
+        currentBandColor = signal.color || this.getColorForValue(signal.value) || undefined;
       }
     }
     
@@ -368,67 +326,61 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       this.addBackgroundBand(band);
     }
     
-    console.log('🔧 processSignalData complete, background bands:', this.backgroundBands.length);
+
   }
 
   /**
    * Add a background band
    */
-  private addBackgroundBand(band: { value: number; startTime: UTCTimestamp; endTime: UTCTimestamp; individualColor?: string }): void {
-    console.log('🔧 addBackgroundBand called with:', band);
-    
+  private addBackgroundBand(band: { value: number | boolean; startTime: UTCTimestamp; endTime: UTCTimestamp; individualColor?: string }): void {
     // Use individual color if available, otherwise fall back to series-level colors
     let color = band.individualColor;
     if (!color) {
       const seriesColor = this.getColorForValue(band.value);
-      console.log(`🔧 No individual color, using series color for value ${band.value}:`, seriesColor);
       if (seriesColor) {
         color = seriesColor;
       }
-    } else {
-      console.log(`🔧 Using individual color:`, color);
     }
     
     if (!color) {
-      console.log('🔧 No color available, skipping band');
       return;
     }
 
     const backgroundBand = {
       startTime: band.startTime,
       endTime: band.endTime,
-      value: band.value,
+      value: typeof band.value === 'boolean' ? (band.value ? 1 : 0) : band.value,
       color: color,
     };
     
     this.backgroundBands.push(backgroundBand);
-    console.log('🔧 Added background band:', backgroundBand);
   }
 
   /**
    * Get color for a signal value
    */
-  private getColorForValue(value: number): string | null {
-    console.log(`🔧 getColorForValue called with value: ${value}, options:`, this.options);
-    
-    let color: string | null = null;
-    switch (value) {
-      case 0:
-        color = this.options.neutralColor || null;
-        break;
-      case 1:
-        color = this.options.signalColor || null;
-        break;
-      case 2:
-        // For value 2, try alertColor first, then fall back to signalColor if alertColor is not set
-        color = this.options.alertColor || this.options.signalColor || null;
-        break;
-      default:
-        color = null;
+  private getColorForValue(value: number | boolean): string | null {
+    // Handle boolean values
+    if (typeof value === 'boolean') {
+      if (value === true) {
+        return this.options.signalColor || null;
+      } else {
+        return this.options.neutralColor || null;
+      }
     }
     
-    console.log(`🔧 getColorForValue returning: ${color} for value ${value}`);
-    return color;
+    // Handle numeric values
+    switch (value) {
+      case 0:
+        return this.options.neutralColor || null;
+      case 1:
+        return this.options.signalColor || null;
+      case 2:
+        // For value 2, try alertColor first, then fall back to signalColor if alertColor is not set
+        return this.options.alertColor || this.options.signalColor || null;
+      default:
+        return null;
+    }
   }
 
   /**

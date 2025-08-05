@@ -229,14 +229,11 @@ export class BandSeries implements ISeriesPrimitive<Time> {
   private _paneViews: BandPrimitivePaneView[]
 
   constructor(chart: IChartApi, options: Partial<BandSeriesOptions> = {}) {
-    console.log(`🔧 [BandSeries] Creating band series with options:`, options)
     this.chart = chart
     this.options = { ...defaultOptions, ...options }
-    console.log(`🔧 [BandSeries] Final options after merge:`, this.options)
     this._paneViews = [new BandPrimitivePaneView(this)]
     
     // Create the three line series
-    console.log(`🔧 [BandSeries] Creating upper series with priceScaleId: ${this.options.priceScaleId}`)
     this.upperSeries = chart.addSeries(LineSeries, {
       color: this.options.upperLine?.color || '#4CAF50',
       lineStyle: this.options.upperLine?.lineStyle || 0,
@@ -263,7 +260,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       lineType: this.options.upperLine?.lineType || 0,
     })
 
-    console.log(`🔧 [BandSeries] Creating middle series with priceScaleId: ${this.options.priceScaleId}`)
+
     this.middleSeries = chart.addSeries(LineSeries, {
       color: this.options.middleLine?.color || '#2196F3',
       lineStyle: this.options.middleLine?.lineStyle || 0,
@@ -290,7 +287,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       lineType: this.options.middleLine?.lineType || 0,
     })
 
-    console.log(`🔧 [BandSeries] Creating lower series with priceScaleId: ${this.options.priceScaleId}`)
+
     this.lowerSeries = chart.addSeries(LineSeries, {
       color: this.options.lowerLine?.color || '#F44336',
       lineStyle: this.options.lowerLine?.lineStyle || 0,
@@ -319,7 +316,6 @@ export class BandSeries implements ISeriesPrimitive<Time> {
 
     // Attach the primitive to the middle series for rendering
     this.middleSeries.attachPrimitive(this)
-    console.log(`🔧 [BandSeries] Band series created successfully with ${this.options.priceScaleId} price scale`)
   }
 
   // Getter for options
@@ -368,7 +364,6 @@ export class BandSeries implements ISeriesPrimitive<Time> {
   }
 
   setData(data: BandData[]): void {
-    console.log(`🔧 [BandSeries] Setting data:`, data)
     this.data = data
     
     // Extract individual series data

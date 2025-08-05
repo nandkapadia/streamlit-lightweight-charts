@@ -213,54 +213,36 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         const shouldFitContentOnLoad = chartConfig.chart?.timeScale?.fitContentOnLoad !== false &&
                                    chartConfig.chart?.fitContentOnLoad !== false
 
-    console.log('🔍 [setupFitContent] shouldFitContentOnLoad:', shouldFitContentOnLoad, 'for chart:', chart.chartElement().id);
-
     if (shouldFitContentOnLoad) {
       // Wait for data to be loaded and then fit content
               const handleDataLoaded = async (retryCount = 0) => {
         const maxRetries = 50; // Prevent infinite loops
         const currentChartId = chart.chartElement().id || 'default';
-        console.log('🔍 [handleDataLoaded] Starting data loaded check for chart:', currentChartId, 'retry:', retryCount);
         
         if (retryCount >= maxRetries) {
-          console.error('❌ [handleDataLoaded] Max retries exceeded, giving up on chart initialization');
           return;
         }
         
         try {
           // Check if chart has series with data
           const series = Object.values(seriesRefs.current).flat()
-          console.log('🔍 [handleDataLoaded] Series count:', series.length);
-          
-          // Log chart state for debugging
-          console.log('🔍 [handleDataLoaded] Chart state:', {
-            chartId: currentChartId,
-            timeScale: !!chart.timeScale(),
-            seriesCount: series.length,
-            storedConfig: !!chartConfigs.current[currentChartId],
-            storedConfigTrades: chartConfigs.current[currentChartId]?.trades?.length || 0
-          });
           
           if (series.length === 0) {
             // No series yet, try again after a delay
-            console.log('🔍 [handleDataLoaded] No series yet, retrying...');
             setTimeout(() => handleDataLoaded(retryCount + 1), 100)
             return
           }
 
           // Check if chart has a visible range (more reliable than checking series data)
           const visibleRange = timeScale.getVisibleRange()
-          console.log('🔍 [handleDataLoaded] Visible range:', visibleRange);
           
           if (visibleRange && visibleRange.from && visibleRange.to) {
-            console.log('✅ [handleDataLoaded] Chart is ready, calling fitContent and trade visualization');
             timeScale.fitContent()
             
             // Add trade visualization when chart is ready
             await addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
           } else {
             // If no visible range, try again after a short delay
-            console.log('🔍 [handleDataLoaded] No visible range, retrying...');
             setTimeout(async () => {
               try {
                 timeScale.fitContent()
@@ -282,9 +264,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       }
 
       // Call fitContent after a longer delay to ensure data is loaded
-      console.log('🔍 [setupFitContent] Setting up handleDataLoaded timeout for chart:', chart.chartElement().id);
       fitContentTimeoutRef.current = setTimeout(async () => {
-        console.log('🔍 [setupFitContent] handleDataLoaded timeout triggered');
         await handleDataLoaded();
       }, 500)
     }
@@ -315,6 +295,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Cleanup function
   const cleanupCharts = useCallback(() => {
+    
     // Clear any pending timeouts
     if (fitContentTimeoutRef.current) {
       clearTimeout(fitContentTimeoutRef.current)
@@ -326,6 +307,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       resizeObserverRef.current.disconnect()
       resizeObserverRef.current = null
     }
+
+    // Clean up signal series plugins
+    Object.entries(signalPluginRefs.current).forEach(([key, signalSeries]) => {
+      try {
+        signalSeries.destroy()
+      } catch (error) {
+        // Signal series already destroyed
+      }
+    })
 
     // Remove all charts
     Object.values(chartRefs.current).forEach(chart => {
@@ -340,7 +330,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     chartRefs.current = {}
     seriesRefs.current = {}
     rectanglePluginRefs.current = {}
+    signalPluginRefs.current = {}
     chartConfigs.current = {}
+    
+
   }, [])
 
   // Create series function
@@ -361,6 +354,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       priceLineStyle: topLevelPriceLineStyle,
       priceScaleId: topLevelPriceScaleId
     } = seriesConfig
+
+
     
 
 
@@ -426,7 +421,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
         break
       case 'band':
-        console.log(`🔧 [createSeries] Creating band series`)
         try {
           // Create band series using the custom plugin
           const bandSeriesOptions = {
@@ -459,7 +453,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
             priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
           }
-          console.log(`🔧 [createSeries] Band series options:`, bandSeriesOptions)
           const bandSeries = createBandSeries(chart, bandSeriesOptions)
           
           // Set data for band series
@@ -511,6 +504,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
       case 'signal':
         try {
+          
           // Create signal series using the custom plugin
           const signalSeries = createSignalSeriesPlugin(chart, {
             type: 'signal',
@@ -533,7 +527,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               try {
                 signalSeries.updateData(newData)
               } catch (error) {
-                // Series is disposed or invalid - ignore error
+                console.error('Signal series setData failed:', error)
               }
             },
             update: (newData: any) => {
@@ -541,7 +535,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 // For signal series, we need to update the entire dataset
                 signalSeries.updateData([newData])
               } catch (error) {
-                // Series is disposed or invalid - ignore error
+                console.error('Signal series update failed:', error)
               }
             },
             applyOptions: (options: any) => {
@@ -553,7 +547,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                   visible: options.visible !== false,
                 })
               } catch (error) {
-                // Series is disposed or invalid - ignore error
+                console.error('Signal series applyOptions failed:', error)
               }
             },
             priceScale: () => {
@@ -568,12 +562,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 signalSeries.destroy()
                 delete signalPluginRefs.current[`${chartId}-${seriesIndex}`]
               } catch (error) {
-                // Series is already removed - ignore error
+                console.error('Signal series remove failed:', error)
               }
             },
           } as unknown as ISeriesApi<any>
         } catch (error) {
-          // Failed to create signal series - return null
+          console.error('🔍 [SIGNAL_DEBUG] Failed to create signal series:', error)
           return null
         }
       case 'baseline':
@@ -748,48 +742,31 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [cleanLineStyleOptions])
 
   const addTradeVisualization = useCallback(async (chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
-    console.log('🔍 [addTradeVisualization] Starting trade visualization:', {
-      tradesCount: trades?.length,
-      options,
-      chartDataCount: chartData?.length
-    });
-
     if (!trades || trades.length === 0) {
-      console.log('❌ [addTradeVisualization] No trades provided');
       return;
     }
 
     // Verify chart is ready (should be guaranteed by lifecycle method)
     const timeScale = chart.timeScale();
     const visibleRange = timeScale.getVisibleRange();
-    console.log('🔍 [addTradeVisualization] Time scale visible range:', visibleRange);
     
     if (!visibleRange || !visibleRange.from || !visibleRange.to) {
-      console.error('❌ [addTradeVisualization] Chart not ready - time scale not initialized');
       return;
     }
 
     try {
       // Use default price scale ID for now
       const priceScaleId = 'right';
-      console.log('🔍 [addTradeVisualization] Using price scale ID:', priceScaleId);
       
       // Create visual elements for trade visualization
       const visualElements = createTradeVisualElements(trades, options, chartData, priceScaleId);
-      
-      console.log('🔍 [addTradeVisualization] Visual elements created:', {
-        markersCount: visualElements.markers.length,
-        rectanglesCount: visualElements.rectangles.length,
-        annotationsCount: visualElements.annotations.length
-      });
       
       // Add markers to the series
       if (visualElements.markers.length > 0) {
         try {
           createSeriesMarkers(series, visualElements.markers);
-          console.log('✅ [addTradeVisualization] Markers added successfully');
         } catch (error) {
-          console.warn('❌ [addTradeVisualization] Error adding markers:', error);
+          // Error adding markers
         }
       }
 
@@ -798,13 +775,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       
       // Use the RectangleOverlayPlugin instead of TradeRectanglePlugin
       if (!rectanglePluginRefs.current[chartId]) {
-        console.log('🔍 [addTradeVisualization] Creating new rectangle overlay plugin for chart:', chartId);
         const rectanglePlugin = new RectangleOverlayPlugin();
         rectanglePlugin.setChart(chart, series);
         rectanglePluginRefs.current[chartId] = rectanglePlugin;
-        console.log('✅ [addTradeVisualization] Created new rectangle overlay plugin for chart:', chartId);
-      } else {
-        console.log('🔍 [addTradeVisualization] Using existing rectangle overlay plugin for chart:', chartId);
       }
       
       const rectanglePlugin = rectanglePluginRefs.current[chartId];
@@ -812,19 +785,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       // Clear existing rectangles and add new ones
       rectanglePlugin.clearRectangles();
       
-      console.log('🔍 [addTradeVisualization] Adding rectangles:', visualElements.rectangles.length);
-      console.log('🔍 [addTradeVisualization] Rectangle data:', visualElements.rectangles);
       if (visualElements.rectangles.length > 0) {
         visualElements.rectangles.forEach((rect, index) => {
           rectanglePlugin.addRectangle(rect);
-          console.log(`✅ [addTradeVisualization] Added rectangle ${index}:`, rect);
         });
         
         // Force redraw of the canvas overlay
         rectanglePlugin.scheduleRedraw();
-        console.log('✅ [addTradeVisualization] Scheduled rectangle overlay redraw');
-      } else {
-        console.log('⚠️ [addTradeVisualization] No rectangles to add');
       }
 
       // Add annotations to the series
@@ -839,9 +806,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
               (series as any).addAnnotation(annotation);
             }
           });
-          console.log('✅ [addTradeVisualization] Annotations added successfully');
         } catch (error) {
-          console.warn('❌ [addTradeVisualization] Error processing annotations:', error)
+          // Error processing annotations
         }
       }
     } catch (error) {
@@ -852,18 +818,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const addTradeVisualizationWhenReady = useCallback(async (chart: IChartApi, chartConfig: ChartConfig) => {
     const chartId = chart.chartElement().id || 'default'
     
-    console.log('🔍 [addTradeVisualizationWhenReady] Chart is ready, adding trade visualization:', {
-      chartId,
-      hasTrades: !!chartConfig.trades,
-      tradesCount: chartConfig.trades?.length,
-      hasTradeOptions: !!chartConfig.tradeVisualizationOptions,
-      chartDisposed: !chart || chart.chartElement() === null,
-      seriesRefsKeys: Object.keys(seriesRefs.current),
-      seriesRefsForChart: seriesRefs.current[chartId]?.length || 0
-    });
+
 
     if (!chartConfig.trades || chartConfig.trades.length === 0) {
-      console.log('⚠️ [addTradeVisualizationWhenReady] No trades to visualize');
       return;
     }
 
@@ -874,29 +831,20 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     while (retryCount < maxRetries) {
       const seriesList = seriesRefs.current[chartId];
       if (seriesList && seriesList.length > 0) {
-        console.log('✅ [addTradeVisualizationWhenReady] Found series for trade visualization');
         break;
       }
       
-      console.log(`🔍 [addTradeVisualizationWhenReady] Waiting for series (attempt ${retryCount + 1}/${maxRetries})`);
-      console.log(`🔍 [addTradeVisualizationWhenReady] Current seriesRefs:`, {
-        keys: Object.keys(seriesRefs.current),
-        chartId,
-        seriesForChart: seriesRefs.current[chartId]?.length || 0
-      });
       await new Promise(resolve => setTimeout(resolve, 100));
       retryCount++;
     }
     
     // Check if chart is still valid
     if (!chart || !chart.chartElement()) {
-      console.log('⚠️ [addTradeVisualizationWhenReady] Chart is disposed, cannot add trade visualization');
       return;
     }
     
     const seriesList = seriesRefs.current[chartId];
     if (!seriesList || seriesList.length === 0) {
-      console.log('⚠️ [addTradeVisualizationWhenReady] No series available for trade visualization after retries');
       return;
     }
 
@@ -912,7 +860,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (seriesType === 'Candlestick') {
           candlestickSeries = series;
           candlestickSeriesIndex = i;
-          console.log(`✅ [addTradeVisualizationWhenReady] Found candlestick series at index ${i}`);
           break;
         }
       } catch (error) {
@@ -922,7 +869,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     }
     
     if (!candlestickSeries) {
-      console.log('⚠️ [addTradeVisualizationWhenReady] No candlestick series found, using first series as fallback');
       candlestickSeries = seriesList[0];
       candlestickSeriesIndex = 0;
     }
@@ -930,9 +876,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // Check if series is still valid
     try {
       candlestickSeries.priceScale();
-      console.log('✅ [addTradeVisualizationWhenReady] Candlestick series is valid and accessible');
     } catch (error) {
-      console.log('⚠️ [addTradeVisualizationWhenReady] Candlestick series is disposed or invalid:', error);
       return;
     }
 
@@ -945,7 +889,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       exitMarkerColorLoss: '#F44336'
     };
 
-    console.log('✅ [addTradeVisualizationWhenReady] Adding trade visualization to candlestick series with options:', tradeOptions);
+
     
     // Add trade visualization now that chart is ready - use candlestick series data
     const candlestickSeriesData = chartConfig.series?.[candlestickSeriesIndex]?.data || chartConfig.series?.[0]?.data;
@@ -1084,12 +1028,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [addAnnotations])
 
   const addModularTooltip = useCallback((chart: IChartApi, container: HTMLElement, seriesList: ISeriesApi<any>[], chartConfig: ChartConfig) => {
-    console.log("🎯 [addModularTooltip] Starting tooltip setup with config:", chartConfig.tooltipConfigs)
     
-    if (!chartConfig.tooltipConfigs || Object.keys(chartConfig.tooltipConfigs).length === 0) {
-      console.log("🎯 [addModularTooltip] No tooltip configurations found")
-      return
-    }
+    
+          if (!chartConfig.tooltipConfigs || Object.keys(chartConfig.tooltipConfigs).length === 0) {
+        return
+      }
 
     try {
       // Import tooltip plugin dynamically
@@ -1099,7 +1042,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         // Enable tooltip
         tooltipPlugin.enable()
         
-        console.log("🎯 [addModularTooltip] Tooltip plugin created and enabled")
+
         
         // Store plugin reference for cleanup
         if (!window.chartPlugins) {
@@ -1402,10 +1345,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         let chart: IChartApi
         try {
-          console.log(`🔧 [createChart] Creating chart with options:`, chartOptions)
-        console.log(`🔍 [createChart] Full chart config:`, JSON.stringify(chartConfig, null, 2))
+  
           chart = createChart(container, chartOptions)
-          console.log(`🔧 [createChart] Chart created successfully:`, chart)
+
         } catch (chartError) {
           console.error(`Failed to create chart for ${chartId}:`, chartError)
           return
@@ -1421,7 +1363,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         const chartElement = chart.chartElement()
         if (chartElement) {
           chartElement.id = chartId
-          console.log(`✅ [createChart] Set chart element ID to: ${chartId}`)
         }
 
         chartRefs.current[chartId] = chart
@@ -1474,17 +1415,14 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         const seriesList: ISeriesApi<any>[] = []
         
         if (chartConfig.series && Array.isArray(chartConfig.series)) {
-          console.log(`🔧 [createChart] Creating ${chartConfig.series.length} series`)
           chartConfig.series.forEach((seriesConfig: SeriesConfig, seriesIndex: number) => {
             try {
-              console.log(`🔧 [createChart] Creating series ${seriesIndex}:`, seriesConfig)
               if (!seriesConfig || typeof seriesConfig !== 'object') {
                 console.warn(`Invalid series config at index ${seriesIndex}:`, seriesConfig)
                 return
               }
 
               const series = createSeries(chart, seriesConfig, chartId, seriesIndex)
-              console.log(`🔧 [createChart] Series ${seriesIndex} created:`, series)
               if (series) {
                 seriesList.push(series)
                 
@@ -1553,12 +1491,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
         // Store chart config for trade visualization when chart is ready
         chartConfigs.current[chartId] = chartConfig
-        console.log('🔍 [createChart] Stored chart config for trade visualization:', {
-          chartId,
-          hasTrades: !!chartConfig.trades,
-          tradesCount: chartConfig.trades?.length,
-          hasTradeOptions: !!chartConfig.tradeVisualizationOptions
-        });
 
         // Add chart-level annotations
         if (chartConfig.annotations) {
@@ -1586,22 +1518,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         // Add legend if configured
-        console.log("🔍 [createChart] Legend check:", {
-          hasChart: !!chartConfig.chart,
-          hasLegend: !!chartConfig.chart?.legend,
-          legendVisible: chartConfig.chart?.legend?.visible,
-          legendConfig: chartConfig.chart?.legend
-        })
-        console.log("🔍 [createChart] Full legend config:", JSON.stringify(chartConfig.chart?.legend, null, 2))
-        
         if (chartConfig.chart?.legend && chartConfig.chart.legend.visible) {
-          console.log("✅ [createChart] Adding legend with config:", chartConfig.chart.legend)
           // Add legend after a short delay to ensure chart is fully initialized
           setTimeout(() => {
             addLegend(chart, chartConfig.chart.legend, seriesList)
           }, 100)
-        } else {
-          console.log("❌ [createChart] Legend not added - missing or not visible")
         }
 
         // Setup auto-sizing for the chart

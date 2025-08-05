@@ -36,18 +36,14 @@ export class RectangleOverlayPlugin {
 
   private init() {
     if (!this.chart) {
-      console.log('⚠️ [RectangleOverlayPlugin] No chart provided');
       return;
     }
     
     try {
       this.container = this.chart.chartElement();
       if (!this.container) {
-        console.log('⚠️ [RectangleOverlayPlugin] No chart container found');
         return;
       }
-      
-      console.log('✅ [RectangleOverlayPlugin] Found chart container:', this.container);
 
       // Create canvas overlay
       this.canvas = document.createElement('canvas');
@@ -59,17 +55,12 @@ export class RectangleOverlayPlugin {
       
       this.container.style.position = 'relative';
       this.container.appendChild(this.canvas);
-      
-      console.log('✅ [RectangleOverlayPlugin] Created and attached canvas overlay');
 
       // Get canvas context
       this.ctx = this.canvas.getContext('2d');
       if (!this.ctx) {
-        console.log('⚠️ [RectangleOverlayPlugin] Failed to get canvas context');
         return;
       }
-      
-      console.log('✅ [RectangleOverlayPlugin] Got canvas context');
 
       // Set initial canvas size
       this.resizeCanvas();
@@ -87,7 +78,6 @@ export class RectangleOverlayPlugin {
       try {
         // Listen for time scale changes (panning, zooming)
         this.chart.timeScale().subscribeVisibleTimeRangeChange(() => {
-          console.log('🔍 [RectangleOverlayPlugin] Time scale changed, redrawing...');
           if (!this.isDisposed && this.isChartValid()) {
             this.scheduleRedraw();
           }
@@ -111,14 +101,13 @@ export class RectangleOverlayPlugin {
           }
         });
       } catch (e) {
-        console.log('⚠️ [RectangleOverlayPlugin] Error setting up chart event listeners:', e);
+        // Error setting up chart event listeners
       }
 
       // Initial draw
       this.scheduleRedraw();
-      console.log('✅ [RectangleOverlayPlugin] Initialization complete');
     } catch (error) {
-      console.log('❌ [RectangleOverlayPlugin] Initialization error:', error);
+      // Initialization error
     }
   }
 
@@ -145,7 +134,6 @@ export class RectangleOverlayPlugin {
       cancelAnimationFrame(this.animationFrameId);
     }
     this.animationFrameId = requestAnimationFrame(() => {
-      console.log('🔍 [RectangleOverlayPlugin] Executing redraw...');
       this.drawRectangles();
     });
   }
@@ -226,18 +214,15 @@ export class RectangleOverlayPlugin {
           paneTop = Math.max(top, chartTop);
           paneBottom = Math.min(bottom, chartBottom);
           
-          console.log(`🔍 [RectangleOverlayPlugin] Chart drawing area: top=${paneTop}, bottom=${paneBottom}, chartTop=${chartTop}, chartBottom=${chartBottom}`);
         } else {
           // Fallback to price scale bounds
           paneTop = top;
           paneBottom = bottom;
-          console.log(`🔍 [RectangleOverlayPlugin] Using price scale bounds: top=${paneTop}, bottom=${paneBottom}`);
         }
       } catch (error) {
         // If we can't get chart bounds, use the price scale bounds
         paneTop = top;
         paneBottom = bottom;
-        console.log('⚠️ [RectangleOverlayPlugin] Could not get chart bounds, using price scale bounds');
       }
 
       // Add some padding to avoid drawing on axes
@@ -272,16 +257,9 @@ export class RectangleOverlayPlugin {
             chartLeft = Math.max(0, leftAxisWidth);
             chartRight = Math.min(this.canvas.width, this.canvas.width - rightAxisWidth);
             
-            console.log(`🔍 [RectangleOverlayPlugin] X-axis based Y-axis calculation:`, {
-              leftTimePixel, rightTimePixel,
-              canvasWidth: this.canvas.width,
-              calculatedLeftAxis: leftAxisWidth,
-              calculatedRightAxis: rightAxisWidth,
-              chartLeft, chartRight
-            });
+
           } else {
             // Fallback to reasonable defaults when time scale is not properly initialized
-            console.log('⚠️ [RectangleOverlayPlugin] Time scale not properly initialized, using fallback values');
             leftAxisWidth = 0;
             rightAxisWidth = 72; // Standard Lightweight Charts default
             chartLeft = 0;
@@ -289,7 +267,6 @@ export class RectangleOverlayPlugin {
           }
         }
       } catch (error) {
-        console.log('⚠️ [RectangleOverlayPlugin] Could not get time scale bounds, using defaults:', error);
         // Fallback to reasonable defaults
         leftAxisWidth = 0;
         rightAxisWidth = 72; // Standard Lightweight Charts default
@@ -302,11 +279,8 @@ export class RectangleOverlayPlugin {
           bottom: Math.min(paneBottom, bottom)
         };
       
-      console.log(`🔍 [RectangleOverlayPlugin] Chart area bounds:`, chartArea);
-      
       return chartArea;
     } catch (error) {
-      console.log('⚠️ [RectangleOverlayPlugin] Error getting chart drawing area:', error);
       return null;
     }
   }
@@ -359,28 +333,22 @@ export class RectangleOverlayPlugin {
 
   private drawRectangles() {
     if (this.isDisposed || !this.ctx || !this.canvas || !this.chart) {
-      console.log('⚠️ [RectangleOverlayPlugin] Cannot draw - missing context, canvas, chart, or disposed');
       return;
     }
 
     try {
       if (!this.isChartValid()) {
-        console.log('⚠️ [RectangleOverlayPlugin] Chart not valid, marking as disposed');
         this.isDisposed = true;
         return;
       }
 
       // Check if we have a series for price conversion
       if (!this.series) {
-        console.log('⚠️ [RectangleOverlayPlugin] No series available for price conversion');
         return;
       }
-      
-      console.log('🔍 [RectangleOverlayPlugin] Drawing', this.rectangles.length, 'rectangles');
 
       // Clear canvas
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      console.log('🔍 [RectangleOverlayPlugin] Canvas cleared, dimensions:', this.canvas.width, 'x', this.canvas.height);
 
       // Draw each rectangle
       for (let index = 0; index < this.rectangles.length; index++) {
@@ -392,23 +360,9 @@ export class RectangleOverlayPlugin {
           const price1Pixel = this.priceToCoordinate(rect.price1, rect.priceScaleId);
           const price2Pixel = this.priceToCoordinate(rect.price2, rect.priceScaleId);
 
-          console.log(`🔍 [RectangleOverlayPlugin] Rectangle ${index} raw coordinates:`, {
-            time1: rect.time1, time2: rect.time2,
-            price1: rect.price1, price2: rect.price2,
-            time1Pixel, time2Pixel, price1Pixel, price2Pixel
-          });
+
           
-          // Log the actual calculated rectangle position (after null checks)
-          if (time1Pixel !== null && time2Pixel !== null && price1Pixel !== null && price2Pixel !== null) {
-            const x = Math.min(time1Pixel, time2Pixel);
-            const width = Math.abs(time2Pixel - time1Pixel);
-            const y = Math.min(price1Pixel, price2Pixel);
-            const rectHeight = Math.abs(price2Pixel - price1Pixel);
-            
-            console.log(`🔍 [RectangleOverlayPlugin] Rectangle ${index} calculated position:`, {
-              x, y, width, rectHeight
-            });
-          }
+
 
           // Validate coordinates
           if (
@@ -417,7 +371,6 @@ export class RectangleOverlayPlugin {
             isNaN(time1Pixel) || isNaN(time2Pixel) || 
             isNaN(price1Pixel) || isNaN(price2Pixel)
           ) {
-            console.log(`⚠️ [RectangleOverlayPlugin] Rectangle ${index} has invalid coordinates, skipping`);
             continue;
           }
 
@@ -441,20 +394,7 @@ export class RectangleOverlayPlugin {
           // Check if rectangle is completely outside chart drawing area
           if (x + width < chartArea.left || y + rectHeight < chartArea.top || 
               x > chartArea.right || y > chartArea.bottom) {
-            console.log(`⚠️ [RectangleOverlayPlugin] Rectangle ${index} is completely outside chart area, skipping:`, {
-              x, y, width, height: rectHeight,
-              chartArea
-            });
             continue;
-          }
-          
-          // Log rectangles that are partially outside for debugging
-          if (x < chartArea.left || x + width > chartArea.right || 
-              y < chartArea.top || y + rectHeight > chartArea.bottom) {
-            console.log(`🔍 [RectangleOverlayPlugin] Rectangle ${index} is partially outside chart area, will clip:`, {
-              x, y, width, height: rectHeight,
-              chartArea
-            });
           }
 
           // Clamp coordinates to chart drawing area bounds
@@ -482,10 +422,7 @@ export class RectangleOverlayPlugin {
           // Draw rectangle
           this.ctx.save();
           
-          console.log(`✅ [RectangleOverlayPlugin] Drawing rectangle ${index}:`, {
-            x: clampedX, y: clampedY, width: clampedWidth, height: clampedHeight,
-            fillColor: rect.fillColor, opacity: rect.opacity || 0.2
-          });
+
           
           // Set fill style
           this.ctx.fillStyle = rect.fillColor;
@@ -527,7 +464,6 @@ export class RectangleOverlayPlugin {
 
   addRectangle(rect: RectangleConfig) {
     this.rectangles.push(rect);
-    console.log('✅ [RectangleOverlayPlugin] Added rectangle:', rect);
     this.scheduleRedraw();
   }
 
