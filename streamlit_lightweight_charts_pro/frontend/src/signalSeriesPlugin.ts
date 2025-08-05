@@ -124,9 +124,6 @@ class SignalPrimitivePaneView implements IPrimitivePaneView {
       return;
     }
 
-    // Debug time scale information
-    const visibleRange = timeScale.getVisibleRange();
-    
     const bands = this._source.getBackgroundBands();
     
     const renderData: SignalRendererData[] = [];

@@ -125,9 +125,6 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
     const timeScale = this._source.getChart().timeScale()
     const series = this._source.getSeries()
     
-    // Get visible range for debugging
-    const visibleRange = timeScale.getVisibleRange()
-    
     this._data.data = this._source.getRectangles().map((rect, index) => {
       // Convert timestamps to coordinates
       const x1 = timeScale.timeToCoordinate(rect.time1) ?? null;

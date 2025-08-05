@@ -133,8 +133,98 @@ export class RectangleOverlayPlugin {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    this.animationFrameId = requestAnimationFrame(() => {
-      this.drawRectangles();
+    this.animationFrameId = requestAnimationFrame(async () => {
+      await this.drawRectangles();
+    });
+  }
+
+  // Function to get chart dimensions using requestAnimationFrame approach
+  private getChartDimensions(): Promise<{
+    timeScalePositionAndSize: { x: number; y: number; height: number; width: number };
+    priceScalePositionAndSize: { x: number; y: number; height: number; width: number };
+    containerDimensions: { width: number; height: number };
+  }> {
+    return new Promise((resolve) => {
+      // Run inside a RequestAnimationFrame so that the chart has a chance to 
+      // render once before querying the dimensions.
+      requestAnimationFrame(() => {
+        if (!this.container || !this.chart) {
+          resolve({
+            timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
+            priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
+            containerDimensions: { width: 0, height: 0 }
+          });
+          return;
+        }
+        
+        // Check if chart is disposed
+        try {
+          this.chart.chartElement()
+        } catch (error) {
+          console.warn('Chart is disposed in rectangle plugin, cannot get dimensions');
+          resolve({
+            timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
+            priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
+            containerDimensions: { width: 0, height: 0 }
+          });
+          return;
+        }
+
+        const containerElement = this.container!;
+        const containerDimensions = containerElement.getBoundingClientRect();
+
+        // chart is the IChartAPI reference returned by LightweightCharts.createChart
+        const timeScale = this.chart!.timeScale();
+        const timeScaleWidth = timeScale.width();
+        const timeScaleHeight = timeScale.height();
+
+        // mainSeries is the ISeriesAPI reference returned when adding data
+        // for example with: chart.addLineSeries(...)
+        let priceScaleWidth = 70; // Default fallback
+        if (this.series) {
+          try {
+            const priceScale = this.series.priceScale();
+            priceScaleWidth = priceScale.width();
+          } catch (error) {
+            console.debug('Could not get price scale width from main series, using default:', error);
+            // Fallback to default price scale
+            try {
+              const priceScale = this.chart!.priceScale('right');
+              priceScaleWidth = priceScale ? priceScale.width() : 70;
+            } catch (fallbackError) {
+              console.debug('Could not get price scale width from default scale, using fallback:', fallbackError);
+            }
+          }
+        } else {
+          // Fallback to default price scale if no main series provided
+          try {
+            const priceScale = this.chart!.priceScale('right');
+            priceScaleWidth = priceScale ? priceScale.width() : 70;
+          } catch (error) {
+            console.debug('Could not get price scale width, using fallback:', error);
+          }
+        }
+
+        const priceScalePositionAndSize = {
+          x: timeScaleWidth,
+          y: 0,
+          height: containerDimensions.height - timeScaleHeight,
+          width: priceScaleWidth,
+        };
+
+        const timeScalePositionAndSize = {
+          x: 0,
+          y: containerDimensions.height - timeScaleHeight,
+          height: timeScaleHeight,
+          width: timeScaleWidth,
+        };
+
+        // Only log in development mode to reduce noise
+        if (process.env.NODE_ENV === 'development') {
+          console.log({ timeScalePositionAndSize, priceScalePositionAndSize });
+        }
+        resolve({ timeScalePositionAndSize, priceScalePositionAndSize, containerDimensions });
+      });
     });
   }
 
@@ -154,10 +244,13 @@ export class RectangleOverlayPlugin {
     }
   }
 
-  private getChartDrawingArea(): { left: number; top: number; right: number; bottom: number } | null {
+  private async getChartDrawingArea(): Promise<{ left: number; top: number; right: number; bottom: number } | null> {
     try {
       if (!this.chart || !this.canvas || !this.series) return null;
 
+      // Get chart dimensions using the new requestAnimationFrame approach
+      const chartDimensions = await this.getChartDimensions();
+      
       // Get the chart's drawing area bounds
       const timeScale = this.chart.timeScale();
       
@@ -225,59 +318,17 @@ export class RectangleOverlayPlugin {
         paneBottom = bottom;
       }
 
-      // Add some padding to avoid drawing on axes
-      const padding = 5;
-      
-      // Calculate Y-axis width using the visible width of the X-axis (time scale)
-      // The difference between canvas width and time scale width gives us the Y-axis width
-      let leftAxisWidth = 0;
-      let rightAxisWidth = 0;
-      let chartLeft = padding;
-      let chartRight = this.canvas.width - padding;
-      
-      try {
-        // Get the time scale to understand the actual chart drawing area
-        const timeScale = this.chart.timeScale();
-        const logicalBounds = timeScale.getVisibleLogicalRange();
-        
-        if (logicalBounds) {
-          // Convert logical bounds to pixel coordinates
-          const leftTimePixel = timeScale.logicalToCoordinate(logicalBounds.from);
-          const rightTimePixel = timeScale.logicalToCoordinate(logicalBounds.to);
-          
-          if (leftTimePixel !== null && rightTimePixel !== null && 
-              leftTimePixel !== 0 && rightTimePixel !== 0 && 
-              rightTimePixel > leftTimePixel) {
-            // Calculate Y-axis widths based on time scale position
-            leftAxisWidth = Math.max(0, leftTimePixel);
-            rightAxisWidth = Math.max(0, this.canvas.width - rightTimePixel);
-            
-            // Use the calculated Y-axis widths to determine chart drawing area
-            // This gives us the actual chart area excluding the Y-axes
-            chartLeft = Math.max(0, leftAxisWidth);
-            chartRight = Math.min(this.canvas.width, this.canvas.width - rightAxisWidth);
-            
+      // Calculate the actual chart drawing area
+      // The time scale width represents the actual chart area width
+      const chartLeft = left;
+      const chartRight = right;
 
-          } else {
-            // Fallback to reasonable defaults when time scale is not properly initialized
-            leftAxisWidth = 0;
-            rightAxisWidth = 72; // Standard Lightweight Charts default
-            chartLeft = 0;
-            chartRight = this.canvas.width - rightAxisWidth;
-          }
-        }
-      } catch (error) {
-        // Fallback to reasonable defaults
-        leftAxisWidth = 0;
-        rightAxisWidth = 72; // Standard Lightweight Charts default
-      }
-      
-              const chartArea = {
-          left: chartLeft,
-          top: Math.max(paneTop, top),
-          right: chartRight,
-          bottom: Math.min(paneBottom, bottom)
-        };
+      const chartArea = {
+        left: chartLeft,
+        top: Math.max(paneTop, top),
+        right: chartRight,
+        bottom: Math.min(paneBottom, bottom)
+      };
       
       return chartArea;
     } catch (error) {
@@ -331,7 +382,7 @@ export class RectangleOverlayPlugin {
     }
   }
 
-  private drawRectangles() {
+  private async drawRectangles() {
     if (this.isDisposed || !this.ctx || !this.canvas || !this.chart) {
       return;
     }
@@ -349,6 +400,12 @@ export class RectangleOverlayPlugin {
 
       // Clear canvas
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      // Get chart drawing area bounds (excluding axes and labels) - now async
+      const chartArea = await this.getChartDrawingArea();
+      if (!chartArea) {
+        return;
+      }
 
       // Draw each rectangle
       for (let index = 0; index < this.rectangles.length; index++) {
@@ -382,12 +439,6 @@ export class RectangleOverlayPlugin {
 
           // Validate rectangle dimensions
           if (width <= 0 || rectHeight <= 0) {
-            continue;
-          }
-
-          // Get chart drawing area bounds (excluding axes and labels)
-          const chartArea = this.getChartDrawingArea();
-          if (!chartArea) {
             continue;
           }
 

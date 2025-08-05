@@ -213,6 +213,7 @@ export interface LegendConfig {
   fontFamily?: string
   fontWeight?: string
   color?: string
+  textColor?: string
   backgroundColor?: string
   borderColor?: string
   borderWidth?: number

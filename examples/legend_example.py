@@ -125,10 +125,12 @@ basic_chart = Chart(
         ),
     ),
     series=[
-        LineSeries(data=ma20_data, title="20-Day MA").set_color("#2196f3"),
-        LineSeries(data=ma50_data, title="50-Day MA").set_color("#ff9800"),
+        LineSeries(data=ma20_data).set_title("20-Day MA"),
+        LineSeries(data=ma50_data).set_title("50-Day MA"),
     ],
 )
+
+# Note: Colors are set to defaults for now
 
 basic_chart.render(key="basic_legend")
 
@@ -150,8 +152,8 @@ chart = Chart(
         )
     ),
     series=[
-        LineSeries(data=ma20_data, title="20-Day MA").set_color("#2196f3"),
-        LineSeries(data=ma50_data, title="50-Day MA").set_color("#ff9800")
+        LineSeries(data=ma20_data).set_title("20-Day MA").line_options.set_color("#2196f3"),
+        LineSeries(data=ma50_data).set_title("50-Day MA").line_options.set_color("#ff9800")
     ]
 )
 """,
@@ -188,13 +190,13 @@ multi_pane_chart = Chart(
     ),
     series=[
         # Main chart pane (pane_id=0)
-        CandlestickSeries(data=price_data, pane_id=0, title="Price"),
-        LineSeries(data=ma20_data, pane_id=0, title="MA20").set_color("#2196f3"),
-        LineSeries(data=ma50_data, pane_id=0, title="MA50").set_color("#ff9800"),
+        CandlestickSeries(data=price_data, pane_id=0).set_title("Price"),
+        LineSeries(data=ma20_data, pane_id=0).set_title("MA20"),
+        LineSeries(data=ma50_data, pane_id=0).set_title("MA50"),
         # Volume pane (pane_id=1)
-        HistogramSeries(data=volume_data, pane_id=1, title="Volume").set_color("#4caf50"),
+        HistogramSeries(data=volume_data, pane_id=1).set_title("Volume").set_color("#4caf50"),
         # RSI pane (pane_id=2)
-        LineSeries(data=rsi_data, pane_id=2, title="RSI").set_color("#9c27b0"),
+        LineSeries(data=rsi_data, pane_id=2).set_title("RSI"),
     ],
 )
 
@@ -226,11 +228,11 @@ chart = Chart(
         )
     ),
     series=[
-        CandlestickSeries(data=price_data, pane_id=0, title="Price"),
-        LineSeries(data=ma20_data, pane_id=0, title="MA20").set_color("#2196f3"),
-        LineSeries(data=ma50_data, pane_id=0, title="MA50").set_color("#ff9800"),
-        HistogramSeries(data=volume_data, pane_id=1, title="Volume").set_color("#4caf50"),
-        LineSeries(data=rsi_data, pane_id=2, title="RSI").set_color("#9c27b0")
+        CandlestickSeries(data=price_data, pane_id=0).set_title("Price"),
+        LineSeries(data=ma20_data, pane_id=0).set_title("MA20"),
+        LineSeries(data=ma50_data, pane_id=0).set_title("MA50"),
+        HistogramSeries(data=volume_data, pane_id=1).set_title("Volume").set_color("#4caf50"),
+        LineSeries(data=rsi_data, pane_id=2).set_title("RSI")
     ]
 )
 """,
@@ -259,8 +261,8 @@ with col1:
             ),
         ),
         series=[
-            LineSeries(data=ma20_data, title="MA20").set_color("#2196f3"),
-            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800"),
+            LineSeries(data=ma20_data).set_title("MA20"),
+            LineSeries(data=ma50_data).set_title("MA50"),
         ],
     )
     top_left_chart.render(key="top_left_legend")
@@ -282,8 +284,8 @@ with col2:
             ),
         ),
         series=[
-            LineSeries(data=ma20_data, title="MA20").set_color("#2196f3"),
-            LineSeries(data=ma50_data, title="MA50").set_color("#ff9800"),
+            LineSeries(data=ma20_data).set_title("MA20"),
+            LineSeries(data=ma50_data).set_title("MA50"),
         ],
     )
     bottom_right_chart.render(key="bottom_right_legend")
@@ -320,7 +322,7 @@ area_chart = Chart(
             padding=8,
         ),
     ),
-    series=[AreaSeries(data=area_data, title="Price Area")],
+    series=[AreaSeries(data=area_data).set_title("Price Area")],
 )
 
 area_chart.render(key="area_legend")
@@ -352,7 +354,7 @@ chart = Chart(
         )
     ),
     series=[
-        AreaSeries(data=area_data, title="Price Area")
+        AreaSeries(data=area_data).set_title("Price Area")
     ]
 )
 """,
@@ -425,9 +427,9 @@ interactive_chart = Chart(
         ),
     ),
     series=[
-        LineSeries(data=ma20_data, title="20-Day Moving Average").set_color("#2196f3"),
-        LineSeries(data=ma50_data, title="50-Day Moving Average").set_color("#ff9800"),
-        LineSeries(data=rsi_data, title="RSI (14)").set_color("#9c27b0"),
+        LineSeries(data=ma20_data).set_title("20-Day Moving Average"),
+        LineSeries(data=ma50_data).set_title("50-Day Moving Average"),
+        LineSeries(data=rsi_data).set_title("RSI (14)"),
     ],
 )
 
@@ -439,7 +441,7 @@ st.markdown(
 ### Key Features:
 
 1. **Multi-Pane Support**: Legends work with multi-pane charts, showing series from all panes
-2. **Series Titles**: Use the `title` parameter in series to set legend labels
+2. **Series Titles**: Use the `set_title()` method on series to set legend labels
 3. **Color Indicators**: Each series shows its color in the legend
 4. **Last Value Display**: Optionally show the last value for each series
 5. **Customizable Styling**: Full control over legend appearance and positioning

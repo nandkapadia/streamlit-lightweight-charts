@@ -18,6 +18,7 @@ import { RectangleOverlayPlugin } from './rectanglePlugin'
 import { createAnnotationVisualElements } from './annotationSystem'
 import { createBandSeries, BandData } from './bandSeriesPlugin'
 import { createSignalSeriesPlugin, SignalSeries } from './signalSeriesPlugin'
+import { getChartDimensions } from './utils/chartDimensions'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -32,7 +33,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const signalPluginRefs = useRef<{ [key: string]: SignalSeries }>({})
   const chartConfigs = useRef<{ [key: string]: ChartConfig }>({})
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
+  const legendResizeObserverRefs = useRef<{ [key: string]: ResizeObserver }>({})
   const isInitializedRef = useRef<boolean>(false)
+  const isDisposingRef = useRef<boolean>(false)
   const fitContentTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Utility function to validate and convert line styles
@@ -112,6 +115,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     return cleaned
   }, [])
 
+
+
   // Function to get container dimensions
   const getContainerDimensions = (container: HTMLElement) => {
     const rect = container.getBoundingClientRect()
@@ -121,17 +126,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     }
   }
 
-  // Function to apply auto-sizing constraints
-  const applySizeConstraints = (size: number, min?: number, max?: number) => {
-    let constrainedSize = size
-    if (min !== undefined && constrainedSize < min) {
-      constrainedSize = min
-    }
-    if (max !== undefined && constrainedSize > max) {
-      constrainedSize = max
-    }
-    return constrainedSize
-  }
+
 
   // Function to setup auto-sizing for a chart
   const setupAutoSizing = useCallback((chart: IChartApi, container: HTMLElement, chartConfig: ChartConfig) => {
@@ -295,6 +290,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Cleanup function
   const cleanupCharts = useCallback(() => {
+    // Set disposing flag to prevent async operations
+    isDisposingRef.current = true
     
     // Clear any pending timeouts
     if (fitContentTimeoutRef.current) {
@@ -317,6 +314,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       }
     })
 
+    // Clean up legend resize observers
+    Object.values(legendResizeObserverRefs.current).forEach((resizeObserver) => {
+      try {
+        resizeObserver.disconnect()
+      } catch (error) {
+        // ResizeObserver already disconnected
+      }
+    })
+
     // Remove all charts
     Object.values(chartRefs.current).forEach(chart => {
       try {
@@ -332,6 +338,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     rectanglePluginRefs.current = {}
     signalPluginRefs.current = {}
     chartConfigs.current = {}
+    legendResizeObserverRefs.current = {}
     
 
   }, [])
@@ -1062,10 +1069,231 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     // For now, this is a placeholder
   }, [])
 
-  const addLegend = useCallback((chart: IChartApi, legendConfig: LegendConfig, seriesList: ISeriesApi<any>[]) => {
+  // Function to update legend positions when pane heights change
+  const updateLegendPositions = useCallback(async (chart: IChartApi, legendConfig: LegendConfig) => {
+    // Check if component is being disposed
+    if (isDisposingRef.current) {
+      console.warn('Component is being disposed, skipping legend position update')
+      return
+    }
+    
+    // Check if chart is valid and not disposed
+    if (!chart) {
+      return
+    }
+    
+    try {
+      // Quick check if chart is still valid
+      chart.chartElement()
+    } catch (error) {
+      console.warn('Chart is disposed, skipping legend position update')
+      return
+    }
+    
+    const legendContainers = chart.chartElement().querySelectorAll('[class^="chart-legend-pane-"]')
+    
+    // Get chart dimensions using the new requestAnimationFrame approach
+    let container: HTMLElement | null = null
+    
+    try {
+      // Try to get the chart element first
+      const chartElement = chart.chartElement()
+      if (chartElement) {
+        container = chartElement.parentElement
+      }
+      
+      // If still no container, try to find it by looking up the DOM tree
+      if (!container && chartElement) {
+        let currentElement: HTMLElement | null = chartElement
+        while (currentElement && !container) {
+          currentElement = currentElement.parentElement
+          if (currentElement && currentElement.style && currentElement.style.width) {
+            container = currentElement
+          }
+        }
+      }
+      
+      // Final fallback - try to find any container with width/height
+      if (!container && chartElement) {
+        let currentElement: HTMLElement | null = chartElement
+        while (currentElement && !container) {
+          currentElement = currentElement.parentElement
+          if (currentElement && (currentElement.offsetWidth > 0 || currentElement.clientWidth > 0)) {
+            container = currentElement
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Error accessing chart element for legend positioning:', error)
+    }
+    
+    if (!container) {
+      console.warn('Could not find chart container for legend positioning')
+      return
+    }
+
+    try {
+      const { timeScalePositionAndSize, priceScalePositionAndSize } = 
+        await getChartDimensions(chart, container)
+      
+      legendContainers.forEach((legendContainer) => {
+        const className = legendContainer.className
+        const paneIdMatch = className.match(/chart-legend-pane-(\d+)/)
+        if (!paneIdMatch) return
+        
+        const paneId = parseInt(paneIdMatch[1])
+        const position = legendConfig.position || 'top-right'
+        const paneMargin = 20
+        
+        // Get current pane dimensions with error handling
+        let paneHeight: number
+        try {
+          const paneSize = chart.paneSize(paneId)
+          if (!paneSize || typeof paneSize.height !== 'number') {
+            console.warn(`Could not get pane size for pane ${paneId}, using default`)
+            return // Skip this legend if we can't get pane size
+          }
+          paneHeight = paneSize.height
+        } catch (error) {
+          console.warn(`Error getting pane size for pane ${paneId}:`, error)
+          return // Skip this legend if there's an error
+        }
+        
+        // Get the vertical offset of the pane
+        function getPaneOffsetY(chart: IChartApi, paneIndex: number) {
+          let offset = 0
+          for (let i = 0; i < paneIndex; i++) {
+            try {
+              const paneSize = chart.paneSize(i)
+              if (paneSize && typeof paneSize.height === 'number') {
+                offset += paneSize.height
+              } else {
+                console.warn(`Could not get pane size for pane ${i}, using default offset`)
+                offset += 200 // Default pane height
+              }
+            } catch (error) {
+              console.warn(`Error getting pane size for pane ${i}:`, error)
+              offset += 200 // Default pane height
+            }
+          }
+          return offset
+        }
+        
+        const offsetY = getPaneOffsetY(chart, paneId)
+        
+        // Use the dimensions from the new approach
+        const priceScaleWidth = priceScalePositionAndSize.width
+        const timeAxisHeight = timeScalePositionAndSize.height
+        
+        // Calculate the actual pane content area
+        const paneContentHeight = paneHeight - timeAxisHeight
+        
+        // Calculate position relative to the chart container
+        const legendTop = offsetY + paneMargin
+        const legendLeft = paneMargin + priceScaleWidth // Account for price scale width
+        
+        // Cast to HTMLElement to access style property
+        const legendElement = legendContainer as HTMLElement
+        
+        // Update legend position
+        switch (position) {
+          case 'top-left':
+            legendElement.style.top = `${legendTop}px`
+            legendElement.style.left = `${legendLeft}px`
+            legendElement.style.right = 'auto'
+            break
+          case 'top-right':
+            legendElement.style.top = `${legendTop}px`
+            legendElement.style.left = 'auto'
+            legendElement.style.right = `${paneMargin + priceScaleWidth}px`
+            break
+          case 'bottom-left':
+            legendElement.style.top = `${legendTop + paneContentHeight - 80}px`
+            legendElement.style.left = `${legendLeft}px`
+            legendElement.style.right = 'auto'
+            break
+          case 'bottom-right':
+            legendElement.style.top = `${legendTop + paneContentHeight - 80}px`
+            legendElement.style.left = 'auto'
+            legendElement.style.right = `${paneMargin + priceScaleWidth}px`
+            break
+        }
+      })
+    } catch (error) {
+      console.warn('Error getting chart dimensions for legend positioning:', error)
+    }
+  }, [])
+
+  const addLegend = useCallback(async (chart: IChartApi, legendConfig: LegendConfig, seriesList: ISeriesApi<any>[]) => {
     console.log("🎯 [addLegend] Starting legend creation with config:", legendConfig)
     console.log("🎯 [addLegend] Series list length:", seriesList.length)
-    if (!legendConfig.visible || seriesList.length === 0) {
+    
+    // Check if component is being disposed
+    if (isDisposingRef.current) {
+      console.warn('Component is being disposed, skipping legend creation')
+      return
+    }
+    
+    // Check if chart is valid and not disposed
+    if (!chart || !legendConfig.visible || seriesList.length === 0) {
+      return
+    }
+    
+    try {
+      // Quick check if chart is still valid
+      chart.chartElement()
+    } catch (error) {
+      console.warn('Chart is disposed, skipping legend creation')
+      return
+    }
+
+    // Get chart dimensions using the new requestAnimationFrame approach
+    let container: HTMLElement | null = null
+    
+    try {
+      // Try to get the chart element first
+      const chartElement = chart.chartElement()
+      if (chartElement) {
+        container = chartElement.parentElement
+      }
+      
+      // If still no container, try to find it by looking up the DOM tree
+      if (!container && chartElement) {
+        let currentElement: HTMLElement | null = chartElement
+        while (currentElement && !container) {
+          currentElement = currentElement.parentElement
+          if (currentElement && currentElement.style && currentElement.style.width) {
+            container = currentElement
+          }
+        }
+      }
+      
+      // Final fallback - try to find any container with width/height
+      if (!container && chartElement) {
+        let currentElement: HTMLElement | null = chartElement
+        while (currentElement && !container) {
+          currentElement = currentElement.parentElement
+          if (currentElement && (currentElement.offsetWidth > 0 || currentElement.clientWidth > 0)) {
+            container = currentElement
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Error accessing chart element:', error)
+    }
+    
+    if (!container) {
+      console.warn('Could not find chart container for legend creation')
+      return
+    }
+
+    let chartDimensions: any
+    try {
+      // Get the first series as the main series for dimension calculation
+      const mainSeries = seriesList.length > 0 ? seriesList[0] : undefined
+      chartDimensions = await getChartDimensions(chart, container, mainSeries)
+    } catch (error) {
+      console.warn('Error getting chart dimensions for legend creation:', error)
       return
     }
 
@@ -1127,42 +1355,78 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                     `
 
                   // Position the legend within the specific pane area
-            const position = legendConfig.position || 'top-right'
-            const paneMargin = 12 // Use TradingView's margin
+                  const position = legendConfig.position || 'top-right'
+      const paneMargin = 20 // Increased margin for better visual spacing
             
-            // Calculate pane boundaries using the chart's layout
-            const chartElement = chart.chartElement()
-            const chartRect = chartElement.getBoundingClientRect()
-            const chartHeight = chartRect.height
-            
-            // Use the actual relative factors from Python: [3.0, 1.5, 1.0] / 5.5
-            const paneHeights = [3.0/5.5, 1.5/5.5, 1.0/5.5] // Exact relative heights from Python config
-            let paneTopOffset = 0
-            
-            // Calculate the top offset for this pane
-            for (let i = 0; i < paneId; i++) {
-              paneTopOffset += paneHeights[i] * chartHeight
+            // Get pane dimensions for the pane on which the legend is on
+            let paneHeight: number
+            try {
+              const paneSize = chart.paneSize(paneId)
+              if (!paneSize || typeof paneSize.height !== 'number') {
+                console.warn(`Could not get pane size for pane ${paneId}, using default`)
+                paneHeight = 200 // Default pane height
+              } else {
+                paneHeight = paneSize.height
+              }
+            } catch (error) {
+              console.warn(`Error getting pane size for pane ${paneId}:`, error)
+              paneHeight = 200 // Default pane height
             }
             
-            const paneHeight = paneHeights[paneId] * chartHeight
+            // Get the vertical offset of the pane
+            function getPaneOffsetY(chart: IChartApi, paneIndex: number) {
+              let offset = 0
+              for (let i = 0; i < paneIndex; i++) {
+                try {
+                  const paneSize = chart.paneSize(i)
+                  if (paneSize && typeof paneSize.height === 'number') {
+                    offset += paneSize.height
+                  } else {
+                    console.warn(`Could not get pane size for pane ${i}, using default offset`)
+                    offset += 200 // Default pane height
+                  }
+                } catch (error) {
+                  console.warn(`Error getting pane size for pane ${i}:`, error)
+                  offset += 200 // Default pane height
+                }
+              }
+              return offset
+            }
+            
+            const offsetY = getPaneOffsetY(chart, paneId)
+            
+            // Use the dimensions from the new approach
+            const priceScaleWidth = chartDimensions.priceScalePositionAndSize.width
+            const timeAxisHeight = chartDimensions.timeScalePositionAndSize.height
+            
+            // Calculate the actual pane content area
+            const paneContentHeight = paneHeight - timeAxisHeight
+            
+            // Calculate position relative to the chart container
+            const legendTop = offsetY + paneMargin  // Add margin from top of pane
+            const legendLeft = paneMargin + priceScaleWidth // Account for price scale width
             
             // Position legend within the calculated pane boundaries
             switch (position) {
               case 'top-left':
-                legendContainer.style.top = `${paneTopOffset + paneMargin}px`
-                legendContainer.style.left = `${paneMargin}px`
+                legendContainer.style.top = `${legendTop}px`
+                legendContainer.style.left = `${legendLeft}px`
+                legendContainer.style.right = 'auto'
                 break
               case 'top-right':
-                legendContainer.style.top = `${paneTopOffset + paneMargin}px`
-                legendContainer.style.right = `${paneMargin}px`
+                legendContainer.style.top = `${legendTop}px`
+                legendContainer.style.left = 'auto'
+                legendContainer.style.right = `${paneMargin + priceScaleWidth}px`
                 break
               case 'bottom-left':
-                legendContainer.style.top = `${paneTopOffset + paneHeight - 80}px` // Fixed height for legend
-                legendContainer.style.left = `${paneMargin}px`
+                legendContainer.style.top = `${legendTop + paneContentHeight - 80}px` // Fixed height for legend
+                legendContainer.style.left = `${legendLeft}px`
+                legendContainer.style.right = 'auto'
                 break
               case 'bottom-right':
-                legendContainer.style.top = `${paneTopOffset + paneHeight - 80}px` // Fixed height for legend
-                legendContainer.style.right = `${paneMargin}px`
+                legendContainer.style.top = `${legendTop + paneContentHeight - 80}px` // Fixed height for legend
+                legendContainer.style.left = 'auto'
+                legendContainer.style.right = `${paneMargin + priceScaleWidth}px`
                 break
             }
 
@@ -1522,6 +1786,20 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           // Add legend after a short delay to ensure chart is fully initialized
           setTimeout(() => {
             addLegend(chart, chartConfig.chart.legend, seriesList)
+            
+            // Add resize listener to update legend positions when pane heights change
+            const resizeObserver = new ResizeObserver(() => {
+              updateLegendPositions(chart, chartConfig.chart.legend)
+            })
+            
+            // Observe the chart element for size changes
+            const chartElement = chart.chartElement()
+            if (chartElement) {
+              resizeObserver.observe(chartElement)
+            }
+            
+            // Store the resize observer for cleanup
+            legendResizeObserverRefs.current[chartId] = resizeObserver
           }, 100)
         }
 
@@ -1560,7 +1838,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     isInitializedRef.current = true
-  }, [config, cleanupCharts, createSeries, addTradeVisualization, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanLineStyleOptions, width, height])
+  }, [config, createSeries, addTradeVisualization, addTradeVisualizationWhenReady, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanLineStyleOptions, width, height])
 
   useEffect(() => {
     // Initialize charts when component mounts
