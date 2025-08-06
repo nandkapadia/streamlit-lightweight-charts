@@ -1,24 +1,29 @@
 import React, { useEffect, useRef, useCallback } from 'react'
-import { 
-  createChart, 
-  IChartApi, 
-  ISeriesApi, 
-  AreaSeries,
-  LineSeries,
-  BarSeries,
-  CandlestickSeries,
-  HistogramSeries,
-  BaselineSeries,
+import {
+  createChart,
+  IChartApi,
+  ISeriesApi,
   createSeriesMarkers,
-  LineStyle
 } from 'lightweight-charts'
-import { ComponentConfig, ChartConfig, SeriesConfig, TradeConfig, TradeVisualizationOptions, Annotation, AnnotationLayer, LegendConfig, SyncConfig, PaneHeightOptions } from './types'
+import {
+  ComponentConfig,
+  ChartConfig,
+  SeriesConfig,
+  TradeConfig,
+  TradeVisualizationOptions,
+  Annotation,
+  AnnotationLayer,
+  LegendConfig,
+  SyncConfig,
+  PaneHeightOptions,
+} from './types'
 import { createTradeVisualElements } from './tradeVisualization'
 import { RectangleOverlayPlugin } from './rectanglePlugin'
 import { createAnnotationVisualElements } from './annotationSystem'
-import { createBandSeries, BandData } from './bandSeriesPlugin'
-import { createSignalSeriesPlugin, SignalSeries } from './signalSeriesPlugin'
+import { SignalSeries } from './signalSeriesPlugin'
 import { getChartDimensions } from './utils/chartDimensions'
+import { cleanLineStyleOptions } from './utils/lineStyle'
+import { createSeries } from './utils/seriesFactory'
 
 interface LightweightChartsProps {
   config: ComponentConfig
@@ -38,86 +43,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const isDisposingRef = useRef<boolean>(false)
   const fitContentTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Utility function to validate and convert line styles
-  const validateLineStyle = (lineStyle: any): LineStyle | undefined => {
-    if (!lineStyle) return undefined
-    
-    // If it's already a valid LineStyle enum value, return it
-    if (typeof lineStyle === 'number' && Object.values(LineStyle).includes(lineStyle)) {
-      return lineStyle
-    }
-    
-    // If it's a string, try to convert it
-    if (typeof lineStyle === 'string') {
-      const styleMap: { [key: string]: LineStyle } = {
-        'solid': LineStyle.Solid,
-        'dotted': LineStyle.Dotted,
-        'dashed': LineStyle.Dashed,
-        'large-dashed': LineStyle.LargeDashed,
-        'sparse-dotted': LineStyle.SparseDotted
-      }
-      return styleMap[lineStyle.toLowerCase()]
-    }
-    
-    // If it's an array (for custom dash patterns), validate it
-    if (Array.isArray(lineStyle)) {
-      // Ensure all values are numbers
-      if (lineStyle.every(val => typeof val === 'number' && val >= 0)) {
-        // For custom dash patterns, we need to handle this differently
-        // as LineStyle enum doesn't support custom arrays
-        return LineStyle.Solid
-      }
-    }
-    
-    // Invalid line style, return undefined to use default
-    return undefined
-  }
-
-  // Utility function to clean up line style options
-  const cleanLineStyleOptions = useCallback((options: any): any => {
-    if (!options) return options
-    
-    const cleaned = { ...options }
-    
-    // Clean lineStyle property
-    if (cleaned.lineStyle !== undefined) {
-      const validLineStyle = validateLineStyle(cleaned.lineStyle)
-      if (validLineStyle !== undefined) {
-        cleaned.lineStyle = validLineStyle
-      } else {
-        delete cleaned.lineStyle
-      }
-    }
-    
-    // Clean other style properties that might cause issues
-    if (cleaned.style && typeof cleaned.style === 'object') {
-      cleaned.style = cleanLineStyleOptions(cleaned.style)
-    }
-    
-    // Clean nested line objects (for band series)
-    if (cleaned.upperLine && typeof cleaned.upperLine === 'object') {
-      cleaned.upperLine = cleanLineStyleOptions(cleaned.upperLine)
-    }
-    if (cleaned.middleLine && typeof cleaned.middleLine === 'object') {
-      cleaned.middleLine = cleanLineStyleOptions(cleaned.middleLine)
-    }
-    if (cleaned.lowerLine && typeof cleaned.lowerLine === 'object') {
-      cleaned.lowerLine = cleanLineStyleOptions(cleaned.lowerLine)
-    }
-    
-    // Recursively clean any other nested objects
-    for (const key in cleaned) {
-      if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
-        cleaned[key] = cleanLineStyleOptions(cleaned[key])
-      }
-    }
-    
-    return cleaned
-  }, [])
-
-
-
-  // Function to get container dimensions
+    // Function to get container dimensions
   const getContainerDimensions = (container: HTMLElement) => {
     const rect = container.getBoundingClientRect()
     return {
@@ -343,410 +269,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   }, [])
 
-  // Create series function
-  const createSeries = useCallback((chart: IChartApi, seriesConfig: SeriesConfig, chartId?: string, seriesIndex?: number): ISeriesApi<any> | null => {
-    
-    const { 
-      type, 
-      data, 
-      options = {}, 
-      priceScale, 
-      paneId, 
-      lastValueVisible: topLevelLastValueVisible, 
-      lastPriceAnimation,
-      priceLineVisible: topLevelPriceLineVisible,
-      priceLineSource: topLevelPriceLineSource,
-      priceLineWidth: topLevelPriceLineWidth,
-      priceLineColor: topLevelPriceLineColor,
-      priceLineStyle: topLevelPriceLineStyle,
-      priceScaleId: topLevelPriceScaleId
-    } = seriesConfig
-
-
-    
-
-
-    
-    // Check both top-level and options for lastValueVisible
-    const lastValueVisible = topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible
-    
-    // Check both top-level and options for price line properties
-    const priceLineVisible = topLevelPriceLineVisible !== undefined ? topLevelPriceLineVisible : options.priceLineVisible
-    const priceLineSource = topLevelPriceLineSource !== undefined ? topLevelPriceLineSource : options.priceLineSource
-    const priceLineWidth = topLevelPriceLineWidth !== undefined ? topLevelPriceLineWidth : options.priceLineWidth
-    const priceLineColor = topLevelPriceLineColor !== undefined ? topLevelPriceLineColor : options.priceLineColor
-    const priceLineStyle = topLevelPriceLineStyle !== undefined ? topLevelPriceLineStyle : options.priceLineStyle
-    
-    // Check both top-level and options for priceScaleId
-    const priceScaleId = topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId
-    
-
-    
-
-
-    let series: ISeriesApi<any>
-    
-    // Normalize series type to handle case variations
-    const normalizedType = type?.toLowerCase()
-
-    // Extract priceFormat from options and clean line styles
-    const { priceFormat, ...otherOptions } = options
-    const cleanedOptions = cleanLineStyleOptions(otherOptions)
-
-    switch (normalizedType) {
-      case 'area':
-        const areaOptions = {
-          ...cleanedOptions,
-          lineColor: cleanedOptions.lineColor || '#2196F3',
-          topColor: cleanedOptions.topColor || 'rgba(33, 150, 243, 0.4)',
-          bottomColor: cleanedOptions.bottomColor || 'rgba(33, 150, 243, 0.0)',
-          lineWidth: cleanedOptions.lineWidth || 2,
-          relativeGradient: cleanedOptions.relativeGradient || false,
-          invertFilledArea: cleanedOptions.invertFilledArea || false,
-          priceScaleId: priceScaleId || '',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-        if (priceFormat) {
-          areaOptions.priceFormat = priceFormat
-        }
-
-        series = chart.addSeries(AreaSeries, areaOptions, paneId)
-        
-        // Try to apply lastValueVisible after series creation as a fallback
-        try {
-          if (lastValueVisible === false) {
-            series.applyOptions({ lastValueVisible: false })
-          }
-        } catch (error) {
-          // Failed to apply lastValueVisible after area series creation
-        }
-        break
-      case 'band':
-        try {
-          // Create band series using the custom plugin
-          const bandSeriesOptions = {
-            upperLine: cleanedOptions.upperLine || {
-              color: '#4CAF50',
-              lineStyle: 0,
-              lineWidth: 2,
-              lineVisible: true,
-            },
-            middleLine: cleanedOptions.middleLine || {
-              color: '#2196F3',
-              lineStyle: 0,
-              lineWidth: 2,
-              lineVisible: true,
-            },
-            lowerLine: cleanedOptions.lowerLine || {
-              color: '#F44336',
-              lineStyle: 0,
-              lineWidth: 2,
-              lineVisible: true,
-            },
-            upperFillColor: cleanedOptions.upperFillColor || 'rgba(76, 175, 80, 0.1)',
-            lowerFillColor: cleanedOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
-            priceScaleId: priceScaleId || 'right',
-            visible: cleanedOptions.visible !== false,
-            lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-            priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-            priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-            priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-            priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-            priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-          }
-          const bandSeries = createBandSeries(chart, bandSeriesOptions)
-          
-          // Set data for band series
-          if (data && data.length > 0) {
-            bandSeries.setData(data as BandData[])
-          }
-          
-          // Return a proxy object that mimics ISeriesApi interface
-          return {
-            setData: (newData: any[]) => {
-              try {
-                bandSeries.setData(newData as BandData[])
-              } catch (error) {
-                // Series is disposed or invalid - ignore error
-              }
-            },
-            update: (newData: any) => {
-              try {
-                bandSeries.update(newData as BandData)
-              } catch (error) {
-                // Series is disposed or invalid - ignore error
-              }
-            },
-            applyOptions: (options: any) => {
-              try {
-                bandSeries.setOptions(cleanLineStyleOptions(options))
-              } catch (error) {
-                // Series is disposed or invalid - ignore error
-              }
-            },
-            priceScale: () => {
-              try {
-                return chart.priceScale(priceScaleId || 'right')
-              } catch (error) {
-                return null
-              }
-            },
-            remove: () => {
-              try {
-                bandSeries.remove()
-              } catch (error) {
-                // Series is already removed - ignore error
-              }
-            },
-          } as unknown as ISeriesApi<any>
-        } catch (error) {
-          // Failed to create band series - return null
-          return null
-        }
-      case 'signal':
-        try {
-          
-          // Create signal series using the custom plugin
-          const signalSeries = createSignalSeriesPlugin(chart, {
-            type: 'signal',
-            data: data || [],
-            options: {
-              neutralColor: cleanedOptions.neutralColor || '#f0f0f0',
-              signalColor: cleanedOptions.signalColor || '#ff0000',
-              alertColor: cleanedOptions.alertColor,
-              visible: cleanedOptions.visible !== false,
-            },
-            paneId: paneId
-          })
-          
-          // Store reference for cleanup
-          signalPluginRefs.current[`${chartId}-${seriesIndex}`] = signalSeries
-          
-          // Return a proxy object that mimics ISeriesApi interface
-          return {
-            setData: (newData: any[]) => {
-              try {
-                signalSeries.updateData(newData)
-              } catch (error) {
-                console.error('Signal series setData failed:', error)
-              }
-            },
-            update: (newData: any) => {
-              try {
-                // For signal series, we need to update the entire dataset
-                signalSeries.updateData([newData])
-              } catch (error) {
-                console.error('Signal series update failed:', error)
-              }
-            },
-            applyOptions: (options: any) => {
-              try {
-                signalSeries.updateOptions({
-                  neutralColor: options.neutralColor || '#f0f0f0',
-                  signalColor: options.signalColor || '#ff0000',
-                  alertColor: options.alertColor,
-                  visible: options.visible !== false,
-                })
-              } catch (error) {
-                console.error('Signal series applyOptions failed:', error)
-              }
-            },
-            priceScale: () => {
-              try {
-                return chart.priceScale(priceScaleId || 'right')
-              } catch (error) {
-                return null
-              }
-            },
-            remove: () => {
-              try {
-                signalSeries.destroy()
-                delete signalPluginRefs.current[`${chartId}-${seriesIndex}`]
-              } catch (error) {
-                console.error('Signal series remove failed:', error)
-              }
-            },
-          } as unknown as ISeriesApi<any>
-        } catch (error) {
-          console.error('🔍 [SIGNAL_DEBUG] Failed to create signal series:', error)
-          return null
-        }
-      case 'baseline':
-        const baselineOptions = {
-          ...cleanedOptions,
-          baseValue: cleanedOptions.baseValue || { price: 0 },
-          topLineColor: cleanedOptions.topLineColor || 'rgba(76, 175, 80, 0.4)',
-          topFillColor1: cleanedOptions.topFillColor1 || 'rgba(76, 175, 80, 0.0)',
-          topFillColor2: cleanedOptions.topFillColor2 || 'rgba(76, 175, 80, 0.4)',
-          bottomLineColor: cleanedOptions.bottomLineColor || 'rgba(255, 82, 82, 0.4)',
-          bottomFillColor1: cleanedOptions.bottomFillColor1 || 'rgba(255, 82, 82, 0.4)',
-          bottomFillColor2: cleanedOptions.bottomFillColor2 || 'rgba(255, 82, 82, 0.0)',
-          lineWidth: cleanedOptions.lineWidth || 2,
-          priceScaleId: priceScaleId || '',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-        if (priceFormat) {
-          baselineOptions.priceFormat = priceFormat
-        }
-
-        series = chart.addSeries(BaselineSeries, baselineOptions, paneId)
-        break
-      case 'histogram':
-        const histogramOptions = {
-          ...cleanedOptions,
-          priceFormat: priceFormat || {
-            type: 'volume',
-          },
-          priceScaleId: priceScaleId || '',
-          scaleMargins: cleanedOptions.scaleMargins || {
-            top: 0.75,
-            bottom: 0,
-          },
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          color: cleanedOptions.color || '#2196F3',
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-
-        series = chart.addSeries(HistogramSeries, histogramOptions, paneId)
-        break
-      case 'line':
-        // Handle LineOptions if provided, otherwise use individual properties
-        const lineOptionsConfig = seriesConfig.lineOptions || {}
-        const lineOptions = {
-          ...cleanedOptions,
-          color: lineOptionsConfig.color || cleanedOptions.color || '#2196F3',
-          lineWidth: lineOptionsConfig.lineWidth || cleanedOptions.lineWidth || 2,
-          lineStyle: lineOptionsConfig.lineStyle || cleanedOptions.lineStyle || 0, // LineStyle.Solid
-          lineType: lineOptionsConfig.lineType || cleanedOptions.lineType || 0, // LineType.Simple
-          lineVisible: lineOptionsConfig.lineVisible !== false && cleanedOptions.lineVisible !== false, // Default true
-          pointMarkersVisible: lineOptionsConfig.pointMarkersVisible || cleanedOptions.pointMarkersVisible || false,
-          pointMarkersRadius: lineOptionsConfig.pointMarkersRadius || cleanedOptions.pointMarkersRadius,
-          crosshairMarkerVisible: lineOptionsConfig.crosshairMarkerVisible !== false && cleanedOptions.crosshairMarkerVisible !== false, // Default true
-          crosshairMarkerRadius: lineOptionsConfig.crosshairMarkerRadius || cleanedOptions.crosshairMarkerRadius || 4,
-          crosshairMarkerBorderColor: lineOptionsConfig.crosshairMarkerBorderColor || cleanedOptions.crosshairMarkerBorderColor || '',
-          crosshairMarkerBackgroundColor: lineOptionsConfig.crosshairMarkerBackgroundColor || cleanedOptions.crosshairMarkerBackgroundColor || '',
-          crosshairMarkerBorderWidth: lineOptionsConfig.crosshairMarkerBorderWidth || cleanedOptions.crosshairMarkerBorderWidth || 2,
-          priceScaleId: priceScaleId || '',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          lastPriceAnimation: lastPriceAnimation !== undefined ? lastPriceAnimation : 0,
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-        if (priceFormat) {
-          lineOptions.priceFormat = priceFormat
-        }
-
-        series = chart.addSeries(LineSeries, lineOptions, paneId)
-        
-        // Try to apply lastValueVisible after series creation as a fallback
-        try {
-          if (lastValueVisible === false) {
-            series.applyOptions({ lastValueVisible: false })
-          }
-        } catch (error) {
-          console.warn(`❌ Failed to apply lastValueVisible after series creation:`, error)
-        }
-        break
-      case 'bar':
-        const barOptions = {
-          ...cleanedOptions,
-          upColor: cleanedOptions.upColor || '#4CAF50',
-          downColor: cleanedOptions.downColor || '#F44336',
-          borderVisible: cleanedOptions.borderVisible !== false,
-          wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
-          wickDownColor: cleanedOptions.wickDownColor || '#F44336',
-          priceScaleId: priceScaleId || '',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-        if (priceFormat) {
-          barOptions.priceFormat = priceFormat
-        }
-
-        series = chart.addSeries(BarSeries, barOptions, paneId)
-        break
-      case 'candlestick':
-        const candlestickOptions = {
-          ...cleanedOptions,
-          upColor: cleanedOptions.upColor || '#4CAF50',
-          downColor: cleanedOptions.downColor || '#F44336',
-          borderVisible: cleanedOptions.borderVisible !== false,
-          wickUpColor: cleanedOptions.wickUpColor || '#4CAF50',
-          wickDownColor: cleanedOptions.wickDownColor || '#F44336',
-          priceScaleId: priceScaleId || '',
-          lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
-          priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
-          priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
-          priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
-          priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
-        }
-        if (priceFormat) {
-          candlestickOptions.priceFormat = priceFormat
-        }
-
-        series = chart.addSeries(CandlestickSeries, candlestickOptions, paneId)
-        break
-      default:
-        // Unknown series type - handled silently in production
-        return null
-    }
-
-    // Set price scale if specified
-    if (priceScale) {
-      series.priceScale().applyOptions(cleanLineStyleOptions(priceScale))
-    }
-
-    // Set data
-    if (data && data.length > 0) {
-      series.setData(data)
-    }
-
-    // Add price lines attached to this series
-    if (seriesConfig.priceLines && Array.isArray(seriesConfig.priceLines)) {
-      seriesConfig.priceLines.forEach((priceLine: any, index: number) => {
-        try {
-          series.createPriceLine(priceLine)
-        } catch (error) {
-          console.warn(`❌ Failed to create price line ${index + 1} for series:`, error)
-        }
-      })
-    }
-
-    // Add markers attached to this series
-    if (seriesConfig.markers && Array.isArray(seriesConfig.markers)) {
-      try {
-        // Use createSeriesMarkers as per TradingView documentation
-        createSeriesMarkers(series, seriesConfig.markers)
-      } catch (error) {
-        console.warn('❌ Failed to create markers for series:', error)
-      }
-    }
-
-    return series
-  }, [cleanLineStyleOptions])
 
   const addTradeVisualization = useCallback(async (chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
     if (!trades || trades.length === 0) {
@@ -1686,7 +1208,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 return
               }
 
-              const series = createSeries(chart, seriesConfig, chartId, seriesIndex)
+                const series = createSeries(chart, seriesConfig, { signalPluginRefs }, chartId, seriesIndex)
               if (series) {
                 seriesList.push(series)
                 
@@ -1838,7 +1360,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     isInitializedRef.current = true
-  }, [config, createSeries, addTradeVisualization, addTradeVisualizationWhenReady, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanLineStyleOptions, width, height])
+  }, [config, createSeries, addTradeVisualization, addTradeVisualizationWhenReady, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, width, height])
 
   useEffect(() => {
     // Initialize charts when component mounts
