@@ -641,7 +641,9 @@ class TestChartRendering:
         mock_component.assert_called_once()
         call_args = mock_component.call_args
         assert "config" in call_args.kwargs
-        assert "key" not in call_args.kwargs
+        assert "key" in call_args.kwargs
+        # When no key is provided, a unique key should be generated
+        assert call_args.kwargs["key"].startswith("chart_")
 
 
 class TestChartMethodChaining:

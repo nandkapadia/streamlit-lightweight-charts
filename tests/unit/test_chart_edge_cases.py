@@ -593,10 +593,11 @@ class TestChartRenderingEdgeCases:
 
         chart.render(key=None)
 
-        # Should call component without key parameter
+        # Should call component with generated key parameter
         mock_component.assert_called_once()
         call_args = mock_component.call_args[1]
-        assert "key" not in call_args
+        assert "key" in call_args
+        assert call_args["key"].startswith("chart_")
 
     @patch("streamlit_lightweight_charts_pro.charts.chart.get_component_func")
     def test_render_with_empty_key(self, mock_get_component_func):
@@ -607,10 +608,11 @@ class TestChartRenderingEdgeCases:
 
         chart.render(key="")
 
-        # Should call component without key parameter
+        # Should call component with generated key parameter
         mock_component.assert_called_once()
         call_args = mock_component.call_args[1]
-        assert "key" not in call_args
+        assert "key" in call_args
+        assert call_args["key"].startswith("chart_")
 
     @patch("streamlit_lightweight_charts_pro.charts.chart.get_component_func")
     def test_render_with_invalid_key_type(self, mock_get_component_func):
@@ -621,8 +623,11 @@ class TestChartRenderingEdgeCases:
 
         chart.render(key=123)  # Integer key
 
-        # Should handle invalid key type gracefully
+        # Should handle invalid key type gracefully by generating a new key
         mock_component.assert_called_once()
+        call_args = mock_component.call_args[1]
+        assert "key" in call_args
+        assert call_args["key"].startswith("chart_")
 
     @patch("streamlit_lightweight_charts_pro.charts.chart.get_component_func")
     def test_render_with_component_func_error(self, mock_get_component_func):
