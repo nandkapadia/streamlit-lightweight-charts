@@ -249,7 +249,7 @@ export class RectangleOverlayPlugin {
       if (!this.chart || !this.canvas || !this.series) return null;
 
       // Get chart dimensions using the new requestAnimationFrame approach
-      const chartDimensions = await this.getChartDimensions();
+      await this.getChartDimensions();
       
       // Get the chart's drawing area bounds
       const timeScale = this.chart.timeScale();

@@ -273,11 +273,27 @@ export function createSeries(
       break;
     }
     case 'line': {
+      // Process lineOptions if provided
+      const lineSpecificOptions = seriesConfig.lineOptions || {};
+      
       const lineOptions: any = {
         ...cleanedOptions,
-        color: cleanedOptions.color || '#FF9800',
+        // Apply line-specific options from lineOptions object
+        lineStyle: lineSpecificOptions.lineStyle !== undefined ? lineSpecificOptions.lineStyle : cleanedOptions.lineStyle,
+        lineType: lineSpecificOptions.lineType !== undefined ? lineSpecificOptions.lineType : cleanedOptions.lineType,
+        lineVisible: lineSpecificOptions.lineVisible !== undefined ? lineSpecificOptions.lineVisible : cleanedOptions.lineVisible,
+        pointMarkersVisible: lineSpecificOptions.pointMarkersVisible !== undefined ? lineSpecificOptions.pointMarkersVisible : cleanedOptions.pointMarkersVisible,
+        pointMarkersRadius: lineSpecificOptions.pointMarkersRadius !== undefined ? lineSpecificOptions.pointMarkersRadius : cleanedOptions.pointMarkersRadius,
+        crosshairMarkerVisible: lineSpecificOptions.crosshairMarkerVisible !== undefined ? lineSpecificOptions.crosshairMarkerVisible : cleanedOptions.crosshairMarkerVisible,
+        crosshairMarkerRadius: lineSpecificOptions.crosshairMarkerRadius !== undefined ? lineSpecificOptions.crosshairMarkerRadius : cleanedOptions.crosshairMarkerRadius,
+        crosshairMarkerBorderColor: lineSpecificOptions.crosshairMarkerBorderColor !== undefined ? lineSpecificOptions.crosshairMarkerBorderColor : cleanedOptions.crosshairMarkerBorderColor,
+        crosshairMarkerBackgroundColor: lineSpecificOptions.crosshairMarkerBackgroundColor !== undefined ? lineSpecificOptions.crosshairMarkerBackgroundColor : cleanedOptions.crosshairMarkerBackgroundColor,
+        crosshairMarkerBorderWidth: lineSpecificOptions.crosshairMarkerBorderWidth !== undefined ? lineSpecificOptions.crosshairMarkerBorderWidth : cleanedOptions.crosshairMarkerBorderWidth,
+        lastPriceAnimation: lineSpecificOptions.lastPriceAnimation !== undefined ? lineSpecificOptions.lastPriceAnimation : lastPriceAnimation,
+        // Default values
+        color: cleanedOptions.color || '#2196F3', // Restore original default color
         lineWidth: cleanedOptions.lineWidth || 2,
-        crossHairMarkerVisible: cleanedOptions.crossHairMarkerVisible || true,
+        crossHairMarkerVisible: lineSpecificOptions.crosshairMarkerVisible !== undefined ? lineSpecificOptions.crosshairMarkerVisible : (cleanedOptions.crossHairMarkerVisible !== undefined ? cleanedOptions.crossHairMarkerVisible : true),
         priceScaleId: priceScaleId || '',
         lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
         priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
@@ -290,6 +306,15 @@ export function createSeries(
         lineOptions.priceFormat = priceFormat;
       }
       series = chart.addSeries(LineSeries, lineOptions, paneId);
+      
+      // Apply lastValueVisible: false after series creation if needed
+      try {
+        if (lastValueVisible === false) {
+          series.applyOptions({ lastValueVisible: false });
+        }
+      } catch {
+        // ignore
+      }
       break;
     }
     case 'bar': {

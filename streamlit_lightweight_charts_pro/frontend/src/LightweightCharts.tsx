@@ -42,6 +42,39 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const isInitializedRef = useRef<boolean>(false)
   const isDisposingRef = useRef<boolean>(false)
   const fitContentTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const initializationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const prevConfigRef = useRef<ComponentConfig | null>(null)
+  const prevWidthRef = useRef<number | null>(null)
+  const prevHeightRef = useRef<number | null>(null)
+  
+  // Store function references to avoid dependency issues
+  const functionRefs = useRef<{
+    addTradeVisualization: any
+    addTradeVisualizationWhenReady: any
+    addAnnotations: any
+    addModularTooltip: any
+    addAnnotationLayers: any
+    addRangeSwitcher: any
+    addLegend: any
+    updateLegendPositions: any
+    setupAutoSizing: any
+    setupChartSynchronization: any
+    setupFitContent: any
+    cleanupCharts: any
+  }>({
+    addTradeVisualization: null,
+    addTradeVisualizationWhenReady: null,
+    addAnnotations: null,
+    addModularTooltip: null,
+    addAnnotationLayers: null,
+    addRangeSwitcher: null,
+    addLegend: null,
+    updateLegendPositions: null,
+    setupAutoSizing: null,
+    setupChartSynchronization: null,
+    setupFitContent: null,
+    cleanupCharts: null
+  })
 
     // Function to get container dimensions
   const getContainerDimensions = (container: HTMLElement) => {
@@ -161,14 +194,14 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
             timeScale.fitContent()
             
             // Add trade visualization when chart is ready
-            await addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
+            await functionRefs.current.addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
           } else {
             // If no visible range, try again after a short delay
             setTimeout(async () => {
               try {
                 timeScale.fitContent()
                 // Add trade visualization when chart is ready
-                await addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
+                await functionRefs.current.addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
               } catch (error) {
                 // fitContent after delay failed
               }
@@ -216,18 +249,33 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
 
   // Cleanup function
   const cleanupCharts = useCallback(() => {
+    console.log("🧹 [cleanupCharts] Starting cleanup, setting disposal flag")
     // Set disposing flag to prevent async operations
-    isDisposingRef.current = true
+    // But don't set it if this is the initial render
+    if (prevConfigRef.current !== null) {
+      isDisposingRef.current = true
+    } else {
+      console.log("🧹 [cleanupCharts] Skipping disposal flag for initial render")
+    }
     
     // Clear any pending timeouts
     if (fitContentTimeoutRef.current) {
       clearTimeout(fitContentTimeoutRef.current)
       fitContentTimeoutRef.current = null
     }
+    
+    if (initializationTimeoutRef.current) {
+      clearTimeout(initializationTimeoutRef.current)
+      initializationTimeoutRef.current = null
+    }
 
     // Disconnect resize observer
     if (resizeObserverRef.current) {
-      resizeObserverRef.current.disconnect()
+      try {
+        resizeObserverRef.current.disconnect()
+      } catch (error) {
+        // ResizeObserver already disconnected
+      }
       resizeObserverRef.current = null
     }
 
@@ -249,12 +297,16 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       }
     })
 
-    // Remove all charts
+    // Remove all charts with better error handling
     Object.values(chartRefs.current).forEach(chart => {
       try {
-        chart.remove()
+        // Check if chart is still valid before removing
+        if (chart && typeof chart.remove === 'function') {
+          chart.remove()
+        }
       } catch (error) {
         // Chart already removed or disposed
+        console.warn('Error removing chart during cleanup:', error)
       }
     })
 
@@ -266,6 +318,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     chartConfigs.current = {}
     legendResizeObserverRefs.current = {}
     
+    // Reset initialization flag
+    isInitializedRef.current = false
 
   }, [])
 
@@ -422,8 +476,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     
     // Add trade visualization now that chart is ready - use candlestick series data
     const candlestickSeriesData = chartConfig.series?.[candlestickSeriesIndex]?.data || chartConfig.series?.[0]?.data;
-    await addTradeVisualization(chart, candlestickSeries, chartConfig.trades, tradeOptions, candlestickSeriesData);
-  }, [addTradeVisualization])
+    await functionRefs.current.addTradeVisualization(chart, candlestickSeries, chartConfig.trades, tradeOptions, candlestickSeriesData);
+  }, [])
 
   const addAnnotations = useCallback((chart: IChartApi, annotations: Annotation[] | { layers: any }) => {
     // Handle annotation manager structure from Python side
@@ -548,13 +602,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         if (layer.visible !== false && layer.annotations) {
-          addAnnotations(chart, layer.annotations)
+          functionRefs.current.addAnnotations(chart, layer.annotations)
         }
       } catch (error) {
         console.warn(`Error processing layer at index ${index}:`, error, layer)
       }
     })
-  }, [addAnnotations])
+  }, [])
 
   const addModularTooltip = useCallback((chart: IChartApi, container: HTMLElement, seriesList: ISeriesApi<any>[], chartConfig: ChartConfig) => {
     
@@ -609,6 +663,20 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       chart.chartElement()
     } catch (error) {
       console.warn('Chart is disposed, skipping legend position update')
+      return
+    }
+    
+    // Additional safety check for chart validity
+    try {
+      chart.timeScale()
+    } catch (error) {
+      console.warn('Chart timeScale is disposed, skipping legend position update')
+      return
+    }
+    
+    // Additional check to prevent disposal during async operations
+    if (isDisposingRef.current) {
+      console.warn('Component disposal detected during legend position update, aborting')
       return
     }
     
@@ -749,6 +817,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   const addLegend = useCallback(async (chart: IChartApi, legendConfig: LegendConfig, seriesList: ISeriesApi<any>[]) => {
     console.log("🎯 [addLegend] Starting legend creation with config:", legendConfig)
     console.log("🎯 [addLegend] Series list length:", seriesList.length)
+    console.log("🎯 [addLegend] isDisposingRef.current:", isDisposingRef.current)
     
     // Check if component is being disposed
     if (isDisposingRef.current) {
@@ -766,6 +835,20 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       chart.chartElement()
     } catch (error) {
       console.warn('Chart is disposed, skipping legend creation')
+      return
+    }
+    
+    // Additional safety check for chart validity
+    try {
+      chart.timeScale()
+    } catch (error) {
+      console.warn('Chart timeScale is disposed, skipping legend creation')
+      return
+    }
+    
+    // Additional check to prevent disposal during async operations
+    if (isDisposingRef.current) {
+      console.warn('Component disposal detected during legend creation, aborting')
       return
     }
 
@@ -1087,9 +1170,39 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
   }, [])
 
   // Initialize charts
-  const initializeCharts = useCallback(() => {
-    // Clean up existing charts first
-    cleanupCharts()
+  const initializeCharts = useCallback((isInitialRender = false) => {
+    console.log("🚀 [initializeCharts] Starting initialization")
+    console.log("🚀 [initializeCharts] isInitializedRef.current:", isInitializedRef.current)
+    console.log("🚀 [initializeCharts] isDisposingRef.current:", isDisposingRef.current)
+    console.log("🚀 [initializeCharts] config.charts.length:", config.charts?.length)
+    console.log("🚀 [initializeCharts] isInitialRender:", isInitialRender)
+    console.log("🚀 [initializeCharts] About to create charts...")
+    
+    // Prevent re-initialization if already initialized and not disposing
+    if (isInitializedRef.current && !isDisposingRef.current) {
+      console.log('Charts already initialized, skipping re-initialization')
+      return
+    }
+    
+    // Additional check to prevent disposal during initialization (but allow initial render)
+    if (isDisposingRef.current && !isInitialRender) {
+      console.log('Component is being disposed, skipping initialization')
+      return
+    }
+    
+    // Check if we have charts to initialize
+    if (!config.charts || config.charts.length === 0) {
+      console.log('No charts to initialize')
+      return
+    }
+    
+    // Only clean up existing charts if this is not the initial render
+    if (!isInitialRender) {
+      console.log("🧹 [initializeCharts] Cleaning up existing charts (not initial render)")
+      cleanupCharts()
+    } else {
+      console.log("🧹 [initializeCharts] Skipping cleanup (initial render)")
+    }
 
     if (!config || !config.charts || config.charts.length === 0) {
       return
@@ -1102,25 +1215,60 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
       // Find or create container
       let container = document.getElementById(containerId)
       if (!container) {
+        console.log(`🔄 [initializeCharts] Container ${containerId} not found, creating it`)
         container = document.createElement('div')
         container.id = containerId
         container.style.width = '100%'
         container.style.height = '100%'
         
-        // Find the main chart container
-        const mainContainer = document.querySelector('[data-testid="stHorizontalBlock"]') || 
-                             document.querySelector('.stHorizontalBlock') ||
-                             document.body
-        mainContainer.appendChild(container)
-      }
-
-      // Create chart in container
-      try {
-        // Check if container is still valid
-        if (!container || !container.isConnected) {
-          console.warn(`Container ${containerId} is not connected to DOM, skipping chart creation`)
+        // Find the main chart container - try multiple selectors
+        let mainContainer = document.querySelector('[data-testid="stHorizontalBlock"]')
+        if (!mainContainer) {
+          mainContainer = document.querySelector('.stHorizontalBlock')
+        }
+        if (!mainContainer) {
+          mainContainer = document.querySelector('[data-testid="stVerticalBlock"]')
+        }
+        if (!mainContainer) {
+          mainContainer = document.querySelector('.stVerticalBlock')
+        }
+        if (!mainContainer) {
+          mainContainer = document.querySelector('[data-testid="stBlock"]')
+        }
+        if (!mainContainer) {
+          mainContainer = document.querySelector('.stBlock')
+        }
+        if (!mainContainer) {
+          mainContainer = document.body
+        }
+        
+        if (mainContainer) {
+          mainContainer.appendChild(container)
+          console.log(`🔄 [initializeCharts] Container ${containerId} created and appended to`, mainContainer.tagName, mainContainer.className)
+          
+          // Ensure container has proper dimensions
+          container.style.width = '100%'
+          container.style.height = '100%'
+          container.style.minHeight = '300px'
+          container.style.display = 'block'
+          container.style.position = 'relative'
+        } else {
+          console.error(`🔄 [initializeCharts] Could not find main container for ${containerId}`)
           return
         }
+      } else {
+        console.log(`🔄 [initializeCharts] Found existing container ${containerId}`)
+      }
+
+              // Create chart in container
+        try {
+          // Check if container is still valid
+          if (!container || !container.isConnected) {
+            console.warn(`Container ${containerId} is not connected to DOM, skipping chart creation`)
+            return
+          }
+
+
 
         // Create chart with proper width/height handling for auto-sizing
         const chartOptions = cleanLineStyleOptions({
@@ -1129,11 +1277,21 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
           ...chartConfig.chart
         })
 
+        console.log(`🔄 [initializeCharts] Creating chart for ${chartId} with options:`, {
+          width: chartOptions.width,
+          height: chartOptions.height,
+          containerDimensions: {
+            offsetWidth: container.offsetWidth,
+            offsetHeight: container.offsetHeight,
+            clientWidth: container.clientWidth,
+            clientHeight: container.clientHeight
+          }
+        })
+
         let chart: IChartApi
         try {
-  
           chart = createChart(container, chartOptions)
-
+          console.log(`🔄 [initializeCharts] Chart created successfully for ${chartId}`)
         } catch (chartError) {
           console.error(`Failed to create chart for ${chartId}:`, chartError)
           return
@@ -1231,12 +1389,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
                 
                 // Add trade visualization if configured
                 if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions) {
-                  addTradeVisualization(chart, series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
+                  functionRefs.current.addTradeVisualization(chart, series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
                 }
                 
                 // Add series-level annotations
                 if (seriesConfig.annotations) {
-                  addAnnotations(chart, seriesConfig.annotations)
+                  functionRefs.current.addAnnotations(chart, seriesConfig.annotations)
                 }
               } else {
                 console.warn(`Failed to create series at index ${seriesIndex} for chart ${chartId}`)
@@ -1273,19 +1431,19 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         }
 
         // Add modular tooltip system
-        addModularTooltip(chart, container, seriesList, chartConfig)
+        functionRefs.current.addModularTooltip(chart, container, seriesList, chartConfig)
 
         // Store chart config for trade visualization when chart is ready
         chartConfigs.current[chartId] = chartConfig
 
         // Add chart-level annotations
         if (chartConfig.annotations) {
-          addAnnotations(chart, chartConfig.annotations)
+          functionRefs.current.addAnnotations(chart, chartConfig.annotations)
         }
 
         // Add annotation layers
         if (chartConfig.annotationLayers) {
-          addAnnotationLayers(chart, chartConfig.annotationLayers)
+          functionRefs.current.addAnnotationLayers(chart, chartConfig.annotationLayers)
         }
 
         // Add price lines
@@ -1299,42 +1457,50 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
         if (chartConfig.chart?.rangeSwitcher && chartConfig.chart.rangeSwitcher.visible) {
           // Add range switcher after a short delay to ensure chart is fully initialized
           setTimeout(() => {
-            addRangeSwitcher(chart, chartConfig.chart.rangeSwitcher)
+            functionRefs.current.addRangeSwitcher(chart, chartConfig.chart.rangeSwitcher)
           }, 100)
         }
 
-        // Add legend if configured
+        // Store legend config for later creation
         if (chartConfig.chart?.legend && chartConfig.chart.legend.visible) {
-          // Add legend after a short delay to ensure chart is fully initialized
+          // Store the legend configuration and series list for later creation
           setTimeout(() => {
-            addLegend(chart, chartConfig.chart.legend, seriesList)
-            
-            // Add resize listener to update legend positions when pane heights change
-            const resizeObserver = new ResizeObserver(() => {
-              updateLegendPositions(chart, chartConfig.chart.legend)
-            })
-            
-            // Observe the chart element for size changes
-            const chartElement = chart.chartElement()
-            if (chartElement) {
-              resizeObserver.observe(chartElement)
+            if (!isDisposingRef.current && chartRefs.current[chartId]) {
+              try {
+                functionRefs.current.addLegend(chart, chartConfig.chart.legend, seriesList)
+                
+                // Add resize listener to update legend positions when pane heights change
+                const resizeObserver = new ResizeObserver(() => {
+                  if (!isDisposingRef.current) {
+                    functionRefs.current.updateLegendPositions(chart, chartConfig.chart.legend)
+                  }
+                })
+                
+                // Observe the chart element for size changes
+                const chartElement = chart.chartElement()
+                if (chartElement) {
+                  resizeObserver.observe(chartElement)
+                }
+                
+                // Store the resize observer for cleanup
+                legendResizeObserverRefs.current[chartId] = resizeObserver
+              } catch (error) {
+                console.warn('Error creating legend:', error)
+              }
             }
-            
-            // Store the resize observer for cleanup
-            legendResizeObserverRefs.current[chartId] = resizeObserver
-          }, 100)
+          }, 0) // Use 0 delay to execute immediately after current execution
         }
 
         // Setup auto-sizing for the chart
-        setupAutoSizing(chart, container, chartConfig)
+        functionRefs.current.setupAutoSizing(chart, container, chartConfig)
         
         // Setup chart synchronization if enabled
         if (config.syncConfig && config.syncConfig.enabled) {
-          setupChartSynchronization(chart, chartId, config.syncConfig)
+          functionRefs.current.setupChartSynchronization(chart, chartId, config.syncConfig)
         }
         
         // Setup fitContent functionality
-        setupFitContent(chart, chartConfig)
+        functionRefs.current.setupFitContent(chart, chartConfig)
 
         // Call fitContent after all series are created and data is loaded
         const shouldFitContentOnLoad = chartConfig.chart?.timeScale?.fitContentOnLoad !== false && 
@@ -1360,15 +1526,91 @@ const LightweightCharts: React.FC<LightweightChartsProps> = ({ config, height = 
     })
 
     isInitializedRef.current = true
-  }, [config, createSeries, addTradeVisualization, addTradeVisualizationWhenReady, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, addLegend, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, width, height])
+    console.log("🚀 [initializeCharts] Initialization completed successfully")
+    
+    // Small delay to ensure charts are rendered before any cleanup
+    setTimeout(() => {
+      console.log("🚀 [initializeCharts] Charts should now be visible")
+    }, 100)
+  }, [config, width, height])
+
+  // Update function references to avoid dependency issues
+  useEffect(() => {
+    functionRefs.current = {
+      addTradeVisualization,
+      addTradeVisualizationWhenReady,
+      addAnnotations,
+      addModularTooltip,
+      addAnnotationLayers,
+      addRangeSwitcher,
+      addLegend,
+      updateLegendPositions,
+      setupAutoSizing,
+      setupChartSynchronization,
+      setupFitContent,
+      cleanupCharts
+    }
+  })
 
   useEffect(() => {
-    // Initialize charts when component mounts
-    initializeCharts()
+    // Check if this is the initial render (no previous values)
+    const isInitialRender = prevConfigRef.current === null
     
-    // Cleanup on unmount
-    return cleanupCharts
-  }, [initializeCharts, cleanupCharts])
+    // Check if there are meaningful changes that require re-initialization
+    const configChanged = !isInitialRender && JSON.stringify(config) !== JSON.stringify(prevConfigRef.current)
+    const widthChanged = !isInitialRender && width !== prevWidthRef.current
+    const heightChanged = !isInitialRender && height !== prevHeightRef.current
+    
+    // Always initialize on first render, or if there are actual changes
+    if (!isInitialRender && !configChanged && !widthChanged && !heightChanged) {
+      console.log("🔄 [useEffect] No meaningful changes detected, skipping re-initialization")
+      return
+    }
+    
+    console.log("🔄 [useEffect] Initializing:", { isInitialRender, configChanged, widthChanged, heightChanged })
+    
+    // Update previous values
+    prevConfigRef.current = config
+    prevWidthRef.current = width
+    prevHeightRef.current = height
+    
+    // Clear any pending initialization timeout
+    if (initializationTimeoutRef.current) {
+      clearTimeout(initializationTimeoutRef.current)
+    }
+    
+    // For initial render, initialize immediately without setTimeout
+    if (isInitialRender) {
+      isDisposingRef.current = false
+      console.log("🔄 [useEffect] Resetting disposal flag for initial render")
+      console.log("🔄 [useEffect] Initializing immediately for initial render")
+      initializeCharts(isInitialRender)
+    } else {
+      // For subsequent renders, use debounced initialization
+      initializationTimeoutRef.current = setTimeout(() => {
+        if (!isDisposingRef.current) {
+          console.log("🔄 [useEffect] Proceeding with initialization")
+          initializeCharts(isInitialRender)
+        } else {
+          console.log("🔄 [useEffect] Skipping initialization due to disposal flag")
+        }
+      }, 100)
+    }
+    
+    // Cleanup on unmount only
+    return () => {
+      console.log("🧹 [useEffect] Component unmounting, cleaning up")
+      if (initializationTimeoutRef.current) {
+        clearTimeout(initializationTimeoutRef.current)
+      }
+      // Add a small delay to prevent immediate cleanup after chart creation
+      setTimeout(() => {
+        if (isDisposingRef.current) {
+          cleanupCharts()
+        }
+      }, 50)
+    }
+  }, [config, width, height])
 
   if (!config.charts || config.charts.length === 0) {
     return <div>No charts configured</div>
