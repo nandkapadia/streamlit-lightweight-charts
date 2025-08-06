@@ -28,6 +28,8 @@ Example:
     ```
 """
 
+import time
+import uuid
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 import pandas as pd
@@ -46,6 +48,7 @@ from streamlit_lightweight_charts_pro.charts.series import (
 from streamlit_lightweight_charts_pro.component import get_component_func
 from streamlit_lightweight_charts_pro.data.annotation import Annotation, AnnotationManager
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
+from streamlit_lightweight_charts_pro.data.tooltip import TooltipConfig, TooltipManager
 from streamlit_lightweight_charts_pro.data.trade import TradeData
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
@@ -881,7 +884,6 @@ class Chart:
         Returns:
             Chart: Self for method chaining.
         """
-        from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
 
         if not isinstance(tooltip_manager, TooltipManager):
             raise TypeError("tooltip_manager must be a TooltipManager instance")
@@ -900,14 +902,11 @@ class Chart:
         Returns:
             Chart: Self for method chaining.
         """
-        from streamlit_lightweight_charts_pro.data.tooltip import TooltipConfig
 
         if not isinstance(config, TooltipConfig):
             raise TypeError("config must be a TooltipConfig instance")
 
         if self._tooltip_manager is None:
-            from streamlit_lightweight_charts_pro.data.tooltip import TooltipManager
-
             self._tooltip_manager = TooltipManager()
 
         self._tooltip_manager.add_config(name, config)
@@ -973,6 +972,13 @@ class Chart:
             "annotations": annotations_config,
         }
 
+        # Add legends configuration if it exists
+        if self.options and self.options.legends:
+            chart_obj["legends"] = {
+                str(pane_id): legend_config.asdict()
+                for pane_id, legend_config in self.options.legends.items()
+            }
+
         # Add trades to chart configuration if they exist
         if trades_config:
             chart_obj["trades"] = trades_config
@@ -1030,16 +1036,20 @@ class Chart:
         """
         config = self.to_frontend_config()
         component_func = get_component_func()
-        
+
         if component_func is None:
             # Try to reinitialize the component
             from streamlit_lightweight_charts_pro.component import reinitialize_component
+
             if reinitialize_component():
                 component_func = get_component_func()
-            
+
             if component_func is None:
-                raise RuntimeError("Component function not available. Please check if the component is properly initialized.")
-        
+                raise RuntimeError(
+                    "Component function not available. "
+                    "Please check if the component is properly initialized."
+                )
+
         kwargs = {"config": config}
 
         # Extract height and width from chart options and pass to frontend
@@ -1051,12 +1061,11 @@ class Chart:
 
         # Generate a unique key if none provided or if it's empty/invalid
         if key is None or not isinstance(key, str) or not key.strip():
-            import time
-            import uuid
+
             # Generate a unique key using timestamp and UUID
             unique_id = str(uuid.uuid4())[:8]
             key = f"chart_{int(time.time() * 1000)}_{unique_id}"
-        
+
         kwargs["key"] = key
-        
+
         return component_func(**kwargs)

@@ -178,7 +178,7 @@ export interface ChartConfig {
   containerId?: string  // Add containerId for DOM element identification
   chartOptions?: any  // Add chartOptions for processed chart configuration
   rangeSwitcher?: RangeSwitcherConfig
-  legend?: LegendConfig
+  legends?: { [paneId: string]: LegendConfig }  // Per-pane legend configurations
   tooltip?: TooltipConfig  // Add chart-level tooltip configuration
   tooltipConfigs?: Record<string, TooltipConfig>  // Add multiple tooltip configurations
   tradeVisualizationOptions?: TradeVisualizationOptions  // Add chart-level trade visualization options

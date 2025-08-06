@@ -20,7 +20,11 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.5",
     "webpack-bundle-analyzer": "^4.9.0",
     "compression-webpack-plugin": "^10.0.0",
-    "terser-webpack-plugin": "^5.3.7"
+    "terser-webpack-plugin": "^5.3.7",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "jest-environment-jsdom": "^29.5.0"
   },
   "resolutions": {
     "react": "^18.3.1",

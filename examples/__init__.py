@@ -8,23 +8,6 @@ and features of the streamlit-lightweight-charts-pro library.
 import sys
 from pathlib import Path
 
-# Import data_samples to make it available at the package level
-from .data_samples import (
-    get_all_sample_datasets,
-    get_bar_data,
-    get_baseline_data,
-    get_candlestick_data,
-    get_dataframe_candlestick_data,
-    get_dataframe_line_data,
-    get_dataframe_volume_data,
-    get_line_data,
-    get_multi_area_data_1,
-    get_multi_area_data_2,
-    get_sample_data_for_chart_type,
-    get_volume_data,
-    get_volume_histogram_data,
-)
-
 
 def _setup_examples_path():
     """Add the project root to Python path for examples to work from any directory."""
@@ -39,17 +22,11 @@ _setup_examples_path()
 
 
 __all__ = [
-    "get_line_data",
-    "get_bar_data",
-    "get_candlestick_data",
-    "get_volume_data",
-    "get_baseline_data",
-    "get_multi_area_data_1",
-    "get_multi_area_data_2",
-    "get_volume_histogram_data",
-    "get_dataframe_line_data",
-    "get_dataframe_candlestick_data",
-    "get_dataframe_volume_data",
-    "get_sample_data_for_chart_type",
-    "get_all_sample_datasets",
+    # Example files
+    "legend_example",
+    "tooltip_examples", 
+    "pane_heights_example",
+    "signal_series_example",
+    "tooltip_demo",
+    "signal_example",
 ]

@@ -2,7 +2,7 @@
 Legend Example for streamlit-lightweight-charts.
 
 This example demonstrates how to use legends with different chart configurations,
-including multi-pane charts with legends for each pane.
+including multi-pane charts with legends for each pane and custom HTML templates.
 """
 
 import numpy as np
@@ -28,7 +28,7 @@ from streamlit_lightweight_charts_pro.data import AreaData, CandlestickData, His
 st.set_page_config(page_title="Legend Examples", page_icon="📊", layout="wide")
 
 st.title("📊 Legend Examples for Multi-Pane Charts")
-st.markdown("This example demonstrates legends for each pane in multi-pane charts.")
+st.markdown("This example demonstrates legends for each pane in multi-pane charts with custom HTML templates.")
 
 
 # Generate sample data
@@ -112,17 +112,19 @@ basic_chart = Chart(
     options=ChartOptions(
         width=800,
         height=400,
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=12,
-            background_color="rgba(255, 255, 255, 0.9)",
-            border_color="#e1e3e6",
-            border_width=1,
-            border_radius=4,
-            padding=8,
-        ),
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+            ),
+        },
     ),
     series=[
         LineSeries(data=ma20_data).set_title("20-Day MA"),
@@ -139,17 +141,19 @@ st.code(
 # Basic Legend Configuration
 chart = Chart(
     options=ChartOptions(
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=12,
-            background_color="rgba(255, 255, 255, 0.9)",
-            border_color="#e1e3e6",
-            border_width=1,
-            border_radius=4,
-            padding=8
-        )
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5
+            )
+        }
     ),
     series=[
         LineSeries(data=ma20_data).set_title("20-Day MA").line_options.set_color("#2196f3"),
@@ -175,18 +179,44 @@ multi_pane_chart = Chart(
                 2: PaneHeightOptions(factor=1.5),  # RSI
             }
         ),
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=11,
-            background_color="rgba(255, 255, 255, 0.95)",
-            border_color="#cccccc",
-            border_width=1,
-            border_radius=6,
-            padding=10,
-            margin=8,
-        ),
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=11,
+                background_color="rgba(255, 255, 255, 0.95)",
+                border_color="#cccccc",
+                border_width=1,
+                border_radius=6,
+                padding=5,
+                margin=8,
+            ),
+            1: LegendOptions(
+                visible=True,
+                position="top-left",
+                show_last_value=True,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#4caf50",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4,
+            ),
+            2: LegendOptions(
+                visible=True,
+                position="bottom-right",
+                show_last_value=True,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#ff9800",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4,
+            ),
+        },
     ),
     series=[
         # Main chart pane (pane_id=0)
@@ -204,7 +234,7 @@ multi_pane_chart.render(key="multi_pane_legend")
 
 st.code(
     """
-# Multi-Pane Chart with Legend
+# Multi-Pane Chart with Legends
 chart = Chart(
     options=ChartOptions(
         layout=LayoutOptions(
@@ -214,18 +244,44 @@ chart = Chart(
                 2: PaneHeightOptions(factor=1.5)   # RSI
             }
         ),
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=11,
-            background_color="rgba(255, 255, 255, 0.95)",
-            border_color="#cccccc",
-            border_width=1,
-            border_radius=6,
-            padding=10,
-            margin=8
-        )
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=11,
+                background_color="rgba(255, 255, 255, 0.95)",
+                border_color="#cccccc",
+                border_width=1,
+                border_radius=6,
+                padding=5,
+                margin=8
+            ),
+            1: LegendOptions(
+                visible=True,
+                position="top-left",
+                show_last_value=True,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#4caf50",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4
+            ),
+            2: LegendOptions(
+                visible=True,
+                position="bottom-right",
+                show_last_value=True,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#ff9800",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4
+            )
+        }
     ),
     series=[
         CandlestickSeries(data=price_data, pane_id=0).set_title("Price"),
@@ -239,8 +295,68 @@ chart = Chart(
     language="python",
 )
 
-# Example 3: Different Legend Positions
-st.header("3. Legend Position Examples")
+# Example 3: Custom HTML Templates
+st.header("3. Custom HTML Templates")
+st.markdown("Demonstrating custom HTML templates for legends with dynamic placeholders.")
+
+custom_template_chart = Chart(
+    options=ChartOptions(
+        width=800,
+        height=400,
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.95)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'><span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span><span style='font-weight: bold;'>{title}</span><span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span></div>",
+            ),
+        },
+    ),
+    series=[
+        LineSeries(data=ma20_data).set_title("20-Day MA"),
+        LineSeries(data=ma50_data).set_title("50-Day MA"),
+    ],
+)
+
+custom_template_chart.render(key="custom_template_legend")
+
+st.code(
+    """
+# Custom HTML Template Example
+chart = Chart(
+    options=ChartOptions(
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.95)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'><span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span><span style='font-weight: bold;'>{title}</span><span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span></div>"
+            )
+        }
+    ),
+    series=[
+        LineSeries(data=ma20_data).set_title("20-Day MA"),
+        LineSeries(data=ma50_data).set_title("50-Day MA")
+    ]
+)
+""",
+    language="python",
+)
+
+# Example 4: Different Legend Positions
+st.header("4. Legend Position Examples")
 st.markdown("Demonstrating different legend positions.")
 
 col1, col2 = st.columns(2)
@@ -251,14 +367,17 @@ with col1:
         options=ChartOptions(
             width=400,
             height=300,
-            legend=LegendOptions(
-                visible=True,
-                position="top-left",
-                show_last_value=False,
-                font_size=10,
-                background_color="rgba(255, 255, 255, 0.9)",
-                border_color="#e1e3e6",
-            ),
+            legends={
+                0: LegendOptions(
+                    visible=True,
+                    position="top-left",
+                    show_last_value=False,
+                    font_size=10,
+                    background_color="rgba(255, 255, 255, 0.9)",
+                    border_color="#e1e3e6",
+                    padding=5,
+                ),
+            },
         ),
         series=[
             LineSeries(data=ma20_data).set_title("MA20"),
@@ -273,15 +392,18 @@ with col2:
         options=ChartOptions(
             width=400,
             height=300,
-            legend=LegendOptions(
-                visible=True,
-                position="bottom-right",
-                show_last_value=True,
-                font_size=10,
-                background_color="rgba(0, 0, 0, 0.8)",
-                color="#ffffff",
-                border_color="#666666",
-            ),
+            legends={
+                0: LegendOptions(
+                    visible=True,
+                    position="bottom-right",
+                    show_last_value=True,
+                    font_size=10,
+                    background_color="rgba(0, 0, 0, 0.8)",
+                    color="#ffffff",
+                    border_color="#666666",
+                    padding=5,
+                ),
+            },
         ),
         series=[
             LineSeries(data=ma20_data).set_title("MA20"),
@@ -290,8 +412,8 @@ with col2:
     )
     bottom_right_chart.render(key="bottom_right_legend")
 
-# Example 4: Area Chart with Legend
-st.header("4. Area Chart with Legend")
+# Example 5: Area Chart with Legend
+st.header("5. Area Chart with Legend")
 st.markdown("Area chart demonstrating legend with fill colors.")
 
 # Generate area data
@@ -310,17 +432,20 @@ area_chart = Chart(
     options=ChartOptions(
         width=800,
         height=400,
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=12,
-            background_color="rgba(255, 255, 255, 0.9)",
-            border_color="#e1e3e6",
-            border_width=1,
-            border_radius=4,
-            padding=8,
-        ),
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                custom_template="<div style='display: flex; align-items: center;'><span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span><span>{title}</span><span style='margin-left: 6px; color: {color};'>{value}</span></div>",
+            ),
+        },
     ),
     series=[AreaSeries(data=area_data).set_title("Price Area")],
 )
@@ -341,17 +466,20 @@ area_data = [
 
 chart = Chart(
     options=ChartOptions(
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=12,
-            background_color="rgba(255, 255, 255, 0.9)",
-            border_color="#e1e3e6",
-            border_width=1,
-            border_radius=4,
-            padding=8
-        )
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position="top-right",
+                show_last_value=True,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                custom_template="<div style='display: flex; align-items: center;'><span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span><span>{title}</span><span style='margin-left: 6px; color: {color};'>{value}</span></div>"
+            )
+        }
     ),
     series=[
         AreaSeries(data=area_data).set_title("Price Area")
@@ -361,8 +489,8 @@ chart = Chart(
     language="python",
 )
 
-# Example 5: Legend Configuration Options
-st.header("5. Legend Configuration Options")
+# Example 6: Legend Configuration Options
+st.header("6. Legend Configuration Options")
 st.markdown(
     """
 ### Available Legend Options:
@@ -378,14 +506,24 @@ st.markdown(
 - **border_color**: Border color (default: '#e1e3e6')
 - **border_width**: Border width in pixels (default: 1)
 - **border_radius**: Border radius in pixels (default: 4)
-- **padding**: Internal padding in pixels (default: 8)
+- **padding**: Internal padding in pixels (default: 5)
 - **margin**: External margin in pixels (default: 4)
 - **z_index**: CSS z-index (default: 1000)
+- **custom_template**: Custom HTML template with placeholders (default: "")
+
+### Available Template Placeholders:
+
+- **{title}**: Series title/name
+- **{value}**: Current value of the series
+- **{time}**: Current time (if show_time is True)
+- **{color}**: Series color
+- **{type}**: Series type (Line, Candlestick, etc.)
+- **Any other field**: From the series data (OHLC, etc.)
 """
 )
 
 # Interactive legend configuration
-st.header("6. Interactive Legend Configuration")
+st.header("7. Interactive Legend Configuration")
 st.markdown("Try different legend settings:")
 
 col1, col2 = st.columns(2)
@@ -406,25 +544,27 @@ with col2:
 
     legend_border_color = st.color_picker("Border Color", "#e1e3e6")
 
-    legend_padding = st.slider("Padding", 4, 16, 8)
+    legend_padding = st.slider("Padding", 4, 16, 5)
 
 # Create interactive chart
 interactive_chart = Chart(
     options=ChartOptions(
         width=800,
         height=400,
-        legend=LegendOptions(
-            visible=True,
-            position=legend_position,
-            show_last_value=show_last_value,
-            font_size=legend_font_size,
-            background_color=legend_bg_color,
-            border_color=legend_border_color,
-            border_width=1,
-            border_radius=4,
-            padding=legend_padding,
-            margin=4,
-        ),
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position=legend_position,
+                show_last_value=show_last_value,
+                font_size=legend_font_size,
+                background_color=legend_bg_color,
+                border_color=legend_border_color,
+                border_width=1,
+                border_radius=4,
+                padding=legend_padding,
+                margin=4,
+            ),
+        },
     ),
     series=[
         LineSeries(data=ma20_data).set_title("20-Day Moving Average"),
@@ -440,12 +580,14 @@ st.markdown(
     """
 ### Key Features:
 
-1. **Multi-Pane Support**: Legends work with multi-pane charts, showing series from all panes
-2. **Series Titles**: Use the `set_title()` method on series to set legend labels
-3. **Color Indicators**: Each series shows its color in the legend
-4. **Last Value Display**: Optionally show the last value for each series
-5. **Customizable Styling**: Full control over legend appearance and positioning
-6. **Responsive Design**: Legends adapt to chart size and positioning
+1. **Per-Pane Legends**: Each pane can have its own independent legend configuration
+2. **Custom HTML Templates**: Full control over legend appearance with HTML and CSS
+3. **Dynamic Placeholders**: Values update automatically with crosshair movement
+4. **Series Titles**: Use the `set_title()` method on series to set legend labels
+5. **Color Indicators**: Each series shows its color in the legend
+6. **Last Value Display**: Optionally show the last value for each series
+7. **Customizable Styling**: Full control over legend appearance and positioning
+8. **Responsive Design**: Legends adapt to chart size and positioning
 
 ### Best Practices:
 
@@ -454,5 +596,7 @@ st.markdown(
 - Use semi-transparent backgrounds for better chart visibility
 - Consider font size and padding for different screen sizes
 - Use consistent color schemes between series and legend indicators
+- Leverage custom templates for advanced styling and layout
+- Use {title} and {value} placeholders for dynamic content
 """
 )

@@ -1,6 +1,14 @@
-from datetime import datetime, timedelta
+"""
+Multi-Pane Chart with Legends Example.
 
-import numpy as np
+This example demonstrates a comprehensive multi-pane chart with legends for each pane:
+- Main chart (pane 0): Candlestick data with moving averages
+- RSI indicator (pane 1): RSI line with overbought/oversold levels
+- Volume (pane 2): Volume histogram with moving average
+
+Each pane has its own legend configuration with custom templates.
+"""
+
 import pandas as pd
 import streamlit as st
 
@@ -9,83 +17,73 @@ from streamlit_lightweight_charts_pro import (
     Chart,
     ChartOptions,
     HistogramSeries,
-    LineSeries,
-)
-from streamlit_lightweight_charts_pro.charts.options.layout_options import (
     LayoutOptions,
+    LegendOptions,
+    LineSeries,
     PaneHeightOptions,
 )
-from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
-from streamlit_lightweight_charts_pro.data import CandlestickData, HistogramData, LineData
+from streamlit_lightweight_charts_pro.data import (
+    CandlestickData,
+    HistogramData,
+    LineData,
+)
 
-# Page configuration
 st.set_page_config(page_title="Multi-Pane Legends Example", page_icon="📊", layout="wide")
 
 st.title("📊 Multi-Pane Chart with Legends Example")
 st.markdown(
     """
 This example demonstrates a comprehensive multi-pane chart with legends for each pane:
-- **Main Pane**: Candlestick chart with moving averages
-- **RSI Pane**: Relative Strength Index indicator
-- **Volume Pane**: Volume histogram with moving average
+- **Main chart (pane 0)**: Candlestick data with moving averages
+- **RSI indicator (pane 1)**: RSI line with overbought/oversold levels  
+- **Volume (pane 2)**: Volume histogram with moving average
+
+Each pane has its own legend configuration with custom HTML templates.
 """
 )
 
 
-# Generate realistic sample data
 def generate_market_data(days=60):
-    """Generate realistic market data with trends and volatility."""
-    start_date = datetime(2024, 1, 1)
-    end_date = start_date + timedelta(days=days)
-    dates = pd.date_range(start=start_date, end=end_date, freq="D")
+    """Generate sample market data."""
+    import numpy as np
 
-    # Base trend with some volatility
-    np.random.seed(42)  # For reproducible results
+    np.random.seed(42)
+    dates = pd.date_range(start="2024-01-01", periods=days, freq="D")
+
+    # Generate price data
     base_price = 100
-    prices = []
+    returns = np.random.normal(0, 0.02, days)
+    prices = [base_price]
 
-    for i in range(len(dates)):
-        # Add trend component
-        trend = np.sin(i * 0.1) * 20
+    for ret in returns[1:]:
+        prices.append(prices[-1] * (1 + ret))
 
-        # Add volatility
-        volatility = np.random.normal(0, 3)
+    # Generate OHLC data
+    data = []
+    for i, (date, price) in enumerate(zip(dates, prices)):
+        high = price * (1 + abs(np.random.normal(0, 0.01)))
+        low = price * (1 - abs(np.random.normal(0, 0.01)))
+        open_price = prices[i - 1] if i > 0 else price
+        close_price = price
+        volume = int(np.random.uniform(1000, 10000))
 
-        # Add some momentum
-        if i > 0:
-            momentum = (prices[-1]["close"] - base_price) * 0.1
-        else:
-            momentum = 0
-
-        # Calculate OHLC
-        base_price += trend + volatility + momentum
-        open_price = base_price
-        high_price = base_price + abs(np.random.normal(0, 2))
-        low_price = base_price - abs(np.random.normal(0, 2))
-        close_price = base_price + np.random.normal(0, 1)
-
-        # Ensure high >= max(open, close) and low <= min(open, close)
-        high_price = max(high_price, open_price, close_price)
-        low_price = min(low_price, open_price, close_price)
-
-        prices.append(
+        data.append(
             {
-                "time": dates[i],
+                "time": date.strftime("%Y-%m-%d"),
                 "open": round(open_price, 2),
-                "high": round(high_price, 2),
-                "low": round(low_price, 2),
+                "high": round(high, 2),
+                "low": round(low, 2),
                 "close": round(close_price, 2),
-                "volume": int(np.random.uniform(1000, 10000)),
+                "volume": volume,
             }
         )
 
-    return prices
+    return pd.DataFrame(data)
 
 
-# Calculate technical indicators
 def calculate_indicators(prices):
-    """Calculate RSI and moving averages."""
-    df = pd.DataFrame(prices)
+    """Calculate technical indicators."""
+    df = prices.copy()
 
     # Calculate moving averages
     df["ma20"] = df["close"].rolling(window=20).mean()
@@ -105,16 +103,16 @@ def calculate_indicators(prices):
 
 
 # Generate data
-prices = generate_market_data(60)
-df = calculate_indicators(prices)
+df = generate_market_data(100)
+df = calculate_indicators(df)
 
-# Convert to chart data
+# Prepare data for charts
 candlestick_data = [
     CandlestickData(
         time=row["time"], open=row["open"], high=row["high"], low=row["low"], close=row["close"]
     )
     for _, row in df.iterrows()
-    if pd.notna(row["close"])
+    if pd.notna(row["open"])
 ]
 
 ma20_data = [
@@ -146,33 +144,42 @@ volume_ma_data = [
 ]
 
 # Create the multi-pane chart
-st.header("🎯 Multi-Pane Chart with Legends")
+st.header("🎯 Multi-Pane Chart with Custom Legends")
 
 # Configuration options
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    legend_position = st.selectbox(
-        "Legend Position", ["top-right", "top-left", "bottom-right", "bottom-left"], index=0
+    st.subheader("Pane 0 (Main Chart)")
+    legend_position_0 = st.selectbox(
+        "Legend Position",
+        ["top-right", "top-left", "bottom-right", "bottom-left"],
+        index=0,
+        key="pos0",
     )
-
-    show_last_value = st.checkbox("Show Last Value", value=True)
+    show_last_value_0 = st.checkbox("Show Last Value", value=True, key="last0")
 
 with col2:
-    legend_font_size = st.slider("Font Size", 8, 16, 12)
-
-    legend_bg_color = st.color_picker(
-        "Background Color",
-        "#ffffff",
-        help="Use rgba for transparency (e.g., rgba(255,255,255,0.9))",
+    st.subheader("Pane 1 (RSI)")
+    legend_position_1 = st.selectbox(
+        "Legend Position",
+        ["top-right", "top-left", "bottom-right", "bottom-left"],
+        index=2,
+        key="pos1",
     )
+    show_last_value_1 = st.checkbox("Show Last Value", value=False, key="last1")
 
 with col3:
-    legend_border_color = st.color_picker("Border Color", "#e1e3e6")
+    st.subheader("Pane 2 (Volume)")
+    legend_position_2 = st.selectbox(
+        "Legend Position",
+        ["top-right", "top-left", "bottom-right", "bottom-left"],
+        index=1,
+        key="pos2",
+    )
+    show_last_value_2 = st.checkbox("Show Last Value", value=True, key="last2")
 
-    legend_padding = st.slider("Padding", 4, 16, 8)
-
-# Create the chart
+# Create the chart with custom legends for each pane
 multi_pane_chart = Chart(
     options=ChartOptions(
         width=1200,
@@ -184,19 +191,50 @@ multi_pane_chart = Chart(
                 2: PaneHeightOptions(factor=1.0),  # Volume
             }
         ),
-        legend=LegendOptions(
-            visible=True,
-            position=legend_position,
-            show_last_value=show_last_value,
-            font_size=legend_font_size,
-            background_color=legend_bg_color,
-            border_color=legend_border_color,
-            border_width=1,
-            border_radius=4,
-            padding=legend_padding,
-            margin=4,
-            z_index=1000,
-        ),
+        legends={
+            0: LegendOptions(
+                visible=True,
+                position=legend_position_0,
+                show_last_value=show_last_value_0,
+                font_size=12,
+                background_color="rgba(255, 255, 255, 0.95)",
+                border_color="#e1e3e6",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4,
+                z_index=1000,
+                custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'><span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span><span style='font-weight: bold;'>{title}</span><span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span></div>",
+            ),
+            1: LegendOptions(
+                visible=True,
+                position=legend_position_1,
+                show_last_value=show_last_value_1,
+                font_size=10,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#9c27b0",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4,
+                z_index=1000,
+                custom_template="<div style='color: {color}; font-size: 11px;'><strong>{title}</strong>: {value}</div>",
+            ),
+            2: LegendOptions(
+                visible=True,
+                position=legend_position_2,
+                show_last_value=show_last_value_2,
+                font_size=11,
+                background_color="rgba(255, 255, 255, 0.9)",
+                border_color="#ff5722",
+                border_width=1,
+                border_radius=4,
+                padding=5,
+                margin=4,
+                z_index=1000,
+                custom_template="<div style='display: flex; align-items: center;'><span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span><span>{title}</span><span style='margin-left: 6px; color: {color};'>{value}</span></div>",
+            ),
+        },
     ),
     series=[
         # Main chart pane (pane_id=0)
@@ -224,156 +262,118 @@ multi_pane_chart.series[2].line_options.color = "#ff9800"  # MA50
 multi_pane_chart.series[3].line_options.color = "#9c27b0"  # RSI
 multi_pane_chart.series[5].line_options.color = "#ff5722"  # Volume MA
 
-# Debug: Check legend configuration
-st.write(
-    "Legend Configuration:",
-    (
-        multi_pane_chart.options.legend.asdict()
-        if multi_pane_chart.options.legend
-        else "No legend configured"
-    ),
-)
-
-# Debug: Check chart configuration
-chart_config = multi_pane_chart.to_frontend_config()
-st.write("Chart Config Keys:", list(chart_config.keys()))
-if "charts" in chart_config and len(chart_config["charts"]) > 0:
-    st.write("First Chart Keys:", list(chart_config["charts"][0].keys()))
-    if "chart" in chart_config["charts"][0]:
-        st.write("Chart Options Keys:", list(chart_config["charts"][0]["chart"].keys()))
-        if "legend" in chart_config["charts"][0]["chart"]:
-            st.write("Legend in Chart Config:", chart_config["charts"][0]["chart"]["legend"])
-        else:
-            st.write("❌ Legend NOT found in chart config!")
-            st.write("Available keys:", list(chart_config["charts"][0]["chart"].keys()))
-
 # Render the chart
 multi_pane_chart.render(key="multi_pane_legend")
 
-# Code example
-st.header("💻 Code Example")
-st.markdown("Here's how to create this multi-pane chart with legends:")
+# Show configuration details
+st.header("📋 Configuration Details")
 
-code_example = """
-# Create multi-pane chart with legends
-chart = Chart(
-    options=ChartOptions(
-        width=1200,
-        height=800,
-        layout=LayoutOptions(
-            pane_heights={
-                0: PaneHeightOptions(factor=3.0),  # Main chart
-                1: PaneHeightOptions(factor=1.5),  # RSI
-                2: PaneHeightOptions(factor=1.0)   # Volume
-            }
-        ),
-        legend=LegendOptions(
-            visible=True,
-            position="top-right",
-            show_last_value=True,
-            font_size=12,
-            background_color="rgba(255, 255, 255, 0.9)",
-            border_color="#e1e3e6",
-            border_width=1,
-            border_radius=4,
-            padding=8,
-            margin=4
-        )
-    ),
-    series=[
-        # Main chart pane
-        CandlestickSeries(data=candlestick_data, pane_id=0, title="Price"),
-        LineSeries(data=ma20_data, pane_id=0, title="MA20"),
-        LineSeries(data=ma50_data, pane_id=0, title="MA50"),
-        
-        # RSI pane
-        LineSeries(data=rsi_data, pane_id=1, title="RSI (14)"),
-        
-        # Volume pane
-        HistogramSeries(data=volume_data, pane_id=2, title="Volume"),
-        LineSeries(data=volume_ma_data, pane_id=2, title="Volume MA")
-    ]
-)
+st.markdown("### Legend Configurations")
 
-# Set colors for the series
-chart.series[1].line_options.color = "#2196f3"  # MA20
-chart.series[2].line_options.color = "#ff9800"  # MA50
-chart.series[3].line_options.color = "#9c27b0"  # RSI
-chart.series[5].line_options.color = "#ff5722"  # Volume MA
-"""
-
-st.code(code_example, language="python")
-
-# Legend configuration details
-st.header("🔧 Legend Configuration Options")
-st.markdown(
-    """
-### Key Features Demonstrated:
-
-1. **Multi-Pane Support**: Legends work across all panes, showing series from each pane
-2. **Series Titles**: Each series has a descriptive title that appears in the legend
-3. **Color Indicators**: Each series shows its color in the legend
-4. **Last Value Display**: Shows the most recent value for each series
-5. **Customizable Positioning**: Legend can be positioned in any corner
-6. **Styling Options**: Full control over appearance and styling
-
-### Legend Options Available:
-
-- **visible**: Show/hide the legend (default: true)
-- **position**: 'top-left', 'top-right', 'bottom-left', 'bottom-right'
-- **show_last_value**: Display the last value for each series
-- **font_size**: Font size in pixels
-- **font_family**: Font family (default: 'Arial, sans-serif')
-- **font_weight**: Font weight (default: 'normal')
-- **color**: Text color (default: '#131722')
-- **background_color**: Background color (supports rgba for transparency)
-- **border_color**: Border color
-- **border_width**: Border width in pixels
-- **border_radius**: Border radius in pixels
-- **padding**: Internal padding in pixels
-- **margin**: External margin in pixels
-- **z_index**: CSS z-index for layering
-
-### Best Practices:
-
-- Use descriptive series titles for better legend readability
-- Choose appropriate legend positions that don't overlap with important chart data
-- Use semi-transparent backgrounds for better chart visibility
-- Consider font size and padding for different screen sizes
-- Use consistent color schemes between series and legend indicators
-"""
-)
-
-# Data summary
-st.header("📈 Data Summary")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Total Data Points", len(candlestick_data))
-    # Convert UNIX timestamps to datetime for display
-    start_date = datetime.fromtimestamp(candlestick_data[0].time)
-    end_date = datetime.fromtimestamp(candlestick_data[-1].time)
-    st.metric("Date Range", f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+    st.subheader("Pane 0 - Main Chart")
+    st.code(
+        """
+LegendOptions(
+    position="top-right",
+    show_last_value=True,
+    custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'>
+        <span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span>
+        <span style='font-weight: bold;'>{title}</span>
+        <span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span>
+    </div>"
+)
+"""
+    )
 
 with col2:
-    latest_price = candlestick_data[-1]
-    st.metric("Latest Close", f"${latest_price.close:.2f}")
-    st.metric("Latest Volume", f"{volume_data[-1].value:,}")
+    st.subheader("Pane 1 - RSI")
+    st.code(
+        """
+LegendOptions(
+    position="bottom-left",
+    show_last_value=False,
+    custom_template="<div style='color: {color}; font-size: 11px;'>
+        <strong>{title}</strong>: {value}
+    </div>"
+)
+"""
+    )
 
 with col3:
-    latest_rsi = rsi_data[-1].value
-    st.metric("Latest RSI", f"{latest_rsi:.1f}")
-    rsi_status = "Overbought" if latest_rsi > 70 else "Oversold" if latest_rsi < 30 else "Neutral"
-    st.metric("RSI Status", rsi_status)
+    st.subheader("Pane 2 - Volume")
+    st.code(
+        """
+LegendOptions(
+    position="top-left",
+    show_last_value=True,
+    custom_template="<div style='display: flex; align-items: center;'>
+        <span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span>
+        <span>{title}</span>
+        <span style='margin-left: 6px; color: {color};'>{value}</span>
+    </div>"
+)
+"""
+    )
 
-st.markdown("---")
+st.markdown("### Available Template Placeholders")
+
 st.markdown(
     """
-### Chart Components:
-- **Main Pane**: Candlestick chart showing price action with 20-day and 50-day moving averages
-- **RSI Pane**: 14-period Relative Strength Index showing momentum
-- **Volume Pane**: Volume histogram with 20-period volume moving average
+The `custom_template` supports the following placeholders that will be replaced by the frontend:
 
-The legend displays all series across all panes, making it easy to identify and track each indicator.
+- **{title}**: Series title/name
+- **{value}**: Current value of the series
+- **{time}**: Current time (if show_time is True)
+- **{color}**: Series color
+- **{type}**: Series type (Line, Candlestick, etc.)
+- **Any other field**: Any other field from the series data can be accessed as {field_name}
+
+### Example Templates
+
+```html
+<!-- Simple template -->
+<span style='color: {color}'>{title}: {value}</span>
+
+<!-- Complex template with styling -->
+<div style='background: {color}; padding: 5px; border-radius: 3px;'>
+    <strong>{title}</strong><br/>
+    <span>Value: {value}</span><br/>
+    <small>Type: {type}</small>
+</div>
+
+<!-- Template with conditional styling -->
+<span class='legend-item' style='color: {color};'>
+    {title} - {value} ({type})
+</span>
+```
+"""
+)
+
+st.markdown("### Key Features")
+
+st.markdown(
+    """
+1. **Per-Pane Legends**: Each pane can have its own legend configuration
+2. **Custom HTML Templates**: Full control over legend appearance using HTML templates
+3. **Dynamic Placeholders**: Template placeholders are replaced with actual data
+4. **Flexible Positioning**: Different legend positions for each pane
+5. **Customizable Styling**: Full control over colors, fonts, borders, etc.
+6. **Responsive Design**: Legends adapt to chart size and positioning
+"""
+)
+
+st.markdown("### Best Practices")
+
+st.markdown(
+    """
+- Use descriptive series titles for better legend readability
+- Choose appropriate legend positions that don't overlap with important chart data
+- Keep templates simple and readable
+- Use consistent color schemes between series and legend indicators
+- Test templates with different data types and values
+- Consider accessibility when choosing colors and fonts
 """
 )

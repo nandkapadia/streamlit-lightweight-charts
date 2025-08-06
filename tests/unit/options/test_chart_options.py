@@ -22,6 +22,7 @@ from streamlit_lightweight_charts_pro.charts.options.price_scale_options import 
     PriceScaleOptions,
 )
 from streamlit_lightweight_charts_pro.charts.options.time_scale_options import TimeScaleOptions
+from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
 from streamlit_lightweight_charts_pro.type_definitions.colors import BackgroundSolid
 from streamlit_lightweight_charts_pro.type_definitions.enums import LineStyle
 
@@ -49,6 +50,7 @@ class TestChartOptionsConstruction:
         assert options.localization is None
         assert options.trade_visualization is None
         assert options.add_default_pane is True
+        assert options.legends is None
 
     def test_custom_construction(self):
         """Test construction with custom values."""
@@ -68,6 +70,19 @@ class TestChartOptionsConstruction:
         assert options.handle_scale is False
         assert options.add_default_pane is False
 
+    def test_legends_construction(self):
+        """Test construction with legends dict."""
+        legend1 = LegendOptions(position="top-left", show_last_value=True)
+        legend2 = LegendOptions(position="bottom-right", visible=False)
+
+        options = ChartOptions(legends={0: legend1, 1: legend2, 2: LegendOptions(visible=False)})
+
+        assert options.legends is not None
+        assert len(options.legends) == 3
+        assert options.legends[0] == legend1
+        assert options.legends[1] == legend2
+        assert options.legends[2].visible is False
+
     def test_left_price_scale_default_visibility(self):
         """Test that left price scale is None by default."""
         options = ChartOptions()
@@ -82,6 +97,68 @@ class TestChartOptionsConstruction:
         """Test that overlay_price_scales is initialized as empty dict."""
         options = ChartOptions()
         assert options.overlay_price_scales == {}
+
+
+class TestChartOptionsLegends:
+    """Test legends functionality."""
+
+    def test_legends_dict_operations(self):
+        """Test legends dict operations."""
+        options = ChartOptions()
+
+        # Initially None
+        assert options.legends is None
+
+        # Set legends
+        legend1 = LegendOptions(position="top-left")
+        legend2 = LegendOptions(position="bottom-right")
+
+        options.legends = {0: legend1, 1: legend2}
+        assert options.legends[0] == legend1
+        assert options.legends[1] == legend2
+
+        # Update legends
+        options.legends[2] = LegendOptions(visible=False)
+        assert len(options.legends) == 3
+        assert options.legends[2].visible is False
+
+        # Remove legend
+        del options.legends[1]
+        assert 1 not in options.legends
+        assert len(options.legends) == 2
+
+    def test_legends_serialization(self):
+        """Test legends serialization."""
+        legend1 = LegendOptions(
+            position="top-left",
+            show_last_value=True,
+            custom_template="<span>{title}: {value}</span>",
+        )
+        legend2 = LegendOptions(position="bottom-right", visible=False)
+
+        options = ChartOptions(legends={0: legend1, 1: legend2})
+        result = options.asdict()
+
+        assert "legends" in result
+        assert "0" in result["legends"]
+        assert "1" in result["legends"]
+        assert result["legends"]["0"]["position"] == "top-left"
+        assert result["legends"]["0"]["showLastValue"] is True
+        assert result["legends"]["0"]["customTemplate"] == "<span>{title}: {value}</span>"
+        assert result["legends"]["1"]["visible"] is False
+
+    def test_legends_empty_dict(self):
+        """Test legends with empty dict."""
+        options = ChartOptions(legends={})
+        result = options.asdict()
+        # Empty dictionaries are not included in serialization
+        assert "legends" not in result
+
+    def test_legends_none(self):
+        """Test legends with None value."""
+        options = ChartOptions(legends=None)
+        result = options.asdict()
+        assert "legends" not in result
 
 
 class TestChartOptionsValidation:

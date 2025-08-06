@@ -67,6 +67,7 @@ from streamlit_lightweight_charts_pro.charts.options.layout_options import (
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (
     TradeVisualizationOptions,
 )
+from streamlit_lightweight_charts_pro.charts.options.ui_options import LegendOptions
 from streamlit_lightweight_charts_pro.charts.series import (
     AreaSeries,
     BarSeries,
@@ -134,6 +135,7 @@ __all__ = [
     "ChartOptions",
     "LayoutOptions",
     "PaneHeightOptions",
+    "LegendOptions",
     # Data models
     "Annotation",
     "AreaData",

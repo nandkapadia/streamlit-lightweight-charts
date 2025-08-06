@@ -90,12 +90,28 @@ class TestLegendOptions:
         options = LegendOptions()
         assert options.visible is True
         assert options.position == "top-right"
+        assert options.padding == 5  # Updated default value
+        assert options.custom_template == ""
 
     def test_custom_construction(self):
         """Test construction with custom values."""
         options = LegendOptions(visible=False, position="bottom")
         assert options.visible is False
         assert options.position == "bottom"
+
+    def test_custom_template_construction(self):
+        """Test construction with custom template."""
+        template = "<span style='color: {color}'>{title}: {value}</span>"
+        options = LegendOptions(custom_template=template, show_last_value=True, position="top-left")
+        assert options.custom_template == template
+        assert options.show_last_value is True
+        assert options.position == "top-left"
+
+    def test_custom_template_with_placeholders(self):
+        """Test custom template with various placeholders."""
+        template = "<div><strong>{title}</strong><br/>Price: ${value}<br/>Type: {type}</div>"
+        options = LegendOptions(custom_template=template)
+        assert options.custom_template == template
 
     def test_validation_visible(self):
         """Test validation of visible field."""
@@ -115,6 +131,18 @@ class TestLegendOptions:
         result = options.asdict()
         assert result["visible"] is False
         assert result["position"] == "bottom"
+
+    def test_to_dict_with_custom_template(self):
+        """Test serialization with custom template."""
+        template = "<span style='color: {color}'>{title}: {value}</span>"
+        options = LegendOptions(
+            visible=True, position="top-left", custom_template=template, show_last_value=True
+        )
+        result = options.asdict()
+        assert result["visible"] is True
+        assert result["position"] == "top-left"
+        assert result["customTemplate"] == template
+        assert result["showLastValue"] is True
 
     def test_legend_with_different_positions(self):
         """Test LegendOptions with different position values."""
@@ -137,11 +165,32 @@ class TestLegendOptions:
         assert options.visible is False
         assert options.position == "bottom"
 
+    def test_legend_chainable_methods_with_template(self):
+        """Test chainable methods with custom template."""
+        template = "<div>{title}</div>"
+        options = LegendOptions()
+        result = options.set_custom_template(template).set_show_last_value(True)
+        assert result is options
+        assert options.custom_template == template
+        assert options.show_last_value is True
+
     def test_legend_equality(self):
         """Test LegendOptions equality."""
         legend1 = LegendOptions(visible=True, position="top")
         legend2 = LegendOptions(visible=True, position="top")
         legend3 = LegendOptions(visible=True, position="bottom")
+
+        assert legend1 == legend2
+        assert legend1 != legend3
+
+    def test_legend_equality_with_template(self):
+        """Test LegendOptions equality with custom template."""
+        template1 = "<span>{title}</span>"
+        template2 = "<div>{title}</div>"
+
+        legend1 = LegendOptions(visible=True, position="top", custom_template=template1)
+        legend2 = LegendOptions(visible=True, position="top", custom_template=template1)
+        legend3 = LegendOptions(visible=True, position="top", custom_template=template2)
 
         assert legend1 == legend2
         assert legend1 != legend3
@@ -153,6 +202,14 @@ class TestLegendOptions:
         assert "LegendOptions" in repr_str
         assert "visible=True" in repr_str
         assert "position='top'" in repr_str
+
+    def test_legend_repr_with_template(self):
+        """Test LegendOptions repr with custom template."""
+        template = "<span>{title}</span>"
+        legend = LegendOptions(visible=True, position="top", custom_template=template)
+        repr_str = repr(legend)
+        assert "LegendOptions" in repr_str
+        assert "custom_template=" in repr_str
 
 
 class TestUIOptionsIntegration:
@@ -388,6 +445,27 @@ class TestUIOptionsValidation:
         options = LegendOptions(position="")
         assert options.position == ""
 
+        # Test with complex custom templates
+        complex_template = """
+        <div class="legend-item" style="background: {color}; padding: 5px;">
+            <strong>{title}</strong><br/>
+            <span>Value: {value}</span><br/>
+            <small>Type: {type}</small>
+        </div>
+        """
+        options = LegendOptions(custom_template=complex_template)
+        assert options.custom_template == complex_template
+
+        # Test with template containing special characters
+        special_template = "<span>&lt;{title}&gt;: &quot;{value}&quot;</span>"
+        options = LegendOptions(custom_template=special_template)
+        assert options.custom_template == special_template
+
+        # Test with template containing unicode
+        unicode_template = "📊 {title}: {value} €"
+        options = LegendOptions(custom_template=unicode_template)
+        assert options.custom_template == unicode_template
+
     def test_ui_options_validation_integration(self):
         """Test validation when using UI options together."""
         # Create a complex configuration
@@ -397,13 +475,16 @@ class TestUIOptionsValidation:
             RangeConfig(text="1M", tooltip="1 Month"),
         ]
         range_switcher = RangeSwitcherOptions(visible=True, ranges=ranges)
-        legend = LegendOptions(visible=False, position="top-right")
+        legend = LegendOptions(
+            visible=False, position="top-right", custom_template="<span>{title}: {value}</span>"
+        )
 
         # All should be valid
         assert range_switcher.visible is True
         assert len(range_switcher.ranges) == 3
         assert legend.visible is False
         assert legend.position == "top-right"
+        assert legend.custom_template == "<span>{title}: {value}</span>"
 
         # All should serialize correctly
         range_dict = range_switcher.asdict()
@@ -413,3 +494,4 @@ class TestUIOptionsValidation:
         assert len(range_dict["ranges"]) == 3
         assert legend_dict["visible"] is False
         assert legend_dict["position"] == "top-right"
+        assert legend_dict["customTemplate"] == "<span>{title}: {value}</span>"

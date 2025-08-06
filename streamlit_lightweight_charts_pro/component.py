@@ -27,7 +27,7 @@ Raises:
 """
 
 from pathlib import Path
-from typing import Any, Callable, Optional, Dict
+from typing import Any, Callable, Dict, Optional
 
 from streamlit_lightweight_charts_pro.logging_config import get_logger
 
@@ -79,7 +79,7 @@ def get_component_func() -> Optional[Callable[..., Any]]:
 def debug_component_status() -> Dict[str, Any]:
     """
     Debug function to check component initialization status.
-    
+
     Returns:
         Dict[str, Any]: Status information about the component
     """
@@ -87,48 +87,48 @@ def debug_component_status() -> Dict[str, Any]:
         "component_initialized": _component_func is not None,
         "release_mode": _RELEASE,
         "frontend_dir_exists": False,
-        "component_type": type(_component_func).__name__ if _component_func else None
+        "component_type": type(_component_func).__name__ if _component_func else None,
     }
-    
+
     if _RELEASE:
         frontend_dir = Path(__file__).parent / "frontend" / "build"
         status["frontend_dir_exists"] = frontend_dir.exists()
         status["frontend_dir_path"] = str(frontend_dir)
-        
+
         # Check if build files exist
         if frontend_dir.exists():
             static_dir = frontend_dir / "static"
             js_dir = static_dir / "js" if static_dir.exists() else None
             status["static_dir_exists"] = static_dir.exists()
             status["js_dir_exists"] = js_dir.exists() if js_dir else False
-            
+
             if js_dir and js_dir.exists():
                 js_files = list(js_dir.glob("*.js"))
                 status["js_files_count"] = len(js_files)
                 status["js_files"] = [f.name for f in js_files]
-    
+
     return status
 
 
 def reinitialize_component() -> bool:
     """
     Attempt to reinitialize the component if it failed to load initially.
-    
+
     Returns:
         bool: True if reinitialization was successful, False otherwise
     """
     global _component_func
-    
+
     logger.info("Attempting to reinitialize component...")
-    
+
     if _RELEASE:
         frontend_dir = Path(__file__).parent / "frontend" / "build"
         if frontend_dir.exists():
             try:
                 import streamlit.components.v1 as components
+
                 _component_func = components.declare_component(
-                    "streamlit_lightweight_charts_pro",
-                    path=str(frontend_dir)
+                    "streamlit_lightweight_charts_pro", path=str(frontend_dir)
                 )
                 logger.info("Successfully reinitialized production component")
                 return True
@@ -138,16 +138,16 @@ def reinitialize_component() -> bool:
     else:
         try:
             import streamlit.components.v1 as components
+
             _component_func = components.declare_component(
-                "streamlit_lightweight_charts_pro",
-                url="http://localhost:3001"
+                "streamlit_lightweight_charts_pro", url="http://localhost:3001"
             )
             logger.info("Successfully reinitialized development component")
             return True
         except Exception as e:
             logger.error(f"Failed to reinitialize development component: {e}")
             return False
-    
+
     return False
 
 
@@ -156,17 +156,17 @@ if _RELEASE:
     # Production mode: Use built frontend files from the build directory
     frontend_dir = Path(__file__).parent / "frontend" / "build"
     logger.info(f"Checking frontend directory: {frontend_dir}")
-    
+
     if frontend_dir.exists():
         logger.info("Frontend directory exists, attempting to initialize component")
         try:
             import streamlit.components.v1 as components
+
             logger.info("Successfully imported streamlit.components.v1")
 
             # Declare the component with the built frontend files
             _component_func = components.declare_component(
-                "streamlit_lightweight_charts_pro",
-                path=str(frontend_dir)
+                "streamlit_lightweight_charts_pro", path=str(frontend_dir)
             )
             logger.info("Successfully initialized production component")
         except ImportError as e:
@@ -177,6 +177,7 @@ if _RELEASE:
             # Log warning if component initialization fails
             logger.error(f"Could not load frontend component: {e}")
             import traceback
+
             logger.error(f"Traceback: {traceback.format_exc()}")
             _component_func = None
     else:
@@ -189,12 +190,12 @@ else:
     logger.info("Development mode: attempting to initialize component with local server")
     try:
         import streamlit.components.v1 as components
+
         logger.info("Successfully imported streamlit.components.v1 for development")
 
         # Declare the component with development server URL
         _component_func = components.declare_component(
-            "streamlit_lightweight_charts_pro",
-            url="http://localhost:3001"
+            "streamlit_lightweight_charts_pro", url="http://localhost:3001"
         )
         logger.info("Successfully initialized development component")
     except ImportError as e:
@@ -205,5 +206,6 @@ else:
         # Log warning if development component initialization fails
         logger.error(f"Could not load development component: {e}")
         import traceback
+
         logger.error(f"Traceback: {traceback.format_exc()}")
         _component_func = None

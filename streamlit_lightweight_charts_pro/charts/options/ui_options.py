@@ -49,7 +49,22 @@ class RangeSwitcherOptions(Options):
 @chainable_field("price_format", str)
 @chainable_field("custom_template", str)
 class LegendOptions(Options):
-    """Legend configuration."""
+    """
+    Legend configuration with support for custom HTML templates.
+
+    The custom_template supports placeholders that will be replaced by the frontend:
+    - {title}: Series title/name
+    - {value}: Current value of the series
+    - {time}: Current time (if show_time is True)
+    - {color}: Series color
+    - {type}: Series type (Line, Candlestick, etc.)
+    - Any other field from the series data can be accessed as {field_name}
+
+    Example templates:
+    - "<span style='color: {color}'>{title}: {value}</span>"
+    - "<div><strong>{title}</strong><br/>Price: ${value}</div>"
+    - "<span class='legend-item'>{title} - {value} ({type})</span>"
+    """
 
     visible: bool = True
     type: str = "simple"
@@ -63,7 +78,7 @@ class LegendOptions(Options):
     border_color: str = "#e1e3e6"
     border_width: int = 1
     border_radius: int = 4
-    padding: int = 8
+    padding: int = 5  # Changed from 8 to 5 as requested
     margin: int = 4
     z_index: int = 1000
     show_last_value: bool = False

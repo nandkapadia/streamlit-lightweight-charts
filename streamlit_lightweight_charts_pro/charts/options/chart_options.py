@@ -49,7 +49,7 @@ from streamlit_lightweight_charts_pro.utils import chainable_field
 @chainable_field("tracking_mode", TrackingModeOptions)
 @chainable_field("localization", LocalizationOptions)
 @chainable_field("add_default_pane", bool)
-@chainable_field("legend", LegendOptions)
+@chainable_field("legends", dict)
 @chainable_field("trade_visualization", TradeVisualizationOptions)
 class ChartOptions(Options):
     """
@@ -79,7 +79,7 @@ class ChartOptions(Options):
         localization (Optional[LocalizationOptions]): Localization settings for date/time
                                                       formatting.
         add_default_pane (bool): Whether to add a default pane to the chart.
-        legend (Optional[LegendOptions]): Legend configuration for displaying series information.
+        legends (Optional[Dict[int, LegendOptions]]): Per-pane legend configurations.
         trade_visualization (Optional[TradeVisualizationOptions]): Trade visualization
             configuration options.
 
@@ -127,7 +127,7 @@ class ChartOptions(Options):
     # Localization and UI
     localization: Optional[LocalizationOptions] = None
     add_default_pane: bool = True
-    legend: Optional[LegendOptions] = None
+    legends: Optional[Dict[int, LegendOptions]] = None
 
     # Trade visualization options
     trade_visualization: Optional[TradeVisualizationOptions] = None
