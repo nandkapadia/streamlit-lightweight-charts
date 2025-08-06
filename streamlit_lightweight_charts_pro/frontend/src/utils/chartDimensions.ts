@@ -197,7 +197,7 @@ export const getChartDimensions = (
         
         // Log in development mode only
         if (process.env.NODE_ENV === 'development') {
-          console.debug('Chart dimensions calculated:', result);
+          // Chart dimensions calculated
         }
         
         stopTimer();

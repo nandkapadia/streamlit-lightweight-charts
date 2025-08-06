@@ -274,7 +274,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
   // Performance optimization: Enhanced cleanup function with better memory management
   const cleanupCharts = useCallback(() => {
-    console.log('[LightweightCharts] cleanupCharts called')
+    // Cleanup charts
     
     // Set disposing flag to prevent async operations
     // But don't set it if this is the initial render
@@ -1180,11 +1180,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
   // Initialize charts
   const initializeCharts = useCallback((isInitialRender = false) => {
-    console.log(`[LightweightCharts] initializeCharts called - isInitialRender: ${isInitialRender}, isInitialized: ${isInitializedRef.current}, isDisposing: ${isDisposingRef.current}`)
+          // Initialize charts
 
     // Prevent re-initialization if already initialized and not disposing
     if (isInitializedRef.current && !isDisposingRef.current) {
-      console.log('[LightweightCharts] Skipping initialization - already initialized')
+              // Skipping initialization - already initialized
       return
     }
     
@@ -1549,7 +1549,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
   }, []) // Empty dependency array since these functions are stable
 
   useEffect(() => {
-    console.log('[LightweightCharts] Main useEffect triggered')
+    // Main useEffect triggered
     
     // Check if this is the initial render (no previous values)
     const isInitialRender = prevConfigRef.current === null
@@ -1559,11 +1559,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     const widthChanged = !isInitialRender && width !== prevWidthRef.current
     const heightChanged = !isInitialRender && height !== prevHeightRef.current
 
-    console.log(`[LightweightCharts] Changes detected - config: ${configChanged}, width: ${widthChanged}, height: ${heightChanged}`)
+    // Changes detected
 
     // Always initialize on first render, or if there are actual changes
     if (!isInitialRender && !configChanged && !widthChanged && !heightChanged) {
-      console.log('[LightweightCharts] No changes detected, skipping initialization')
+      // No changes detected, skipping initialization
       return
     }
 

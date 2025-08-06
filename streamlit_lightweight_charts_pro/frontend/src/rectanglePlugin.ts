@@ -58,12 +58,92 @@ export class RectangleOverlayPlugin {
       // Set initial canvas size
       this.resizeCanvas();
 
-      // Listen for chart updates
+      // Listen for chart updates (time scale changes, panning, zooming)
       this.chart.timeScale().subscribeVisibleTimeRangeChange(() => {
         if (!this.isDisposed) {
           this.scheduleRedraw();
         }
       });
+
+      // Listen for crosshair movement (includes price scale changes and resize events)
+      this.chart.subscribeCrosshairMove(() => {
+        if (!this.isDisposed) {
+          // Check if this is a resize event by comparing canvas size
+          const currentRect = this.container?.getBoundingClientRect();
+          if (currentRect && this.canvas) {
+            const sizeChanged = currentRect.width !== this.canvas.width || currentRect.height !== this.canvas.height;
+            if (sizeChanged) {
+              this.handleResize();
+            } else {
+              // This is likely a price scale change or other chart update
+              this.scheduleRedraw();
+            }
+          } else {
+            this.scheduleRedraw();
+          }
+        }
+      });
+
+      // Add mouse event listeners for immediate response to price scale dragging
+      if (this.container) {
+        let isDragging = false;
+        let lastMouseY = 0;
+        
+        const handleMouseDown = (e: MouseEvent) => {
+          // Check if mouse is over the price scale area (right side of chart)
+          const rect = this.container!.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          
+          // If mouse is in the right price scale area, start tracking
+          if (mouseX > rect.width * 0.8) { // Right 20% of chart
+            isDragging = true;
+            lastMouseY = e.clientY;
+          }
+        };
+        
+        const handleMouseMove = (e: MouseEvent) => {
+          if (isDragging) {
+            const deltaY = Math.abs(e.clientY - lastMouseY);
+            if (deltaY > 2) { // Only redraw if there's significant movement
+              this.scheduleRedraw();
+              lastMouseY = e.clientY;
+            }
+          }
+        };
+        
+        const handleMouseUp = () => {
+          isDragging = false;
+        };
+        
+        this.container.addEventListener('mousedown', handleMouseDown);
+        this.container.addEventListener('mousemove', handleMouseMove);
+        this.container.addEventListener('mouseup', handleMouseUp);
+        
+        // Store event listeners for cleanup
+        (this as any).mouseListeners = { handleMouseDown, handleMouseMove, handleMouseUp };
+      }
+
+      // Also listen for any series data changes which might affect price scale
+      if (this.series) {
+        this.series.subscribeDataChanged(() => {
+          if (!this.isDisposed) {
+            this.scheduleRedraw();
+          }
+        });
+      }
+
+      // Use ResizeObserver for more reliable resize detection
+      if (window.ResizeObserver && this.container) {
+        const resizeObserver = new ResizeObserver(() => {
+          if (!this.isDisposed) {
+            this.handleResize();
+          }
+        });
+        resizeObserver.observe(this.container);
+        
+        // Store the observer for cleanup
+        (this as any).resizeObserver = resizeObserver;
+      }
 
       // Initial draw
       this.scheduleRedraw();
@@ -82,6 +162,14 @@ export class RectangleOverlayPlugin {
       this.canvas.style.width = `${rect.width}px`;
       this.canvas.style.height = `${rect.height}px`;
     }
+  }
+
+  private handleResize() {
+    // Resize the canvas
+    this.resizeCanvas();
+    
+    // Redraw rectangles with updated clipping boundaries
+    this.scheduleRedraw();
   }
 
   private scheduleRedraw() {
@@ -126,6 +214,25 @@ export class RectangleOverlayPlugin {
       // Calculate clipping boundaries
       const leftClip = leftPriceScale ? leftPriceScale.width() : 0;
       const rightClip = rightPriceScale ? this.canvas.width - rightPriceScale.width() : this.canvas.width;
+      
+      // Calculate bottom clipping boundary using chart's main content area
+      // Get the height of the chart's main drawing area (excluding X-axis)
+      let bottomClip = this.canvas.height - 40; // Default fallback
+      
+      if (this.container) {
+        try {
+          // Look for the main chart content area (usually the largest canvas or div)
+          const chartCanvas = this.container.querySelector('canvas');
+          if (chartCanvas) {
+            const canvasRect = chartCanvas.getBoundingClientRect();
+            const containerRect = this.container.getBoundingClientRect();
+            const canvasBottom = canvasRect.bottom - containerRect.top;
+            bottomClip = Math.min(bottomClip, canvasBottom);
+          }
+        } catch (e) {
+          // Fallback to default if canvas detection fails
+        }
+      }
 
       // Draw each rectangle
       for (const rect of this.rectangles) {
@@ -150,9 +257,9 @@ export class RectangleOverlayPlugin {
         // Draw rectangle with canvas clipping
         this.ctx.save();
         
-        // Set up clipping region
+        // Set up clipping region (left, top, width, height)
         this.ctx.beginPath();
-        this.ctx.rect(leftClip, 0, rightClip - leftClip, this.canvas.height);
+        this.ctx.rect(leftClip, 0, rightClip - leftClip, bottomClip);
         this.ctx.clip();
         
         // Set fill style
@@ -210,6 +317,21 @@ export class RectangleOverlayPlugin {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
+    }
+    
+    // Clean up ResizeObserver
+    if ((this as any).resizeObserver) {
+      (this as any).resizeObserver.disconnect();
+      (this as any).resizeObserver = null;
+    }
+    
+    // Clean up mouse event listeners
+    if (this.container && (this as any).mouseListeners) {
+      const { handleMouseDown, handleMouseMove, handleMouseUp } = (this as any).mouseListeners;
+      this.container.removeEventListener('mousedown', handleMouseDown);
+      this.container.removeEventListener('mousemove', handleMouseMove);
+      this.container.removeEventListener('mouseup', handleMouseUp);
+      (this as any).mouseListeners = null;
     }
     
     if (this.canvas && this.container) {

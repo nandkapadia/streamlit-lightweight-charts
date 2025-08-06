@@ -8,7 +8,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 export const perfLog = {
   log: (...args: any[]) => {
     if (isDevelopment) {
-      console.log(...args);
+      // Performance logging disabled in production
     }
   },
   warn: (...args: any[]) => {

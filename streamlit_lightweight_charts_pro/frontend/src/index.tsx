@@ -17,7 +17,7 @@ const App: React.FC = () => {
   // Generate unique component ID for debugging
   const componentId = useRef(`component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   
-  console.log(`[StreamlitComponent] Component ${componentId.current} initialized`)
+      // Component initialized
 
   // Report component ready state
   useEffect(() => {
@@ -29,7 +29,7 @@ const App: React.FC = () => {
             if (typeof Streamlit !== 'undefined' && Streamlit.setComponentReady) {
               isReadyRef.current = true
               Streamlit.setComponentReady()
-              console.log(`[StreamlitComponent] Component ${componentId.current} ready state set`)
+              // Component ready state set
             } else {
               console.warn('[StreamlitComponent] Streamlit object not available for component ready')
             }
@@ -54,7 +54,7 @@ const App: React.FC = () => {
         try {
           if (typeof Streamlit !== 'undefined' && Streamlit.setFrameHeight) {
             Streamlit.setFrameHeight(finalHeight)
-            console.log(`[StreamlitComponent] Component ${componentId.current} set frame height: ${finalHeight}`)
+            // Component set frame height
           } else {
             console.warn('[StreamlitComponent] Streamlit object not available')
           }
@@ -81,7 +81,7 @@ const App: React.FC = () => {
         try {
           if (typeof Streamlit !== 'undefined' && Streamlit.setFrameHeight) {
             Streamlit.setFrameHeight(finalHeight)
-            console.log(`[StreamlitComponent] Component ${componentId.current} report height: ${finalHeight}`)
+            // Component report height
           } else {
             console.warn('[StreamlitComponent] Streamlit object not available for height report')
           }
@@ -132,7 +132,7 @@ const App: React.FC = () => {
   useEffect(() => {
     return () => {
       isMountedRef.current = false
-      console.log(`[StreamlitComponent] Component ${componentId.current} unmounted`)
+      // Component unmounted
     }
   }, [])
 
