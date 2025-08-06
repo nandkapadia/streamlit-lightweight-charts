@@ -175,6 +175,8 @@ export interface ChartConfig {
   annotations?: Annotation[]  // Add chart-level annotations
   annotationLayers?: AnnotationLayer[]  // Add layer management
   chartId?: string
+  containerId?: string  // Add containerId for DOM element identification
+  chartOptions?: any  // Add chartOptions for processed chart configuration
   rangeSwitcher?: RangeSwitcherConfig
   legend?: LegendConfig
   tooltip?: TooltipConfig  // Add chart-level tooltip configuration

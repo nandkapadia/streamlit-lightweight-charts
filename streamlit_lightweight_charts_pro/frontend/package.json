@@ -16,7 +16,11 @@
     "streamlit-component-lib-react-hooks": "^1.2.8"
   },
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.5",
+    "webpack-bundle-analyzer": "^4.9.0",
+    "compression-webpack-plugin": "^10.0.0",
+    "terser-webpack-plugin": "^5.3.7"
   },
   "resolutions": {
     "react": "^18.3.1",
@@ -28,10 +32,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build:analyze": "GENERATE_SOURCEMAP=false npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:prod": "GENERATE_SOURCEMAP=false NODE_ENV=production react-scripts build"
   },
   "eslintConfig": {
     "extends": "react-app"

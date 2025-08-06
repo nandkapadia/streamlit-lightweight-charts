@@ -1030,6 +1030,16 @@ class Chart:
         """
         config = self.to_frontend_config()
         component_func = get_component_func()
+        
+        if component_func is None:
+            # Try to reinitialize the component
+            from streamlit_lightweight_charts_pro.component import reinitialize_component
+            if reinitialize_component():
+                component_func = get_component_func()
+            
+            if component_func is None:
+                raise RuntimeError("Component function not available. Please check if the component is properly initialized.")
+        
         kwargs = {"config": config}
 
         # Extract height and width from chart options and pass to frontend
@@ -1039,8 +1049,14 @@ class Chart:
             if hasattr(self.options, "width") and self.options.width is not None:
                 kwargs["width"] = self.options.width
 
-        if (
-            key is not None and isinstance(key, str) and key.strip()
-        ):  # Only add key if it's a non-empty string
-            kwargs["key"] = key
+        # Generate a unique key if none provided or if it's empty/invalid
+        if key is None or not isinstance(key, str) or not key.strip():
+            import time
+            import uuid
+            # Generate a unique key using timestamp and UUID
+            unique_id = str(uuid.uuid4())[:8]
+            key = f"chart_{int(time.time() * 1000)}_{unique_id}"
+        
+        kwargs["key"] = key
+        
         return component_func(**kwargs)
