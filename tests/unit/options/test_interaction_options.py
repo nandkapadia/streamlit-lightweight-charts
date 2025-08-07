@@ -130,13 +130,13 @@ class TestCrosshairLineOptions:
     def test_validation_visible(self):
         """Test validation of visible field."""
         options = CrosshairLineOptions()
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
             options.set_visible("invalid")
 
     def test_validation_label_visible(self):
         """Test validation of label_visible field."""
         options = CrosshairLineOptions()
-        with pytest.raises(TypeError, match="label_visible must be of type"):
+        with pytest.raises(TypeError, match="label_visible must be a boolean"):
             options.set_label_visible("invalid")
 
     def test_to_dict(self):
@@ -191,7 +191,7 @@ class TestCrosshairSyncOptions:
     def test_validation_suppress_series_animations(self):
         """Test validation of suppress_series_animations field."""
         options = CrosshairSyncOptions()
-        with pytest.raises(TypeError, match="suppress_series_animations must be of type"):
+        with pytest.raises(TypeError, match="suppress_series_animations must be a boolean"):
             options.set_suppress_series_animations("invalid")
 
     def test_to_dict(self):
@@ -223,13 +223,13 @@ class TestKineticScrollOptions:
     def test_validation_touch(self):
         """Test validation of touch field."""
         options = KineticScrollOptions()
-        with pytest.raises(TypeError, match="touch must be of type"):
+        with pytest.raises(TypeError, match="touch must be a boolean"):
             options.set_touch("invalid")
 
     def test_validation_mouse(self):
         """Test validation of mouse field."""
         options = KineticScrollOptions()
-        with pytest.raises(TypeError, match="mouse must be of type"):
+        with pytest.raises(TypeError, match="mouse must be a boolean"):
             options.set_mouse("invalid")
 
     def test_to_dict(self):
@@ -259,7 +259,7 @@ class TestTrackingModeOptions:
     def test_validation_exit_on_escape(self):
         """Test validation of exit_on_escape field."""
         options = TrackingModeOptions()
-        with pytest.raises(TypeError, match="exit_on_escape must be of type"):
+        with pytest.raises(TypeError, match="exit_on_escape must be a boolean"):
             options.set_exit_on_escape("invalid")
 
     def test_to_dict(self):

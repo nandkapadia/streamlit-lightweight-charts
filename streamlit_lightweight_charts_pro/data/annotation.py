@@ -178,7 +178,7 @@ class Annotation:
             pd.Timestamp: Pandas Timestamp object representing the
                 annotation time.
         """
-        return from_utc_timestamp(self._timestamp)
+        return pd.Timestamp(from_utc_timestamp(self._timestamp))
 
     def asdict(self) -> Dict[str, Any]:
         """
@@ -468,30 +468,28 @@ class AnnotationManager:
         """
         self.layers: Dict[str, AnnotationLayer] = {}
 
-    def create_layer(self, name: str) -> "AnnotationLayer":
+    def create_layer(self, name: str) -> "AnnotationManager":
         """
         Create a new annotation layer.
 
         Creates a new empty annotation layer with the specified name.
-        If a layer with that name already exists, returns the existing layer.
+        If a layer with that name already exists, returns self for method chaining.
 
         Args:
             name: Name for the new layer.
 
         Returns:
-            AnnotationLayer: The created or existing layer.
+            AnnotationManager: Self for method chaining.
 
         Example:
             ```python
-            layer = manager.create_layer("technical_analysis")
+            manager.create_layer("technical_analysis")
             ```
         """
-        if name in self.layers:
-            return self.layers[name]
-
-        layer = AnnotationLayer(name=name, annotations=[])
-        self.layers[name] = layer
-        return layer
+        if name not in self.layers:
+            layer = AnnotationLayer(name=name, annotations=[])
+            self.layers[name] = layer
+        return self
 
     def get_layer(self, name: str) -> Optional["AnnotationLayer"]:
         """
@@ -715,7 +713,7 @@ class AnnotationManager:
 
         Returns:
             Dict[str, Any]: Dictionary representation of all layers with
-                layer names as keys.
+                a "layers" wrapper containing layer names as keys.
         """
         return {"layers": {layer_name: layer.asdict() for layer_name, layer in self.layers.items()}}
 

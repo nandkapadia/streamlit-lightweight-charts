@@ -24,12 +24,15 @@ def _is_list_of_markers(value_type) -> bool:
             arg_type = args[0]
             # Check if it's MarkerBase or a subclass
             try:
+                # Lazy load MarkerBase to avoid circular imports
+                # pylint: disable=import-outside-toplevel
                 from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 
                 return issubclass(arg_type, MarkerBase) if hasattr(arg_type, "__mro__") else False
-            except ImportError:
+            except ImportError as exc:
                 # If we can't import MarkerBase, check the name
                 return hasattr(arg_type, "__name__") and "Marker" in arg_type.__name__
+    return False
 
 
 def _validate_list_of_markers(value, attr_name: str) -> bool:
@@ -38,18 +41,25 @@ def _validate_list_of_markers(value, attr_name: str) -> bool:
         raise TypeError(f"{attr_name} must be a list")
 
     try:
+        # Lazy load MarkerBase to avoid circular imports
+        # pylint: disable=import-outside-toplevel
         from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 
-        for item in value:
-            if not isinstance(item, MarkerBase):
-                raise TypeError(f"All items in {attr_name} must be instances of MarkerBase")
-        return True
-    except ImportError:
+        if MarkerBase is not None:
+            for item in value:
+                if not isinstance(item, MarkerBase):
+                    raise TypeError(f"All items in {attr_name} must be instances of MarkerBase")
+        else:
+            # If MarkerBase is None (e.g., when patched), check for marker-like attributes
+            for item in value:
+                if not hasattr(item, "time") or not hasattr(item, "position"):
+                    raise TypeError(f"All items in {attr_name} must be valid markers")
+    except ImportError as exc:
         # If we can't import MarkerBase, just check that all items have marker-like attributes
         for item in value:
             if not hasattr(item, "time") or not hasattr(item, "position"):
-                raise TypeError(f"All items in {attr_name} must be valid markers")
-        return True
+                raise TypeError(f"All items in {attr_name} must be valid markers") from exc
+    return True
 
 
 def chainable_property(
@@ -69,10 +79,12 @@ def chainable_property(
     Args:
         attr_name: The name of the attribute to manage
         value_type: Optional type or tuple of types for validation
-        validator: Optional validation function or string. If callable, takes a value and returns the validated value.
-                  If string, uses built-in validators (e.g., "color" for color validation)
+        validator: Optional validation function or string. If callable, takes a value and returns
+                  the validated value. If string, uses built-in validators (e.g., "color" for
+                  color validation)
         allow_none: Whether to allow None values
-        top_level: Whether this property should be output at the top level in asdict() instead of in options
+        top_level: Whether this property should be output at the top level in asdict() instead
+                  of in options
 
     Returns:
         Decorator function that creates both property and method
@@ -104,8 +116,9 @@ def chainable_property(
             # Apply type validation if specified
             if value_type is not None:
                 if value_type == bool:
-                    # For boolean properties, convert truthy/falsy values to bool
-                    value = bool(value)
+                    # For boolean properties, only accept actual boolean values
+                    if not isinstance(value, bool):
+                        raise TypeError(f"{attr_name} must be a boolean")
                 elif not isinstance(value, value_type):
                     # Create user-friendly error message
                     if value_type == str:
@@ -147,7 +160,8 @@ def chainable_property(
                     if validator == "color":
                         if not is_valid_color(value):
                             raise ValueError(
-                                f"Invalid color format for {attr_name}: {value!r}. Must be hex or rgba."
+                                f"Invalid color format for {attr_name}: {value!r}. "
+                                f"Must be hex or rgba."
                             )
                     elif validator == "price_format_type":
                         value = validate_price_format_type(value)
@@ -178,8 +192,9 @@ def chainable_property(
             # Apply type validation if specified
             if value_type is not None:
                 if value_type == bool:
-                    # For boolean properties, convert truthy/falsy values to bool
-                    value = bool(value)
+                    # For boolean properties, only accept actual boolean values
+                    if not isinstance(value, bool):
+                        raise TypeError(f"{attr_name} must be a boolean")
                 elif _is_list_of_markers(value_type):
                     # Special handling for List[MarkerBase] and similar types
                     _validate_list_of_markers(value, attr_name)
@@ -224,7 +239,8 @@ def chainable_property(
                     if validator == "color":
                         if not is_valid_color(value):
                             raise ValueError(
-                                f"Invalid color format for {attr_name}: {value!r}. Must be hex or rgba."
+                                f"Invalid color format for {attr_name}: {value!r}. "
+                                f"Must be hex or rgba."
                             )
                     elif validator == "price_format_type":
                         value = validate_price_format_type(value)
@@ -249,8 +265,10 @@ def chainable_property(
 
         # Store metadata about serialization
         if not hasattr(cls, "_chainable_properties"):
+            # pylint: disable=protected-access
             cls._chainable_properties = {}
 
+        # pylint: disable=protected-access
         cls._chainable_properties[attr_name] = {
             "allow_none": allow_none,
             "value_type": value_type,
@@ -262,6 +280,9 @@ def chainable_property(
     return decorator
 
 
+
+
+
 def chainable_field(
     field_name: str,
     value_type: Optional[Union[Type, tuple]] = None,
@@ -270,15 +291,15 @@ def chainable_field(
     """
     Decorator that creates a setter method for dataclass fields with optional validation.
 
-    This allows both styles:
-    - Direct assignment: obj.field = value
-    - Method chaining: obj.set_field(value).other_method()
+    This allows method chaining: obj.set_field(value).other_method()
+    Direct assignment is not validated (use setter methods for validation).
 
     Args:
         field_name: The name of the dataclass field
         value_type: Optional type or tuple of types for validation
-        validator: Optional validation function or string. If callable, takes a value and returns the validated value.
-                  If string, uses built-in validators (e.g., "color" for color validation)
+        validator: Optional validation function or string. If callable, takes a value and returns 
+                  the validated value. If string, uses built-in validators (e.g., "color" for 
+                  color validation)
 
     Returns:
         Decorator function that creates a setter method
@@ -300,36 +321,9 @@ def chainable_field(
 
         # Create the chaining setter method with validation
         def setter_method(self, value):
-            # Apply type validation if specified
-            if value_type is not None:
-                if _is_list_of_markers(value_type):
-                    # Special handling for List[MarkerBase] and similar types
-                    _validate_list_of_markers(value, field_name)
-                elif not isinstance(value, value_type):
-                    raise TypeError(f"{field_name} must be of type {value_type}, got {type(value)}")
-
-            # Apply custom validation if specified
-            if validator is not None:
-                if isinstance(validator, str):
-                    # Built-in validators
-                    if validator == "color":
-                        if not is_valid_color(value):
-                            raise ValueError(
-                                f"Invalid color format for {field_name}: {value!r}. Must be hex or rgba."
-                            )
-                    elif validator == "price_format_type":
-                        value = validate_price_format_type(value)
-                    elif validator == "precision":
-                        value = validate_precision(value)
-                    elif validator == "min_move":
-                        value = validate_min_move(value)
-                    else:
-                        raise ValueError(f"Unknown built-in validator: {validator}")
-                else:
-                    # Custom validator function
-                    value = validator(value)
-
-            setattr(self, field_name, value)
+            # Apply validation and set the value
+            validated_value = _validate_value(field_name, value, value_type, validator)
+            setattr(self, field_name, validated_value)
             return self
 
         # Add the method to the class
@@ -338,3 +332,43 @@ def chainable_field(
         return cls
 
     return decorator
+
+
+def _validate_value(field_name: str, value, value_type=None, validator=None):
+    """Helper function to validate a value."""
+    # Apply type validation if specified
+    if value_type is not None:
+        if value_type == bool:
+            # For boolean fields, only accept actual boolean values
+            if not isinstance(value, bool):
+                raise TypeError(f"{field_name} must be a boolean")
+        elif _is_list_of_markers(value_type):
+            # Special handling for List[MarkerBase] and similar types
+            _validate_list_of_markers(value, field_name)
+        elif not isinstance(value, value_type):
+            raise TypeError(
+                f"{field_name} must be of type {value_type}, got {type(value)}"
+            )
+
+    # Apply custom validation if specified
+    if validator is not None:
+        if isinstance(validator, str):
+            # Built-in validators
+            if validator == "color":
+                if not is_valid_color(value):
+                    raise ValueError(
+                        f"Invalid color format for {field_name}: {value!r}. "
+                        f"Must be hex or rgba."
+                    )
+            elif validator == "price_format_type":
+                value = validate_price_format_type(value)
+            elif validator == "precision":
+                value = validate_precision(value)
+            elif validator == "min_move":
+                value = validate_min_move(value)
+            else:
+                raise ValueError(f"Unknown built-in validator: {validator}")
+        else:
+            # Custom validator function
+            value = validator(value)
+    return value

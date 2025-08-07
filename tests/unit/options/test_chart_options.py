@@ -189,7 +189,7 @@ class TestChartOptionsValidation:
     def test_invalid_auto_size_type(self):
         """Test invalid auto_size type raises TypeError."""
         options = ChartOptions()
-        with pytest.raises(TypeError, match="auto_size must be of type"):
+        with pytest.raises(TypeError, match="auto_size must be a boolean"):
             options.set_auto_size("invalid")
 
     def test_invalid_layout_type(self):
@@ -237,13 +237,13 @@ class TestChartOptionsValidation:
     def test_invalid_handle_scroll_type(self):
         """Test invalid handle_scroll type raises TypeError."""
         options = ChartOptions()
-        with pytest.raises(TypeError, match="handle_scroll must be of type"):
+        with pytest.raises(TypeError, match="handle_scroll must be a boolean"):
             options.set_handle_scroll("invalid")
 
     def test_invalid_handle_scale_type(self):
         """Test invalid handle_scale type raises TypeError."""
         options = ChartOptions()
-        with pytest.raises(TypeError, match="handle_scale must be of type"):
+        with pytest.raises(TypeError, match="handle_scale must be a boolean"):
             options.set_handle_scale("invalid")
 
     def test_invalid_kinetic_scroll_type(self):
@@ -267,7 +267,7 @@ class TestChartOptionsValidation:
     def test_invalid_add_default_pane_type(self):
         """Test invalid add_default_pane type raises TypeError."""
         options = ChartOptions()
-        with pytest.raises(TypeError, match="add_default_pane must be of type"):
+        with pytest.raises(TypeError, match="add_default_pane must be a boolean"):
             options.set_add_default_pane("invalid")
 
     def test_invalid_trade_visualization_type(self):

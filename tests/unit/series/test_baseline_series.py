@@ -581,24 +581,30 @@ class TestBaselineSeriesEdgeCases:
         series = BaselineSeries(data=None)
         assert series.data == []
 
-    def test_boolean_conversion_for_relative_gradient(self):
-        """Test that relative_gradient properly converts various types to boolean."""
+    def test_boolean_validation_for_relative_gradient(self):
+        """Test that relative_gradient properly validates boolean values."""
         data = [BaselineData(time=1640995200, value=100.5)]
         series = BaselineSeries(data=data)
 
-        # Test various truthy values
-        series.relative_gradient = 1
+        # Test valid boolean values
+        series.relative_gradient = True
         assert series.relative_gradient is True
 
-        series.relative_gradient = "True"
-        assert series.relative_gradient is True
-
-        # Test various falsy values
-        series.relative_gradient = 0
+        series.relative_gradient = False
         assert series.relative_gradient is False
 
-        series.relative_gradient = ""
-        assert series.relative_gradient is False
+        # Test invalid values - should raise TypeError
+        with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
+            series.relative_gradient = 1
+
+        with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
+            series.relative_gradient = "True"
+
+        with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
+            series.relative_gradient = 0
+
+        with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
+            series.relative_gradient = ""
 
 
 class TestBaselineSeriesIntegration:

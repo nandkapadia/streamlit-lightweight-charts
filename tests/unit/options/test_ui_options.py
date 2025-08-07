@@ -63,7 +63,7 @@ class TestRangeSwitcherOptions:
     def test_validation_visible(self):
         """Test validation of visible field."""
         options = RangeSwitcherOptions()
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
             options.set_visible("invalid")
 
     def test_validation_ranges(self):
@@ -116,7 +116,7 @@ class TestLegendOptions:
     def test_validation_visible(self):
         """Test validation of visible field."""
         options = LegendOptions()
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
             options.set_visible("invalid")
 
     def test_validation_position(self):

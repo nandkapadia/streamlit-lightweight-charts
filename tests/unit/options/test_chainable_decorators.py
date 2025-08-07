@@ -236,7 +236,7 @@ class TestTypeValidation:
         opts.set_line_visible(False)
 
         # Invalid
-        with pytest.raises(TypeError, match="line_visible must be of type"):
+        with pytest.raises(TypeError, match="line_visible must be a boolean"):
             opts.set_line_visible("invalid")
 
     def test_enum_type_validation(self):

@@ -160,7 +160,8 @@ class Options(ABC):
                     # We'll process it recursively during asdict() call
                     setattr(self, field_name, value)
             else:
-                # Simple value assignment
+                # Simple value assignment - set the field directly to bypass validation
+                # This is what we want for the update method
                 setattr(self, field_name, value)
 
         return self

@@ -109,7 +109,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
 
             options.set_visible("invalid")
 
@@ -118,7 +118,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="auto_scale must be of type"):
+        with pytest.raises(TypeError, match="auto_scale must be a boolean"):
 
             options.set_auto_scale("invalid")
 
@@ -136,7 +136,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="invert_scale must be of type"):
+        with pytest.raises(TypeError, match="invert_scale must be a boolean"):
 
             options.set_invert_scale("invalid")
 
@@ -145,7 +145,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="border_visible must be of type"):
+        with pytest.raises(TypeError, match="border_visible must be a boolean"):
 
             options.set_border_visible("invalid")
 
@@ -166,7 +166,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="ticks_visible must be of type"):
+        with pytest.raises(TypeError, match="ticks_visible must be a boolean"):
 
             options.set_ticks_visible("invalid")
 
@@ -175,7 +175,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="ensure_edge_tick_marks_visible must be of type"):
+        with pytest.raises(TypeError, match="ensure_edge_tick_marks_visible must be a boolean"):
 
             options.set_ensure_edge_tick_marks_visible("invalid")
 
@@ -184,7 +184,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="align_labels must be of type"):
+        with pytest.raises(TypeError, match="align_labels must be a boolean"):
 
             options.set_align_labels("invalid")
 
@@ -193,7 +193,7 @@ class TestPriceScaleOptions:
 
         options = PriceScaleOptions()
 
-        with pytest.raises(TypeError, match="entire_text_only must be of type"):
+        with pytest.raises(TypeError, match="entire_text_only must be a boolean"):
 
             options.set_entire_text_only("invalid")
 

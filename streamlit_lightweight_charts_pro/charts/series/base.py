@@ -248,14 +248,26 @@ class Series(ABC):
                     else:
                         # No DatetimeIndex level found, check if any level name matches
                         if time_col in df.index.names:
-                            # Reset the matching level
-                            df = df.reset_index(level=time_col)
+                            # Reset the entire MultiIndex to get all levels as columns
+                            df = df.reset_index()
                         else:
-                            # No matching level found
-                            raise ValueError(
-                                f"Time column '{time_col}' not found in DataFrame columns and no "
-                                f"DatetimeIndex available in the index"
-                            )
+                            # No matching level found, check if time_col is "index" or integer level position
+                            if time_col == "index":
+                                # Reset the entire MultiIndex to get all levels as columns
+                                df = df.reset_index()
+                            else:
+                                # Check if time_col is an integer level position
+                                try:
+                                    level_idx = int(time_col)
+                                    if 0 <= level_idx < len(df.index.levels):
+                                        # Reset the entire MultiIndex to get all levels as columns
+                                        df = df.reset_index()
+                                    else:
+                                        # Invalid level position, just pass through
+                                        pass
+                                except ValueError:
+                                    # Not an integer, just pass through
+                                    pass
                 else:
                     # No DatetimeIndex found
                     # Check if time_col is "index" and we have a regular index to reset
@@ -265,6 +277,9 @@ class Series(ABC):
                         df = df.reset_index()
                         new_col_name = idx_name if idx_name is not None else "index"
                         column_mapping["time"] = new_col_name
+                    elif time_col == df.index.name:
+                        # Time column matches index name, reset the index
+                        df = df.reset_index()
                     else:
                         raise ValueError(
                             f"Time column '{time_col}' not found in DataFrame columns and no "

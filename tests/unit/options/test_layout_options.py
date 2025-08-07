@@ -199,7 +199,7 @@ class TestGridLineOptions:
 
         options = GridLineOptions()
 
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
 
             options.set_visible("invalid")
 
@@ -257,7 +257,7 @@ class TestPaneOptions:
 
         options = PaneOptions()
 
-        with pytest.raises(TypeError, match="enable_resize must be of type"):
+        with pytest.raises(TypeError, match="enable_resize must be a boolean"):
 
             options.set_enable_resize("invalid")
 
@@ -310,7 +310,7 @@ class TestWatermarkOptions:
 
         options = WatermarkOptions()
 
-        with pytest.raises(TypeError, match="visible must be of type"):
+        with pytest.raises(TypeError, match="visible must be a boolean"):
 
             options.set_visible("invalid")
 

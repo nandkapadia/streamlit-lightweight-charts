@@ -149,11 +149,18 @@ class TestBarSeriesProperties:
         with pytest.raises(TypeError, match="down_color must be a string"):
             series.down_color = None
 
-        # Test boolean validation
-        series.open_visible = "True"
+        # Test boolean validation - should raise TypeError for non-boolean values
+        with pytest.raises(TypeError, match="open_visible must be a boolean"):
+            series.open_visible = "True"
+
+        with pytest.raises(TypeError, match="thin_bars must be a boolean"):
+            series.thin_bars = 1
+
+        # Test valid boolean values
+        series.open_visible = True
         assert series.open_visible is True
 
-        series.thin_bars = 1
+        series.thin_bars = True
         assert series.thin_bars is True
 
 

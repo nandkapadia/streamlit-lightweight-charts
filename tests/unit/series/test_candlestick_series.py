@@ -245,23 +245,36 @@ class TestCandlestickSeriesProperties:
         with pytest.raises(ValueError):
             series.up_color = "invalid_color"
 
-    def test_boolean_conversion(self):
-        """Test boolean conversion for boolean properties."""
+    def test_boolean_validation(self):
+        """Test boolean validation for boolean properties."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        # Test various truthy/falsy values
-        series.wick_visible = 1
+        # Test valid boolean values
+        series.wick_visible = True
         assert series.wick_visible is True
 
-        series.wick_visible = 0
+        series.wick_visible = False
         assert series.wick_visible is False
 
-        series.border_visible = "true"
+        series.border_visible = True
         assert series.border_visible is True
 
-        series.border_visible = ""
+        series.border_visible = False
         assert series.border_visible is False
+
+        # Test invalid values - should raise TypeError
+        with pytest.raises(TypeError, match="wick_visible must be a boolean"):
+            series.wick_visible = 1
+
+        with pytest.raises(TypeError, match="wick_visible must be a boolean"):
+            series.wick_visible = 0
+
+        with pytest.raises(TypeError, match="border_visible must be a boolean"):
+            series.border_visible = "true"
+
+        with pytest.raises(TypeError, match="border_visible must be a boolean"):
+            series.border_visible = ""
 
 
 class TestCandlestickSeriesSerialization:
@@ -633,27 +646,43 @@ class TestCandlestickSeriesEdgeCases:
         assert series.data[0].open == 1000000
         assert series.data[0].high == 1000001
 
-    def test_boolean_conversion_for_wick_visible(self):
-        """Test boolean conversion for wick_visible."""
+    def test_boolean_validation_for_wick_visible(self):
+        """Test boolean validation for wick_visible."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        series.wick_visible = 1
+        # Test valid boolean values
+        series.wick_visible = True
         assert series.wick_visible is True
 
-        series.wick_visible = 0
+        series.wick_visible = False
         assert series.wick_visible is False
 
-    def test_boolean_conversion_for_border_visible(self):
-        """Test boolean conversion for border_visible."""
+        # Test invalid values - should raise TypeError
+        with pytest.raises(TypeError, match="wick_visible must be a boolean"):
+            series.wick_visible = 1
+
+        with pytest.raises(TypeError, match="wick_visible must be a boolean"):
+            series.wick_visible = 0
+
+    def test_boolean_validation_for_border_visible(self):
+        """Test boolean validation for border_visible."""
         data = [CandlestickData(time=1640995200, open=100, high=105, low=98, close=103)]
         series = CandlestickSeries(data=data)
 
-        series.border_visible = "true"
+        # Test valid boolean values
+        series.border_visible = True
         assert series.border_visible is True
 
-        series.border_visible = ""
+        series.border_visible = False
         assert series.border_visible is False
+
+        # Test invalid values - should raise TypeError
+        with pytest.raises(TypeError, match="border_visible must be a boolean"):
+            series.border_visible = "true"
+
+        with pytest.raises(TypeError, match="border_visible must be a boolean"):
+            series.border_visible = ""
 
 
 class TestCandlestickSeriesInheritance:
