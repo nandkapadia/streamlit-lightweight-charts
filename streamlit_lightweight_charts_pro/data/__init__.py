@@ -1,11 +1,46 @@
 """
-Data model classes for streamlit-lightweight-charts.
+Data model classes for Streamlit Lightweight Charts Pro.
 
 This module provides the core data models used throughout the library for
-representing financial data points, markers, and other chart elements.
+representing financial data points, markers, annotations, and other chart elements.
+It serves as the foundation for all data handling and visualization in the library.
 
 The data models are designed to be flexible and support various input formats
-while maintaining consistency in the internal representation.
+while maintaining consistency in the internal representation. They provide
+type safety and validation for financial data structures.
+
+The module includes:
+    - Base data classes: Data, SingleValueData, LineData, etc.
+    - OHLC data classes: CandlestickData, OhlcvData, BarData
+    - Specialized data classes: AreaData, BaselineData, HistogramData, BandData
+    - Marker classes: MarkerBase, PriceMarker, BarMarker, Marker
+    - Annotation system: Annotation, AnnotationLayer, AnnotationManager
+    - Trade visualization: TradeData, TradeType, TradeVisualizationOptions
+    - Tooltip system: TooltipConfig, TooltipManager, various tooltip creators
+    - Signal data: SignalData for signal-based visualizations
+
+Example Usage:
+    ```python
+    from streamlit_lightweight_charts_pro.data import (
+        SingleValueData, CandlestickData, Marker, create_text_annotation
+    )
+
+    # Create single value data
+    data = [SingleValueData("2024-01-01", 100), SingleValueData("2024-01-02", 105)]
+
+    # Create OHLC data
+    ohlc_data = [CandlestickData("2024-01-01", 100, 105, 98, 102, 1000)]
+
+    # Create markers
+    marker = Marker("2024-01-01", 100, MarkerPosition.ABOVE_BAR, MarkerShape.CIRCLE)
+
+    # Create annotations
+    annotation = create_text_annotation("2024-01-01", 100, "Important Event")
+    ```
+
+Version: 0.1.0
+Author: Streamlit Lightweight Charts Contributors
+License: MIT
 """
 
 from streamlit_lightweight_charts_pro.charts.options.trade_visualization_options import (

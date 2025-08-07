@@ -44,6 +44,7 @@ setuptools.setup(
     install_requires=[
         "streamlit>=1.0",
         "pandas>=1.0",
+        "numpy>=1.19",
     ],
     extras_require={
         "dev": [

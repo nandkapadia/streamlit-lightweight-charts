@@ -1,15 +1,57 @@
-"""Chart options package for streamlit-lightweight-charts.
+"""
+Chart options package for Streamlit Lightweight Charts Pro.
 
-This package contains all chart option classes organized by functionality:
-- base_options.py: Base Options class for all option classes
-- chart_options.py: Main ChartOptions class
-- layout_options.py: Layout, Grid, Watermark options
-- interaction_options.py: Crosshair, KineticScroll, TrackingMode options
-- scale_options.py: TimeScale options
-- price_scale_options.py: PriceScaleOptions options
-- ui_options.py: Legend and RangeSwitcher options
-- localization_options.py: Localization options
-- trade_visualization_options.py: Trade visualization options
+This package contains all chart option classes organized by functionality.
+These options provide comprehensive customization capabilities for charts,
+allowing fine-grained control over appearance, behavior, and interaction.
+
+The package includes:
+    - base_options.py: Base Options class for all option classes
+    - chart_options.py: Main ChartOptions class
+    - layout_options.py: Layout, Grid, Watermark options
+    - interaction_options.py: Crosshair, KineticScroll, TrackingMode options
+    - time_scale_options.py: TimeScale options
+    - price_scale_options.py: PriceScaleOptions options
+    - ui_options.py: Legend and RangeSwitcher options
+    - localization_options.py: Localization options
+    - trade_visualization_options.py: Trade visualization options
+    - line_options.py: Line styling options
+    - price_format_options.py: Price formatting options
+    - price_line_options.py: Price line options
+
+These options enable comprehensive chart customization including:
+    - Visual styling (colors, fonts, layouts)
+    - Interaction behavior (crosshairs, scrolling, tracking)
+    - Scale configuration (time and price scales)
+    - UI elements (legends, watermarks, tooltips)
+    - Localization and formatting
+    - Trade visualization features
+
+Example Usage:
+    ```python
+    from streamlit_lightweight_charts_pro.charts.options import (
+        ChartOptions, LayoutOptions, GridOptions
+    )
+
+    # Create chart options
+    options = ChartOptions(
+        layout=LayoutOptions(
+            background_color="#ffffff",
+            text_color="#000000"
+        ),
+        grid=GridOptions(
+            vert_lines=GridLineOptions(color="#e1e1e1"),
+            horz_lines=GridLineOptions(color="#e1e1e1")
+        )
+    )
+
+    # Apply to chart
+    chart = Chart().update_options(options)
+    ```
+
+Version: 0.1.0
+Author: Streamlit Lightweight Charts Contributors
+License: MIT
 """
 
 from streamlit_lightweight_charts_pro.charts.options.base_options import Options
