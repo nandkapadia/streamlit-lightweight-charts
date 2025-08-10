@@ -157,7 +157,6 @@ with col1:
         index=0,
         key="pos0",
     )
-    show_last_value_0 = st.checkbox("Show Last Value", value=True, key="last0")
 
 with col2:
     st.subheader("Pane 1 (RSI)")
@@ -167,7 +166,6 @@ with col2:
         index=2,
         key="pos1",
     )
-    show_last_value_1 = st.checkbox("Show Last Value", value=False, key="last1")
 
 with col3:
     st.subheader("Pane 2 (Volume)")
@@ -177,7 +175,6 @@ with col3:
         index=1,
         key="pos2",
     )
-    show_last_value_2 = st.checkbox("Show Last Value", value=True, key="last2")
 
 # Create the chart with custom legends for each pane
 multi_pane_chart = Chart(
@@ -195,8 +192,6 @@ multi_pane_chart = Chart(
             0: LegendOptions(
                 visible=True,
                 position=legend_position_0,
-                show_last_value=show_last_value_0,
-                font_size=12,
                 background_color="rgba(255, 255, 255, 0.95)",
                 border_color="#e1e3e6",
                 border_width=1,
@@ -204,13 +199,11 @@ multi_pane_chart = Chart(
                 padding=5,
                 margin=4,
                 z_index=1000,
-                custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'><span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span><span style='font-weight: bold;'>{title}</span><span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span></div>",
+                text="<div style='display: flex; align-items: center; margin-bottom: 4px;'><span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span><span style='font-weight: bold;'>{title}</span><span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span></div>",
             ),
             1: LegendOptions(
                 visible=True,
                 position=legend_position_1,
-                show_last_value=show_last_value_1,
-                font_size=10,
                 background_color="rgba(255, 255, 255, 0.9)",
                 border_color="#9c27b0",
                 border_width=1,
@@ -218,13 +211,11 @@ multi_pane_chart = Chart(
                 padding=5,
                 margin=4,
                 z_index=1000,
-                custom_template="<div style='color: {color}; font-size: 11px;'><strong>{title}</strong>: {value}</div>",
+                text="<div style='color: {color}; font-size: 11px;'><strong>{title}</strong>: {value}</div>",
             ),
             2: LegendOptions(
                 visible=True,
                 position=legend_position_2,
-                show_last_value=show_last_value_2,
-                font_size=11,
                 background_color="rgba(255, 255, 255, 0.9)",
                 border_color="#ff5722",
                 border_width=1,
@@ -232,7 +223,7 @@ multi_pane_chart = Chart(
                 padding=5,
                 margin=4,
                 z_index=1000,
-                custom_template="<div style='display: flex; align-items: center;'><span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span><span>{title}</span><span style='margin-left: 6px; color: {color};'>{value}</span></div>",
+                text="<div style='display: flex; align-items: center;'><span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span><span>{title}</span><span style='margin-left: 6px; color: {color};'>{value}</span></div>",
             ),
         },
     ),
@@ -278,8 +269,7 @@ with col1:
         """
 LegendOptions(
     position="top-right",
-    show_last_value=True,
-    custom_template="<div style='display: flex; align-items: center; margin-bottom: 4px;'>
+    text="<div style='display: flex; align-items: center; margin-bottom: 4px;'>
         <span style='width: 12px; height: 2px; background-color: {color}; margin-right: 6px; display: inline-block;'></span>
         <span style='font-weight: bold;'>{title}</span>
         <span style='margin-left: 8px; color: {color}; font-weight: bold;'>{value}</span>
@@ -294,8 +284,7 @@ with col2:
         """
 LegendOptions(
     position="bottom-left",
-    show_last_value=False,
-    custom_template="<div style='color: {color}; font-size: 11px;'>
+    text="<div style='color: {color}; font-size: 11px;'>
         <strong>{title}</strong>: {value}
     </div>"
 )
@@ -308,8 +297,7 @@ with col3:
         """
 LegendOptions(
     position="top-left",
-    show_last_value=True,
-    custom_template="<div style='display: flex; align-items: center;'>
+    text="<div style='display: flex; align-items: center;'>
         <span style='width: 8px; height: 8px; background-color: {color}; margin-right: 4px; border-radius: 2px;'></span>
         <span>{title}</span>
         <span style='margin-left: 6px; color: {color};'>{value}</span>
@@ -322,11 +310,11 @@ st.markdown("### Available Template Placeholders")
 
 st.markdown(
     """
-The `custom_template` supports the following placeholders that will be replaced by the frontend:
+The `text` field supports the following placeholders that will be replaced by the frontend:
 
 - **{title}**: Series title/name
 - **{value}**: Current value of the series
-- **{time}**: Current time (if show_time is True)
+- **{time}**: Current time
 - **{color}**: Series color
 - **{type}**: Series type (Line, Candlestick, etc.)
 - **Any other field**: Any other field from the series data can be accessed as {field_name}

@@ -72,7 +72,7 @@ class TestChartOptionsConstruction:
 
     def test_legends_construction(self):
         """Test construction with legends dict."""
-        legend1 = LegendOptions(position="top-left", show_last_value=True)
+        legend1 = LegendOptions(position="top-left")
         legend2 = LegendOptions(position="bottom-right", visible=False)
 
         options = ChartOptions(legends={0: legend1, 1: legend2, 2: LegendOptions(visible=False)})
@@ -131,8 +131,7 @@ class TestChartOptionsLegends:
         """Test legends serialization."""
         legend1 = LegendOptions(
             position="top-left",
-            show_last_value=True,
-            custom_template="<span>{title}: {value}</span>",
+            text="<span>{title}: {value}</span>",
         )
         legend2 = LegendOptions(position="bottom-right", visible=False)
 
@@ -143,8 +142,7 @@ class TestChartOptionsLegends:
         assert "0" in result["legends"]
         assert "1" in result["legends"]
         assert result["legends"]["0"]["position"] == "top-left"
-        assert result["legends"]["0"]["showLastValue"] is True
-        assert result["legends"]["0"]["customTemplate"] == "<span>{title}: {value}</span>"
+        assert result["legends"]["0"]["text"] == "<span>{title}: {value}</span>"
         assert result["legends"]["1"]["visible"] is False
 
     def test_legends_empty_dict(self):

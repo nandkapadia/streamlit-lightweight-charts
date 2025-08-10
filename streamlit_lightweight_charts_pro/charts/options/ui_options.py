@@ -29,13 +29,8 @@ class RangeSwitcherOptions(Options):
 
 @dataclass
 @chainable_field("visible", bool)
-@chainable_field("type", str)
 @chainable_field("position", str)
 @chainable_field("symbol_name", str)
-@chainable_field("font_size", int)
-@chainable_field("font_family", str)
-@chainable_field("font_weight", str)
-@chainable_field("color", str)
 @chainable_field("background_color", str)
 @chainable_field("border_color", str)
 @chainable_field("border_width", int)
@@ -43,19 +38,16 @@ class RangeSwitcherOptions(Options):
 @chainable_field("padding", int)
 @chainable_field("margin", int)
 @chainable_field("z_index", int)
-@chainable_field("show_last_value", bool)
-@chainable_field("show_time", bool)
-@chainable_field("show_symbol", bool)
 @chainable_field("price_format", str)
-@chainable_field("custom_template", str)
+@chainable_field("text", str)
 class LegendOptions(Options):
     """
     Legend configuration with support for custom HTML templates.
 
-    The custom_template supports placeholders that will be replaced by the frontend:
+    The text supports placeholders that will be replaced by the frontend:
     - {title}: Series title/name
     - {value}: Current value of the series
-    - {time}: Current time (if show_time is True)
+    - {time}: Current time
     - {color}: Series color
     - {type}: Series type (Line, Candlestick, etc.)
     - Any other field from the series data can be accessed as {field_name}
@@ -67,13 +59,8 @@ class LegendOptions(Options):
     """
 
     visible: bool = True
-    type: str = "simple"
     position: str = "top-right"
     symbol_name: str = ""
-    font_size: int = 12
-    font_family: str = "Arial, sans-serif"
-    font_weight: str = "normal"
-    color: str = "#131722"
     background_color: str = "rgba(255, 255, 255, 0.9)"
     border_color: str = "#e1e3e6"
     border_width: int = 1
@@ -81,8 +68,5 @@ class LegendOptions(Options):
     padding: int = 5  # Changed from 8 to 5 as requested
     margin: int = 4
     z_index: int = 1000
-    show_last_value: bool = False
-    show_time: bool = False
-    show_symbol: bool = True
     price_format: str = ""
-    custom_template: str = ""
+    text: str = ""

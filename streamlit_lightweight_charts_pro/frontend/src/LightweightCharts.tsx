@@ -26,7 +26,6 @@ import { getChartDimensions } from './utils/chartDimensions'
 import { cleanLineStyleOptions } from './utils/lineStyle'
 import { createSeries } from './utils/seriesFactory'
 import { 
-  perfLog, 
   getCachedDOMElement, 
   createOptimizedStyles
 } from './utils/performance'
@@ -63,7 +62,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
   // Store function references to avoid dependency issues
   const functionRefs = useRef<{
     addTradeVisualization: any
-    addTradeVisualizationWhenReady: any
+    // addTradeVisualizationWhenReady: any  // Removed - no longer needed
     addAnnotations: any
     addModularTooltip: any
     addAnnotationLayers: any
@@ -76,7 +75,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     cleanupCharts: any
   }>({
     addTradeVisualization: null,
-    addTradeVisualizationWhenReady: null,
+    // addTradeVisualizationWhenReady: null,  // Removed - no longer needed
     addAnnotations: null,
     addModularTooltip: null,
     addAnnotationLayers: null,
@@ -199,7 +198,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
         const maxRetries = 50; // Prevent infinite loops
         const currentChartId = chart.chartElement().id || 'default';
 
+        console.log('🔍 [handleDataLoaded] Called with retryCount:', retryCount, 'chartId:', currentChartId)
+        console.log('🔍 [handleDataLoaded] Chart config trades:', chartConfigs.current[currentChartId]?.trades?.length || 0)
+
         if (retryCount >= maxRetries) {
+          console.log('❌ [handleDataLoaded] Max retries reached')
           return;
         }
 
@@ -213,21 +216,21 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
             return
           }
 
+          // Trade visualization is now handled synchronously in createSeries
+          // No need to wait for trade data or call addTradeVisualizationWhenReady
+
           // Check if chart has a visible range (more reliable than checking series data)
           const visibleRange = timeScale.getVisibleRange()
 
           if (visibleRange && visibleRange.from && visibleRange.to) {
             timeScale.fitContent()
-
-            // Add trade visualization when chart is ready
-            await functionRefs.current.addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
+            // Trade visualization is now handled synchronously in createSeries
           } else {
             // If no visible range, try again after a short delay
             setTimeout(async () => {
               try {
                 timeScale.fitContent()
-                // Add trade visualization when chart is ready
-                await functionRefs.current.addTradeVisualizationWhenReady(chart, chartConfigs.current[currentChartId])
+                // Trade visualization is now handled synchronously in createSeries
               } catch (error) {
                 // fitContent after delay failed
               }
@@ -246,7 +249,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       // Call fitContent after a longer delay to ensure data is loaded
       fitContentTimeoutRef.current = setTimeout(async () => {
         await handleDataLoaded();
-      }, 500)
+      }, 1000) // Increased delay to wait for trade data
     }
 
     // Setup double-click to fit content
@@ -356,7 +359,15 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
 
   const addTradeVisualization = useCallback(async (chart: IChartApi, series: ISeriesApi<any>, trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]) => {
+    console.log('🎯 [addTradeVisualization] Called with:', {
+      tradesCount: trades?.length || 0,
+      hasSeries: !!series,
+      hasChartData: !!chartData,
+      options: options
+    })
+
     if (!trades || trades.length === 0) {
+      console.log('❌ [addTradeVisualization] No trades provided')
       return;
     }
 
@@ -364,7 +375,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     const timeScale = chart.timeScale();
     const visibleRange = timeScale.getVisibleRange();
 
+    console.log('🎯 [addTradeVisualization] Visible range:', visibleRange)
+
     if (!visibleRange || !visibleRange.from || !visibleRange.to) {
+      console.log('❌ [addTradeVisualization] No visible range, returning')
       return;
     }
 
@@ -373,9 +387,14 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       const priceScaleId = 'right';
 
       // Create visual elements for trade visualization
+      console.log('🎯 [addTradeVisualization] Creating visual elements...')
       const visualElements = createTradeVisualElements(trades, options, chartData, priceScaleId);
       
-      // Visual elements created
+      console.log('🎯 [addTradeVisualization] Visual elements created:', {
+        markersCount: visualElements.markers?.length || 0,
+        rectanglesCount: visualElements.rectangles?.length || 0,
+        annotationsCount: visualElements.annotations?.length || 0
+      })
 
       // Add markers to the series
       if (visualElements.markers.length > 0) {
@@ -388,8 +407,11 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
       // Add rectangles using the canvas overlay approach (following official example)
       const chartId = chart.chartElement().id || 'default';
+      console.log('🎯 [addTradeVisualization] Setting up rectangle plugin for chart:', chartId)
+      
       // Use the RectangleOverlayPlugin instead of TradeRectanglePlugin
       if (!rectanglePluginRefs.current[chartId]) {
+        console.log('🎯 [addTradeVisualization] Creating new rectangle plugin')
         const rectanglePlugin = new RectangleOverlayPlugin();
         rectanglePlugin.setChart(chart, series);
         rectanglePluginRefs.current[chartId] = rectanglePlugin;
@@ -398,15 +420,21 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       const rectanglePlugin = rectanglePluginRefs.current[chartId];
 
       // Clear existing rectangles and add new ones
+      console.log('🎯 [addTradeVisualization] Clearing existing rectangles')
       rectanglePlugin.clearRectangles();
 
       if (visualElements.rectangles.length > 0) {
+        console.log('🎯 [addTradeVisualization] Adding', visualElements.rectangles.length, 'rectangles')
         visualElements.rectangles.forEach((rect, index) => {
+          console.log('🎯 [addTradeVisualization] Adding rectangle', index, ':', rect)
           rectanglePlugin.addRectangle(rect);
         });
 
         // Force redraw of the canvas overlay
+        console.log('🎯 [addTradeVisualization] Scheduling redraw')
         rectanglePlugin.scheduleRedraw();
+      } else {
+        console.log('❌ [addTradeVisualization] No rectangles to add')
       }
 
       // Add annotations to the series
@@ -430,84 +458,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     }
   }, [])
 
-  const addTradeVisualizationWhenReady = useCallback(async (chart: IChartApi, chartConfig: ChartConfig) => {
-    const chartId = chart.chartElement().id || 'default'
-
-    if (!chartConfig.trades || chartConfig.trades.length === 0) {
-      return;
-    }
-
-    // Wait for series to be available and find the candlestick series
-    let retryCount = 0;
-    const maxRetries = 10;
-
-    while (retryCount < maxRetries) {
-      const seriesList = seriesRefs.current[chartId];
-      if (seriesList && seriesList.length > 0) {
-        break;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-      retryCount++;
-    }
-
-    // Check if chart is still valid
-    if (!chart || !chart.chartElement()) {
-      return;
-    }
-
-    const seriesList = seriesRefs.current[chartId];
-    if (!seriesList || seriesList.length === 0) {
-      return;
-    }
-
-    // Find the candlestick series specifically
-    let candlestickSeries = null;
-    let candlestickSeriesIndex = -1;
-
-    for (let i = 0; i < seriesList.length; i++) {
-      const series = seriesList[i];
-      try {
-        // Check if this is a candlestick series by looking at its type
-        const seriesType = series.seriesType();
-        if (seriesType === 'Candlestick') {
-          candlestickSeries = series;
-          candlestickSeriesIndex = i;
-          break;
-        }
-      } catch (error) {
-        // Series might be disposed, continue to next
-        continue;
-      }
-    }
-
-    if (!candlestickSeries) {
-      candlestickSeries = seriesList[0];
-      candlestickSeriesIndex = 0;
-    }
-
-    // Check if series is still valid
-    try {
-      candlestickSeries.priceScale();
-    } catch (error) {
-      return;
-    }
-
-    // Use trade visualization options from chart config or default
-    const tradeOptions = chartConfig.tradeVisualizationOptions || {
-      style: 'markers',
-      entryMarkerColorLong: '#2196F3',
-      entryMarkerColorShort: '#FF9800',
-      exitMarkerColorProfit: '#4CAF50',
-      exitMarkerColorLoss: '#F44336'
-    };
-
-
-
-    // Add trade visualization now that chart is ready - use candlestick series data
-    const candlestickSeriesData = chartConfig.series?.[candlestickSeriesIndex]?.data || chartConfig.series?.[0]?.data;
-    await functionRefs.current.addTradeVisualization(chart, candlestickSeries, chartConfig.trades, tradeOptions, candlestickSeriesData);
-  }, [])
+  // Trade visualization is now handled synchronously in createSeries function
+  // No need for addTradeVisualizationWhenReady anymore
 
   const addAnnotations = useCallback((chart: IChartApi, annotations: Annotation[] | { layers: any }) => {
     // Handle annotation manager structure from Python side
@@ -746,6 +698,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       const { timeScalePositionAndSize, priceScalePositionAndSize } =
         await getChartDimensions(chart, container)
 
+
+
       legendContainers.forEach((legendContainer) => {
         const className = legendContainer.className
         const paneIdMatch = className.match(/chart-legend-pane-(\d+)/)
@@ -831,7 +785,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
   // Store legend element references for dynamic updates
   const legendElementsRef = useRef<Map<string, HTMLElement>>(new Map())
-  const legendSeriesDataRef = useRef<Map<string, { series: ISeriesApi<any>, legendConfig: LegendConfig, paneId: number }[]>>(new Map())
+  const legendSeriesDataRef = useRef<Map<string, { series: ISeriesApi<any>, legendConfig: LegendConfig, paneId: number, seriesName: string }[]>>(new Map())
 
   // Function to update legend values based on crosshair position
   const updateLegendValues = useCallback((chart: IChartApi, chartId: string, param: MouseEventParams) => {
@@ -845,20 +799,44 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
     console.log('✅ Found legend data for chart:', chartId, 'series count:', legendSeriesData.length)
 
-    legendSeriesData.forEach(({ series, legendConfig, paneId }, index) => {
+    legendSeriesData.forEach(({ series, legendConfig, paneId, seriesName }, index) => {
       try {
+        // Safely get series options
+        let seriesOptions: any = {}
+        try {
+          if (typeof series.options === 'function') {
+            seriesOptions = series.options()
+          } else if (series.options) {
+            seriesOptions = series.options
+          }
+        } catch (error) {
+          console.warn('Could not get series options:', error)
+        }
+        
+        // Safely get series type
+        let seriesType = 'Unknown'
+        try {
+          if (typeof series.seriesType === 'function') {
+            seriesType = String(series.seriesType())
+          } else if (series.seriesType && typeof series.seriesType === 'string') {
+            seriesType = series.seriesType as any
+          }
+        } catch (error) {
+          console.warn('Could not get series type:', error)
+        }
+        
         console.log(`🔍 Processing series ${index + 1}/${legendSeriesData.length}:`, {
-          seriesType: series.seriesType(),
-          seriesOptions: series.options()
+          seriesType: seriesType,
+          seriesOptions: seriesOptions
         })
         
         // Get data point at crosshair time
-        console.log('🔍 Getting data for series:', series.seriesType(), 'series object:', series)
+        console.log('🔍 Getting data for series:', seriesType, 'series object:', series)
         const data = series.data()
         console.log('🔍 Series data result:', data)
         
         if (!data || data.length === 0) {
-          console.log('❌ No series data for series:', series.seriesType(), 'data:', data)
+          console.log('❌ No series data for series:', seriesType, 'data:', data)
           console.log('⚠️ This series should have been filtered out during legend creation')
           return
         }
@@ -886,10 +864,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
         console.log('🎯 Closest data point:', closestDataPoint, 'time diff:', minTimeDiff)
 
-        // Get series info
-        const seriesOptions = series.options()
-        const seriesType = series.seriesType()
-        const seriesName = seriesOptions.title || `${seriesType}`
+        // Use the stored seriesName from when the legend was created
+        // This ensures consistency between creation and updates
         
         // Get series color
         let seriesColor = '#2196f3' // default
@@ -905,7 +881,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
         // Prepare template data with crosshair values
         const templateData = {
-          title: seriesName,
+          title: seriesName, // Use the stored seriesName
           value: closestDataPoint.value || closestDataPoint.close || closestDataPoint.high || '',
           time: closestDataPoint.time || '',
           color: seriesColor,
@@ -937,30 +913,82 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
           if (itemSeriesName === seriesName) {
             console.log('✅ Updating series item:', seriesName)
             
-            if (legendConfig.customTemplate) {
-              // Update custom template
-              let template = legendConfig.customTemplate
+            if (legendConfig.text) {
+              // Update custom template with new {series} prefix system
+              let template = legendConfig.text
               
               // Replace placeholders in template
               Object.entries(templateData).forEach(([key, value]) => {
-                const placeholder = `{${key}}`
-                if (template.includes(placeholder)) {
-                  template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
+                // Handle {series}.{key} placeholders
+                const seriesPlaceholder = `{series}.{${key}}`
+                if (template.includes(seriesPlaceholder)) {
+                  template = template.replace(new RegExp(seriesPlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
+                }
+                
+                // Handle fallback {key} placeholders (only for first series)
+                if (index === 0) {
+                  const fallbackPlaceholder = `{${key}}`
+                  if (template.includes(fallbackPlaceholder)) {
+                    template = template.replace(new RegExp(fallbackPlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
+                  }
                 }
               })
               
               console.log('📝 Updated template:', template)
-              itemElement.innerHTML = template
+              
+                              // Set the innerHTML to preserve the text content
+                itemElement.innerHTML = template
+                
+                // Since the template already contains the correct styles, we just need to ensure they persist
+                // by applying them directly to the container and all child elements
+                const targetColor = '#131722'
+                const targetFontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                const targetFontSize = '10px'
+                const targetLetterSpacing = '2px'
+                const targetTextAlign = 'left'
+                
+                // Apply styles to the container element
+                itemElement.style.setProperty('color', targetColor, 'important')
+                itemElement.style.setProperty('font-family', targetFontFamily, 'important')
+                itemElement.style.setProperty('font-size', targetFontSize, 'important')
+                itemElement.style.setProperty('letter-spacing', targetLetterSpacing, 'important')
+                itemElement.style.setProperty('text-align', targetTextAlign, 'important')
+                
+                // Also apply to all child elements to ensure they inherit the styles
+                const childElements = itemElement.querySelectorAll('*')
+                childElements.forEach(child => {
+                  if (child instanceof HTMLElement) {
+                    child.style.setProperty('color', targetColor, 'important')
+                    child.style.setProperty('font-family', targetFontFamily, 'important')
+                    child.style.setProperty('font-size', targetFontSize, 'important')
+                    child.style.setProperty('letter-spacing', targetLetterSpacing, 'important')
+                    child.style.setProperty('text-align', targetTextAlign, 'important')
+                  }
+                })
+                
+                console.log('🎨 Applied hardcoded styles (update):', {
+                  color: targetColor,
+                  fontFamily: targetFontFamily,
+                  fontSize: targetFontSize,
+                  letterSpacing: targetLetterSpacing,
+                  textAlign: targetTextAlign
+                })
+                
+                console.log('🎨 Final item styles after update:', {
+                  color: itemElement.style.color || 'not set',
+                  fontFamily: itemElement.style.fontFamily || 'not set',
+                  fontSize: itemElement.style.fontSize || 'not set',
+                  letterSpacing: itemElement.style.letterSpacing || 'not set',
+                  textAlign: itemElement.style.textAlign || 'not set'
+                })
             } else {
               // Update default legend format
-              const valueSpan = itemElement.querySelector('[data-value]') as HTMLElement
-              if (valueSpan && legendConfig.showLastValue) {
+              const textContent = itemElement.querySelector('span:last-child') as HTMLElement
+              if (textContent) {
                 const value = templateData.value
-                if (value !== null && value !== undefined && value !== '') {
-                  const displayValue = typeof value === 'number' ? value.toFixed(2) : String(value)
-                  console.log('📝 Updated value:', displayValue)
-                  valueSpan.textContent = displayValue
-                }
+                const displayValue = value !== null && value !== undefined && value !== '' ? 
+                  (typeof value === 'number' ? value.toFixed(2) : String(value)) : 'N/A'
+                textContent.textContent = `${seriesName}: ${displayValue}`
               }
             }
           }
@@ -975,7 +1003,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     console.log('🎯 addLegend called with:', { 
       chartId: chart.chartElement().id, 
       legendsCount: Object.keys(legendsConfig).length,
-      seriesCount: seriesList.length 
+      seriesCount: seriesList.length,
+      legendsConfig: legendsConfig
     })
     
     // Check if component is being disposed
@@ -1010,7 +1039,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
     // Get chart ID for storing legend references
     const chartId = chart.chartElement().id || 'default'
-    const legendSeriesData: { series: ISeriesApi<any>, legendConfig: LegendConfig, paneId: number }[] = []
+    const legendSeriesData: { series: ISeriesApi<any>, legendConfig: LegendConfig, paneId: number, seriesName: string }[] = []
 
     // Get chart dimensions using the new requestAnimationFrame approach
     let container: HTMLElement | null = null
@@ -1060,28 +1089,65 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       return
     }
 
+
+
     // Group series by pane
     console.log('🔍 Grouping series by pane, total series:', seriesList.length)
+    console.log('🔍 Available legend configs:', Object.keys(legendsConfig))
     const seriesByPane = new Map<number, ISeriesApi<any>[]>()
     seriesList.forEach((series, index) => {
       // Try to get paneId from series options or fallback to index-based assignment
       let paneId = 0
 
-      // Check if series has paneId in its options
-      const seriesOptions = series.options()
-      if (seriesOptions && (seriesOptions as any).paneId !== undefined) {
-        paneId = (seriesOptions as any).paneId
-      } else {
-        // Fallback: assign based on series index (this should match the Python configuration)
-        // Series 0,1,2 -> pane 0 (main chart)
-        // Series 3 -> pane 1 (RSI)
-        // Series 4,5 -> pane 2 (volume)
-        if (index <= 2) paneId = 0
-        else if (index === 3) paneId = 1
-        else paneId = 2
+      // Safely get series options
+      let seriesOptions: any = {}
+      try {
+        if (typeof series.options === 'function') {
+          seriesOptions = series.options()
+        } else if (series.options) {
+          seriesOptions = series.options
+        }
+      } catch (error) {
+        console.warn('Could not get series options:', error)
       }
 
-      console.log(`🔍 Series ${index}: type=${series.seriesType()}, title=${seriesOptions.title}, paneId=${paneId}`)
+      // Get the paneId from the series configuration (backend sets this)
+      let seriesPaneId: number | undefined = undefined
+      
+      // First check if paneId is at the top level of the series (camelCase from backend)
+      if ((series as any).paneId !== undefined) {
+        seriesPaneId = (series as any).paneId
+        console.log(`🔍 Series ${index}: paneId from top level: ${seriesPaneId}`)
+      }
+      // Then check if paneId is in the options
+      else if (seriesOptions && (seriesOptions as any).paneId !== undefined) {
+        seriesPaneId = (seriesOptions as any).paneId
+        console.log(`🔍 Series ${index}: paneId from options: ${seriesPaneId}`)
+      }
+      
+      if (seriesPaneId !== undefined) {
+        // Use the backend-assigned paneId
+        paneId = seriesPaneId
+        console.log(`🔍 Series ${index}: Using backend paneId: ${paneId}`)
+      } else {
+        // If no paneId from backend, use default pane 0
+        paneId = 0
+        console.log(`🔍 Series ${index}: No paneId from backend, using default pane 0`)
+      }
+
+      // Safely get series type
+      let seriesType = 'Unknown'
+      try {
+                  if (typeof series.seriesType === 'function') {
+            seriesType = String(series.seriesType())
+          } else if (series.seriesType && typeof series.seriesType === 'string') {
+            seriesType = String(series.seriesType)
+          }
+      } catch (error) {
+        console.warn('Could not get series type:', error)
+      }
+      
+      console.log(`🔍 Series ${index}: type=${seriesType}, title=${seriesOptions.title}, paneId=${paneId}, series.paneId=${(series as any).paneId}, seriesOptions.paneId=${(seriesOptions as any).paneId}`)
 
       if (!seriesByPane.has(paneId)) {
         seriesByPane.set(paneId, [])
@@ -1093,25 +1159,76 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
     // Create legends for each pane that has a config
     seriesByPane.forEach((paneSeries, paneId) => {
+      console.log(`🔍 Processing pane ${paneId} with ${paneSeries.length} series`)
       const legendConfig = legendsConfig[paneId.toString()]
+      console.log(`🔍 Legend config for pane ${paneId}:`, legendConfig ? 'exists' : 'missing', legendConfig?.visible ? 'visible' : 'not visible')
       
       // Only create legend if config exists for this pane and is visible
       if (!legendConfig || !legendConfig.visible) {
+        console.log(`🔍 Skipping legend for pane ${paneId}: no config or not visible`)
         return
       }
 
       // Create legend container for this pane
       const legendContainer = document.createElement('div')
       legendContainer.className = `chart-legend-pane-${paneId}`
+      
+      // Add a CSS rule to force legend text color if custom HTML is used
+      if (legendConfig.text && legendConfig.text.includes('<span')) {
+        const styleId = `legend-style-${chartId}-${paneId}`
+        let styleElement = document.getElementById(styleId)
+        if (!styleElement) {
+          styleElement = document.createElement('style')
+          styleElement.id = styleId
+          document.head.appendChild(styleElement)
+        }
+        
+        // Force the color for all text within this legend container
+        // Use a more specific selector to ensure it overrides everything
+        styleElement.textContent = `
+          .${legendContainer.className} * {
+            color: #131722 !important;
+          }
+          .${legendContainer.className} span {
+            color: #131722 !important;
+          }
+          .${legendContainer.className} div {
+            color: #131722 !important;
+          }
+        `
+        
+        console.log('🎨 Injected CSS rule for legend color:', styleElement.textContent)
+        
+        // Also add a global CSS rule as a backup
+        const globalStyleId = 'global-legend-color-override'
+        let globalStyleElement = document.getElementById(globalStyleId)
+        if (!globalStyleElement) {
+          globalStyleElement = document.createElement('style')
+          globalStyleElement.id = globalStyleId
+          document.head.appendChild(globalStyleElement)
+        }
+        
+        // Add a very specific rule that should override everything
+        globalStyleElement.textContent = `
+          div[class*="chart-legend-pane-"] * {
+            color: #131722 !important;
+          }
+          div[class*="chart-legend-pane-"] span {
+            color: #131722 !important;
+          }
+          div[class*="chart-legend-pane-"] div {
+            color: #131722 !important;
+          }
+        `
+        
+        console.log('🎨 Injected global CSS rule for legend color')
+      }
+      
       // Use TradingView's styling approach
       legendContainer.style.cssText = `
                       position: absolute;
                       z-index: ${legendConfig.zIndex || 1};
-                      font-family: ${legendConfig.fontFamily || 'sans-serif'};
-                      font-size: ${legendConfig.fontSize || 14}px;
-                      font-weight: ${legendConfig.fontWeight || '300'};
                       line-height: 18px;
-                      color: ${legendConfig.color || '#131722'};
                       background-color: ${legendConfig.backgroundColor || 'rgba(255, 255, 255, 0.95)'};
                       border: ${legendConfig.borderWidth || 1}px solid ${legendConfig.borderColor || '#e1e3e6'};
                       border-radius: ${legendConfig.borderRadius || 4}px;
@@ -1121,6 +1238,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
                       user-select: none;
                       min-width: 120px;
                       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                      /* Ensure custom HTML styling is not overridden */
+                      color: inherit;
+                      font-family: inherit;
+                      font-size: inherit;
+                      /* Allow pointer events for proper CSS inheritance */
+                      pointer-events: auto;
                     `
 
       // Store legend element reference
@@ -1198,163 +1321,222 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
           break
       }
 
-      // Add pane title if there are multiple panes
-      if (seriesByPane.size > 1) {
-        const paneTitle = document.createElement('div')
-        paneTitle.style.cssText = `
-          font-weight: bold;
-          margin-bottom: 8px;
-          border-bottom: 1px solid ${legendConfig.borderColor || '#e1e3e6'};
-          padding-bottom: 4px;
-        `
-        let paneTitleText = ''
-        if (paneId === 0) {
-          paneTitleText = 'Main Chart'
-        } else if (paneId === 1) {
-          paneTitleText = 'RSI'
-        } else if (paneId === 2) {
-          paneTitleText = 'Volume'
-        } else {
-          paneTitleText = `Pane ${paneId}`
-        }
+      // Add pane title if there are multiple panes (disabled for custom templates)
+      // if (seriesByPane.size > 1) {
+      //   const paneTitle = document.createElement('div')
+      //   paneTitle.style.cssText = `
+      //     font-weight: bold;
+      //     margin-bottom: 8px;
+      //     border-bottom: 1px solid ${legendConfig.borderColor || '#e1e3e6'};
+      //     padding-bottom: 4px;
+      //   `
+      //   let paneTitleText = ''
+      //   if (paneId === 0) {
+      //     paneTitleText = 'Main Chart'
+      //   } else if (paneId === 1) {
+      //     paneTitleText = 'RSI'
+      //   } else if (paneId === 2) {
+      //     paneTitleText = 'Volume'
+      //   } else {
+      //     paneTitleText = `Pane ${paneId}`
+      //   }
 
-        paneTitle.textContent = paneTitleText
-        legendContainer.appendChild(paneTitle)
+      //   paneTitle.textContent = paneTitleText
+      //   legendContainer.appendChild(paneTitle)
+      // }
+
+      // Create ONE legend item per pane (not per series)
+      // Get the first series for basic info and color
+      const firstSeries = paneSeries[0]
+      let firstSeriesOptions: any = {}
+      let firstSeriesType = 'Unknown'
+      
+      try {
+        if (typeof firstSeries.options === 'function') {
+          firstSeriesOptions = firstSeries.options()
+        } else if (firstSeries.options) {
+          firstSeriesOptions = firstSeries.options
+        }
+        
+        if (typeof firstSeries.seriesType === 'function') {
+          firstSeriesType = String(firstSeries.seriesType())
+        } else if (firstSeries.seriesType && typeof firstSeries.seriesType === 'string') {
+          firstSeriesType = String(firstSeries.seriesType)
+        }
+      } catch (error) {
+        console.warn('Could not get first series options:', error)
       }
 
-      // Create legend items for each series in this pane
-      paneSeries.forEach((series, index) => {
-        const seriesOptions = series.options()
-        const seriesType = series.seriesType()
-
-        // Get series name or generate one
-        const seriesName = seriesOptions.title || `${seriesType} ${index + 1}`
-
-        // Get series color
-        let seriesColor = '#2196f3' // default
-        if (seriesOptions.color) {
-          seriesColor = seriesOptions.color
-        } else if (seriesType === 'Candlestick') {
-          seriesColor = '#26a69a'
-        } else if (seriesType === 'Histogram') {
-          seriesColor = '#ff9800'
-        } else if (seriesType === 'Area') {
-          seriesColor = seriesOptions.topColor || '#4caf50'
-        }
-
-        // Get series data for template replacement
-        let seriesData: any = {}
-        try {
-          const data = series.data()
-          if (data && data.length > 0) {
-            const lastDataPoint = data[data.length - 1]
-            if (lastDataPoint && typeof lastDataPoint === 'object') {
-              seriesData = { ...lastDataPoint }
-            }
-          }
-        } catch (error) {
-          // Could not get series data
-        }
-
-        // Prepare template data
-        const templateData = {
-          title: seriesName,
-          value: seriesData.value || seriesData.close || seriesData.high || '',
-          time: seriesData.time || '',
-          color: seriesColor,
-          type: seriesType,
-          ...seriesData // Include all other data fields
-        }
-
-        // Store series data for legend updates
-        console.log('💾 Storing series for legend:', {
-          seriesType: series.seriesType(),
-          seriesTitle: series.options().title,
-          paneId
-        })
-        
-        // Only store series that have data
-        try {
-          const seriesData = series.data()
-          if (seriesData && seriesData.length > 0) {
-            console.log('✅ Series has data, storing for legend updates')
-            legendSeriesData.push({ series, legendConfig, paneId })
-          } else {
-            console.log('❌ Series has no data, skipping legend updates')
-          }
-        } catch (error) {
-          console.log('❌ Error checking series data, skipping:', error)
-        }
-
-        // Create legend item
-        let item: HTMLElement
-
-        if (legendConfig.customTemplate) {
-          // Use custom HTML template
-          item = document.createElement('div')
-          item.setAttribute('data-series-name', seriesName)
-          let template = legendConfig.customTemplate
-          
-          // Replace placeholders in template
-          Object.entries(templateData).forEach(([key, value]) => {
-            const placeholder = `{${key}}`
-            if (template.includes(placeholder)) {
-              template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
-            }
-          })
-          
-          item.innerHTML = template
-          item.style.cssText = `
-            margin-bottom: 4px;
-            white-space: nowrap;
-          `
+      // Get pane title from legend config or use a default
+      let paneTitle = (legendConfig as any).title || ''
+      if (!paneTitle) {
+        if (paneId === 0) {
+          paneTitle = 'Main Chart'
+        } else if (paneId === 1) {
+          paneTitle = 'RSI'
+        } else if (paneId === 2) {
+          paneTitle = 'Volume'
         } else {
-          // Use default legend item format
-          item = document.createElement('div')
-          item.setAttribute('data-series-name', seriesName)
-          item.style.cssText = `
-            display: flex;
-            align-items: center;
-            margin-bottom: 4px;
-            white-space: nowrap;
-          `
+          paneTitle = `Pane ${paneId}`
+        }
+      }
+      
+      // Get representative color from first series
+      let seriesColor = '#2196f3' // default
+      if (firstSeriesOptions.color) {
+        seriesColor = firstSeriesOptions.color
+      } else if (firstSeriesType === 'Candlestick') {
+        seriesColor = '#26a69a'
+      } else if (firstSeriesType === 'Histogram') {
+        seriesColor = '#ff9800'
+      } else if (firstSeriesType === 'Area') {
+        seriesColor = firstSeriesOptions.topColor || '#4caf50'
+      }
 
-          // Color indicator
-          const colorIndicator = document.createElement('span')
-          colorIndicator.style.cssText = `
-            width: 12px;
-            height: 2px;
-            background-color: ${seriesColor};
-            margin-right: 6px;
-            display: inline-block;
-          `
-          item.appendChild(colorIndicator)
-
-          // Series name
-          const nameSpan = document.createElement('span')
-          nameSpan.textContent = seriesName
-          item.appendChild(nameSpan)
-
-          // Add last value if configured
-          if (legendConfig.showLastValue) {
-            const lastValue = templateData.value
-            if (lastValue !== null && lastValue !== undefined && lastValue !== '') {
-              const valueSpan = document.createElement('span')
-              valueSpan.setAttribute('data-value', 'true')
-              valueSpan.style.cssText = `
-                margin-left: 8px;
-                color: ${seriesColor};
-                font-weight: bold;
-              `
-              valueSpan.textContent = typeof lastValue === 'number' ? lastValue.toFixed(2) : String(lastValue)
-              item.appendChild(valueSpan)
-            }
+      // Get representative data from first series for template replacement
+      let seriesData: any = {}
+      try {
+        const data = firstSeries.data()
+        if (data && data.length > 0) {
+          const lastDataPoint = data[data.length - 1]
+          if (lastDataPoint && typeof lastDataPoint === 'object') {
+            seriesData = { ...lastDataPoint }
           }
         }
+      } catch (error) {
+        // Could not get series data
+      }
 
-        legendContainer.appendChild(item)
+      // Prepare template data with pane-level information
+      const templateData = {
+        legendTitle: paneTitle, // Use pane title instead of series title
+        title: paneTitle, // Keep for backward compatibility
+        value: seriesData.value || seriesData.close || seriesData.high || '',
+        time: seriesData.time || '',
+        color: seriesColor,
+        type: firstSeriesType,
+        ...seriesData // Include all other data fields
+      }
+
+      // Store ALL series for legend updates, regardless of immediate data availability
+      // Data will be available when crosshair moves or series are updated
+      console.log('✅ Storing series for legend updates (data will be available later)')
+      paneSeries.forEach((series, index) => {
+        legendSeriesData.push({ series, legendConfig, paneId, seriesName: paneTitle })
       })
 
+      // Create ONE legend item for this pane (not per series)
+      let item: HTMLElement
+
+      if (legendConfig.text) {
+        // Use custom HTML template
+        item = document.createElement('div')
+        item.setAttribute('data-pane-id', paneId.toString())
+        let template = legendConfig.text
+        
+        // Check if template contains any placeholders that need processing
+        const hasPlaceholders = Object.keys(templateData).some(key => {
+          const fallbackPlaceholder = `{${key}}`
+          return template.includes(fallbackPlaceholder)
+        })
+        
+        if (hasPlaceholders) {
+          // Process placeholders for pane-level data
+          Object.entries(templateData).forEach(([key, value]) => {
+            const fallbackPlaceholder = `{${key}}`
+            if (template.includes(fallbackPlaceholder)) {
+              template = template.replace(new RegExp(fallbackPlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
+            }
+          })
+        }
+        
+        // Don't apply default styling when using custom HTML templates
+        // The custom HTML should contain all necessary styling
+        // Only apply minimal positioning if needed
+        item.style.cssText = `
+          margin-bottom: 4px;
+        `
+        
+        // Set the innerHTML first so we can extract styles from the actual element
+        item.innerHTML = template
+        
+        // Since the template already contains the correct styles, we just need to ensure they persist
+        // by applying them directly to the container and all child elements
+        const targetColor = '#131722'
+        const targetFontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        const targetFontSize = '10px'
+        const targetTextAlign = 'left'
+        
+        // Apply styles to the container element
+        item.style.setProperty('color', targetColor, 'important')
+        item.style.setProperty('font-family', targetFontFamily, 'important')
+        item.style.setProperty('font-size', targetFontSize, 'important')
+        item.style.setProperty('text-align', targetTextAlign, 'important')
+        
+        // Also apply to all child elements to ensure they inherit the styles
+        const childElements = item.querySelectorAll('*')
+        childElements.forEach(child => {
+          if (child instanceof HTMLElement) {
+            child.style.setProperty('color', targetColor, 'important')
+            child.style.setProperty('font-family', targetFontFamily, 'important')
+            child.style.setProperty('font-size', targetFontSize, 'important')
+            child.style.setProperty('text-align', targetTextAlign, 'important')
+          }
+        })
+        
+        console.log('🎨 Applied hardcoded styles for pane legend:', {
+          color: targetColor,
+          fontFamily: targetFontFamily,
+          fontSize: targetFontSize,
+          textAlign: targetTextAlign
+        })
+        
+        console.log('🎨 Final pane legend styles after application:', {
+          color: item.style.color || 'not set',
+          fontFamily: item.style.fontFamily || 'not set',
+          fontSize: item.style.fontSize || 'not set',
+          textAlign: item.style.textAlign || 'not set'
+        })
+      } else {
+        // Default legend item for pane
+        item = document.createElement('div')
+        item.setAttribute('data-pane-id', paneId.toString())
+        item.style.cssText = `
+          display: flex;
+          align-items: center;
+          margin-bottom: 4px;
+          padding: 2px 4px;
+          border-radius: 2px;
+          background-color: ${seriesColor}20;
+          border-left: 3px solid ${seriesColor};
+        `
+        
+        // Create color indicator
+        const colorIndicator = document.createElement('span')
+        colorIndicator.style.cssText = `
+          width: 12px;
+          height: 12px;
+          background-color: ${seriesColor};
+          border-radius: 2px;
+          margin-right: 8px;
+          flex-shrink: 0;
+        `
+        
+        // Create text content
+        const textContent = document.createElement('span')
+        textContent.textContent = `${paneTitle}: ${templateData.value || 'N/A'}`
+        textContent.style.cssText = `
+          font-size: 12px;
+          color: #131722;
+        `
+        
+        item.appendChild(colorIndicator)
+        item.appendChild(textContent)
+      }
+
+      // Add the single legend item to the container
+      legendContainer.appendChild(item)
+      
       // Add legend to chart container but position it within the specific pane area
       const chartContainer = chart.chartElement()
       if (chartContainer) {
@@ -1400,11 +1582,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
   // Initialize charts
   const initializeCharts = useCallback((isInitialRender = false) => {
-          // Initialize charts
-
     // Prevent re-initialization if already initialized and not disposing
     if (isInitializedRef.current && !isDisposingRef.current) {
-              // Skipping initialization - already initialized
       return
     }
     
@@ -1420,10 +1599,7 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
     // Only clean up existing charts if this is not the initial render
     if (!isInitialRender) {
-      perfLog.log("🧹 [initializeCharts] Cleaning up existing charts (not initial render)")
       functionRefs.current.cleanupCharts()
-    } else {
-      perfLog.log("🧹 [initializeCharts] Skipping cleanup (initial render)")
     }
 
     if (!processedChartConfigs || processedChartConfigs.length === 0) {
@@ -1580,6 +1756,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
                 return
               }
 
+              // Pass trade data to the first series (candlestick series) for marker creation
+              if (seriesIndex === 0 && chartConfig.trades && chartConfig.trades.length > 0 && chartConfig.tradeVisualizationOptions) {
+                seriesConfig.trades = chartConfig.trades
+                seriesConfig.tradeVisualizationOptions = chartConfig.tradeVisualizationOptions
+              }
+
               const series = createSeries(chart, seriesConfig, { signalPluginRefs }, chartId, seriesIndex)
               if (series) {
                 seriesList.push(series)
@@ -1601,10 +1783,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
                   }
                 }
 
-                // Add trade visualization if configured
-                if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions) {
-                  functionRefs.current.addTradeVisualization(chart, series, seriesConfig.trades, seriesConfig.tradeVisualizationOptions, seriesConfig.data)
-                }
+                // Trade visualization is now handled in createSeries function
+                // No need to call addTradeVisualization here anymore
 
                 // Add series-level annotations
                 if (seriesConfig.annotations) {
@@ -1622,6 +1802,37 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
         }
 
         seriesRefs.current[chartId] = seriesList
+
+        // Process pending trade rectangles after all series are created
+        if ((chart as any)._pendingTradeRectangles && (chart as any)._pendingTradeRectangles.length > 0) {
+          (chart as any)._pendingTradeRectangles.forEach((pendingData: any, index: number) => {
+            try {
+              // Create rectangle plugin for this chart if it doesn't exist
+              const chartId = pendingData.chartId || 'default';
+              if (!rectanglePluginRefs.current[chartId]) {
+                const rectanglePlugin = new RectangleOverlayPlugin();
+                rectanglePlugin.setChart(chart, pendingData.series);
+                rectanglePluginRefs.current[chartId] = rectanglePlugin;
+              }
+
+              const rectanglePlugin = rectanglePluginRefs.current[chartId];
+              
+              // Add rectangles to the plugin
+              pendingData.rectangles.forEach((rect: any, rectIndex: number) => {
+                rectanglePlugin.addRectangle(rect);
+              });
+
+              // Force redraw of the canvas overlay
+              rectanglePlugin.scheduleRedraw();
+              
+            } catch (error) {
+              console.error('❌ [initializeCharts] Error processing trade rectangles set', index + 1, ':', error);
+            }
+          });
+          
+          // Clear the pending rectangles after processing
+          (chart as any)._pendingTradeRectangles = [];
+        }
 
         // Apply pane heights configuration AFTER series creation to ensure all panes exist
         if (chartConfig.chart?.layout?.paneHeights) {
@@ -1675,15 +1886,20 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
           }, 100)
         }
 
-        // Store legend config for later creation
-        if (chartConfig.legends && Object.keys(chartConfig.legends).length > 0) {
-          console.log('🎯 Setting up legend for chart:', chartId, 'legends:', Object.keys(chartConfig.legends))
-          // Store the legend configuration and series list for later creation
-          setTimeout(() => {
-            if (!isDisposingRef.current && chartRefs.current[chartId]) {
-              try {
-                console.log('🎯 Calling addLegend for chart:', chartId)
-                functionRefs.current.addLegend(chart, chartConfig.legends, seriesList)
+        // Ensure chart is properly initialized before adding legends and other features
+        setTimeout(() => {
+          if (!isDisposingRef.current && chartRefs.current[chartId]) {
+            try {
+              // Force chart to fit content
+              chart.timeScale().fitContent()
+              
+              // Add legends if configured
+              if (chartConfig.legends && Object.keys(chartConfig.legends).length > 0) {
+                try {
+                  functionRefs.current.addLegend(chart, chartConfig.legends, seriesList)
+                } catch (error) {
+                  console.error('🎯 Error calling addLegend:', error)
+                }
 
                 // Add resize listener to update legend positions when pane heights change
                 const resizeObserver = new ResizeObserver(() => {
@@ -1700,12 +1916,17 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
                 // Store the resize observer for cleanup
                 legendResizeObserverRefs.current[chartId] = resizeObserver
-              } catch (error) {
-                // Error creating legend
               }
+            } catch (error) {
+              console.warn('Error during chart initialization:', error)
             }
-          }, 0) // Use 0 delay to execute immediately after current execution
-        }
+          }
+        }, 200) // Increased delay to ensure chart is fully ready
+
+        // Store legend config for later creation (moved to initialization delay above)
+        // if (chartConfig.legends && Object.keys(chartConfig.legends).length > 0) {
+        //   console.log('🎯 Legend config stored for chart:', chartId, 'legends:', Object.keys(chartConfig.legends))
+        // }
 
         // Setup auto-sizing for the chart
         functionRefs.current.setupAutoSizing(chart, container, chartConfig)
@@ -1754,10 +1975,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
 
   // Update function references to avoid dependency issues
   useEffect(() => {
-    console.log('🎯 Setting up function references, addLegend:', typeof addLegend)
     functionRefs.current = {
       addTradeVisualization,
-      addTradeVisualizationWhenReady,
+      // addTradeVisualizationWhenReady,  // Removed - no longer needed
       addAnnotations,
       addModularTooltip,
       addAnnotationLayers,
@@ -1769,64 +1989,13 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       setupFitContent,
       cleanupCharts
     }
-    console.log('🎯 Function references set up, addLegend ref:', typeof functionRefs.current.addLegend)
-  }, [addLegend, addTradeVisualization, addTradeVisualizationWhenReady, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanupCharts])
+  }, [addLegend, addTradeVisualization, addAnnotations, addModularTooltip, addAnnotationLayers, addRangeSwitcher, updateLegendPositions, setupAutoSizing, setupChartSynchronization, setupFitContent, cleanupCharts])
 
   useEffect(() => {
-    // Main useEffect triggered
-    
-    // Check if this is the initial render (no previous values)
-    const isInitialRender = prevConfigRef.current === null
-
-    // Check if there are meaningful changes that require re-initialization
-    const configChanged = !isInitialRender && config !== prevConfigRef.current
-    const widthChanged = !isInitialRender && width !== prevWidthRef.current
-    const heightChanged = !isInitialRender && height !== prevHeightRef.current
-
-    // Changes detected
-
-    // Always initialize on first render, or if there are actual changes
-    if (!isInitialRender && !configChanged && !widthChanged && !heightChanged) {
-      // No changes detected, skipping initialization
-      return
+    if (config && config.charts && config.charts.length > 0) {
+      initializeCharts(true)
     }
-
-    // Update previous values
-    prevConfigRef.current = config
-    prevWidthRef.current = width
-    prevHeightRef.current = height
-
-    // Clear any pending initialization timeout
-    if (initializationTimeoutRef.current) {
-      clearTimeout(initializationTimeoutRef.current)
-    }
-
-    // For initial render, initialize immediately without setTimeout
-    if (isInitialRender) {
-      isDisposingRef.current = false
-      initializeCharts(isInitialRender)
-    } else {
-      // For subsequent renders, use debounced initialization
-      initializationTimeoutRef.current = setTimeout(() => {
-        if (!isDisposingRef.current) {
-          initializeCharts(isInitialRender)
-        }
-      }, 100)
-    }
-
-    // Cleanup on unmount only
-    return () => {
-      if (initializationTimeoutRef.current) {
-        clearTimeout(initializationTimeoutRef.current)
-      }
-      // Add a small delay to prevent immediate cleanup after chart creation
-      setTimeout(() => {
-        if (isDisposingRef.current) {
-          functionRefs.current.cleanupCharts()
-        }
-      }, 50)
-    }
-  }, [config, width, height])
+  }, [config, initializeCharts])
 
   // Memoize the chart containers to prevent unnecessary re-renders
   const chartContainers = useMemo(() => {

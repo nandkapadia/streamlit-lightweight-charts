@@ -11,9 +11,10 @@ import {
   createSeriesMarkers,
 } from 'lightweight-charts';
 import { SeriesConfig } from '../types';
-import { BandData, createBandSeries } from '../bandSeriesPlugin';
+import { createBandSeries, BandData } from '../bandSeriesPlugin';
 import { SignalSeries, createSignalSeriesPlugin } from '../signalSeriesPlugin';
 import { cleanLineStyleOptions } from './lineStyle';
+import { createTradeVisualElements } from '../tradeVisualization';
 
 interface SeriesFactoryContext {
   signalPluginRefs?: MutableRefObject<{ [key: string]: SignalSeries }>;
@@ -59,6 +60,9 @@ export function createSeries(
   const priceScaleId =
     topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId;
 
+  // Ensure paneId has a default value
+  const finalPaneId = paneId !== undefined ? paneId : 0;
+
   let series: ISeriesApi<any>;
   const normalizedType = type?.toLowerCase();
   const { priceFormat, ...otherOptions } = options;
@@ -86,7 +90,7 @@ export function createSeries(
       if (priceFormat) {
         areaOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(AreaSeries, areaOptions, paneId);
+      series = chart.addSeries(AreaSeries, areaOptions, finalPaneId);
       try {
         if (lastValueVisible === false) {
           series.applyOptions({ lastValueVisible: false });
@@ -176,7 +180,7 @@ export function createSeries(
             alertColor: cleanedOptions.alertColor,
             visible: cleanedOptions.visible !== false,
           },
-          paneId: paneId,
+          paneId: finalPaneId,
         });
         if (signalPluginRefs && chartId !== undefined && seriesIndex !== undefined) {
           signalPluginRefs.current[`${chartId}-${seriesIndex}`] = signalSeries;
@@ -244,7 +248,7 @@ export function createSeries(
       if (priceFormat) {
         baselineOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(BaselineSeries, baselineOptions, paneId);
+      series = chart.addSeries(BaselineSeries, baselineOptions, finalPaneId);
       break;
     }
     case 'histogram': {
@@ -269,7 +273,7 @@ export function createSeries(
       if (priceFormat) {
         histogramOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(HistogramSeries, histogramOptions, paneId);
+      series = chart.addSeries(HistogramSeries, histogramOptions, finalPaneId);
       break;
     }
     case 'line': {
@@ -305,7 +309,7 @@ export function createSeries(
       if (priceFormat) {
         lineOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(LineSeries, lineOptions, paneId);
+      series = chart.addSeries(LineSeries, lineOptions, finalPaneId);
       
       // Apply lastValueVisible: false after series creation if needed
       try {
@@ -334,7 +338,7 @@ export function createSeries(
       if (priceFormat) {
         barOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(BarSeries, barOptions, paneId);
+      series = chart.addSeries(BarSeries, barOptions, finalPaneId);
       break;
     }
     case 'candlestick': {
@@ -356,7 +360,7 @@ export function createSeries(
       if (priceFormat) {
         candlestickOptions.priceFormat = priceFormat;
       }
-      series = chart.addSeries(CandlestickSeries, candlestickOptions, paneId);
+      series = chart.addSeries(CandlestickSeries, candlestickOptions, finalPaneId);
       break;
     }
     default:
@@ -388,6 +392,41 @@ export function createSeries(
       console.warn('❌ Failed to create markers for series:', error);
     }
   }
+
+  // Store paneId as a property on the series object for legend functionality
+  if (finalPaneId !== undefined) {
+    (series as any).paneId = finalPaneId;
+  }
+
+  // Add trade visualization if configured for this series
+      if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions && seriesConfig.trades.length > 0) {
+        try {
+          // Create trade visual elements (markers, rectangles, annotations)
+          const tradeOptions = seriesConfig.tradeVisualizationOptions;
+          const visualElements = createTradeVisualElements(seriesConfig.trades, tradeOptions, data);
+          
+          // Add trade markers to the series
+          if (visualElements.markers && visualElements.markers.length > 0) {
+            createSeriesMarkers(series, visualElements.markers);
+          }
+          
+          // Store rectangle data for later processing by the chart component
+          if (visualElements.rectangles && visualElements.rectangles.length > 0) {
+            // Store the rectangle data in the chart for later processing
+            if (!(chart as any)._pendingTradeRectangles) {
+              (chart as any)._pendingTradeRectangles = [];
+            }
+            (chart as any)._pendingTradeRectangles.push({
+              rectangles: visualElements.rectangles,
+              series: series,
+              chartId: chartId
+            });
+          }
+          
+        } catch (error) {
+          console.warn('❌ Failed to create trade visualization for series:', error);
+        }
+      }
 
   return series;
 }

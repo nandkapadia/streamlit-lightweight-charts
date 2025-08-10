@@ -15,7 +15,7 @@ const App: React.FC = () => {
   const isMountedRef = useRef(true)
   
   // Generate unique component ID for debugging
-  const componentId = useRef(`component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  // const componentId = useRef(`component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   
       // Component initialized
 

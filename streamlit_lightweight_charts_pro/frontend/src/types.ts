@@ -208,13 +208,8 @@ export interface RangeSwitcherConfig {
 // Legend Configuration
 export interface LegendConfig {
   visible: boolean
-  type: 'simple' | '3line'
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
   symbolName?: string
-  fontSize?: number
-  fontFamily?: string
-  fontWeight?: string
-  color?: string
   textColor?: string
   backgroundColor?: string
   borderColor?: string
@@ -223,11 +218,8 @@ export interface LegendConfig {
   padding?: number
   margin?: number
   zIndex?: number
-  showLastValue?: boolean
-  showTime?: boolean
-  showSymbol?: boolean
   priceFormat?: string
-  customTemplate?: string
+  text?: string
 }
 
 // Sync Configuration
