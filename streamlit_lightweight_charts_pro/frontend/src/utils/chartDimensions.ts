@@ -94,17 +94,18 @@ const getPriceScaleWidth = memoize(
 );
 
 /**
- * Get chart dimensions using optimized approach with caching
+ * Get chart dimensions using the new unified coordinate service
  * 
- * This function uses caching and memoization to avoid repeated expensive calculations.
- * It also includes performance monitoring to identify bottlenecks.
+ * This function is now a wrapper around ChartCoordinateService for backward compatibility.
+ * It provides the same interface but uses the centralized positioning system.
  * 
  * @param chart - The IChartAPI reference returned by LightweightCharts.createChart
  * @param container - The container element that holds the chart
  * @param mainSeries - Optional ISeriesAPI reference returned when adding data
  * @returns Promise with chart dimensions including time scale and price scale positions and sizes
+ * @deprecated Use ChartCoordinateService.getInstance().getCoordinates() directly
  */
-export const getChartDimensions = (
+export const getChartDimensions = async (
   chart: IChartApi, 
   container: HTMLElement, 
   mainSeries?: ISeriesApi<any>
@@ -113,110 +114,37 @@ export const getChartDimensions = (
   priceScalePositionAndSize: { x: number; y: number; height: number; width: number };
   containerDimensions: { width: number; height: number };
 }> => {
-  const stopTimer = perfMonitor.startTimer('getChartDimensions');
+  // Import the new coordinate service
+  const { ChartCoordinateService } = await import('../services/ChartCoordinateService');
+  const coordinateService = ChartCoordinateService.getInstance();
   
-  return new Promise((resolve) => {
-    // Generate cache key
-    const chartId = chart?.chartElement?.()?.id || 'unknown';
-    const containerId = container?.id || 'unknown';
-    const cacheKey = `${chartId}-${containerId}-${mainSeries ? 'with-series' : 'no-series'}`;
-    
-    // Check cache first
-    const cached = dimensionCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      stopTimer();
-      resolve(cached);
-      return;
-    }
-    
-    // Use requestAnimationFrame for better performance
-    requestAnimationFrame(() => {
-      try {
-        // Validate chart
-        if (!isValidChart(chart)) {
-          const fallback = {
-            timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
-            priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-            containerDimensions: { width: 0, height: 0 }
-          };
-          stopTimer();
-          resolve(fallback);
-          return;
-        }
-        
-        // Get container dimensions using cached function
-        const containerDimensions = getCachedDimensions(container);
-        
-        // Validate time scale
-        if (!isValidTimeScale(chart)) {
-          const fallback = {
-            timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
-            priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-            containerDimensions
-          };
-          stopTimer();
-          resolve(fallback);
-          return;
-        }
-        
-        // Get time scale dimensions
-        const timeScale = chart.timeScale();
-        const timeScaleWidth = timeScale.width();
-        const timeScaleHeight = timeScale.height();
-        
-        // Get price scale width using memoized function
-        const priceScaleWidth = getPriceScaleWidth(chart, mainSeries);
-        
-        // Calculate positions and sizes
-        const priceScalePositionAndSize = {
-          x: timeScaleWidth,
-          y: 0,
-          height: containerDimensions.height - timeScaleHeight,
-          width: priceScaleWidth,
-        };
-        
-        const timeScalePositionAndSize = {
-          x: 0,
-          y: containerDimensions.height - timeScaleHeight,
-          height: timeScaleHeight,
-          width: timeScaleWidth,
-        };
-        
-        // Create result object
-        const result = {
-          timeScalePositionAndSize,
-          priceScalePositionAndSize,
-          containerDimensions
-        };
-        
-        // Cache the result
-        dimensionCache.set(cacheKey, {
-          ...result,
-          timestamp: Date.now()
-        });
-        
-        // Log in development mode only
-        if (process.env.NODE_ENV === 'development') {
-          // Chart dimensions calculated
-        }
-        
-        stopTimer();
-        resolve(result);
-        
-      } catch (error) {
-        console.warn('Error getting chart dimensions:', error);
-        
-        const fallback = {
-          timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
-          priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-          containerDimensions: { width: 0, height: 0 }
-        };
-        
-        stopTimer();
-        resolve(fallback);
-      }
+  try {
+    // Get coordinates using the new unified service
+    const coordinates = await coordinateService.getCoordinates(chart, container, {
+      useCache: true,
+      validateResult: true,
+      fallbackOnError: true
     });
-  });
+    
+    // Transform to legacy format for backward compatibility
+    return {
+      timeScalePositionAndSize: coordinates.timeScale,
+      priceScalePositionAndSize: coordinates.priceScaleLeft, // Use left price scale for backward compat
+      containerDimensions: {
+        width: coordinates.container.width,
+        height: coordinates.container.height
+      }
+    };
+  } catch (error) {
+    console.error('Error getting chart dimensions:', error);
+    
+    // Return fallback values
+    return {
+      timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
+      priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
+      containerDimensions: { width: 0, height: 0 }
+    };
+  }
 };
 
 /**
@@ -235,8 +163,16 @@ export const getDimensionMetrics = () => {
 };
 
 /**
- * Optimized version that doesn't use requestAnimationFrame for immediate results
- * Use this when you need dimensions immediately without waiting for the next frame
+ * Synchronous version using the new unified coordinate service
+ * 
+ * This function provides immediate results without async operations.
+ * It's a wrapper around the coordinate service for backward compatibility.
+ * 
+ * @param chart - The IChartAPI reference returned by LightweightCharts.createChart
+ * @param container - The container element that holds the chart
+ * @param mainSeries - Optional ISeriesAPI reference returned when adding data
+ * @returns Chart dimensions including time scale and price scale positions and sizes
+ * @deprecated Use ChartCoordinateService directly for better error handling
  */
 export const getChartDimensionsSync = (
   chart: IChartApi, 
@@ -247,41 +183,36 @@ export const getChartDimensionsSync = (
   priceScalePositionAndSize: { x: number; y: number; height: number; width: number };
   containerDimensions: { width: number; height: number };
 } => {
-  const stopTimer = perfMonitor.startTimer('getChartDimensionsSync');
-  
   try {
-    // Validate chart
-    if (!isValidChart(chart)) {
-      const fallback = {
-        timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
-        priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-        containerDimensions: { width: 0, height: 0 }
-      };
-      stopTimer();
-      return fallback;
-    }
-    
     // Get container dimensions
-    const containerDimensions = getCachedDimensions(container);
+    const rect = container.getBoundingClientRect();
+    const containerDimensions = {
+      width: rect.width || container.offsetWidth || 800,
+      height: rect.height || container.offsetHeight || 600
+    };
     
-    // Validate time scale
-    if (!isValidTimeScale(chart)) {
-      const fallback = {
-        timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
-        priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-        containerDimensions
-      };
-      stopTimer();
-      return fallback;
+    // Get time scale dimensions
+    let timeScaleHeight = 35;
+    let timeScaleWidth = containerDimensions.width;
+    try {
+      const timeScale = chart.timeScale();
+      timeScaleHeight = timeScale.height() || 35;
+      timeScaleWidth = timeScale.width() || containerDimensions.width;
+    } catch (e) {
+      // Use defaults
     }
     
-    // Get dimensions
-    const timeScale = chart.timeScale();
-    const timeScaleWidth = timeScale.width();
-    const timeScaleHeight = timeScale.height();
-    const priceScaleWidth = getPriceScaleWidth(chart, mainSeries);
+    // Get price scale width
+    let priceScaleWidth = 70;
+    try {
+      const priceScale = chart.priceScale('left');
+      priceScaleWidth = priceScale.width() || 70;
+    } catch (e) {
+      // Use default
+    }
     
-    const result = {
+    // Return dimensions in legacy format
+    return {
       timeScalePositionAndSize: {
         x: 0,
         y: containerDimensions.height - timeScaleHeight,
@@ -289,7 +220,7 @@ export const getChartDimensionsSync = (
         width: timeScaleWidth,
       },
       priceScalePositionAndSize: {
-        x: timeScaleWidth,
+        x: 0,
         y: 0,
         height: containerDimensions.height - timeScaleHeight,
         width: priceScaleWidth,
@@ -297,19 +228,14 @@ export const getChartDimensionsSync = (
       containerDimensions
     };
     
-    stopTimer();
-    return result;
-    
   } catch (error) {
     console.warn('Error getting chart dimensions synchronously:', error);
     
-    const fallback = {
+    // Return fallback values
+    return {
       timeScalePositionAndSize: { x: 0, y: 0, height: 35, width: 0 },
       priceScalePositionAndSize: { x: 0, y: 0, height: 0, width: 70 },
-      containerDimensions: { width: 0, height: 0 }
+      containerDimensions: { width: 800, height: 600 }
     };
-    
-    stopTimer();
-    return fallback;
   }
 }; 

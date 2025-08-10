@@ -653,6 +653,10 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       return
     }
 
+    // Import the new positioning system
+    const { PositioningEngine } = await import('./services/PositioningEngine')
+    type ElementPositionType = import('./types/coordinates').ElementPosition
+
     const legendContainers = chart.chartElement().querySelectorAll('[class^="chart-legend-pane-"]')
 
     // Get chart dimensions using the new requestAnimationFrame approach
@@ -695,12 +699,8 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
     }
 
     try {
-      const { timeScalePositionAndSize, priceScalePositionAndSize } =
-        await getChartDimensions(chart, container)
-
-
-
-      legendContainers.forEach((legendContainer) => {
+      // Use the new positioning engine for legend positioning
+      Array.from(legendContainers).forEach((legendContainer) => {
         const className = legendContainer.className
         const paneIdMatch = className.match(/chart-legend-pane-(\d+)/)
         if (!paneIdMatch) return
@@ -711,71 +711,25 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
         // Skip if no legend config for this pane
         if (!legendConfig) return
         
-        const position = legendConfig.position || 'top-right'
-        const paneMargin = 20
+        const position = (legendConfig.position || 'top-right') as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
 
-        // Get current pane dimensions with error handling
-        let paneHeight: number
-        try {
-          const paneSize = chart.paneSize(paneId)
-          if (!paneSize || typeof paneSize.height !== 'number') {
-            return // Skip this legend if we can't get pane size
-          }
-          paneHeight = paneSize.height
-        } catch (error) {
-          return // Skip this legend if there's an error
-        }
-
-        // Get the vertical offset of the pane
-        function getPaneOffsetY(chart: IChartApi, paneIndex: number) {
-          let offset = 0
-          for (let i = 0; i < paneIndex; i++) {
-            try {
-              const paneSize = chart.paneSize(i)
-              if (paneSize && typeof paneSize.height === 'number') {
-                offset += paneSize.height
-              } else {
-                offset += 200 // Default pane height
-              }
-            } catch (error) {
-              offset += 200 // Default pane height
+        // Calculate legend position using the new positioning engine
+        const legendCoordinates = PositioningEngine.calculateLegendPosition(
+          chart,
+          paneId,
+          position,
+          {
+            dimensions: {
+              width: legendConfig.width,
+              height: legendConfig.height || 80
             }
           }
-          return offset
-        }
+        )
 
-        const offsetY = getPaneOffsetY(chart, paneId)
-        const priceScaleWidth = priceScalePositionAndSize.width
-        const timeAxisHeight = timeScalePositionAndSize.height
-        const paneContentHeight = paneHeight - timeAxisHeight
-
-        // Calculate position relative to the chart container
-        const legendTop = offsetY + paneMargin
-        const legendLeft = paneMargin + priceScaleWidth
-
-        // Update legend position
-        const legendElement = legendContainer as HTMLElement
-        switch (position) {
-          case 'top-left':
-            legendElement.style.top = `${legendTop}px`
-            legendElement.style.left = `${legendLeft}px`
-            legendElement.style.right = 'auto'
-            break
-          case 'top-right':
-            legendElement.style.top = `${legendTop}px`
-            legendElement.style.left = 'auto'
-            legendElement.style.right = `${paneMargin + priceScaleWidth}px`
-            break
-          case 'bottom-left':
-            legendElement.style.top = `${legendTop + paneContentHeight - 80}px`
-            legendElement.style.left = `${legendLeft}px`
-            legendElement.style.right = 'auto'
-            break
-          case 'bottom-right':
-            legendElement.style.top = `${legendTop + paneContentHeight - 80}px`
-            legendElement.style.left = 'auto'
-            legendElement.style.right = `${paneMargin + priceScaleWidth}px`
-            break
+        if (legendCoordinates) {
+          // Apply the calculated position to the legend element
+          const legendElement = legendContainer as HTMLElement
+          PositioningEngine.applyPositionToElement(legendElement, legendCoordinates)
         }
       })
     } catch (error) {
@@ -1006,6 +960,9 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       seriesCount: seriesList.length,
       legendsConfig: legendsConfig
     })
+    
+    // Import the positioning engine
+    const { PositioningEngine } = await import('./services/PositioningEngine')
     
     // Check if component is being disposed
     if (isDisposingRef.current) {
@@ -1249,76 +1206,29 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(({ config
       // Store legend element reference
       legendElementsRef.current.set(`${chartId}-pane-${paneId}`, legendContainer)
 
-      // Position the legend within the specific pane area
-      const position = legendConfig.position || 'top-right'
-      const paneMargin = 20 // Increased margin for better visual spacing
-
-      // Get pane dimensions for the pane on which the legend is on
-      let paneHeight: number
-      try {
-        const paneSize = chart.paneSize(paneId)
-        if (!paneSize || typeof paneSize.height !== 'number') {
-          paneHeight = 200 // Default pane height
-        } else {
-          paneHeight = paneSize.height
-        }
-      } catch (error) {
-        paneHeight = 200 // Default pane height
-      }
-
-      // Get the vertical offset of the pane
-      function getPaneOffsetY(chart: IChartApi, paneIndex: number) {
-        let offset = 0
-        for (let i = 0; i < paneIndex; i++) {
-          try {
-            const paneSize = chart.paneSize(i)
-            if (paneSize && typeof paneSize.height === 'number') {
-              offset += paneSize.height
-            } else {
-              offset += 200 // Default pane height
-            }
-          } catch (error) {
-            offset += 200 // Default pane height
+      // Position the legend using the new positioning engine
+      const position = (legendConfig.position || 'top-right') as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+      
+      // Calculate legend position using the unified positioning engine
+      const legendCoordinates = PositioningEngine.calculateLegendPosition(
+        chart,
+        paneId,
+        position,
+        {
+          dimensions: {
+            width: legendConfig.width,
+            height: legendConfig.height || 80
           }
         }
-        return offset
-      }
+      )
 
-      const offsetY = getPaneOffsetY(chart, paneId)
-
-      // Use the dimensions from the new approach
-      const priceScaleWidth = chartDimensions.priceScalePositionAndSize.width
-      const timeAxisHeight = chartDimensions.timeScalePositionAndSize.height
-
-      // Calculate the actual pane content area
-      const paneContentHeight = paneHeight - timeAxisHeight
-
-      // Calculate position relative to the chart container
-      const legendTop = offsetY + paneMargin  // Add margin from top of pane
-      const legendLeft = paneMargin + priceScaleWidth // Account for price scale width
-
-      // Position legend within the calculated pane boundaries
-      switch (position) {
-        case 'top-left':
-          legendContainer.style.top = `${legendTop}px`
-          legendContainer.style.left = `${legendLeft}px`
-          legendContainer.style.right = 'auto'
-          break
-        case 'top-right':
-          legendContainer.style.top = `${legendTop}px`
-          legendContainer.style.left = 'auto'
-          legendContainer.style.right = `${paneMargin + priceScaleWidth}px`
-          break
-        case 'bottom-left':
-          legendContainer.style.top = `${legendTop + paneContentHeight - 80}px` // Fixed height for legend
-          legendContainer.style.left = `${legendLeft}px`
-          legendContainer.style.right = 'auto'
-          break
-        case 'bottom-right':
-          legendContainer.style.top = `${legendTop + paneContentHeight - 80}px` // Fixed height for legend
-          legendContainer.style.left = 'auto'
-          legendContainer.style.right = `${paneMargin + priceScaleWidth}px`
-          break
+      if (legendCoordinates) {
+        // Apply the calculated position to the legend element
+        PositioningEngine.applyPositionToElement(legendContainer, legendCoordinates)
+      } else {
+        // Fallback to default positioning if calculation fails
+        legendContainer.style.top = '20px'
+        legendContainer.style.right = '20px'
       }
 
       // Add pane title if there are multiple panes (disabled for custom templates)

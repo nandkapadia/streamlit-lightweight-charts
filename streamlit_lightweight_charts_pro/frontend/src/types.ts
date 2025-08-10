@@ -220,6 +220,8 @@ export interface LegendConfig {
   zIndex?: number
   priceFormat?: string
   text?: string
+  width?: number
+  height?: number
 }
 
 // Sync Configuration
