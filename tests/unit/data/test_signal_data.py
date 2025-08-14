@@ -36,7 +36,9 @@ class TestSignalData:
         dt = datetime(2024, 1, 1)
         signal = SignalData(dt, 1)
         # Time is automatically normalized to timestamp
-        assert signal.time == 1704047400  # 2024-01-01 timestamp (local timezone)
+        # Calculate expected timestamp dynamically to handle timezone differences
+        expected_timestamp = int(dt.timestamp())
+        assert signal.time == expected_timestamp  # 2024-01-01 timestamp (local timezone)
         assert signal.value == 1
 
     def test_construction_with_empty_color(self):

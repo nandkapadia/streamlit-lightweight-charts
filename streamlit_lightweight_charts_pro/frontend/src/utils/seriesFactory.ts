@@ -387,7 +387,17 @@ export function createSeries(
 
   if (seriesConfig.markers && Array.isArray(seriesConfig.markers)) {
     try {
-      createSeriesMarkers(series, seriesConfig.markers);
+      console.log('🔍 [seriesFactory] Processing series markers:', {
+        markersCount: seriesConfig.markers.length,
+        seriesType: seriesConfig.type,
+        hasChartData: !!data,
+        chartDataCount: data?.length || 0
+      });
+      
+      // Apply timestamp snapping to all markers (like trade visualization)
+      const snappedMarkers = applyTimestampSnapping(seriesConfig.markers, data);
+      console.log('✅ [seriesFactory] Markers processed, calling createSeriesMarkers');
+      createSeriesMarkers(series, snappedMarkers);
     } catch (error) {
       console.warn('❌ Failed to create markers for series:', error);
     }
@@ -429,5 +439,92 @@ export function createSeries(
       }
 
   return series;
+}
+
+/**
+ * Apply timestamp snapping to markers to ensure they align with chart data.
+ * This function implements the same logic as the trade visualization system
+ * but applies it to all markers, not just trade markers.
+ * 
+ * @param markers Array of markers to snap
+ * @param chartData Chart data for timestamp reference
+ * @returns Array of markers with snapped timestamps
+ */
+function applyTimestampSnapping(markers: any[], chartData?: any[]): any[] {
+  console.log('🔍 [applyTimestampSnapping] Starting timestamp snapping for markers:', {
+    markersCount: markers?.length || 0,
+    chartDataCount: chartData?.length || 0,
+    hasChartData: !!chartData
+  });
+
+  if (!chartData || chartData.length === 0) {
+    console.log('⚠️ [applyTimestampSnapping] No chart data available, returning markers as-is');
+    return markers;
+  }
+
+  // Extract available timestamps from chart data
+  const availableTimes = chartData.map(item => {
+    if (typeof item.time === 'number') {
+      return item.time;
+    } else if (typeof item.time === 'string') {
+      return Math.floor(new Date(item.time).getTime() / 1000);
+    }
+    return null;
+  }).filter(time => time !== null);
+
+  console.log('🔍 [applyTimestampSnapping] Available chart timestamps:', {
+    total: availableTimes.length,
+    sample: availableTimes.slice(0, 5),
+    range: availableTimes.length > 0 ? `${availableTimes[0]} to ${availableTimes[availableTimes.length - 1]}` : 'none'
+  });
+
+  if (availableTimes.length === 0) {
+    console.log('⚠️ [applyTimestampSnapping] No valid timestamps available, returning markers as-is');
+    return markers;
+  }
+
+  // Apply timestamp snapping to each marker
+  const snappedMarkers = markers.map((marker, index) => {
+    if (marker.time && typeof marker.time === 'number') {
+      const originalTime = marker.time;
+      
+      // Find nearest available timestamp
+      const nearestTime = availableTimes.reduce((nearest, current) => {
+        const currentDiff = Math.abs(current - marker.time);
+        const nearestDiff = Math.abs(nearest - marker.time);
+        return currentDiff < nearestDiff ? current : nearest;
+      });
+
+      const timeDiff = Math.abs(originalTime - nearestTime);
+      
+      console.log(`🎯 [applyTimestampSnapping] Marker ${index + 1} timestamp snapping:`, {
+        originalTime,
+        nearestTime,
+        timeDiff,
+        marker: {
+          text: marker.text,
+          position: marker.position,
+          shape: marker.shape
+        }
+      });
+
+      // Return marker with snapped timestamp
+      return {
+        ...marker,
+        time: nearestTime
+      };
+    } else {
+      console.log(`⚠️ [applyTimestampSnapping] Marker ${index + 1} has no valid time:`, marker);
+      return marker;
+    }
+  });
+
+  console.log('✅ [applyTimestampSnapping] Timestamp snapping completed:', {
+    inputMarkers: markers.length,
+    outputMarkers: snappedMarkers.length,
+    markersWithSnapping: snappedMarkers.filter(m => m.time !== markers.find(om => om.text === m.text)?.time).length
+  });
+
+  return snappedMarkers;
 }
 

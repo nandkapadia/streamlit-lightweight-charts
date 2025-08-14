@@ -7,17 +7,14 @@ import { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 import {
   LegendCoordinates,
   ElementPosition,
-  PaneCoordinates,
   BoundingBox,
   Margins
 } from '../types/coordinates';
 import { ChartCoordinateService } from './ChartCoordinateService';
 import {
-  MARGINS,
   DIMENSIONS,
   Z_INDEX,
-  getMargins,
-  getDimensions
+  getMargins
 } from '../config/positioningConfig';
 import { createBoundingBox } from '../utils/coordinateValidation';
 
@@ -63,10 +60,14 @@ export class PositioningEngine {
     
     // Merge configuration with defaults
     const margins = { ...getMargins('legend'), ...(config?.margins || {}) };
+    
+    // For initial positioning, use default dimensions
+    // The actual dimensions will be calculated when the element is rendered
     const dimensions = {
       width: config?.dimensions?.width || DIMENSIONS.legend.defaultWidth,
       height: config?.dimensions?.height || DIMENSIONS.legend.defaultHeight
     };
+    
     const zIndex = config?.zIndex || Z_INDEX.legend;
     const offset = config?.offset || { x: 0, y: 0 };
     
@@ -83,6 +84,61 @@ export class PositioningEngine {
       ...coords,
       width: dimensions.width,
       height: dimensions.height,
+      zIndex
+    };
+  }
+
+  /**
+   * Recalculate legend position with actual element dimensions
+   */
+  static recalculateLegendPosition(
+    chart: IChartApi,
+    paneId: number,
+    position: ElementPosition,
+    legendElement: HTMLElement,
+    config?: PositioningConfig
+  ): LegendCoordinates | null {
+    // Get pane coordinates
+    const paneCoords = this.coordinateService.getPaneCoordinates(chart, paneId);
+    if (!paneCoords) return null;
+    
+    // Get actual element dimensions with fallbacks
+    let actualDimensions = {
+      width: legendElement.offsetWidth || legendElement.scrollWidth || 0,
+      height: legendElement.offsetHeight || legendElement.scrollHeight || 0
+    };
+    
+    // If dimensions are still 0, try to get them from computed styles
+    if (actualDimensions.width === 0 || actualDimensions.height === 0) {
+      const computedStyle = window.getComputedStyle(legendElement);
+      actualDimensions = {
+        width: parseInt(computedStyle.width) || legendElement.clientWidth || DIMENSIONS.legend.defaultWidth,
+        height: parseInt(computedStyle.height) || legendElement.clientHeight || DIMENSIONS.legend.defaultHeight
+      };
+    }
+    
+    // Ensure minimum dimensions
+    actualDimensions.width = Math.max(actualDimensions.width, DIMENSIONS.legend.minWidth);
+    actualDimensions.height = Math.max(actualDimensions.height, DIMENSIONS.legend.minHeight);
+    
+    // Merge configuration with defaults
+    const margins = { ...getMargins('legend'), ...(config?.margins || {}) };
+    const zIndex = config?.zIndex || Z_INDEX.legend;
+    const offset = config?.offset || { x: 0, y: 0 };
+    
+    // Calculate position based on actual dimensions
+    const coords = this.calculateElementPosition(
+      paneCoords.contentArea,
+      actualDimensions,
+      position,
+      margins,
+      offset
+    );
+    
+    return {
+      ...coords,
+      width: actualDimensions.width,
+      height: actualDimensions.height,
       zIndex
     };
   }

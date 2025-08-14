@@ -36,9 +36,9 @@ class TestBandSeriesConstruction:
         assert series.pane_id == 0
         assert series.upper_fill_color == "rgba(76, 175, 80, 0.1)"
         assert series.lower_fill_color == "rgba(244, 67, 54, 0.1)"
-        assert isinstance(series.upper_line_options, LineOptions)
-        assert isinstance(series.middle_line_options, LineOptions)
-        assert isinstance(series.lower_line_options, LineOptions)
+        assert isinstance(series.upper_line, LineOptions)
+        assert isinstance(series.middle_line, LineOptions)
+        assert isinstance(series.lower_line, LineOptions)
 
     def test_construction_with_custom_parameters(self):
         """Test BandSeries construction with custom parameters."""
@@ -92,19 +92,19 @@ class TestBandSeriesConstruction:
         series = BandSeries(data=data)
 
         # Check default colors
-        assert series.upper_line_options.color == "#4CAF50"
-        assert series.middle_line_options.color == "#2196F3"
-        assert series.lower_line_options.color == "#F44336"
+        assert series.upper_line.color == "#4CAF50"
+        assert series.middle_line.color == "#2196F3"
+        assert series.lower_line.color == "#F44336"
 
         # Check default line widths
-        assert series.upper_line_options.line_width == 2
-        assert series.middle_line_options.line_width == 2
-        assert series.lower_line_options.line_width == 2
+        assert series.upper_line.line_width == 2
+        assert series.middle_line.line_width == 2
+        assert series.lower_line.line_width == 2
 
         # Check default line styles
-        assert series.upper_line_options.line_style == "solid"
-        assert series.middle_line_options.line_style == "solid"
-        assert series.lower_line_options.line_style == "solid"
+        assert series.upper_line.line_style == "solid"
+        assert series.middle_line.line_style == "solid"
+        assert series.lower_line.line_style == "solid"
 
 
 class TestBandSeriesProperties:
@@ -116,50 +116,50 @@ class TestBandSeriesProperties:
         series = BandSeries(data=data)
         assert series.chart_type == "band"
 
-    def test_upper_line_options_property(self):
-        """Test upper_line_options property."""
+    def test_upper_line_property(self):
+        """Test upper_line property."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
 
         # Test getter
-        assert isinstance(series.upper_line_options, LineOptions)
-        assert series.upper_line_options.color == "#4CAF50"
+        assert isinstance(series.upper_line, LineOptions)
+        assert series.upper_line.color == "#4CAF50"
 
         # Test setter
         new_options = LineOptions(color="#FF0000", line_width=3)
-        series.upper_line_options = new_options
-        assert series.upper_line_options == new_options
-        assert series.upper_line_options.color == "#FF0000"
+        series.upper_line = new_options
+        assert series.upper_line == new_options
+        assert series.upper_line.color == "#FF0000"
 
-    def test_middle_line_options_property(self):
-        """Test middle_line_options property."""
+    def test_middle_line_property(self):
+        """Test middle_line property."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
 
         # Test getter
-        assert isinstance(series.middle_line_options, LineOptions)
-        assert series.middle_line_options.color == "#2196F3"
+        assert isinstance(series.middle_line, LineOptions)
+        assert series.middle_line.color == "#2196F3"
 
         # Test setter
         new_options = LineOptions(color="#00FF00", line_width=4)
-        series.middle_line_options = new_options
-        assert series.middle_line_options == new_options
-        assert series.middle_line_options.color == "#00FF00"
+        series.middle_line = new_options
+        assert series.middle_line == new_options
+        assert series.middle_line.color == "#00FF00"
 
-    def test_lower_line_options_property(self):
-        """Test lower_line_options property."""
+    def test_lower_line_property(self):
+        """Test lower_line property."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
         series = BandSeries(data=data)
 
         # Test getter
-        assert isinstance(series.lower_line_options, LineOptions)
-        assert series.lower_line_options.color == "#F44336"
+        assert isinstance(series.lower_line, LineOptions)
+        assert series.lower_line.color == "#F44336"
 
         # Test setter
         new_options = LineOptions(color="#0000FF", line_width=5)
-        series.lower_line_options = new_options
-        assert series.lower_line_options == new_options
-        assert series.lower_line_options.color == "#0000FF"
+        series.lower_line = new_options
+        assert series.lower_line == new_options
+        assert series.lower_line.color == "#0000FF"
 
     def test_fill_color_properties(self):
         """Test fill color properties."""
@@ -184,20 +184,20 @@ class TestBandSeriesProperties:
 
         # Test invalid line options type
         with pytest.raises(
-            TypeError, match="upper_line_options must be an instance of LineOptions or None"
+            TypeError, match="upper_line must be an instance of LineOptions or None"
         ):
-            series.upper_line_options = "invalid"
+            series.upper_line = "invalid"
 
         # Test invalid middle line options type
         with pytest.raises(
-            TypeError, match="middle_line_options must be an instance of LineOptions or None"
+            TypeError, match="middle_line must be an instance of LineOptions or None"
         ):
-            series.middle_line_options = "invalid"
+            series.middle_line = "invalid"
 
         with pytest.raises(
-            TypeError, match="lower_line_options must be an instance of LineOptions or None"
+            TypeError, match="lower_line must be an instance of LineOptions or None"
         ):
-            series.lower_line_options = "invalid"
+            series.lower_line = "invalid"
 
         # Test invalid fill color type
         with pytest.raises(TypeError, match="upper_fill_color must be a string"):
@@ -229,20 +229,34 @@ class TestBandSeriesSerialization:
         series = BandSeries(data=data)
 
         # Customize line options
-        series.upper_line_options.color = "#FF0000"
-        series.upper_line_options.line_width = 3
-        series.middle_line_options.color = "#00FF00"
-        series.middle_line_options.line_style = LineStyle.DOTTED
-        series.lower_line_options.color = "#0000FF"
-        series.upper_line_options.line_type = LineType.CURVED
+        series.upper_line.color = "#FF0000"
+        series.upper_line.line_width = 3
+        series.middle_line.color = "#00FF00"
+        series.middle_line.line_style = LineStyle.DOTTED
+        series.lower_line.color = "#0000FF"
+        series.upper_line.line_type = LineType.CURVED
 
         result = series.asdict()
         options = result["options"]
-        # The base class to_dict flattens options, so check for flat keys
-        assert options["color"] == "#FF0000"
-        assert options["lineWidth"] == 3
-        assert options["lineStyle"] == "solid"  # Only upper_line_options is used for flat keys
-        assert options["lineType"] == LineType.CURVED.value
+        # Check for the new band series structure with individual line options
+        assert "upperLine" in options
+        assert "middleLine" in options
+        assert "lowerLine" in options
+        
+        # Check upper line options
+        upper_line = options["upperLine"]
+        assert upper_line["color"] == "#FF0000"
+        assert upper_line["lineWidth"] == 3
+        assert upper_line["lineType"] == LineType.CURVED.value
+        
+        # Check middle line options
+        middle_line = options["middleLine"]
+        assert middle_line["color"] == "#00FF00"
+        assert middle_line["lineStyle"] == LineStyle.DOTTED.value
+        
+        # Check lower line options
+        lower_line = options["lowerLine"]
+        assert lower_line["color"] == "#0000FF"
 
     def test_to_dict_with_fill_colors(self):
         """Test to_dict with custom fill colors."""
@@ -303,9 +317,9 @@ class TestBandSeriesSerialization:
         series = BandSeries(data=data)
 
         # Customize all options
-        series.upper_line_options.color = "#FF0000"
-        series.middle_line_options.color = "#00FF00"
-        series.lower_line_options.color = "#0000FF"
+        series.upper_line.color = "#FF0000"
+        series.middle_line.color = "#00FF00"
+        series.lower_line.color = "#0000FF"
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
 
@@ -315,8 +329,13 @@ class TestBandSeriesSerialization:
         assert "data" in result
         assert "options" in result
         options = result["options"]
-        # Check for camelCase keys
-        assert options["color"] == "#FF0000"
+        # Check for the new band series structure
+        assert "upperLine" in options
+        assert "middleLine" in options
+        assert "lowerLine" in options
+        assert options["upperLine"]["color"] == "#FF0000"
+        assert options["middleLine"]["color"] == "#00FF00"
+        assert options["lowerLine"]["color"] == "#0000FF"
         assert options["upperFillColor"] == "rgba(255, 0, 0, 0.5)"
         assert options["lowerFillColor"] == "rgba(0, 255, 0, 0.5)"
 
@@ -540,9 +559,9 @@ class TestBandSeriesInheritance:
             "markers",
             "price_lines",
             "price_format",
-            "upper_line_options",
-            "middle_line_options",
-            "lower_line_options",
+            "upper_line",
+            "middle_line",
+            "lower_line",
             "upper_fill_color",
             "lower_fill_color",
         ]
@@ -583,8 +602,8 @@ class TestBandSeriesJsonStructure:
         series = BandSeries(data=data)
         result = series.asdict()
         options = result["options"]
-        # Check for camelCase keys
-        for key in ["color", "lineWidth", "lineStyle", "upperFillColor", "lowerFillColor"]:
+        # Check for the new band series structure
+        for key in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor"]:
             assert key in options
 
     def test_markers_json_structure(self):
@@ -649,9 +668,9 @@ class TestBandSeriesJsonStructure:
         series.add_marker(marker)
         series.add_price_line(PriceLineOptions(price=105.0, color="#FF0000"))
         # Customize all options
-        series.upper_line_options.color = "#FF0000"
-        series.middle_line_options.color = "#00FF00"
-        series.lower_line_options.color = "#0000FF"
+        series.upper_line.color = "#FF0000"
+        series.middle_line.color = "#00FF00"
+        series.lower_line.color = "#0000FF"
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
         result = series.asdict()
@@ -662,7 +681,9 @@ class TestBandSeriesJsonStructure:
         assert "markers" in result
         assert "priceLines" in result
         options = result["options"]
-        assert options["color"] == "#FF0000"
+        assert options["upperLine"]["color"] == "#FF0000"
+        assert options["middleLine"]["color"] == "#00FF00"
+        assert options["lowerLine"]["color"] == "#0000FF"
         assert options["upperFillColor"] == "rgba(255, 0, 0, 0.5)"
         assert options["lowerFillColor"] == "rgba(0, 255, 0, 0.5)"
 
@@ -675,10 +696,10 @@ class TestBandSeriesJsonStructure:
         result2 = series.asdict()
         assert result1 == result2
         # Modify options and serialize again
-        series.upper_line_options.color = "#FF0000"
+        series.upper_line.color = "#FF0000"
         result3 = series.asdict()
         assert result1 != result3
-        assert result3["options"]["color"] == "#FF0000"
+        assert result3["options"]["upperLine"]["color"] == "#FF0000"
 
     def test_frontend_compatibility(self):
         """Test frontend compatibility of JSON structure."""
@@ -711,5 +732,5 @@ class TestBandSeriesJsonStructure:
         assert "markers" not in result
         assert "priceLines" not in result
         # Should include all required options
-        for option in ["color", "lineWidth", "lineStyle", "upperFillColor", "lowerFillColor"]:
+        for option in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor"]:
             assert option in result["options"]

@@ -3,7 +3,7 @@
  * Provides consistent positioning across all chart features
  */
 
-import { IChartApi, ISeriesApi } from 'lightweight-charts';
+import { IChartApi } from 'lightweight-charts';
 import {
   ChartCoordinates,
   PaneCoordinates,
@@ -24,8 +24,7 @@ import {
 } from '../utils/coordinateValidation';
 import {
   DIMENSIONS,
-  FALLBACKS,
-  MARGINS,
+  // Removed unused imports
   TIMING,
   Z_INDEX,
   getFallback,
@@ -38,6 +37,7 @@ import {
 export class ChartCoordinateService {
   private static instance: ChartCoordinateService;
   private coordinateCache = new Map<string, CoordinateCacheEntry>();
+  private paneDimensionsCache = new Map<string, { dimensions: { [paneId: number]: { width: number; height: number } }; expiresAt: number }>();
   private chartRegistry = new Map<string, IChartApi>();
   private updateCallbacks = new Map<string, Set<() => void>>();
   
@@ -156,7 +156,7 @@ export class ChartCoordinateService {
       }
       
       // Get chart element for price scale width
-      const chartElement = chart.chartElement();
+      // Get chart element (used for price scale width calculation)
       const priceScaleWidth = this.getPriceScaleWidth(chart);
       const timeScaleHeight = this.getTimeScaleHeight(chart);
       
@@ -424,7 +424,7 @@ export class ChartCoordinateService {
   private getAllPaneCoordinates(chart: IChartApi): PaneCoordinates[] {
     const panes: PaneCoordinates[] = [];
     let paneIndex = 0;
-    let currentY = 0;
+    // Track total height for future use (currently disabled)
     
     // Try to get panes until we hit an invalid one
     while (paneIndex < 10) { // Safety limit
@@ -437,7 +437,7 @@ export class ChartCoordinateService {
           panes.push(paneCoords);
         }
         
-        currentY += paneSize.height;
+        // Track total height for future use
         paneIndex++;
       } catch {
         break;
@@ -548,5 +548,173 @@ export class ChartCoordinateService {
       });
       keysToDelete.forEach(key => this.coordinateCache.delete(key));
     }, TIMING.cacheExpiration);
+  }
+
+  /**
+   * Get current pane dimensions for comparison
+   */
+  getCurrentPaneDimensions(chart: IChartApi): { [paneId: number]: { width: number; height: number } } {
+    const dimensions: { [paneId: number]: { width: number; height: number } } = {};
+    let paneIndex = 0;
+    
+    while (paneIndex < 10) { // Safety limit
+      try {
+        const paneSize = chart.paneSize(paneIndex);
+        if (!paneSize) break;
+        
+        dimensions[paneIndex] = {
+          width: paneSize.width || 0,
+          height: paneSize.height || 0
+        };
+        
+        paneIndex++;
+      } catch {
+        break;
+      }
+    }
+    
+    return dimensions;
+  }
+
+  /**
+   * Check if pane dimensions have changed and notify listeners
+   */
+  checkPaneSizeChanges(chart: IChartApi, chartId: string): boolean {
+    const currentDimensions = this.getCurrentPaneDimensions(chart);
+    const cacheKey = this.generateCacheKey(chart, chart.chartElement());
+    
+    // Check if we have cached pane dimensions
+    const cachedPaneDimensions = this.paneDimensionsCache.get(cacheKey);
+    
+    if (!cachedPaneDimensions) {
+      // First time checking, store current dimensions
+      this.paneDimensionsCache.set(cacheKey, {
+        dimensions: currentDimensions,
+        expiresAt: Date.now() + TIMING.cacheExpiration
+      });
+      return false;
+    }
+    
+    // Compare with cached dimensions
+    const hasChanges = this.hasPaneSizeChanges(cachedPaneDimensions.dimensions, currentDimensions);
+    
+    if (hasChanges) {
+      // Update cached dimensions
+      cachedPaneDimensions.dimensions = currentDimensions;
+      cachedPaneDimensions.expiresAt = Date.now() + TIMING.cacheExpiration;
+      // Invalidate the coordinate cache to force recalculation
+      this.invalidateCache(chartId);
+      // Notify listeners about the change
+      this.notifyUpdateCallbacks(cacheKey);
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Enhanced pane size change detection with better performance
+   */
+  checkPaneSizeChangesOptimized(chart: IChartApi, chartId: string): boolean {
+    const currentDimensions = this.getCurrentPaneDimensions(chart);
+    const cacheKey = this.generateCacheKey(chart, chart.chartElement());
+    
+    // Check if we have cached pane dimensions
+    const cachedPaneDimensions = this.paneDimensionsCache.get(cacheKey);
+    
+    if (!cachedPaneDimensions) {
+      // First time checking, store current dimensions
+      this.paneDimensionsCache.set(cacheKey, {
+        dimensions: currentDimensions,
+        expiresAt: Date.now() + TIMING.cacheExpiration
+      });
+      return false;
+    }
+    
+    // Check if dimensions have changed
+    const hasChanges = this.hasPaneSizeChanges(cachedPaneDimensions.dimensions, currentDimensions);
+    
+    if (hasChanges) {
+      // Update cached pane dimensions
+      cachedPaneDimensions.dimensions = currentDimensions;
+      cachedPaneDimensions.expiresAt = Date.now() + TIMING.cacheExpiration;
+      
+      // Invalidate coordinate cache for this chart
+      this.invalidateCache(chartId);
+      
+      // Notify listeners
+      this.notifyUpdateCallbacks(cacheKey);
+      
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Force refresh of coordinates for a specific chart
+   * Useful when external changes affect chart layout
+   */
+  forceRefreshCoordinates(chartId: string): void {
+    // Clear all cache entries for this chart
+    const keysToDelete: string[] = [];
+    this.coordinateCache.forEach((entry, key) => {
+      if (key.includes(chartId)) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => this.coordinateCache.delete(key));
+    
+    // Also clear pane dimensions cache
+    const paneKeysToDelete: string[] = [];
+    this.paneDimensionsCache.forEach((entry, key) => {
+      if (key.includes(chartId)) {
+        paneKeysToDelete.push(key);
+      }
+    });
+    paneKeysToDelete.forEach(key => this.paneDimensionsCache.delete(key));
+    
+    // Notify all listeners for this chart
+    this.updateCallbacks.forEach((callbacks, key) => {
+      if (key.includes(chartId)) {
+        callbacks.forEach(callback => {
+          try {
+            callback();
+          } catch (error) {
+            console.error('Error in coordinate refresh callback:', error);
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Check if pane dimensions have changed
+   */
+  private hasPaneSizeChanges(
+    oldDimensions: { [paneId: number]: { width: number; height: number } },
+    newDimensions: { [paneId: number]: { width: number; height: number } }
+  ): boolean {
+    const oldKeys = Object.keys(oldDimensions);
+    const newKeys = Object.keys(newDimensions);
+    
+    if (oldKeys.length !== newKeys.length) {
+      return true;
+    }
+    
+    for (const paneId of oldKeys) {
+      const oldDim = oldDimensions[parseInt(paneId)];
+      const newDim = newDimensions[parseInt(paneId)];
+      
+      if (!oldDim || !newDim) {
+        return true;
+      }
+      
+      if (oldDim.width !== newDim.width || oldDim.height !== newDim.height) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }

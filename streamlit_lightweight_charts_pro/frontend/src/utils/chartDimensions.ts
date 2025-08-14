@@ -1,5 +1,5 @@
 import { IChartApi, ISeriesApi } from 'lightweight-charts';
-import { memoize, getCachedDimensions, PerformanceMonitor } from './performance';
+import { PerformanceMonitor } from './performance';
 
 // Performance monitor instance
 const perfMonitor = PerformanceMonitor.getInstance();
@@ -12,86 +12,13 @@ const dimensionCache = new Map<string, {
   timestamp: number;
 }>();
 
-// Cache invalidation time (5 seconds)
-const CACHE_DURATION = 5000;
+// Cache duration is now handled by ChartCoordinateService
 
-// Memoized chart element validation
-const isValidChart = memoize(
-  (chart: IChartApi): boolean => {
-    try {
-      if (!chart || typeof chart.chartElement !== 'function') {
-        return false;
-      }
-      chart.chartElement();
-      return true;
-    } catch {
-      return false;
-    }
-  },
-  (chart: IChartApi) => chart?.chartElement?.()?.id || 'unknown'
-);
+// Chart validation is now handled by ChartCoordinateService
 
-// Memoized time scale validation
-const isValidTimeScale = memoize(
-  (chart: IChartApi): boolean => {
-    try {
-      if (!isValidChart(chart)) {
-        return false;
-      }
-      const timeScale = chart.timeScale();
-      return timeScale !== null && timeScale !== undefined;
-    } catch {
-      return false;
-    }
-  },
-  (chart: IChartApi) => chart?.chartElement?.()?.id || 'unknown'
-);
+// Time scale validation is now handled by ChartCoordinateService
 
-// Memoized price scale width calculation
-const getPriceScaleWidth = memoize(
-  (chart: IChartApi, mainSeries?: ISeriesApi<any>): number => {
-    const stopTimer = perfMonitor.startTimer('getPriceScaleWidth');
-    
-    try {
-      // Try to get width from main series first
-      if (mainSeries) {
-        try {
-          const priceScale = mainSeries.priceScale();
-          if (priceScale && typeof priceScale.width === 'function') {
-            const width = priceScale.width();
-            stopTimer();
-            return width;
-          }
-        } catch (error) {
-          // Fall through to default price scale
-        }
-      }
-      
-      // Fallback to default price scale
-      try {
-        const priceScale = chart.priceScale('right');
-        if (priceScale && typeof priceScale.width === 'function') {
-          const width = priceScale.width();
-          stopTimer();
-          return width;
-        }
-      } catch (error) {
-        // Use default fallback
-      }
-      
-      stopTimer();
-      return 70; // Default fallback
-    } catch (error) {
-      stopTimer();
-      return 70; // Default fallback
-    }
-  },
-  (chart: IChartApi, mainSeries?: ISeriesApi<any>) => {
-    const chartId = chart?.chartElement?.()?.id || 'unknown';
-    const seriesId = mainSeries ? 'with-series' : 'no-series';
-    return `${chartId}-${seriesId}`;
-  }
-);
+// Price scale width calculation is now handled by ChartCoordinateService
 
 /**
  * Get chart dimensions using the new unified coordinate service

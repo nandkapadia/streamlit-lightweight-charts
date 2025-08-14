@@ -9,7 +9,7 @@ import {
   ValidationResult,
   BoundingBox,
   ScaleDimensions,
-  ContainerDimensions
+  // ContainerDimensions is used in type imports
 } from '../types/coordinates';
 import { DIMENSIONS, FALLBACKS } from '../config/positioningConfig';
 
