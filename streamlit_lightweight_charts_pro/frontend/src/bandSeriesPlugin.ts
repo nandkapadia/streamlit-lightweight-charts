@@ -44,6 +44,10 @@ export interface BandSeriesOptions {
   upperFillColor: string
   lowerFillColor: string
   
+  // Fill visibility
+  upperFill: boolean
+  lowerFill: boolean
+  
   // Base options
   visible: boolean
   priceScaleId: string
@@ -107,6 +111,10 @@ const defaultOptions: BandSeriesOptions = {
   upperFillColor: 'rgba(76, 175, 80, 0.1)',
   lowerFillColor: 'rgba(244, 67, 54, 0.1)',
   
+  // Fill visibility
+  upperFill: true,
+  lowerFill: true,
+  
   // Base options
   visible: true,
   priceScaleId: 'right',
@@ -155,8 +163,8 @@ class BandPrimitivePaneRenderer implements IPrimitivePaneRenderer {
       const ctx = scope.context
       ctx.scale(scope.horizontalPixelRatio, scope.verticalPixelRatio)
 
-      // Draw upper fill area (between upper and middle)
-      if (this._viewData.options.upperFillColor !== 'rgba(0, 0, 0, 0)') {
+      // Draw upper fill area (between upper and middle) only if enabled
+      if (this._viewData.options.upperFill && this._viewData.options.upperFillColor !== 'rgba(0, 0, 0, 0)') {
         ctx.fillStyle = this._viewData.options.upperFillColor
         ctx.beginPath()
         ctx.moveTo(points[0].x, points[0].upper)
@@ -170,8 +178,8 @@ class BandPrimitivePaneRenderer implements IPrimitivePaneRenderer {
         ctx.fill()
       }
 
-      // Draw lower fill area (between middle and lower)
-      if (this._viewData.options.lowerFillColor !== 'rgba(0, 0, 0, 0)') {
+      // Draw lower fill area (between middle and lower) only if enabled
+      if (this._viewData.options.lowerFill && this._viewData.options.lowerFillColor !== 'rgba(0, 0, 0, 0)') {
         ctx.fillStyle = this._viewData.options.lowerFillColor
         ctx.beginPath()
         ctx.moveTo(points[0].x, points[0].middle)

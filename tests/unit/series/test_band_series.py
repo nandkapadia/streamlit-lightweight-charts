@@ -36,6 +36,8 @@ class TestBandSeriesConstruction:
         assert series.pane_id == 0
         assert series.upper_fill_color == "rgba(76, 175, 80, 0.1)"
         assert series.lower_fill_color == "rgba(244, 67, 54, 0.1)"
+        assert series.upper_fill is True
+        assert series.lower_fill is True
         assert isinstance(series.upper_line, LineOptions)
         assert isinstance(series.middle_line, LineOptions)
         assert isinstance(series.lower_line, LineOptions)
@@ -177,6 +179,29 @@ class TestBandSeriesProperties:
         assert series.upper_fill_color == "rgba(255, 0, 0, 0.5)"
         assert series.lower_fill_color == "rgba(0, 255, 0, 0.5)"
 
+    def test_fill_visibility_properties(self):
+        """Test fill visibility properties."""
+        data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
+        series = BandSeries(data=data)
+
+        # Test default values
+        assert series.upper_fill is True
+        assert series.lower_fill is True
+
+        # Test setters
+        series.upper_fill = False
+        series.lower_fill = False
+
+        assert series.upper_fill is False
+        assert series.lower_fill is False
+
+        # Test boolean values
+        series.upper_fill = True
+        series.lower_fill = True
+
+        assert series.upper_fill is True
+        assert series.lower_fill is True
+
     def test_property_validation(self):
         """Test property validation."""
         data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
@@ -271,6 +296,28 @@ class TestBandSeriesSerialization:
         # The base class to_dict uses camelCase keys
         assert options["upperFillColor"] == "rgba(255, 0, 0, 0.5)"
         assert options["lowerFillColor"] == "rgba(0, 255, 0, 0.5)"
+
+    def test_to_dict_with_fill_visibility(self):
+        """Test to_dict with custom fill visibility."""
+        data = [BandData(time=1640995200, upper=110.0, middle=105.0, lower=100.0)]
+        series = BandSeries(data=data)
+
+        series.upper_fill = False
+        series.lower_fill = False
+
+        result = series.asdict()
+        options = result["options"]
+        # The base class to_dict uses camelCase keys
+        assert options["upperFill"] is False
+        assert options["lowerFill"] is False
+
+        # Test with True values
+        series.upper_fill = True
+        series.lower_fill = True
+        result = series.asdict()
+        options = result["options"]
+        assert options["upperFill"] is True
+        assert options["lowerFill"] is True
 
     def test_to_dict_with_markers(self):
         """Test to_dict with markers."""
@@ -564,6 +611,8 @@ class TestBandSeriesInheritance:
             "lower_line",
             "upper_fill_color",
             "lower_fill_color",
+            "upper_fill",
+            "lower_fill",
         ]
 
         for prop in required_properties:
@@ -603,7 +652,7 @@ class TestBandSeriesJsonStructure:
         result = series.asdict()
         options = result["options"]
         # Check for the new band series structure
-        for key in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor"]:
+        for key in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor", "upperFill", "lowerFill"]:
             assert key in options
 
     def test_markers_json_structure(self):
@@ -673,6 +722,8 @@ class TestBandSeriesJsonStructure:
         series.lower_line.color = "#0000FF"
         series.upper_fill_color = "rgba(255, 0, 0, 0.5)"
         series.lower_fill_color = "rgba(0, 255, 0, 0.5)"
+        series.upper_fill = False
+        series.lower_fill = True
         result = series.asdict()
         # Check all expected keys
         assert "type" in result
@@ -686,6 +737,8 @@ class TestBandSeriesJsonStructure:
         assert options["lowerLine"]["color"] == "#0000FF"
         assert options["upperFillColor"] == "rgba(255, 0, 0, 0.5)"
         assert options["lowerFillColor"] == "rgba(0, 255, 0, 0.5)"
+        assert options["upperFill"] is False
+        assert options["lowerFill"] is True
 
     def test_json_serialization_consistency(self):
         """Test JSON serialization consistency."""
@@ -732,5 +785,5 @@ class TestBandSeriesJsonStructure:
         assert "markers" not in result
         assert "priceLines" not in result
         # Should include all required options
-        for option in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor"]:
+        for option in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor", "upperFill", "lowerFill"]:
             assert option in result["options"]

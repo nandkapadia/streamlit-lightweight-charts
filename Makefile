@@ -23,6 +23,24 @@ test:  ## Run tests
 test-cov:  ## Run tests with coverage
 	pytest tests/ --cov=streamlit_lightweight_charts --cov-report=html --cov-report=term
 
+test-parallel:  ## Run tests with parallel execution (auto workers)
+	pytest tests/ -n auto --dist=loadfile -v
+
+test-parallel-fast:  ## Run tests with parallel execution (4 workers)
+	pytest tests/ -n 4 --dist=loadfile -v
+
+test-parallel-max:  ## Run tests with maximum parallel execution
+	pytest tests/ -n logical --dist=loadfile -v
+
+test-parallel-cov:  ## Run tests with parallel execution and coverage
+	pytest tests/ -n auto --dist=loadfile --cov=streamlit_lightweight_charts_pro --cov-report=html --cov-report=term -v
+
+test-unit-parallel:  ## Run unit tests with parallel execution
+	pytest tests/unit/ -n auto --dist=loadfile -v
+
+test-integration-parallel:  ## Run integration tests with parallel execution
+	pytest tests/integration/ -n auto --dist=loadfile -v
+
 clean:  ## Clean up build artifacts
 	rm -rf build/
 	rm -rf dist/

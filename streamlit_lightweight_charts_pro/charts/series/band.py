@@ -44,6 +44,8 @@ from streamlit_lightweight_charts_pro.utils import chainable_property
 @chainable_property("lower_line", LineOptions, allow_none=True)
 @chainable_property("upper_fill_color", str, validator="color")
 @chainable_property("lower_fill_color", str, validator="color")
+@chainable_property("upper_fill", bool)
+@chainable_property("lower_fill", bool)
 class BandSeries(Series):
     """
     Band series for lightweight charts (e.g., Bollinger Bands).
@@ -61,6 +63,8 @@ class BandSeries(Series):
         lower_line: LineOptions instance for lower band styling.
         upper_fill_color: Fill color for upper band area.
         lower_fill_color: Fill color for lower band area.
+        upper_fill: Whether to display the upper fill area.
+        lower_fill: Whether to display the lower fill area.
         price_lines: List of PriceLineOptions for price lines (set after construction)
         price_format: PriceFormatOptions for price formatting (set after construction)
         markers: List of markers to display on this series (set after construction)
@@ -102,6 +106,10 @@ class BandSeries(Series):
         # Initialize fill colors
         self._upper_fill_color = "rgba(76, 175, 80, 0.1)"
         self._lower_fill_color = "rgba(244, 67, 54, 0.1)"
+
+        # Initialize fill visibility (default to True)
+        self._upper_fill = True
+        self._lower_fill = True
 
     @property
     def chart_type(self) -> ChartType:

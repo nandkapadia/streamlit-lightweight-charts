@@ -123,6 +123,8 @@ export function createSeries(
           },
           upperFillColor: cleanedOptions.upperFillColor || 'rgba(76, 175, 80, 0.1)',
           lowerFillColor: cleanedOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
+          upperFill: cleanedOptions.upperFill !== undefined ? cleanedOptions.upperFill : true,
+          lowerFill: cleanedOptions.lowerFill !== undefined ? cleanedOptions.lowerFill : true,
           priceScaleId: priceScaleId || 'right',
           visible: cleanedOptions.visible !== false,
           lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
