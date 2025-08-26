@@ -53,6 +53,36 @@ interface SignalViewData {
   options: SignalOptions;
 }
 
+/**
+ * Check if a color is transparent or effectively invisible
+ */
+function isTransparent(color: string): boolean {
+  if (!color) return true;
+  
+  // Check for fully transparent colors
+  if (color === 'transparent') return true;
+  
+  // Check for rgba with alpha = 0
+  if (color.startsWith('rgba(')) {
+    const match = color.match(/rgba\([^)]+,\s*([^)]+)\)/);
+    if (match && parseFloat(match[1]) === 0) return true;
+  }
+  
+  // Check for hex with alpha = 00 (8-digit hex)
+  if (color.startsWith('#') && color.length === 9) {
+    const alpha = color.substring(7, 9);
+    if (alpha === '00') return true;
+  }
+  
+  // Check for hex with alpha = 00 (4-digit hex)
+  if (color.startsWith('#') && color.length === 5) {
+    const alpha = color.substring(4, 5);
+    if (alpha === '0') return true;
+  }
+  
+  return false;
+}
+
 // Signal primitive pane renderer
 class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
   _viewData: SignalViewData;
@@ -81,6 +111,11 @@ class SignalPrimitivePaneRenderer implements IPrimitivePaneRenderer {
         if (i + 1 < points.length) {
           const startPoint = points[i];
           const endPoint = points[i + 1];
+
+          // Skip rendering if color is transparent or effectively invisible
+          if (isTransparent(startPoint.color)) {
+            continue;
+          }
 
           // Use the color exactly as provided by the backend
           const fillStyle = startPoint.color;
@@ -307,17 +342,16 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       }
     }
     
-    // End the last band - extend it to a reasonable future time
+    // End the last band - stop at the last data point instead of extending
     if (currentBandStart !== null && currentBandValue !== null) {
-      // Extend the last band by adding a reasonable time offset (e.g., 1 day)
+      // End the last band at the last signal time without extending
       const lastSignalTime = sortedSignals[sortedSignals.length - 1];
       const lastTime = this.parseTime(lastSignalTime.time);
-      const extendedEndTime = lastTime + (24 * 60 * 60); // Add 24 hours
       
       const band = {
         value: currentBandValue,
         startTime: currentBandStart,
-        endTime: extendedEndTime as UTCTimestamp,
+        endTime: lastTime, // Stop at the last data point
         individualColor: currentBandColor,
       };
       this.addBackgroundBand(band);
@@ -339,7 +373,8 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       }
     }
     
-    if (!color) {
+    // Skip adding bands with no color or transparent colors
+    if (!color || isTransparent(color)) {
       return;
     }
 
@@ -362,6 +397,8 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
       if (value === true) {
         return this.options.signalColor || null;
       } else {
+        // For false values, only return neutral color if it's explicitly specified
+        // This prevents default gray backgrounds when no neutral color is set
         return this.options.neutralColor || null;
       }
     }
@@ -369,6 +406,8 @@ export class SignalSeries implements ISeriesPrimitive<Time> {
     // Handle numeric values
     switch (value) {
       case 0:
+        // For value 0, only return neutral color if it's explicitly specified
+        // This prevents default gray backgrounds when no neutral color is set
         return this.options.neutralColor || null;
       case 1:
         return this.options.signalColor || null;
