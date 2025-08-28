@@ -173,7 +173,7 @@ class Series(ABC):
             self.data = data
         else:
             raise ValueError(
-                f"data must be a list of SingleValueData objects, DataFrame, or Series, "
+                "data must be a list of SingleValueData objects, DataFrame, or Series, "
                 f"got {type(data)}"
             )
 
@@ -283,7 +283,7 @@ class Series(ABC):
                     else:
                         raise ValueError(
                             f"Time column '{time_col}' not found in DataFrame columns and no "
-                            f"DatetimeIndex available in the index"
+                            "DatetimeIndex available in the index"
                         )
 
         # Handle other index columns
@@ -375,9 +375,23 @@ class Series(ABC):
         optional = data_class.optional_columns
 
         # Check if all required columns are mapped
-        missing_required = required - set(column_mapping.keys())
+        # Normalize keys to handle both snake_case and camelCase
+        def normalize_key(key):
+            """Convert snake_case to camelCase for comparison."""
+            if "_" in key:
+                parts = key.split("_")
+                return parts[0] + "".join(part.capitalize() for part in parts[1:])
+            return key
+
+        # Create normalized versions of both sets for comparison
+        normalized_required = {normalize_key(key) for key in required}
+        normalized_mapping_keys = {normalize_key(key) for key in column_mapping.keys()}
+
+        missing_required = normalized_required - normalized_mapping_keys
         if missing_required:
-            raise ValueError(f"DataFrame is missing required column mapping: {missing_required}")
+            # Convert back to original format for error message
+            original_missing = {key for key in required if normalize_key(key) in missing_required}
+            raise ValueError(f"DataFrame is missing required column mapping: {original_missing}")
 
         # Prepare index for all column mappings
         df = self.prepare_index(data, column_mapping)
@@ -396,8 +410,15 @@ class Series(ABC):
             kwargs = {}
             # Process both required and optional columns
             for key in required.union(optional):
-                if key in column_mapping:
-                    col_name = column_mapping[key]
+                # Find the corresponding column mapping key (handle both snake_case and camelCase)
+                mapped_key = None
+                for mapping_key in column_mapping:
+                    if normalize_key(mapping_key) == normalize_key(key):
+                        mapped_key = mapping_key
+                        break
+
+                if mapped_key:
+                    col_name = column_mapping[mapped_key]
                     if col_name in df.columns:
                         value = row[col_name]
                         kwargs[key] = value

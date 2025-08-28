@@ -22,7 +22,7 @@ class TestAreaDataConstruction:
 
         assert data.time == 1640995200
         assert data.value == 100
-        assert data.lineColor is None
+        assert data.line_color is None
         assert data.topColor is None
         assert data.bottomColor is None
 
@@ -31,24 +31,24 @@ class TestAreaDataConstruction:
         data = AreaData(
             time=1640995200,
             value=100,
-            lineColor="#ff0000",
+            line_color="#ff0000",
             topColor="#00ff00",
             bottomColor="#0000ff",
         )
 
         assert data.time == 1640995200
         assert data.value == 100
-        assert data.lineColor == "#ff0000"
+        assert data.line_color == "#ff0000"
         assert data.topColor == "#00ff00"
         assert data.bottomColor == "#0000ff"
 
     def test_construction_with_partial_colors(self):
         """Test AreaData construction with some color properties."""
-        data = AreaData(time=1640995200, value=100, lineColor="#ff0000", topColor="#00ff00")
+        data = AreaData(time=1640995200, value=100, line_color="#ff0000", topColor="#00ff00")
 
         assert data.time == 1640995200
         assert data.value == 100
-        assert data.lineColor == "#ff0000"
+        assert data.line_color == "#ff0000"
         assert data.topColor == "#00ff00"
         assert data.bottomColor is None
 
@@ -88,9 +88,9 @@ class TestAreaDataValidation:
 
         for color in valid_colors:
             data = AreaData(
-                time=1640995200, value=100, lineColor=color, topColor=color, bottomColor=color
+                time=1640995200, value=100, line_color=color, topColor=color, bottomColor=color
             )
-            assert data.lineColor == color
+            assert data.line_color == color
             assert data.topColor == color
             assert data.bottomColor == color
 
@@ -100,16 +100,16 @@ class TestAreaDataValidation:
 
         for color in valid_colors:
             data = AreaData(
-                time=1640995200, value=100, lineColor=color, topColor=color, bottomColor=color
+                time=1640995200, value=100, line_color=color, topColor=color, bottomColor=color
             )
-            assert data.lineColor == color
+            assert data.line_color == color
             assert data.topColor == color
             assert data.bottomColor == color
 
     def test_invalid_line_color(self):
         """Test AreaData construction with invalid line color."""
         with pytest.raises(ValueError, match="Invalid lineColor format"):
-            AreaData(time=1640995200, value=100, lineColor="invalid_color")
+            AreaData(time=1640995200, value=100, line_color="invalid_color")
 
     def test_invalid_top_color(self):
         """Test AreaData construction with invalid top color."""
@@ -151,7 +151,7 @@ class TestAreaDataSerialization:
         data = AreaData(
             time=1640995200,
             value=100,
-            lineColor="#ff0000",
+            line_color="#ff0000",
             topColor="#00ff00",
             bottomColor="#0000ff",
         )
@@ -165,7 +165,7 @@ class TestAreaDataSerialization:
 
     def test_to_dict_with_partial_colors(self):
         """Test AreaData to_dict with some color properties."""
-        data = AreaData(time=1640995200, value=100, lineColor="#ff0000", topColor="#00ff00")
+        data = AreaData(time=1640995200, value=100, line_color="#ff0000", topColor="#00ff00")
         data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
@@ -176,7 +176,7 @@ class TestAreaDataSerialization:
 
     def test_to_dict_with_empty_colors(self):
         """Test AreaData to_dict with empty color strings."""
-        data = AreaData(time=1640995200, value=100, lineColor="", topColor="", bottomColor="")
+        data = AreaData(time=1640995200, value=100, line_color="", topColor="", bottomColor="")
         data_dict = data.asdict()
 
         assert data_dict["time"] == 1640995200
@@ -188,7 +188,7 @@ class TestAreaDataSerialization:
     def test_to_dict_with_whitespace_colors(self):
         """Test AreaData to_dict with whitespace-only color strings."""
         data = AreaData(
-            time=1640995200, value=100, lineColor="   ", topColor="   ", bottomColor="   "
+            time=1640995200, value=100, line_color="   ", topColor="   ", bottomColor="   "
         )
         data_dict = data.asdict()
 
@@ -265,12 +265,12 @@ class TestAreaDataEdgeCases:
         data = AreaData(
             time=1640995200,
             value=100,
-            lineColor="#ff0000",
+            line_color="#ff0000",
             topColor="rgba(0, 255, 0, 0.5)",
             bottomColor="#0000ff",
         )
 
-        assert data.lineColor == "#ff0000"
+        assert data.line_color == "#ff0000"
         assert data.topColor == "rgba(0, 255, 0, 0.5)"
         assert data.bottomColor == "#0000ff"
 
@@ -288,7 +288,7 @@ class TestAreaDataComparison:
         data1 = AreaData(
             time=1640995200,
             value=100,
-            lineColor="#ff0000",
+            line_color="#ff0000",
             topColor="#00ff00",
             bottomColor="#0000ff",
         )
@@ -296,21 +296,21 @@ class TestAreaDataComparison:
         data2 = AreaData(
             time=1640995200,
             value=100,
-            lineColor="#ff0000",
+            line_color="#ff0000",
             topColor="#00ff00",
             bottomColor="#0000ff",
         )
 
         assert data1.time == data2.time
         assert data1.value == data2.value
-        assert data1.lineColor == data2.lineColor
+        assert data1.line_color == data2.line_color
         assert data1.topColor == data2.topColor
         assert data1.bottomColor == data2.bottomColor
 
     def test_area_data_inequality(self):
         """Test AreaData inequality."""
-        data1 = AreaData(time=1640995200, value=100, lineColor="#ff0000")
+        data1 = AreaData(time=1640995200, value=100, line_color="#ff0000")
 
-        data2 = AreaData(time=1641081600, value=100, lineColor="#ff0000")  # Different time
+        data2 = AreaData(time=1641081600, value=100, line_color="#ff0000")  # Different time
 
         assert data1.time != data2.time

@@ -367,7 +367,8 @@ class TestHistogramSeriesPerformance:
             results[size] = {"time": processing_time, "points_per_second": size / processing_time}
 
             print(
-                f"Dataset size {size}: {processing_time:.4f}s ({size/processing_time:.0f} points/sec)"
+                f"Dataset size {size}: {processing_time:.4f}s"
+                f" ({size/processing_time:.0f} points/sec)"
             )
 
         # Verify scalability (should be roughly linear or better)
@@ -377,7 +378,8 @@ class TestHistogramSeriesPerformance:
         # Performance should not degrade significantly
         assert min(points_per_second) > 1000  # At least 1000 points per second
         print(
-            f"Performance range: {min(points_per_second):.0f} - {max(points_per_second):.0f} points/sec"
+            f"Performance range: {min(points_per_second):.0f} -"
+            f" {max(points_per_second):.0f} points/sec"
         )
 
     def test_memory_scalability(self):
@@ -425,12 +427,14 @@ class TestHistogramSeriesPerformance:
             gc.collect()
 
             print(
-                f"Dataset size {size}: {memory_increase:.2f}MB ({results[size]['bytes_per_point']:.0f} bytes/point)"
+                f"Dataset size {size}: {memory_increase:.2f}MB"
+                f" ({results[size]['bytes_per_point']:.0f} bytes/point)"
             )
 
         # Memory usage should be reasonable
         bytes_per_point = [results[size]["bytes_per_point"] for size in dataset_sizes]
         assert all(bpp < 1000 for bpp in bytes_per_point)  # Less than 1KB per point
         print(
-            f"Memory efficiency: {min(bytes_per_point):.0f} - {max(bytes_per_point):.0f} bytes per point"
+            f"Memory efficiency: {min(bytes_per_point):.0f} - {max(bytes_per_point):.0f} bytes per"
+            " point"
         )

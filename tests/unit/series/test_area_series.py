@@ -792,7 +792,7 @@ class TestAreaSeriesPropertyValidation:
         # Test relative_gradient validation - should raise TypeError for non-boolean values
         with pytest.raises(TypeError, match="relative_gradient must be a boolean"):
             series.relative_gradient = "invalid"
-        
+
         # Test valid boolean value
         series.relative_gradient = True
         assert series.relative_gradient is True
@@ -800,7 +800,7 @@ class TestAreaSeriesPropertyValidation:
         # Test invert_filled_area validation - should raise TypeError for non-boolean values
         with pytest.raises(TypeError, match="invert_filled_area must be a boolean"):
             series.invert_filled_area = "invalid"
-        
+
         # Test valid boolean value
         series.invert_filled_area = True
         assert series.invert_filled_area is True

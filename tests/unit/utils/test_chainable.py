@@ -11,13 +11,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 from streamlit_lightweight_charts_pro.utils.chainable import (
-    chainable_property,
-    chainable_field,
     _is_list_of_markers,
     _validate_list_of_markers,
+    chainable_field,
+    chainable_property,
 )
-from streamlit_lightweight_charts_pro.data.marker import MarkerBase
 
 
 class TestMarkerValidation:
@@ -448,7 +448,7 @@ class TestChainableProperty:
                 self._value1 = None
                 self._value2 = None
 
-        obj = TestClass()
+        TestClass()
 
         # Check that metadata is stored
         assert hasattr(TestClass, "_chainable_properties")

@@ -38,7 +38,7 @@ class PriceFormatOptions(Options):
         if type_value not in {"price", "volume", "percent", "custom"}:
             raise ValueError(
                 f"Invalid type: {type_value!r}. Must be one of 'price', 'volume', "
-                f"'percent', 'custom'."
+                "'percent', 'custom'."
             )
         return type_value
 

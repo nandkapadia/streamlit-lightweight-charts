@@ -163,7 +163,7 @@ def test_type_validation_in_chainable_methods():
     with pytest.raises(TypeError, match="line_type must be of type"):
         opts.set_line_type("invalid")
 
-            # Test boolean validation
+        # Test boolean validation
         with pytest.raises(TypeError, match="line_visible must be a boolean"):
             opts.set_line_visible("invalid")
 

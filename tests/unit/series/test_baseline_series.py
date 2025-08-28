@@ -303,7 +303,10 @@ class TestBaselineSeriesValidation:
         """Test validation with invalid data type."""
         with pytest.raises(
             ValueError,
-            match="data must be a list of SingleValueData objects, DataFrame, or Series, got <class 'str'>",
+            match=(
+                "data must be a list of SingleValueData objects, DataFrame, or Series, got <class"
+                " 'str'>"
+            ),
         ):
             BaselineSeries(data="invalid_data")
 

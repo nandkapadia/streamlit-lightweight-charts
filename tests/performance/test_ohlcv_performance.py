@@ -501,9 +501,9 @@ class TestOhlcvDataPerformance:
             processed = {
                 "timestamp": serialized["time"],
                 "price_change": serialized["close"] - serialized["open"],
-                "volume_weighted": serialized["volume"]
-                * (serialized["high"] + serialized["low"])
-                / 2,
+                "volume_weighted": (
+                    serialized["volume"] * (serialized["high"] + serialized["low"]) / 2
+                ),
             }
             return processed
 
@@ -537,9 +537,9 @@ class TestOhlcvDataPerformance:
             processed = {
                 "timestamp": serialized["time"],
                 "price_change": serialized["close"] - serialized["open"],
-                "volume_weighted": serialized["volume"]
-                * (serialized["high"] + serialized["low"])
-                / 2,
+                "volume_weighted": (
+                    serialized["volume"] * (serialized["high"] + serialized["low"]) / 2
+                ),
             }
             return processed
 
@@ -579,9 +579,9 @@ class TestOhlcvDataPerformance:
                 processed = {
                     "timestamp": serialized["time"],
                     "price_change": serialized["close"] - serialized["open"],
-                    "volume_weighted": serialized["volume"]
-                    * (serialized["high"] + serialized["low"])
-                    / 2,
+                    "volume_weighted": (
+                        serialized["volume"] * (serialized["high"] + serialized["low"]) / 2
+                    ),
                 }
                 batch_results.append(processed)
             all_results.extend(batch_results)

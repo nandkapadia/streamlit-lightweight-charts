@@ -72,7 +72,8 @@ def run_tests(
         print("Available categories:")
         print("  Test Types: unit, integration, performance, e2e")
         print(
-            "  Unit Categories: data, series, options, frontend, type_definitions, utils, component, logging_tests"
+            "  Unit Categories: data, series, options, frontend, type_definitions, utils,"
+            " component, logging_tests"
         )
         return 1
 

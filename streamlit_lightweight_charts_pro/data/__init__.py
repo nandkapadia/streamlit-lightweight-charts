@@ -72,6 +72,8 @@ from streamlit_lightweight_charts_pro.data.candlestick_data import CandlestickDa
 
 # Import base data classes
 from streamlit_lightweight_charts_pro.data.data import Data
+from streamlit_lightweight_charts_pro.data.gradient_band import GradientBandData
+from streamlit_lightweight_charts_pro.data.gradient_ribbon import GradientRibbonData
 from streamlit_lightweight_charts_pro.data.histogram_data import HistogramData
 
 # Import single value data classes
@@ -80,6 +82,7 @@ from streamlit_lightweight_charts_pro.data.line_data import LineData
 # Import marker classes
 from streamlit_lightweight_charts_pro.data.marker import BarMarker, Marker, MarkerBase, PriceMarker
 from streamlit_lightweight_charts_pro.data.ohlcv_data import OhlcvData
+from streamlit_lightweight_charts_pro.data.ribbon import RibbonData
 
 # Import signal data classes
 from streamlit_lightweight_charts_pro.data.signal_data import SignalData
@@ -103,6 +106,7 @@ from streamlit_lightweight_charts_pro.data.trade import (
     TradeData,
     TradeType,
 )
+from streamlit_lightweight_charts_pro.data.trend_fill import TrendFillData
 
 # Import tooltip enums from type_definitions
 from streamlit_lightweight_charts_pro.type_definitions.enums import (
@@ -128,6 +132,10 @@ __all__ = [
     "OhlcvData",
     # Band data classes
     "BandData",
+    "RibbonData",
+    "GradientBandData",
+    "GradientRibbonData",
+    "TrendFillData",
     # Marker classes
     "MarkerBase",
     "PriceMarker",

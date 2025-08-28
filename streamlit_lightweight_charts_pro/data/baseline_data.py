@@ -76,5 +76,6 @@ class BaselineData(SingleValueData):
             if color_value is not None and color_value != "":
                 if not is_valid_color(color_value):
                     raise ValueError(
-                        f"Invalid color format for {prop_name}: {color_value!r}. Must be hex or rgba."
+                        f"Invalid color format for {prop_name}: {color_value!r}. Must be hex or"
+                        " rgba."
                     )

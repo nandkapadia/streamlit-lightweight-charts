@@ -77,6 +77,11 @@ from streamlit_lightweight_charts_pro.charts.series import (
     LineSeries,
     Series,
     SignalSeries,
+    GradientRibbonSeries,
+    TrendFillSeries,
+    RibbonSeries,
+    GradientBandSeries,
+    BandSeries,
 )
 from streamlit_lightweight_charts_pro.data import (
     Annotation,
@@ -131,6 +136,11 @@ __all__ = [
     "LineSeries",
     "Series",
     "SignalSeries",
+    "GradientRibbonSeries",
+    "TrendFillSeries",
+    "RibbonSeries",
+    "GradientBandSeries",
+    "BandSeries",
     # Options
     "ChartOptions",
     "LayoutOptions",

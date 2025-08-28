@@ -13,6 +13,7 @@ import {
 import { SeriesConfig } from '../types';
 import { createBandSeries, BandData } from '../bandSeriesPlugin';
 import { SignalSeries, createSignalSeriesPlugin } from '../signalSeriesPlugin';
+import { createTrendFillSeriesPlugin } from '../trendFillSeriesPlugin';
 import { cleanLineStyleOptions } from './lineStyle';
 import { createTradeVisualElements } from '../tradeVisualization';
 
@@ -225,6 +226,92 @@ export function createSeries(
           },
         } as unknown as ISeriesApi<any>;
       } catch {
+        return null;
+      }
+    }
+    case 'trend_fill': {
+      try {
+        console.log('[SeriesFactory] Creating trend_fill series with data:', data)
+        console.log('[SeriesFactory] Options:', cleanedOptions)
+        
+        const trendFillSeries = createTrendFillSeriesPlugin(chart, {
+          type: 'trend_fill',
+          data: data || [],
+          options: {
+            uptrend_fill_color: cleanedOptions.uptrend_fill_color || '#4CAF50',
+            downtrend_fill_color: cleanedOptions.downtrend_fill_color || '#F44336',
+            fill_opacity: cleanedOptions.fill_opacity || 0.3,
+            upper_trend_line: {
+              color: cleanedOptions.upper_trend_line?.color || '#F44336',
+              lineWidth: cleanedOptions.upper_trend_line?.lineWidth || 2,
+              lineStyle: cleanedOptions.upper_trend_line?.lineStyle || 0,
+              visible: cleanedOptions.upper_trend_line?.visible !== false,
+            },
+            lower_trend_line: {
+              color: cleanedOptions.lower_trend_line?.color || '#4CAF50',
+              lineWidth: cleanedOptions.lower_trend_line?.lineWidth || 2,
+              lineStyle: cleanedOptions.lower_trend_line?.lineStyle || 0,
+              visible: cleanedOptions.lower_trend_line?.visible !== false,
+            },
+            base_line: {
+              color: cleanedOptions.base_line?.color || '#666666',
+              lineWidth: cleanedOptions.base_line?.lineWidth || 1,
+              lineStyle: cleanedOptions.base_line?.lineStyle || 1,
+              visible: cleanedOptions.base_line?.visible !== false,
+            },
+            visible: cleanedOptions.visible !== false,
+          },
+          paneId: finalPaneId,
+        });
+        
+        // Set the data immediately
+        if (data && data.length > 0) {
+          console.log('[SeriesFactory] Setting initial data for trend_fill series')
+          trendFillSeries.setData(data)
+        }
+        
+        return {
+          setData: (newData: any[]) => {
+            try {
+              console.log('[SeriesFactory] setData called with:', newData)
+              trendFillSeries.setData(newData);
+            } catch (error) {
+              console.error('[SeriesFactory] Error in setData:', error)
+            }
+          },
+          update: (newData: any) => {
+            try {
+              console.log('[SeriesFactory] update called with:', newData)
+              trendFillSeries.updateData([newData]);
+            } catch (error) {
+              console.error('[SeriesFactory] Error in update:', error)
+            }
+          },
+          applyOptions: (options: any) => {
+            try {
+              console.log('[SeriesFactory] applyOptions called with:', options)
+              trendFillSeries.applyOptions(options);
+            } catch (error) {
+              console.error('[SeriesFactory] Error in applyOptions:', error)
+            }
+          },
+          priceScale: () => {
+            try {
+              return chart.priceScale(priceScaleId || 'right');
+            } catch {
+              return null;
+            }
+          },
+          remove: () => {
+            try {
+              trendFillSeries.destroy();
+            } catch (error) {
+              console.error('[SeriesFactory] Error in remove:', error)
+            }
+          },
+        } as unknown as ISeriesApi<any>;
+      } catch (error) {
+        console.error('[SeriesFactory] Error creating trend_fill series:', error)
         return null;
       }
     }

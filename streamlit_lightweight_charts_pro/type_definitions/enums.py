@@ -26,7 +26,10 @@ class ChartType(str, Enum):
         LINE: Line chart - simple line connecting data points.
         BAR: Bar chart - OHLC bars for price data.
         CANDLESTICK: Candlestick chart - traditional Japanese candlesticks.
-        SIGNAL: Signal chart - background coloring based on signal values.
+        RIBBON: Ribbon chart - upper and lower bands with fill areas.
+        GRADIENT_RIBBON: Gradient ribbon chart - ribbon with gradient fills.
+        GRADIENT_BAND: Gradient band chart - band with gradient fills.
+        TREND_FILL: Trend fill chart - fills between trend lines and candle body midpoints.        SIGNAL: Signal chart - background coloring based on signal values.
     """
 
     AREA = "area"
@@ -36,6 +39,10 @@ class ChartType(str, Enum):
     LINE = "line"
     BAR = "bar"
     CANDLESTICK = "candlestick"
+    RIBBON = "ribbon"
+    GRADIENT_RIBBON = "gradient_ribbon"
+    GRADIENT_BAND = "gradient_band"
+    TREND_FILL = "trend_fill"
     SIGNAL = "signal"
 
 

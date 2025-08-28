@@ -149,13 +149,12 @@ class Chart:
             for item in series:
                 if not isinstance(item, Series):
                     raise TypeError(
-                        f"All items in series list must be Series instances, " f"got {type(item)}"
+                        f"All items in series list must be Series instances, got {type(item)}"
                     )
             self.series = series
         else:
             raise TypeError(
-                f"series must be a Series instance or list of Series instances, "
-                f"got {type(series)}"
+                f"series must be a Series instance or list of Series instances, got {type(series)}"
             )
 
         # Initialize chart options
@@ -174,7 +173,7 @@ class Chart:
             for annotation in annotations:
                 if not isinstance(annotation, Annotation):
                     raise TypeError(
-                        f"All items in annotations list must be Annotation instances, "
+                        "All items in annotations list must be Annotation instances, "
                         f"got {type(annotation)}"
                     )
                 self.add_annotation(annotation)
@@ -356,7 +355,7 @@ class Chart:
         for annotation in annotations:
             if not isinstance(annotation, Annotation):
                 raise TypeError(
-                    f"All items in annotations list must be Annotation instances, "
+                    "All items in annotations list must be Annotation instances, "
                     f"got {type(annotation)}"
                 )
             self.add_annotation(annotation, layer_name)
@@ -954,7 +953,7 @@ class Chart:
 
         if self.options and self.options.overlay_price_scales is not None:
             chart_config["overlayPriceScales"] = {
-                k: (v.asdict() if hasattr(v, "asdict") else v)
+                k: v.asdict() if hasattr(v, "asdict") else v
                 for k, v in self.options.overlay_price_scales.items()
             }
 

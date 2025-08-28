@@ -267,18 +267,18 @@ class TestBandSeriesSerialization:
         assert "upperLine" in options
         assert "middleLine" in options
         assert "lowerLine" in options
-        
+
         # Check upper line options
         upper_line = options["upperLine"]
         assert upper_line["color"] == "#FF0000"
         assert upper_line["lineWidth"] == 3
         assert upper_line["lineType"] == LineType.CURVED.value
-        
+
         # Check middle line options
         middle_line = options["middleLine"]
         assert middle_line["color"] == "#00FF00"
         assert middle_line["lineStyle"] == LineStyle.DOTTED.value
-        
+
         # Check lower line options
         lower_line = options["lowerLine"]
         assert lower_line["color"] == "#0000FF"
@@ -652,7 +652,15 @@ class TestBandSeriesJsonStructure:
         result = series.asdict()
         options = result["options"]
         # Check for the new band series structure
-        for key in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor", "upperFill", "lowerFill"]:
+        for key in [
+            "upperLine",
+            "middleLine",
+            "lowerLine",
+            "upperFillColor",
+            "lowerFillColor",
+            "upperFill",
+            "lowerFill",
+        ]:
             assert key in options
 
     def test_markers_json_structure(self):
@@ -785,5 +793,13 @@ class TestBandSeriesJsonStructure:
         assert "markers" not in result
         assert "priceLines" not in result
         # Should include all required options
-        for option in ["upperLine", "middleLine", "lowerLine", "upperFillColor", "lowerFillColor", "upperFill", "lowerFill"]:
+        for option in [
+            "upperLine",
+            "middleLine",
+            "lowerLine",
+            "upperFillColor",
+            "lowerFillColor",
+            "upperFill",
+            "lowerFill",
+        ]:
             assert option in result["options"]

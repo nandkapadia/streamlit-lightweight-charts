@@ -21,74 +21,35 @@ class AreaData(SingleValueData):
     with optional color properties for line, top, and bottom colors.
 
     Attributes:
-            time: The time of the data point (inherited from SingleValueData)
-    value: The price value of the data point (inherited from SingleValueData)
-        lineColor: Optional line color for this specific data point
-        topColor: Optional top color for the area fill
-        bottomColor: Optional bottom color for the area fill
+        time: The time of the data point (inherited from SingleValueData)
+        value: The price value of the data point (inherited from SingleValueData)
+        line_color: Optional line color for this specific data point
+        top_color: Optional top color for the area fill
+        bottom_color: Optional bottom color for the area fill
     """
 
     # Required columns from SingleValueData
     REQUIRED_COLUMNS = set()
 
     # Optional columns specific to AreaData
-    OPTIONAL_COLUMNS = {"lineColor", "topColor", "bottomColor"}
+    OPTIONAL_COLUMNS = {"line_color", "top_color", "bottom_color"}
 
     # Optional color properties
-    lineColor: Optional[str] = None
-    topColor: Optional[str] = None
-    bottomColor: Optional[str] = None
+    line_color: Optional[str] = None
+    top_color: Optional[str] = None
+    bottom_color: Optional[str] = None
 
     def __post_init__(self):
         """Validate and normalize data after initialization."""
         # Call parent's __post_init__ for time normalization and value validation
         super().__post_init__()
 
-        # Validate color properties if provided (and not empty)
-        if (
-            self.lineColor is not None
-            and self.lineColor.strip()
-            and not is_valid_color(self.lineColor)
-        ):
-            raise ValueError(f"Invalid lineColor format: {self.lineColor}")
-
-        if (
-            self.topColor is not None
-            and self.topColor.strip()
-            and not is_valid_color(self.topColor)
-        ):
-            raise ValueError(f"Invalid topColor format: {self.topColor}")
-
-        if (
-            self.bottomColor is not None
-            and self.bottomColor.strip()
-            and not is_valid_color(self.bottomColor)
-        ):
-            raise ValueError(f"Invalid bottomColor format: {self.bottomColor}")
-
-    def asdict(self):
-        """
-        Convert the AreaData to a dictionary for frontend consumption.
-
-        Returns:
-            dict: Dictionary representation with camelCase keys and validated data.
-        """
-        result = super().asdict()
-
-        # Remove None, empty, and whitespace-only color values that were added by parent
-        for color_key in ["lineColor", "topColor", "bottomColor"]:
-            value = result.get(color_key)
-            if value is None or value == "" or (isinstance(value, str) and value.strip() == ""):
-                result.pop(color_key, None)
-
-        # Add color properties only if they are not None and not empty
-        if self.lineColor and self.lineColor.strip():
-            result["lineColor"] = self.lineColor
-
-        if self.topColor and self.topColor.strip():
-            result["topColor"] = self.topColor
-
-        if self.bottomColor and self.bottomColor.strip():
-            result["bottomColor"] = self.bottomColor
-
-        return result
+        # Clean up and validate color properties
+        for color_attr in ["line_color", "top_color", "bottom_color"]:
+            color_value = getattr(self, color_attr)
+            if color_value is not None and color_value.strip():
+                if not is_valid_color(color_value):
+                    raise ValueError(f"Invalid {color_attr} format: {color_value}")
+            else:
+                # Set to None if empty/whitespace
+                setattr(self, color_attr, None)

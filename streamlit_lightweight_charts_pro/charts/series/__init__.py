@@ -52,6 +52,7 @@ Available Series Types:
     - HistogramSeries: Volume or distribution visualization
     - BaselineSeries: Values relative to a baseline reference
     - BandSeries: Multiple lines with fill areas for technical analysis
+    - RibbonSeries: Upper and lower bands with fill areas
     - SignalSeries: Background coloring for signal-based analysis
 
 Version: 0.1.0
@@ -65,9 +66,13 @@ from streamlit_lightweight_charts_pro.charts.series.bar_series import BarSeries
 from streamlit_lightweight_charts_pro.charts.series.base import Series
 from streamlit_lightweight_charts_pro.charts.series.baseline import BaselineSeries
 from streamlit_lightweight_charts_pro.charts.series.candlestick import CandlestickSeries
+from streamlit_lightweight_charts_pro.charts.series.gradient_band import GradientBandSeries
+from streamlit_lightweight_charts_pro.charts.series.gradient_ribbon import GradientRibbonSeries
 from streamlit_lightweight_charts_pro.charts.series.histogram import HistogramSeries
 from streamlit_lightweight_charts_pro.charts.series.line import LineSeries
+from streamlit_lightweight_charts_pro.charts.series.ribbon import RibbonSeries
 from streamlit_lightweight_charts_pro.charts.series.signal_series import SignalSeries
+from streamlit_lightweight_charts_pro.charts.series.trend_fill import TrendFillSeries
 
 __all__ = [
     "Series",
@@ -78,5 +83,9 @@ __all__ = [
     "BarSeries",
     "HistogramSeries",
     "BaselineSeries",
+    "RibbonSeries",
+    "GradientRibbonSeries",
+    "GradientBandSeries",
+    "TrendFillSeries",
     "SignalSeries",
 ]

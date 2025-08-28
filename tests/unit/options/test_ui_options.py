@@ -135,9 +135,7 @@ class TestLegendOptions:
     def test_to_dict_with_custom_template(self):
         """Test serialization with custom template."""
         template = "<span style='color: {color}'>{title}: {value}</span>"
-        options = LegendOptions(
-            visible=True, position="top-left", text=template
-        )
+        options = LegendOptions(visible=True, position="top-left", text=template)
         result = options.asdict()
         assert result["visible"] is True
         assert result["position"] == "top-left"

@@ -46,5 +46,5 @@ class CandlestickData(OhlcData):
                 if not is_valid_color(color_value):
                     raise ValueError(
                         f"Invalid color format for {prop_name}: {color_value!r}. "
-                        f"Must be hex or rgba."
+                        "Must be hex or rgba."
                     )

@@ -288,7 +288,7 @@ def chainable_property(
                         if not is_valid_color(value):
                             raise ValueError(
                                 f"Invalid color format for {attr_name}: {value!r}. "
-                                f"Must be hex or rgba."
+                                "Must be hex or rgba."
                             )
                     elif validator == "price_format_type":
                         value = validate_price_format_type(value)
@@ -367,7 +367,7 @@ def chainable_property(
                         if not is_valid_color(value):
                             raise ValueError(
                                 f"Invalid color format for {attr_name}: {value!r}. "
-                                f"Must be hex or rgba."
+                                "Must be hex or rgba."
                             )
                     elif validator == "price_format_type":
                         value = validate_price_format_type(value)
@@ -537,8 +537,7 @@ def _validate_value(field_name: str, value, value_type=None, validator=None):
             if validator == "color":
                 if not is_valid_color(value):
                     raise ValueError(
-                        f"Invalid color format for {field_name}: {value!r}. "
-                        f"Must be hex or rgba."
+                        f"Invalid color format for {field_name}: {value!r}. Must be hex or rgba."
                     )
             elif validator == "price_format_type":
                 value = validate_price_format_type(value)
