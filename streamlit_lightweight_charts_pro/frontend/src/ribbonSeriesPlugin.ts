@@ -8,7 +8,7 @@ import {
   SeriesAttachedParameter,
   IPrimitivePaneView,
   IPrimitivePaneRenderer,
-  Coordinate,
+  Coordinate
 } from 'lightweight-charts'
 
 // Ribbon data interface
@@ -35,16 +35,19 @@ export interface LineStyleOptions {
 
 // Ribbon series options
 export interface RibbonSeriesOptions {
+  // Z-index for proper layering
+  zIndex?: number
+
   // Line style options
   upperLine?: LineStyleOptions
   lowerLine?: LineStyleOptions
-  
+
   // Fill color
   fill: string
-  
+
   // Fill visibility
   fillVisible: boolean
-  
+
   // Base options
   visible: boolean
   priceScaleId: string
@@ -75,7 +78,7 @@ const defaultOptions: RibbonSeriesOptions = {
     crosshairMarkerBorderColor: '',
     crosshairMarkerBackgroundColor: '',
     crosshairMarkerBorderWidth: 2,
-    lastPriceAnimation: 0, // DISABLED
+    lastPriceAnimation: 0 // DISABLED
   },
   lowerLine: {
     color: '#F44336',
@@ -88,15 +91,15 @@ const defaultOptions: RibbonSeriesOptions = {
     crosshairMarkerBorderColor: '',
     crosshairMarkerBackgroundColor: '',
     crosshairMarkerBorderWidth: 2,
-    lastPriceAnimation: 0, // DISABLED
+    lastPriceAnimation: 0 // DISABLED
   },
-  
+
   // Fill color
   fill: 'rgba(76, 175, 80, 0.1)',
-  
+
   // Fill visibility
   fillVisible: true,
-  
+
   // Base options
   visible: true,
   priceScaleId: 'right',
@@ -110,7 +113,7 @@ const defaultOptions: RibbonSeriesOptions = {
   baseLineWidth: 1,
   baseLineColor: '#FF9800',
   baseLineStyle: 'solid',
-  priceFormat: { type: 'price', precision: 2 },
+  priceFormat: {type: 'price', precision: 2}
 }
 
 // Ribbon renderer data interface
@@ -149,17 +152,19 @@ class RibbonPrimitivePaneRenderer implements IPrimitivePaneRenderer {
       if (this._viewData.options.fillVisible) {
         ctx.fillStyle = this._viewData.options.fill
         ctx.beginPath()
-        
+
         // Find first valid point
         let firstValidIndex = 0
-        while (firstValidIndex < points.length && 
-               (points[firstValidIndex].upper === null || points[firstValidIndex].lower === null)) {
+        while (
+          firstValidIndex < points.length &&
+          (points[firstValidIndex].upper === null || points[firstValidIndex].lower === null)
+        ) {
           firstValidIndex++
         }
-        
+
         if (firstValidIndex < points.length) {
           ctx.moveTo(points[firstValidIndex].x, points[firstValidIndex].upper)
-          
+
           // Draw upper line (handle gaps)
           for (let i = firstValidIndex; i < points.length; i++) {
             const point = points[i]
@@ -171,17 +176,19 @@ class RibbonPrimitivePaneRenderer implements IPrimitivePaneRenderer {
               ctx.beginPath()
               // Find next valid point
               let nextValidIndex = i + 1
-              while (nextValidIndex < points.length && 
-                     (points[nextValidIndex].upper === null || points[nextValidIndex].lower === null)) {
+              while (
+                nextValidIndex < points.length &&
+                (points[nextValidIndex].upper === null || points[nextValidIndex].lower === null)
+              ) {
                 nextValidIndex++
               }
               if (nextValidIndex < points.length) {
                 ctx.moveTo(points[nextValidIndex].x, points[nextValidIndex].upper)
-                i = nextValidIndex - 1  // Adjust loop index
+                i = nextValidIndex - 1 // Adjust loop index
               }
             }
           }
-          
+
           // Draw lower line (handle gaps)
           for (let i = points.length - 1; i >= firstValidIndex; i--) {
             const point = points[i]
@@ -193,17 +200,19 @@ class RibbonPrimitivePaneRenderer implements IPrimitivePaneRenderer {
               ctx.beginPath()
               // Find previous valid point
               let prevValidIndex = i - 1
-              while (prevValidIndex >= firstValidIndex && 
-                     (points[prevValidIndex].upper === null || points[prevValidIndex].lower === null)) {
+              while (
+                prevValidIndex >= firstValidIndex &&
+                (points[prevValidIndex].upper === null || points[prevValidIndex].lower === null)
+              ) {
                 prevValidIndex--
               }
               if (prevValidIndex >= firstValidIndex) {
                 ctx.moveTo(points[prevValidIndex].x, points[prevValidIndex].lower)
-                i = prevValidIndex + 1  // Adjust loop index
+                i = prevValidIndex + 1 // Adjust loop index
               }
             }
           }
-          
+
           ctx.closePath()
           ctx.fill()
         }
@@ -223,6 +232,17 @@ class RibbonPrimitivePaneView implements IPrimitivePaneView {
   renderer(): IPrimitivePaneRenderer {
     return this._renderer
   }
+
+  // Z-index support: Return the Z-index for proper layering
+  zIndex(): number {
+    const zIndex = this._renderer._viewData.options.zIndex
+    // Validate Z-index is a positive number
+    if (typeof zIndex === 'number' && zIndex >= 0) {
+      return zIndex
+    }
+    // Return default Z-index for ribbon series
+    return 100
+  }
 }
 
 // Ribbon primitive
@@ -234,7 +254,7 @@ class RibbonPrimitive implements ISeriesPrimitive<Time> {
   constructor(data: RibbonRendererData[], options: RibbonSeriesOptions) {
     this._data = data
     this._options = options
-    this._view = new RibbonPrimitivePaneView({ data, options })
+    this._view = new RibbonPrimitivePaneView({data, options})
   }
 
   attached(param: SeriesAttachedParameter<Time>): void {
@@ -248,7 +268,7 @@ class RibbonPrimitive implements ISeriesPrimitive<Time> {
   update(data: RibbonRendererData[], options: RibbonSeriesOptions): void {
     this._data = data
     this._options = options
-    this._view = new RibbonPrimitivePaneView({ data, options })
+    this._view = new RibbonPrimitivePaneView({data, options})
   }
 
   data(): RibbonRendererData[] {
@@ -274,7 +294,7 @@ export class RibbonSeriesApi {
 
   constructor(chart: IChartApi, options: RibbonSeriesOptions = defaultOptions) {
     this._chart = chart
-    this._options = { ...defaultOptions, ...options }
+    this._options = {...defaultOptions, ...options}
 
     // Create upper and lower line series
     this._upperSeries = chart.addSeries(LineSeries, {
@@ -300,7 +320,7 @@ export class RibbonSeriesApi {
       baseLineWidth: this._options.baseLineWidth as any,
       baseLineColor: this._options.baseLineColor,
       baseLineStyle: this._options.baseLineStyle as any,
-      priceFormat: this._options.priceFormat,
+      priceFormat: this._options.priceFormat
     })
 
     this._lowerSeries = chart.addSeries(LineSeries, {
@@ -326,12 +346,12 @@ export class RibbonSeriesApi {
       baseLineWidth: this._options.baseLineWidth as any,
       baseLineColor: this._options.baseLineColor,
       baseLineStyle: this._options.baseLineStyle as any,
-      priceFormat: this._options.priceFormat,
+      priceFormat: this._options.priceFormat
     })
 
     // Set visibility
-    this._upperSeries.applyOptions({ visible: this._options.visible })
-    this._lowerSeries.applyOptions({ visible: this._options.visible })
+    this._upperSeries.applyOptions({visible: this._options.visible})
+    this._lowerSeries.applyOptions({visible: this._options.visible})
   }
 
   setData(data: RibbonData[]): void {
@@ -340,14 +360,14 @@ export class RibbonSeriesApi {
       .filter(item => item.upper !== null && item.upper !== undefined)
       .map(item => ({
         time: item.time,
-        value: item.upper,
+        value: item.upper
       }))
 
     const lowerData = data
       .filter(item => item.lower !== null && item.lower !== undefined)
       .map(item => ({
         time: item.time,
-        value: item.lower,
+        value: item.lower
       }))
 
     // Set data for both series
@@ -356,13 +376,13 @@ export class RibbonSeriesApi {
 
     // Create primitive for fill area
     if (this._options.fillVisible) {
-              const rendererData: RibbonRendererData[] = data.map(item => ({
-          x: item.time as number,
-          upper: item.upper,
-          lower: item.lower,
-          
-          fill: item.fill,
-        }))
+      const rendererData: RibbonRendererData[] = data.map(item => ({
+        x: item.time as number,
+        upper: item.upper,
+        lower: item.lower,
+
+        fill: item.fill
+      }))
 
       // Remove existing primitive if any
       if (this._primitive) {
@@ -377,7 +397,7 @@ export class RibbonSeriesApi {
   }
 
   updateOptions(options: Partial<RibbonSeriesOptions>): void {
-    this._options = { ...this._options, ...options }
+    this._options = {...this._options, ...options}
 
     // Update series options
     if (options.upperLine) {
@@ -392,7 +412,7 @@ export class RibbonSeriesApi {
         crosshairMarkerBorderColor: options.upperLine.crosshairMarkerBorderColor,
         crosshairMarkerBackgroundColor: options.upperLine.crosshairMarkerBackgroundColor,
         crosshairMarkerBorderWidth: options.upperLine.crosshairMarkerBorderWidth,
-        lastPriceAnimation: options.upperLine.lastPriceAnimation,
+        lastPriceAnimation: options.upperLine.lastPriceAnimation
       })
     }
 
@@ -408,7 +428,7 @@ export class RibbonSeriesApi {
         crosshairMarkerBorderColor: options.lowerLine.crosshairMarkerBorderColor,
         crosshairMarkerBackgroundColor: options.lowerLine.crosshairMarkerBackgroundColor,
         crosshairMarkerBorderWidth: options.lowerLine.crosshairMarkerBorderWidth,
-        lastPriceAnimation: options.lowerLine.lastPriceAnimation,
+        lastPriceAnimation: options.lowerLine.lastPriceAnimation
       })
     }
 
@@ -420,8 +440,8 @@ export class RibbonSeriesApi {
 
   setVisible(visible: boolean): void {
     this._options.visible = visible
-    this._upperSeries.applyOptions({ visible })
-    this._lowerSeries.applyOptions({ visible })
+    this._upperSeries.applyOptions({visible})
+    this._lowerSeries.applyOptions({visible})
   }
 
   getUpperSeries(): ISeriesApi<'Line'> {

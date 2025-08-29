@@ -31,7 +31,7 @@ export const MARGINS = {
     bottom: 10,
     left: 10
   }
-} as const;
+} as const
 
 /**
  * Default dimensions for chart components
@@ -66,7 +66,7 @@ export const DIMENSIONS = {
     minWidth: 300,
     minHeight: 200
   }
-} as const;
+} as const
 
 /**
  * Fallback values for error cases
@@ -80,7 +80,7 @@ export const FALLBACKS = {
   priceScaleWidth: 70,
   containerWidth: 800,
   containerHeight: 600
-} as const;
+} as const
 
 /**
  * Z-index values for layering
@@ -94,17 +94,17 @@ export const Z_INDEX = {
   legend: 40,
   tooltip: 50,
   modal: 100
-} as const;
+} as const
 
 /**
  * Animation and timing configurations
  */
 export const TIMING = {
   cacheExpiration: 5000, // 5 seconds
-  debounceDelay: 100,   // 100ms
-  throttleDelay: 50,    // 50ms
+  debounceDelay: 100, // 100ms
+  throttleDelay: 50, // 50ms
   animationDuration: 200 // 200ms
-} as const;
+} as const
 
 /**
  * Positioning calculation modes
@@ -130,22 +130,24 @@ export enum CoordinateOrigin {
 /**
  * Get margin configuration by feature type
  */
-export function getMargins(feature: keyof typeof MARGINS): typeof MARGINS[keyof typeof MARGINS] {
-  return MARGINS[feature] || MARGINS.content;
+export function getMargins(feature: keyof typeof MARGINS): (typeof MARGINS)[keyof typeof MARGINS] {
+  return MARGINS[feature] || MARGINS.content
 }
 
 /**
  * Get dimension configuration by component type
  */
-export function getDimensions(component: keyof typeof DIMENSIONS): typeof DIMENSIONS[keyof typeof DIMENSIONS] {
-  return DIMENSIONS[component] || DIMENSIONS.chart;
+export function getDimensions(
+  component: keyof typeof DIMENSIONS
+): (typeof DIMENSIONS)[keyof typeof DIMENSIONS] {
+  return DIMENSIONS[component] || DIMENSIONS.chart
 }
 
 /**
  * Get fallback value by type
  */
 export function getFallback(type: keyof typeof FALLBACKS): number {
-  return FALLBACKS[type] || 0;
+  return FALLBACKS[type] || 0
 }
 
 /**
@@ -156,27 +158,27 @@ export function validateConfiguration(): boolean {
   for (const [key, value] of Object.entries(DIMENSIONS)) {
     for (const [prop, val] of Object.entries(value)) {
       if (typeof val === 'number' && val < 0) {
-        console.error(`Invalid dimension: ${key}.${prop} = ${val}`);
-        return false;
+        console.error(`Invalid dimension: ${key}.${prop} = ${val}`)
+        return false
       }
     }
   }
-  
+
   // Ensure min values are less than max values
   if (DIMENSIONS.timeAxis.minHeight > DIMENSIONS.timeAxis.maxHeight) {
-    console.error('Invalid time axis height range');
-    return false;
+    console.error('Invalid time axis height range')
+    return false
   }
-  
+
   if (DIMENSIONS.priceScale.minWidth > DIMENSIONS.priceScale.maxWidth) {
-    console.error('Invalid price scale width range');
-    return false;
+    console.error('Invalid price scale width range')
+    return false
   }
-  
-  return true;
+
+  return true
 }
 
 // Validate configuration on load
 if (process.env.NODE_ENV === 'development') {
-  validateConfiguration();
+  validateConfiguration()
 }

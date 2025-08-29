@@ -1,4 +1,4 @@
-import { createSeries } from '../seriesFactory';
+import {createSeries} from '../seriesFactory'
 
 // Mock the lightweight-charts library
 const mockChart = {
@@ -6,85 +6,85 @@ const mockChart = {
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   addLineSeries: () => ({
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   addAreaSeries: () => ({
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   addHistogramSeries: () => ({
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   addBaselineSeries: () => ({
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   addBandSeries: () => ({
     setData: () => {},
     update: () => {},
     applyOptions: () => {},
-    priceScale: () => ({ applyOptions: () => {} }),
+    priceScale: () => ({applyOptions: () => {}})
   }),
   timeScale: {
     fitContent: () => {},
     scrollToPosition: () => {},
     scrollToTime: () => {},
     setVisibleRange: () => {},
-    applyOptions: () => {},
+    applyOptions: () => {}
   },
-  priceScale: () => ({ applyOptions: () => {} }),
+  priceScale: () => ({applyOptions: () => {}}),
   applyOptions: () => {},
   resize: () => {},
   remove: () => {},
   subscribeClick: () => {},
   subscribeCrosshairMove: () => {},
   unsubscribeClick: () => {},
-  unsubscribeCrosshairMove: () => {},
-};
+  unsubscribeCrosshairMove: () => {}
+}
 
 describe('Series Factory', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   describe('Line Series', () => {
     it('should create line series with basic data', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
-          { time: '2024-01-03', value: 105 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110},
+          {time: '2024-01-03', value: 105}
         ],
         options: {
           color: '#ff0000',
-          lineWidth: 2,
-        },
-      };
+          lineWidth: 2
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create line series with custom options', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
           color: '#00ff00',
@@ -92,25 +92,25 @@ describe('Series Factory', () => {
           lineStyle: 1, // Dashed
           crosshairMarkerVisible: true,
           lastValueVisible: true,
-          priceLineVisible: true,
-        },
-      };
+          priceLineVisible: true
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle empty line series data', () => {
       const seriesConfig = {
         type: 'line',
         data: [],
-        options: {},
-      };
+        options: {}
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Candlestick Series', () => {
     it('should create candlestick series with OHLC data', () => {
@@ -122,27 +122,27 @@ describe('Series Factory', () => {
             open: 100,
             high: 110,
             low: 95,
-            close: 105,
+            close: 105
           },
           {
             time: '2024-01-02',
             open: 105,
             high: 115,
             low: 100,
-            close: 110,
-          },
+            close: 110
+          }
         ],
         options: {
           upColor: '#00ff00',
           downColor: '#ff0000',
           borderVisible: true,
-          wickVisible: true,
-        },
-      };
+          wickVisible: true
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create candlestick series with custom styling', () => {
       const seriesConfig = {
@@ -153,8 +153,8 @@ describe('Series Factory', () => {
             open: 100,
             high: 110,
             low: 95,
-            close: 105,
-          },
+            close: 105
+          }
         ],
         options: {
           upColor: '#00ff00',
@@ -162,148 +162,148 @@ describe('Series Factory', () => {
           borderUpColor: '#008000',
           borderDownColor: '#800000',
           wickUpColor: '#00ff00',
-          wickDownColor: '#ff0000',
-        },
-      };
+          wickDownColor: '#ff0000'
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Area Series', () => {
     it('should create area series with basic data', () => {
       const seriesConfig = {
         type: 'area',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
-          { time: '2024-01-03', value: 105 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110},
+          {time: '2024-01-03', value: 105}
         ],
         options: {
           topColor: 'rgba(255, 0, 0, 0.5)',
           bottomColor: 'rgba(255, 0, 0, 0.1)',
           lineColor: '#ff0000',
-          lineWidth: 2,
-        },
-      };
+          lineWidth: 2
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create area series with gradient', () => {
       const seriesConfig = {
         type: 'area',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
           topColor: 'rgba(0, 255, 0, 0.8)',
           bottomColor: 'rgba(0, 255, 0, 0.2)',
           lineColor: '#00ff00',
           lineWidth: 1,
-          crosshairMarkerVisible: true,
-        },
-      };
+          crosshairMarkerVisible: true
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Histogram Series', () => {
     it('should create histogram series with volume data', () => {
       const seriesConfig = {
         type: 'histogram',
         data: [
-          { time: '2024-01-01', value: 1000000, color: '#00ff00' },
-          { time: '2024-01-02', value: 1500000, color: '#ff0000' },
-          { time: '2024-01-03', value: 800000, color: '#00ff00' },
+          {time: '2024-01-01', value: 1000000, color: '#00ff00'},
+          {time: '2024-01-02', value: 1500000, color: '#ff0000'},
+          {time: '2024-01-03', value: 800000, color: '#00ff00'}
         ],
         options: {
           color: '#888888',
           priceFormat: {
-            type: 'volume',
+            type: 'volume'
           },
-          priceScaleId: 'volume',
-        },
-      };
+          priceScaleId: 'volume'
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create histogram series with custom colors', () => {
       const seriesConfig = {
         type: 'histogram',
         data: [
-          { time: '2024-01-01', value: 1000000, color: '#00ff00' },
-          { time: '2024-01-02', value: 1500000, color: '#ff0000' },
+          {time: '2024-01-01', value: 1000000, color: '#00ff00'},
+          {time: '2024-01-02', value: 1500000, color: '#ff0000'}
         ],
         options: {
           color: '#888888',
           priceFormat: {
-            type: 'volume',
+            type: 'volume'
           },
           priceScaleId: 'volume',
           scaleMargins: {
             top: 0.8,
-            bottom: 0,
-          },
-        },
-      };
+            bottom: 0
+          }
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Baseline Series', () => {
     it('should create baseline series with reference data', () => {
       const seriesConfig = {
         type: 'baseline',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
-          { time: '2024-01-03', value: 105 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110},
+          {time: '2024-01-03', value: 105}
         ],
         options: {
-          baseValue: { price: 100 },
+          baseValue: {price: 100},
           topFillColor: 'rgba(0, 255, 0, 0.3)',
           bottomFillColor: 'rgba(255, 0, 0, 0.3)',
           topLineColor: '#00ff00',
           bottomLineColor: '#ff0000',
-          lineWidth: 2,
-        },
-      };
+          lineWidth: 2
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create baseline series with custom baseline', () => {
       const seriesConfig = {
         type: 'baseline',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
-          baseValue: { price: 105 },
+          baseValue: {price: 105},
           topFillColor: 'rgba(0, 255, 0, 0.5)',
           bottomFillColor: 'rgba(255, 0, 0, 0.5)',
           topLineColor: '#00ff00',
           bottomLineColor: '#ff0000',
-          lineWidth: 1,
-        },
-      };
+          lineWidth: 1
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Band Series', () => {
     it('should create band series with upper and lower data', () => {
@@ -313,25 +313,25 @@ describe('Series Factory', () => {
           {
             time: '2024-01-01',
             upper: 110,
-            lower: 90,
+            lower: 90
           },
           {
             time: '2024-01-02',
             upper: 115,
-            lower: 95,
-          },
+            lower: 95
+          }
         ],
         options: {
           upperColor: 'rgba(0, 255, 0, 0.3)',
           lowerColor: 'rgba(255, 0, 0, 0.3)',
           lineColor: '#888888',
-          lineWidth: 1,
-        },
-      };
+          lineWidth: 1
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should create band series with custom styling', () => {
       const seriesConfig = {
@@ -340,236 +340,228 @@ describe('Series Factory', () => {
           {
             time: '2024-01-01',
             upper: 110,
-            lower: 90,
-          },
+            lower: 90
+          }
         ],
         options: {
           upperColor: 'rgba(0, 255, 0, 0.5)',
           lowerColor: 'rgba(255, 0, 0, 0.5)',
           lineColor: '#888888',
           lineWidth: 2,
-          crosshairMarkerVisible: true,
-        },
-      };
+          crosshairMarkerVisible: true
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Series Configuration', () => {
     it('should handle series with price scale configuration', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
           color: '#ff0000',
-          priceScaleId: 'right',
-        },
-      };
+          priceScaleId: 'right'
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle series with time scale configuration', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
           color: '#ff0000',
-          timeScaleId: 'time',
-        },
-      };
+          timeScaleId: 'time'
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle series with autoscale info', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01', value: 100 },
-          { time: '2024-01-02', value: 110 },
+          {time: '2024-01-01', value: 100},
+          {time: '2024-01-02', value: 110}
         ],
         options: {
           color: '#ff0000',
           autoscaleInfoProvider: () => ({
-            priceRange: { minValue: 90, maxValue: 120 },
-            margins: { above: 0.1, below: 0.1 },
-          }),
-        },
-      };
+            priceRange: {minValue: 90, maxValue: 120},
+            margins: {above: 0.1, below: 0.1}
+          })
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Data Validation', () => {
     it('should handle invalid series type', () => {
       const seriesConfig = {
         type: 'invalid',
-        data: [
-          { time: '2024-01-01', value: 100 },
-        ],
-        options: {},
-      };
+        data: [{time: '2024-01-01', value: 100}],
+        options: {}
+      }
 
       expect(() => {
-        createSeries(mockChart, seriesConfig);
-      }).toThrow();
-    });
+        createSeries(mockChart, seriesConfig)
+      }).toThrow()
+    })
 
     it('should handle null data', () => {
       const seriesConfig = {
         type: 'line',
         data: null,
-        options: {},
-      };
+        options: {}
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle undefined data', () => {
       const seriesConfig = {
         type: 'line',
         data: undefined,
-        options: {},
-      };
+        options: {}
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle malformed data', () => {
       const seriesConfig = {
         type: 'line',
         data: [
-          { time: '2024-01-01' }, // Missing value
-          { value: 100 }, // Missing time
-          { time: '2024-01-03', value: 'invalid' }, // Invalid value
+          {time: '2024-01-01'}, // Missing value
+          {value: 100}, // Missing time
+          {time: '2024-01-03', value: 'invalid'} // Invalid value
         ],
-        options: {},
-      };
+        options: {}
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
-  });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
+  })
 
   describe('Performance', () => {
     it('should handle large datasets efficiently', () => {
-      const largeData = Array.from({ length: 10000 }, (_, i) => ({
+      const largeData = Array.from({length: 10000}, (_, i) => ({
         time: `2024-01-${String(i + 1).padStart(2, '0')}`,
-        value: 100 + Math.random() * 20,
-      }));
+        value: 100 + Math.random() * 20
+      }))
 
       const seriesConfig = {
         type: 'line',
         data: largeData,
         options: {
-          color: '#ff0000',
-        },
-      };
+          color: '#ff0000'
+        }
+      }
 
-      const series = createSeries(mockChart, seriesConfig);
-      expect(series).toBeDefined();
-    });
+      const series = createSeries(mockChart, seriesConfig)
+      expect(series).toBeDefined()
+    })
 
     it('should handle multiple series creation', () => {
       const seriesConfigs = [
         {
           type: 'line',
           data: [
-            { time: '2024-01-01', value: 100 },
-            { time: '2024-01-02', value: 110 },
+            {time: '2024-01-01', value: 100},
+            {time: '2024-01-02', value: 110}
           ],
-          options: { color: '#ff0000' },
+          options: {color: '#ff0000'}
         },
         {
           type: 'area',
           data: [
-            { time: '2024-01-01', value: 90 },
-            { time: '2024-01-02', value: 100 },
+            {time: '2024-01-01', value: 90},
+            {time: '2024-01-02', value: 100}
           ],
-          options: { color: '#00ff00' },
+          options: {color: '#00ff00'}
         },
         {
           type: 'histogram',
           data: [
-            { time: '2024-01-01', value: 1000000 },
-            { time: '2024-01-02', value: 1500000 },
+            {time: '2024-01-01', value: 1000000},
+            {time: '2024-01-02', value: 1500000}
           ],
-          options: { color: '#0000ff' },
-        },
-      ];
+          options: {color: '#0000ff'}
+        }
+      ]
 
       seriesConfigs.forEach(config => {
-        const series = createSeries(mockChart, config);
-        expect(series).toBeDefined();
-      });
-    });
-  });
+        const series = createSeries(mockChart, config)
+        expect(series).toBeDefined()
+      })
+    })
+  })
 
   describe('Error Handling', () => {
     it('should handle missing chart', () => {
       const seriesConfig = {
         type: 'line',
-        data: [
-          { time: '2024-01-01', value: 100 },
-        ],
-        options: {},
-      };
+        data: [{time: '2024-01-01', value: 100}],
+        options: {}
+      }
 
       expect(() => {
-        createSeries(null, seriesConfig);
-      }).toThrow();
-    });
+        createSeries(null, seriesConfig)
+      }).toThrow()
+    })
 
     it('should handle missing series configuration', () => {
       expect(() => {
-        createSeries(mockChart, null);
-      }).toThrow();
-    });
+        createSeries(mockChart, null)
+      }).toThrow()
+    })
 
     it('should handle missing series type', () => {
       const seriesConfig = {
-        data: [
-          { time: '2024-01-01', value: 100 },
-        ],
-        options: {},
-      };
+        data: [{time: '2024-01-01', value: 100}],
+        options: {}
+      }
 
       expect(() => {
-        createSeries(mockChart, seriesConfig);
-      }).toThrow();
-    });
+        createSeries(mockChart, seriesConfig)
+      }).toThrow()
+    })
 
     it('should handle chart without required methods', () => {
       const invalidChart = {
         // Missing required methods
-      };
+      }
 
       const seriesConfig = {
         type: 'line',
-        data: [
-          { time: '2024-01-01', value: 100 },
-        ],
-        options: {},
-      };
+        data: [{time: '2024-01-01', value: 100}],
+        options: {}
+      }
 
       expect(() => {
-        createSeries(invalidChart, seriesConfig);
-      }).toThrow();
-    });
-  });
-}); 
+        createSeries(invalidChart, seriesConfig)
+      }).toThrow()
+    })
+  })
+})

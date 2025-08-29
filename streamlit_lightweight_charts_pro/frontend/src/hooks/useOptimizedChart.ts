@@ -1,274 +1,334 @@
-import { useRef, useCallback, useMemo, useEffect, useLayoutEffect } from 'react';
-import { IChartApi, ISeriesApi } from 'lightweight-charts';
-import { debounce, throttle, shallowEqual, PerformanceMonitor } from '../utils/performance';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useRef} from 'react'
+import {IChartApi, ISeriesApi, CandlestickSeries} from 'lightweight-charts'
+import {ChartReadyDetector} from '../utils/chartReadyDetection'
+import {ResizeObserverManager} from '../utils/resizeObserverManager'
 
-// Performance monitor instance
-const perfMonitor = PerformanceMonitor.getInstance();
-
-interface ChartRefs {
-  chart: IChartApi | null;
-  series: ISeriesApi<any>[];
-  container: HTMLElement | null;
-  isInitialized: boolean;
-  isDisposed: boolean;
+export interface UseOptimizedChartOptions {
+  chartId: string
+  autoResize?: boolean
+  debounceMs?: number
+  throttleMs?: number
+  enablePerformanceMonitoring?: boolean
+  minWidth?: number
+  minHeight?: number
+  maxReadyAttempts?: number
+  baseReadyDelay?: number
 }
 
-interface UseOptimizedChartOptions {
-  chartId: string;
-  autoResize?: boolean;
-  debounceMs?: number;
-  throttleMs?: number;
-  enablePerformanceMonitoring?: boolean;
+export interface ChartRefs {
+  chart: IChartApi | null
+  container: HTMLElement | null
+  series: ISeriesApi<any>[]
+  isInitialized: boolean
+  isDisposed: boolean
 }
 
-/**
- * Optimized React hook for chart management
- * Provides better performance through memoization, debouncing, and efficient cleanup
- */
 export function useOptimizedChart(options: UseOptimizedChartOptions) {
   const {
     chartId,
     autoResize = true,
     debounceMs = 100,
-    throttleMs = 16,
-    enablePerformanceMonitoring = process.env.NODE_ENV === 'development'
-  } = options;
+    throttleMs = 50,
+    enablePerformanceMonitoring = false,
+    minWidth = 200,
+    minHeight = 200,
+    maxReadyAttempts = 15,
+    baseReadyDelay = 200
+  } = options
 
-  // Chart references
   const chartRefs = useRef<ChartRefs>({
     chart: null,
-    series: [],
     container: null,
+    series: [],
     isInitialized: false,
     isDisposed: false
-  });
+  })
 
-  // Performance monitoring
-  const performanceTimer = useRef<(() => void) | null>(null);
+  const resizeObserverManager = useRef<ResizeObserverManager>(new ResizeObserverManager())
+  const performanceTimer = useRef<{start: () => void; end: () => void} | null>(null)
 
-  // Memoized chart creation function
-  const createChart = useCallback((
-    container: HTMLElement,
-    chartOptions: any
-  ): IChartApi | null => {
+  // Performance monitoring setup
+  useEffect(() => {
     if (enablePerformanceMonitoring) {
-      performanceTimer.current = perfMonitor.startTimer(`createChart-${chartId}`);
+      performanceTimer.current = {
+        start: () => performance.mark(`chart-${chartId}-start`),
+        end: () => {
+          performance.mark(`chart-${chartId}-end`)
+          performance.measure(`chart-${chartId}`, `chart-${chartId}-start`, `chart-${chartId}-end`)
+        }
+      }
+    }
+  }, [chartId, enablePerformanceMonitoring])
+
+  // Chart ready detection
+  const waitForChartReady = useCallback(async (): Promise<boolean> => {
+    if (!chartRefs.current.chart || !chartRefs.current.container) {
+      return false
     }
 
-    try {
-      const { createChart: createChartFn } = require('lightweight-charts');
-      const chart = createChartFn(container, chartOptions);
-      
-      // Set chart element ID for easier identification
-      const chartElement = chart.chartElement();
-      if (chartElement) {
-        chartElement.id = chartId;
+    return ChartReadyDetector.waitForChartReady(
+      chartRefs.current.chart,
+      chartRefs.current.container,
+      {
+        minWidth,
+        minHeight,
+        maxAttempts: maxReadyAttempts,
+        baseDelay: baseReadyDelay
       }
+    )
+  }, [minWidth, minHeight, maxReadyAttempts, baseReadyDelay])
 
-      chartRefs.current.chart = chart;
-      chartRefs.current.container = container;
-      chartRefs.current.isInitialized = true;
-      chartRefs.current.isDisposed = false;
+  // Check if chart is ready synchronously
+  const isChartReadySync = useCallback((): boolean => {
+    return ChartReadyDetector.isChartReadySync(
+      chartRefs.current.chart,
+      chartRefs.current.container,
+      minWidth,
+      minHeight
+    )
+  }, [minWidth, minHeight])
 
-      if (enablePerformanceMonitoring && performanceTimer.current) {
-        performanceTimer.current();
-      }
-
-      return chart;
-    } catch (error) {
-      console.error(`Failed to create chart ${chartId}:`, error);
-      if (enablePerformanceMonitoring && performanceTimer.current) {
-        performanceTimer.current();
-      }
-      return null;
-    }
-  }, [chartId, enablePerformanceMonitoring]);
-
-  // Optimized resize handler with debouncing
+  // Enhanced resize handler with validation
   const handleResize = useMemo(() => {
-    if (!autoResize) return null;
+    if (!autoResize) return null
 
     return debounce((width: number, height: number) => {
       if (chartRefs.current.chart && !chartRefs.current.isDisposed) {
         try {
-          chartRefs.current.chart.resize(width, height);
+          // Validate dimensions before resizing
+          if (width >= minWidth && height >= minHeight) {
+            chartRefs.current.chart.resize(width, height)
+          }
         } catch (error) {
-          console.warn(`Resize failed for chart ${chartId}:`, error);
+          console.warn(`❌ Resize failed for chart ${chartId}:`, error)
         }
       }
-    }, debounceMs);
-  }, [autoResize, debounceMs, chartId]);
+    }, debounceMs)
+  }, [autoResize, debounceMs, chartId, minWidth, minHeight])
 
-  // Throttled resize observer callback
-  const resizeObserverCallback = useMemo(() => {
-    if (!autoResize) return null;
+  // Enhanced resize observer callback with better coordinate handling
+  const enhancedResizeObserverCallback = useMemo(() => {
+    if (!autoResize) return null
 
     return throttle((entries: ResizeObserverEntry[]) => {
       entries.forEach(entry => {
         if (entry.target === chartRefs.current.container) {
-          const { width, height } = entry.contentRect;
-          if (handleResize) {
-            handleResize(width, height);
+          const {width, height} = entry.contentRect
+
+          // Check if dimensions are valid before resizing
+          if (width >= minWidth && height >= minHeight) {
+            if (handleResize) {
+              handleResize(width, height)
+            }
           }
         }
-      });
-    }, throttleMs);
-  }, [autoResize, throttleMs, handleResize]);
+      })
+    }, throttleMs)
+  }, [autoResize, throttleMs, handleResize, minWidth, minHeight])
 
-  // Resize observer ref
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
-  // Setup resize observer
+  // Setup resize observer with better error handling
   const setupResizeObserver = useCallback(() => {
-    if (!autoResize || !chartRefs.current.container || !resizeObserverCallback) {
-      return;
+    if (!autoResize || !chartRefs.current.container || !enhancedResizeObserverCallback) {
+      return
     }
 
     try {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
+      resizeObserverManager.current.addObserver(
+        `chart-${chartId}`,
+        chartRefs.current.container,
+        enhancedResizeObserverCallback,
+        {throttleMs, debounceMs}
+      )
 
-      resizeObserverRef.current = new ResizeObserver(resizeObserverCallback);
-      resizeObserverRef.current.observe(chartRefs.current.container);
+      // ResizeObserver set up successfully
     } catch (error) {
-      console.warn(`Failed to setup resize observer for chart ${chartId}:`, error);
+      console.warn(`⚠️ Failed to setup resize observer for chart ${chartId}:`, error)
     }
-  }, [autoResize, resizeObserverCallback, chartId]);
+  }, [autoResize, enhancedResizeObserverCallback, chartId, throttleMs, debounceMs])
 
-  // Cleanup function
-  const cleanup = useCallback(() => {
-    const stopTimer = enablePerformanceMonitoring 
-      ? perfMonitor.startTimer(`cleanup-${chartId}`)
-      : null;
-
-    try {
-      // Mark as disposed
-      chartRefs.current.isDisposed = true;
-
-      // Disconnect resize observer
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-        resizeObserverRef.current = null;
+  // Enhanced chart creation with ready detection
+  const createChart = useCallback(
+    async (container: HTMLElement, chartOptions: any): Promise<IChartApi | null> => {
+      if (performanceTimer.current) {
+        performanceTimer.current.start()
       }
 
-      // Remove chart
-      if (chartRefs.current.chart) {
-        try {
-          chartRefs.current.chart.remove();
-        } catch (error) {
-          console.warn(`Error removing chart ${chartId}:`, error);
+      try {
+        // Store container reference
+        chartRefs.current.container = container
+
+        // Create chart
+        const chart = createChartFromOptions(container, chartOptions)
+        if (!chart) {
+          throw new Error('Failed to create chart')
         }
-        chartRefs.current.chart = null;
+
+        // Store chart reference
+        chartRefs.current.chart = chart
+        chartRefs.current.isInitialized = true
+
+        // Wait for chart to be ready
+        const isReady = await waitForChartReady()
+        if (isReady) {
+          // Setup resize observer after chart is ready
+          setupResizeObserver()
+        }
+
+        if (performanceTimer.current) {
+          performanceTimer.current.end()
+        }
+
+        return chart
+      } catch (error) {
+        console.error(`❌ Failed to create chart ${chartId}:`, error)
+        if (performanceTimer.current) {
+          performanceTimer.current.end()
+        }
+        return null
+      }
+    },
+    [chartId, waitForChartReady, setupResizeObserver]
+  )
+
+  // Enhanced series addition with ready detection
+  const addSeries = useCallback(
+    async (
+      seriesType: any,
+      options: any = {},
+      paneId?: number
+    ): Promise<ISeriesApi<any> | null> => {
+      if (performanceTimer.current) {
+        performanceTimer.current.start()
       }
 
-      // Clear series references
-      chartRefs.current.series = [];
-      chartRefs.current.container = null;
-      chartRefs.current.isInitialized = false;
+      try {
+        if (!chartRefs.current.chart || !chartRefs.current.isInitialized) {
+          return null
+        }
 
-      if (stopTimer) {
-        stopTimer();
+        // Ensure chart is ready before adding series
+        const isReady = await waitForChartReady()
+        if (!isReady) {
+          return null
+        }
+
+        const series = chartRefs.current.chart.addSeries(CandlestickSeries, options)
+        if (series) {
+          chartRefs.current.series.push(series)
+        }
+
+        if (performanceTimer.current) {
+          performanceTimer.current.end()
+        }
+
+        return series
+      } catch (error) {
+        console.error(`❌ Failed to add series to chart ${chartId}:`, error)
+        if (performanceTimer.current) {
+          performanceTimer.current.end()
+        }
+        return null
       }
-    } catch (error) {
-      console.error(`Error during cleanup for chart ${chartId}:`, error);
-      if (stopTimer) {
-        stopTimer();
-      }
-    }
-  }, [chartId, enablePerformanceMonitoring]);
+    },
+    [chartId, waitForChartReady]
+  )
 
-  // Add series with optimization
-  const addSeries = useCallback((
-    seriesType: any,
-    options: any = {},
-    paneId?: number
-  ): ISeriesApi<any> | null => {
-    if (!chartRefs.current.chart || chartRefs.current.isDisposed) {
-      return null;
-    }
-
-    const stopTimer = enablePerformanceMonitoring 
-      ? perfMonitor.startTimer(`addSeries-${chartId}`)
-      : null;
-
-    try {
-      const series = chartRefs.current.chart.addSeries(seriesType, options, paneId);
-      chartRefs.current.series.push(series);
-
-      if (stopTimer) {
-        stopTimer();
-      }
-
-      return series;
-    } catch (error) {
-      console.error(`Failed to add series to chart ${chartId}:`, error);
-      if (stopTimer) {
-        stopTimer();
-      }
-      return null;
-    }
-  }, [chartId, enablePerformanceMonitoring]);
-
-  // Get series by index
+  // Get series by index with validation
   const getSeries = useCallback((index: number): ISeriesApi<any> | null => {
-    return chartRefs.current.series[index] || null;
-  }, []);
+    if (index >= 0 && index < chartRefs.current.series.length) {
+      return chartRefs.current.series[index]
+    }
+    return null
+  }, [])
 
   // Get all series
   const getAllSeries = useCallback((): ISeriesApi<any>[] => {
-    return [...chartRefs.current.series];
-  }, []);
+    return [...chartRefs.current.series]
+  }, [])
 
-  // Check if chart is ready
+  // Enhanced ready check
   const isReady = useCallback((): boolean => {
-    return chartRefs.current.isInitialized && !chartRefs.current.isDisposed;
-  }, []);
+    return chartRefs.current.isInitialized && !chartRefs.current.isDisposed && isChartReadySync()
+  }, [isChartReadySync])
 
-  // Get chart instance
+  // Get chart instance with validation
   const getChart = useCallback((): IChartApi | null => {
-    return chartRefs.current.chart;
-  }, []);
-
-  // Get container
-  const getContainer = useCallback((): HTMLElement | null => {
-    return chartRefs.current.container;
-  }, []);
-
-  // Manual resize
-  const resize = useCallback((width: number, height: number) => {
     if (chartRefs.current.chart && !chartRefs.current.isDisposed) {
+      return chartRefs.current.chart
+    }
+    return null
+  }, [])
+
+  // Get container with validation
+  const getContainer = useCallback((): HTMLElement | null => {
+    if (chartRefs.current.container && !chartRefs.current.isDisposed) {
+      return chartRefs.current.container
+    }
+    return null
+  }, [])
+
+  // Enhanced manual resize with validation
+  const resize = useCallback(
+    async (width: number, height: number) => {
+      if (chartRefs.current.chart && !chartRefs.current.isDisposed) {
+        try {
+          // Validate dimensions
+          if (width >= minWidth && height >= minHeight) {
+            chartRefs.current.chart.resize(width, height)
+          }
+        } catch (error) {
+          console.warn(`❌ Manual resize failed for chart ${chartId}:`, error)
+        }
+      }
+    },
+    [chartId, minWidth, minHeight]
+  )
+
+  // Enhanced cleanup with observer management
+  const cleanup = useCallback(() => {
+    // Mark as disposed
+    chartRefs.current.isDisposed = true
+
+    // Cleanup resize observers
+    resizeObserverManager.current.cleanup()
+
+    // Remove chart
+    if (chartRefs.current.chart) {
       try {
-        chartRefs.current.chart.resize(width, height);
+        chartRefs.current.chart.remove()
       } catch (error) {
-        console.warn(`Manual resize failed for chart ${chartId}:`, error);
+        console.warn(`⚠️ Error removing chart ${chartId}:`, error)
       }
     }
-  }, [chartId]);
+
+    // Clear references
+    chartRefs.current.chart = null
+    chartRefs.current.container = null
+    chartRefs.current.series = []
+    chartRefs.current.isInitialized = false
+  }, [chartId])
 
   // Setup resize observer when chart is created
   useEffect(() => {
     if (chartRefs.current.isInitialized && !chartRefs.current.isDisposed) {
-      setupResizeObserver();
+      setupResizeObserver()
     }
-  }, [setupResizeObserver]);
+  }, [setupResizeObserver])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cleanup();
-    };
-  }, [cleanup]);
+      cleanup()
+    }
+  }, [cleanup])
 
   // Use layout effect for immediate cleanup when dependencies change
   useLayoutEffect(() => {
     return () => {
       // Immediate cleanup for layout changes
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
-    };
-  }, []);
+      resizeObserverManager.current.cleanup()
+    }
+  }, [])
 
   return {
     createChart,
@@ -280,69 +340,54 @@ export function useOptimizedChart(options: UseOptimizedChartOptions) {
     isReady,
     resize,
     cleanup,
-    chartId
-  };
+    chartId,
+    waitForChartReady,
+    isChartReadySync
+  }
 }
 
 /**
  * Hook for comparing chart configurations efficiently
  */
 export function useChartConfigComparison<T>(config: T): T {
-  return useMemo(() => config, [JSON.stringify(config)]);
+  return useMemo(() => config, [JSON.stringify(config)])
 }
 
-/**
- * Hook for optimized chart data updates
- */
-export function useOptimizedDataUpdate<T>(
-  data: T[],
-  series: ISeriesApi<any> | null,
-  options: {
-    enableBatching?: boolean;
-    batchSize?: number;
-    throttleMs?: number;
-  } = {}
-) {
-  const {
-    enableBatching = true,
-    batchSize = 1000,
-    throttleMs = 16
-  } = options;
+// Utility functions
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null
 
-  const updateData = useCallback((
-    newData: T[],
-    targetSeries?: ISeriesApi<any>
-  ) => {
-    const seriesToUpdate = targetSeries || series;
-    if (!seriesToUpdate) return;
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
 
-    const stopTimer = perfMonitor.startTimer('updateData');
+function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean = false
 
-    try {
-      if (enableBatching && newData.length > batchSize) {
-        // Batch update for large datasets
-        for (let i = 0; i < newData.length; i += batchSize) {
-          const batch = newData.slice(i, i + batchSize);
-          seriesToUpdate.setData(batch);
-        }
-      } else {
-        // Single update for smaller datasets
-        seriesToUpdate.setData(newData);
-      }
-
-      stopTimer();
-    } catch (error) {
-      console.error('Error updating chart data:', error);
-      stopTimer();
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args)
+      inThrottle = true
+      setTimeout(() => (inThrottle = false), limit)
     }
-  }, [series, enableBatching, batchSize]);
+  }
+}
 
-  const throttledUpdateData = useMemo(() => {
-    return throttle(updateData, throttleMs);
-  }, [updateData, throttleMs]);
-
-  return {
-    updateData,
-    throttledUpdateData
-  };
-} 
+function createChartFromOptions(container: HTMLElement, options: any): IChartApi | null {
+  try {
+    // Import lightweight-charts dynamically to avoid SSR issues
+    const {createChart} = require('lightweight-charts')
+    return createChart(container, options)
+  } catch (error) {
+    console.error('❌ Failed to create chart:', error)
+    return null
+  }
+}

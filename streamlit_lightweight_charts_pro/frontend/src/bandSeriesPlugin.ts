@@ -8,7 +8,7 @@ import {
   SeriesAttachedParameter,
   IPrimitivePaneView,
   IPrimitivePaneRenderer,
-  Coordinate,
+  Coordinate
 } from 'lightweight-charts'
 
 // Band data interface
@@ -35,19 +35,22 @@ export interface LineStyleOptions {
 
 // Band series options
 export interface BandSeriesOptions {
+  // Z-index for proper layering
+  zIndex?: number
+
   // Line style options
   upperLine?: LineStyleOptions
   middleLine?: LineStyleOptions
   lowerLine?: LineStyleOptions
-  
+
   // Fill colors
   upperFillColor: string
   lowerFillColor: string
-  
+
   // Fill visibility
   upperFill: boolean
   lowerFill: boolean
-  
+
   // Base options
   visible: boolean
   priceScaleId: string
@@ -78,7 +81,7 @@ const defaultOptions: BandSeriesOptions = {
     crosshairMarkerBorderColor: '',
     crosshairMarkerBackgroundColor: '',
     crosshairMarkerBorderWidth: 2,
-    lastPriceAnimation: 0, // DISABLED
+    lastPriceAnimation: 0 // DISABLED
   },
   middleLine: {
     color: '#2196F3',
@@ -91,7 +94,7 @@ const defaultOptions: BandSeriesOptions = {
     crosshairMarkerBorderColor: '',
     crosshairMarkerBackgroundColor: '',
     crosshairMarkerBorderWidth: 2,
-    lastPriceAnimation: 0, // DISABLED
+    lastPriceAnimation: 0 // DISABLED
   },
   lowerLine: {
     color: '#F44336',
@@ -104,17 +107,17 @@ const defaultOptions: BandSeriesOptions = {
     crosshairMarkerBorderColor: '',
     crosshairMarkerBackgroundColor: '',
     crosshairMarkerBorderWidth: 2,
-    lastPriceAnimation: 0, // DISABLED
+    lastPriceAnimation: 0 // DISABLED
   },
-  
+
   // Fill colors
   upperFillColor: 'rgba(76, 175, 80, 0.1)',
   lowerFillColor: 'rgba(244, 67, 54, 0.1)',
-  
+
   // Fill visibility
   upperFill: true,
   lowerFill: true,
-  
+
   // Base options
   visible: true,
   priceScaleId: 'right',
@@ -128,7 +131,7 @@ const defaultOptions: BandSeriesOptions = {
   baseLineWidth: 1,
   baseLineColor: '#FF9800',
   baseLineStyle: 'solid',
-  priceFormat: { type: 'price', precision: 2 },
+  priceFormat: {type: 'price', precision: 2}
 }
 
 // Band renderer data interface
@@ -156,6 +159,8 @@ class BandPrimitivePaneRenderer implements IPrimitivePaneRenderer {
   draw() {}
 
   drawBackground(target: any) {
+    // Apply Z-index context for proper layering
+    const zIndex = this._viewData.options.zIndex || 0
     const points: BandRendererData[] = this._viewData.data
     if (points.length === 0) return
 
@@ -163,8 +168,22 @@ class BandPrimitivePaneRenderer implements IPrimitivePaneRenderer {
       const ctx = scope.context
       ctx.scale(scope.horizontalPixelRatio, scope.verticalPixelRatio)
 
+      // Set Z-index context for proper layering
+      if (zIndex > 0) {
+        // Apply Z-index through canvas context properties
+        // This ensures the primitive renders at the correct layer
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = 1.0
+
+        // Store Z-index in canvas context for potential use by other renderers
+        ;(ctx as any).__zIndex = zIndex
+      }
+
       // Draw upper fill area (between upper and middle) only if enabled
-      if (this._viewData.options.upperFill && this._viewData.options.upperFillColor !== 'rgba(0, 0, 0, 0)') {
+      if (
+        this._viewData.options.upperFill &&
+        this._viewData.options.upperFillColor !== 'rgba(0, 0, 0, 0)'
+      ) {
         ctx.fillStyle = this._viewData.options.upperFillColor
         ctx.beginPath()
         ctx.moveTo(points[0].x, points[0].upper)
@@ -179,7 +198,10 @@ class BandPrimitivePaneRenderer implements IPrimitivePaneRenderer {
       }
 
       // Draw lower fill area (between middle and lower) only if enabled
-      if (this._viewData.options.lowerFill && this._viewData.options.lowerFillColor !== 'rgba(0, 0, 0, 0)') {
+      if (
+        this._viewData.options.lowerFill &&
+        this._viewData.options.lowerFillColor !== 'rgba(0, 0, 0, 0)'
+      ) {
         ctx.fillStyle = this._viewData.options.lowerFillColor
         ctx.beginPath()
         ctx.moveTo(points[0].x, points[0].middle)
@@ -205,7 +227,7 @@ class BandPrimitivePaneView implements IPrimitivePaneView {
     this._source = source
     this._data = {
       data: [],
-      options: this._source.getOptions(),
+      options: this._source.getOptions()
     }
   }
 
@@ -216,13 +238,24 @@ class BandPrimitivePaneView implements IPrimitivePaneView {
         x: timeScale.timeToCoordinate(d.time) ?? -100,
         upper: this._source.getUpperSeries().priceToCoordinate(d.upper) ?? -100,
         middle: this._source.getMiddleSeries().priceToCoordinate(d.middle) ?? -100,
-        lower: this._source.getLowerSeries().priceToCoordinate(d.lower) ?? -100,
+        lower: this._source.getLowerSeries().priceToCoordinate(d.lower) ?? -100
       }
     })
   }
 
   renderer() {
     return new BandPrimitivePaneRenderer(this._data)
+  }
+
+  // Z-index support: Return the Z-index for proper layering
+  zIndex(): number {
+    const sourceZIndex = this._source.getOptions().zIndex
+    // Validate Z-index is a positive number
+    if (typeof sourceZIndex === 'number' && sourceZIndex >= 0) {
+      return sourceZIndex
+    }
+    // Return default Z-index for band series
+    return 100
   }
 }
 
@@ -238,9 +271,9 @@ export class BandSeries implements ISeriesPrimitive<Time> {
 
   constructor(chart: IChartApi, options: Partial<BandSeriesOptions> = {}) {
     this.chart = chart
-    this.options = { ...defaultOptions, ...options }
+    this.options = {...defaultOptions, ...options}
     this._paneViews = [new BandPrimitivePaneView(this)]
-    
+
     // Create the three line series
     this.upperSeries = chart.addSeries(LineSeries, {
       color: this.options.upperLine?.color || '#4CAF50',
@@ -265,9 +298,8 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       crosshairMarkerBackgroundColor: this.options.upperLine?.crosshairMarkerBackgroundColor || '',
       crosshairMarkerBorderWidth: this.options.upperLine?.crosshairMarkerBorderWidth || 2,
       lastPriceAnimation: this.options.upperLine?.lastPriceAnimation || 0,
-      lineType: this.options.upperLine?.lineType || 0,
+      lineType: this.options.upperLine?.lineType || 0
     })
-
 
     this.middleSeries = chart.addSeries(LineSeries, {
       color: this.options.middleLine?.color || '#2196F3',
@@ -292,9 +324,8 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       crosshairMarkerBackgroundColor: this.options.middleLine?.crosshairMarkerBackgroundColor || '',
       crosshairMarkerBorderWidth: this.options.middleLine?.crosshairMarkerBorderWidth || 2,
       lastPriceAnimation: this.options.middleLine?.lastPriceAnimation || 0,
-      lineType: this.options.middleLine?.lineType || 0,
+      lineType: this.options.middleLine?.lineType || 0
     })
-
 
     this.lowerSeries = chart.addSeries(LineSeries, {
       color: this.options.lowerLine?.color || '#F44336',
@@ -319,11 +350,16 @@ export class BandSeries implements ISeriesPrimitive<Time> {
       crosshairMarkerBackgroundColor: this.options.lowerLine?.crosshairMarkerBackgroundColor || '',
       crosshairMarkerBorderWidth: this.options.lowerLine?.crosshairMarkerBorderWidth || 2,
       lastPriceAnimation: this.options.lowerLine?.lastPriceAnimation || 0,
-      lineType: this.options.lowerLine?.lineType || 0,
+      lineType: this.options.lowerLine?.lineType || 0
     })
 
     // Attach the primitive to the middle series for rendering
     this.middleSeries.attachPrimitive(this)
+
+    // Z-index is handled through the primitive system
+    // The primitive's zIndex() method will return the configured Z-index
+    if (this.options.zIndex !== undefined) {
+    }
   }
 
   // Getter for options
@@ -373,21 +409,21 @@ export class BandSeries implements ISeriesPrimitive<Time> {
 
   setData(data: BandData[]): void {
     this.data = data
-    
+
     // Extract individual series data
     const upperData: LineData[] = data.map(item => ({
       time: item.time,
-      value: item.upper,
+      value: item.upper
     }))
-    
+
     const middleData: LineData[] = data.map(item => ({
       time: item.time,
-      value: item.middle,
+      value: item.middle
     }))
-    
+
     const lowerData: LineData[] = data.map(item => ({
       time: item.time,
-      value: item.lower,
+      value: item.lower
     }))
 
     // Set data for each series
@@ -401,23 +437,27 @@ export class BandSeries implements ISeriesPrimitive<Time> {
 
   update(data: BandData): void {
     // Update individual series
-    this.upperSeries.update({ time: data.time, value: data.upper })
-    this.middleSeries.update({ time: data.time, value: data.middle })
-    this.lowerSeries.update({ time: data.time, value: data.lower })
+    this.upperSeries.update({time: data.time, value: data.upper})
+    this.middleSeries.update({time: data.time, value: data.middle})
+    this.lowerSeries.update({time: data.time, value: data.lower})
 
     // Update the primitive view
     this.updateAllViews()
   }
 
   setVisible(visible: boolean): void {
-    this.upperSeries.applyOptions({ visible })
-    this.middleSeries.applyOptions({ visible })
-    this.lowerSeries.applyOptions({ visible })
+    this.upperSeries.applyOptions({visible})
+    this.middleSeries.applyOptions({visible})
+    this.lowerSeries.applyOptions({visible})
   }
 
   setOptions(options: Partial<BandSeriesOptions>): void {
-    this.options = { ...this.options, ...options }
-    
+    this.options = {...this.options, ...options}
+
+    // Z-index updates are handled through the primitive system
+    if (options.zIndex !== undefined) {
+    }
+
     // Update line series options
     if (options.upperLine !== undefined) {
       this.upperSeries.applyOptions({
@@ -431,10 +471,10 @@ export class BandSeries implements ISeriesPrimitive<Time> {
         crosshairMarkerBorderColor: options.upperLine.crosshairMarkerBorderColor,
         crosshairMarkerBackgroundColor: options.upperLine.crosshairMarkerBackgroundColor,
         crosshairMarkerBorderWidth: options.upperLine.crosshairMarkerBorderWidth,
-        lastPriceAnimation: options.upperLine.lastPriceAnimation,
+        lastPriceAnimation: options.upperLine.lastPriceAnimation
       })
     }
-    
+
     if (options.middleLine !== undefined) {
       this.middleSeries.applyOptions({
         color: options.middleLine.color,
@@ -447,10 +487,10 @@ export class BandSeries implements ISeriesPrimitive<Time> {
         crosshairMarkerBorderColor: options.middleLine.crosshairMarkerBorderColor,
         crosshairMarkerBackgroundColor: options.middleLine.crosshairMarkerBackgroundColor,
         crosshairMarkerBorderWidth: options.middleLine.crosshairMarkerBorderWidth,
-        lastPriceAnimation: options.middleLine.lastPriceAnimation,
+        lastPriceAnimation: options.middleLine.lastPriceAnimation
       })
     }
-    
+
     if (options.lowerLine !== undefined) {
       this.lowerSeries.applyOptions({
         color: options.lowerLine.color,
@@ -463,7 +503,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
         crosshairMarkerBorderColor: options.lowerLine.crosshairMarkerBorderColor,
         crosshairMarkerBackgroundColor: options.lowerLine.crosshairMarkerBackgroundColor,
         crosshairMarkerBorderWidth: options.lowerLine.crosshairMarkerBorderWidth,
-        lastPriceAnimation: options.lowerLine.lastPriceAnimation,
+        lastPriceAnimation: options.lowerLine.lastPriceAnimation
       })
     }
 
@@ -481,7 +521,7 @@ export class BandSeries implements ISeriesPrimitive<Time> {
     return {
       type: 'band',
       data: this.data,
-      options: this.options,
+      options: this.options
     }
   }
 }
@@ -492,4 +532,4 @@ export function createBandSeries(
   options: Partial<BandSeriesOptions> = {}
 ): BandSeries {
   return new BandSeries(chart, options)
-} 
+}

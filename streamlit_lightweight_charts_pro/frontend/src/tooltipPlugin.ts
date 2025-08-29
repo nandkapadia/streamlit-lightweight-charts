@@ -1,6 +1,6 @@
 /**
  * Tooltip Plugin for Lightweight Charts
- * 
+ *
  * This plugin provides comprehensive tooltip functionality with support for:
  * - Dynamic content using placeholders
  * - Multiple tooltip types (OHLC, single, multi, custom, trade, marker)
@@ -8,7 +8,7 @@
  * - Real-time data substitution
  */
 
-import { IChartApi, ISeriesApi, SeriesType, Time } from 'lightweight-charts'
+import {IChartApi, ISeriesApi, SeriesType, Time} from 'lightweight-charts'
 
 export interface TooltipField {
   label: string
@@ -40,7 +40,7 @@ export interface TooltipConfig {
   template?: string
   fields: TooltipField[]
   position?: 'cursor' | 'fixed' | 'auto'
-  offset?: { x: number; y: number }
+  offset?: {x: number; y: number}
   style?: TooltipStyle
   showDate?: boolean
   dateFormat?: string
@@ -96,7 +96,7 @@ export class TooltipPlugin {
    */
   private setupEventListeners(): void {
     // Subscribe to crosshair move events
-    this.chart.subscribeCrosshairMove((param) => {
+    this.chart.subscribeCrosshairMove(param => {
       if (param.time && param.seriesData.size > 0) {
         this.showTooltip(param)
       } else {
@@ -186,7 +186,7 @@ export class TooltipPlugin {
 
     const tooltipElement = this.ensureTooltipElement()
     const config = this.getDefaultConfig()
-    
+
     if (!config || !config.enabled) {
       return
     }
@@ -329,7 +329,7 @@ export class TooltipPlugin {
    */
   private formatTime(time: Time, config: TooltipConfig): string {
     try {
-      const date = new Date(time as number * 1000)
+      const date = new Date((time as number) * 1000)
       const parts: string[] = []
 
       if (config.showDate) {
@@ -357,10 +357,7 @@ export class TooltipPlugin {
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
 
-    return format
-      .replace('%Y', String(year))
-      .replace('%m', month)
-      .replace('%d', day)
+    return format.replace('%Y', String(year)).replace('%m', month).replace('%d', day)
   }
 
   /**
@@ -371,16 +368,13 @@ export class TooltipPlugin {
     const minutes = String(date.getMinutes()).padStart(2, '0')
     const seconds = String(date.getSeconds()).padStart(2, '0')
 
-    return format
-      .replace('%H', hours)
-      .replace('%M', minutes)
-      .replace('%S', seconds)
+    return format.replace('%H', hours).replace('%M', minutes).replace('%S', seconds)
   }
 
   /**
    * Position tooltip on the chart
    */
-  private positionTooltip(point: { x: number; y: number }): void {
+  private positionTooltip(point: {x: number; y: number}): void {
     if (!this.tooltipElement || !point) {
       return
     }
@@ -496,11 +490,11 @@ export function createTooltipPlugin(
   configs: Record<string, TooltipConfig> = {}
 ): TooltipPlugin {
   const plugin = new TooltipPlugin(chart, container)
-  
+
   // Add configurations
   for (const [name, config] of Object.entries(configs)) {
     plugin.addConfig(name, config)
   }
-  
+
   return plugin
-} 
+}

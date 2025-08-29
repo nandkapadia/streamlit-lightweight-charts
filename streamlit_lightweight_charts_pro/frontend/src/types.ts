@@ -1,4 +1,4 @@
-import { Time, SeriesMarker } from "lightweight-charts"
+import {Time, SeriesMarker} from 'lightweight-charts'
 
 // Enhanced Trade Configuration
 export interface TradeConfig {
@@ -10,7 +10,7 @@ export interface TradeConfig {
   tradeType: 'long' | 'short'
   id?: string
   notes?: string
-  text?: string  // Custom tooltip text
+  text?: string // Custom tooltip text
   pnl?: number
   pnlPercentage?: number
   isProfitable?: boolean
@@ -19,7 +19,7 @@ export interface TradeConfig {
 // Trade Visualization Options
 export interface TradeVisualizationOptions {
   style: 'markers' | 'rectangles' | 'both' | 'lines' | 'arrows' | 'zones'
-  
+
   // Marker options
   entryMarkerColorLong?: string
   entryMarkerColorShort?: string
@@ -27,30 +27,30 @@ export interface TradeVisualizationOptions {
   exitMarkerColorLoss?: string
   markerSize?: number
   showPnlInMarkers?: boolean
-  
+
   // Rectangle options
   rectangleFillOpacity?: number
   rectangleBorderWidth?: number
   rectangleColorProfit?: string
   rectangleColorLoss?: string
-  
+
   // Line options
   lineWidth?: number
   lineStyle?: string
   lineColorProfit?: string
   lineColorLoss?: string
-  
+
   // Arrow options
   arrowSize?: number
   arrowColorProfit?: string
   arrowColorLoss?: string
-  
+
   // Zone options
   zoneOpacity?: number
   zoneColorLong?: string
   zoneColorShort?: string
   zoneExtendBars?: number
-  
+
   // Annotation options
   showTradeId?: boolean
   showQuantity?: boolean
@@ -88,7 +88,7 @@ export interface AnnotationLayer {
 }
 
 export interface AnnotationManager {
-  layers: { [key: string]: AnnotationLayer }
+  layers: {[key: string]: AnnotationLayer}
 }
 
 // Pane Height Configuration
@@ -101,8 +101,6 @@ export interface SignalData {
   time: string
   value: number
 }
-
-
 
 // Line Options Configuration
 export interface LineOptions {
@@ -123,21 +121,30 @@ export interface LineOptions {
 
 // Enhanced Series Configuration
 export interface SeriesConfig {
-  type: 'Area' | 'Band' | 'Baseline' | 'Histogram' | 'Line' | 'Bar' | 'Candlestick' | 'signal' | 'trend_fill'
+  type:
+    | 'Area'
+    | 'Band'
+    | 'Baseline'
+    | 'Histogram'
+    | 'Line'
+    | 'Bar'
+    | 'Candlestick'
+    | 'signal'
+    | 'trend_fill'
   data: any[]
   options?: any
   name?: string
   priceScale?: any
-  priceScaleId?: string  // Add priceScaleId support for overlay price scales
-  lastValueVisible?: boolean  // Add lastValueVisible support for series
-  lastPriceAnimation?: number  // Add lastPriceAnimation support for series
+  priceScaleId?: string // Add priceScaleId support for overlay price scales
+  lastValueVisible?: boolean // Add lastValueVisible support for series
+  lastPriceAnimation?: number // Add lastPriceAnimation support for series
   markers?: SeriesMarker<Time>[]
-  priceLines?: any[]  // Add price lines to series
-  trades?: TradeConfig[]  // Add trades to series
+  priceLines?: any[] // Add price lines to series
+  trades?: TradeConfig[] // Add trades to series
   tradeVisualizationOptions?: TradeVisualizationOptions
-  annotations?: Annotation[]  // Add annotations to series
-  shapes?: any[]  // Add shapes support
-  tooltip?: TooltipConfig  // Add tooltip configuration
+  annotations?: Annotation[] // Add annotations to series
+  shapes?: any[] // Add shapes support
+  tooltip?: TooltipConfig // Add tooltip configuration
   paneId?: number // Add support for multi-pane charts
   // Signal series support
   signalData?: SignalData[]
@@ -172,16 +179,16 @@ export interface ChartConfig {
   series: SeriesConfig[]
   priceLines?: any[]
   trades?: TradeConfig[]
-  annotations?: Annotation[]  // Add chart-level annotations
-  annotationLayers?: AnnotationLayer[]  // Add layer management
+  annotations?: Annotation[] // Add chart-level annotations
+  annotationLayers?: AnnotationLayer[] // Add layer management
   chartId?: string
-  containerId?: string  // Add containerId for DOM element identification
-  chartOptions?: any  // Add chartOptions for processed chart configuration
+  containerId?: string // Add containerId for DOM element identification
+  chartOptions?: any // Add chartOptions for processed chart configuration
   rangeSwitcher?: RangeSwitcherConfig
-  legends?: { [paneId: string]: LegendConfig }  // Per-pane legend configurations
-  tooltip?: TooltipConfig  // Add chart-level tooltip configuration
-  tooltipConfigs?: Record<string, TooltipConfig>  // Add multiple tooltip configurations
-  tradeVisualizationOptions?: TradeVisualizationOptions  // Add chart-level trade visualization options
+  legends?: {[paneId: string]: LegendConfig} // Per-pane legend configurations
+  tooltip?: TooltipConfig // Add chart-level tooltip configuration
+  tooltipConfigs?: Record<string, TooltipConfig> // Add multiple tooltip configurations
+  tradeVisualizationOptions?: TradeVisualizationOptions // Add chart-level trade visualization options
   autoSize?: boolean
   autoWidth?: boolean
   autoHeight?: boolean
@@ -253,7 +260,7 @@ export interface TooltipConfig {
   type: 'ohlc' | 'single' | 'multi' | 'custom'
   fields: TooltipField[]
   position?: 'cursor' | 'fixed' | 'auto'
-  offset?: { x: number; y: number }
+  offset?: {x: number; y: number}
   style?: {
     backgroundColor?: string
     borderColor?: string
@@ -277,4 +284,4 @@ declare global {
   interface Window {
     chartPlugins?: Map<any, any>
   }
-} 
+}

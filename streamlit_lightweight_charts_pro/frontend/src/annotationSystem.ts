@@ -1,5 +1,5 @@
-import { Annotation, AnnotationLayer } from './types'
-import { UTCTimestamp, SeriesMarker, Time } from 'lightweight-charts'
+import {Annotation, AnnotationLayer} from './types'
+import {UTCTimestamp, SeriesMarker, Time} from 'lightweight-charts'
 
 export interface AnnotationVisualElements {
   markers: any[]
@@ -7,15 +7,20 @@ export interface AnnotationVisualElements {
   texts: any[]
 }
 
-export const createAnnotationVisualElements = (annotations: Annotation[]): AnnotationVisualElements => {
+export const createAnnotationVisualElements = (
+  annotations: Annotation[]
+): AnnotationVisualElements => {
   const markers: SeriesMarker<Time>[] = []
   const shapes: any[] = []
   const texts: any[] = []
 
   // Immediate return if annotations is null, undefined, or not an object
   if (!annotations || typeof annotations !== 'object') {
-    console.warn('createAnnotationVisualElements: annotations is null, undefined, or not an object:', annotations)
-    return { markers, shapes, texts }
+    console.warn(
+      'createAnnotationVisualElements: annotations is null, undefined, or not an object:',
+      annotations
+    )
+    return {markers, shapes, texts}
   }
 
   // Wrap the entire function in a try-catch to prevent any errors
@@ -23,18 +28,21 @@ export const createAnnotationVisualElements = (annotations: Annotation[]): Annot
     // Validate that annotations is an array
     if (!Array.isArray(annotations)) {
       console.warn('createAnnotationVisualElements: annotations is not an array:', annotations)
-      return { markers, shapes, texts }
+      return {markers, shapes, texts}
     }
 
     // Additional safety check - ensure annotations is actually an array
     try {
       if (typeof annotations.forEach !== 'function') {
-        console.warn('createAnnotationVisualElements: annotations.forEach is not a function:', annotations)
-        return { markers, shapes, texts }
+        console.warn(
+          'createAnnotationVisualElements: annotations.forEach is not a function:',
+          annotations
+        )
+        return {markers, shapes, texts}
       }
     } catch (error) {
       console.warn('createAnnotationVisualElements: Error checking annotations.forEach:', error)
-      return { markers, shapes, texts }
+      return {markers, shapes, texts}
     }
 
     // Convert to array if it's not already (defensive programming)
@@ -43,13 +51,16 @@ export const createAnnotationVisualElements = (annotations: Annotation[]): Annot
       annotationsArray = Array.from(annotations)
     } catch (error) {
       console.warn('createAnnotationVisualElements: Error converting to array:', error)
-      return { markers, shapes, texts }
+      return {markers, shapes, texts}
     }
 
     // Final safety check
     if (!Array.isArray(annotationsArray) || typeof annotationsArray.forEach !== 'function') {
-      console.error('createAnnotationVisualElements: annotationsArray is still not a proper array:', annotationsArray)
-      return { markers, shapes, texts }
+      console.error(
+        'createAnnotationVisualElements: annotationsArray is still not a proper array:',
+        annotationsArray
+      )
+      return {markers, shapes, texts}
     }
 
     // Use try-catch around the entire forEach operation
@@ -63,7 +74,11 @@ export const createAnnotationVisualElements = (annotations: Annotation[]): Annot
           }
 
           // Create marker based on annotation type
-          if (annotation.type === 'arrow' || annotation.type === 'shape' || annotation.type === 'circle') {
+          if (
+            annotation.type === 'arrow' ||
+            annotation.type === 'shape' ||
+            annotation.type === 'circle'
+          ) {
             const marker: SeriesMarker<Time> = {
               time: parseTime(annotation.time),
               position: annotation.position === 'above' ? 'aboveBar' : 'belowBar',
@@ -113,10 +128,15 @@ export const createAnnotationVisualElements = (annotations: Annotation[]): Annot
       console.error('Error in annotations.forEach:', forEachError, 'annotations:', annotations)
     }
   } catch (outerError) {
-    console.error('Critical error in createAnnotationVisualElements:', outerError, 'annotations:', annotations)
+    console.error(
+      'Critical error in createAnnotationVisualElements:',
+      outerError,
+      'annotations:',
+      annotations
+    )
   }
 
-  return { markers, shapes, texts }
+  return {markers, shapes, texts}
 }
 
 function parseTime(timeStr: string): UTCTimestamp {
@@ -133,7 +153,7 @@ export function filterAnnotationsByTimeRange(
 ): Annotation[] {
   const start = parseTime(startTime)
   const end = parseTime(endTime)
-  
+
   return annotations.filter(annotation => {
     const time = parseTime(annotation.time)
     return time >= start && time <= end
@@ -160,4 +180,4 @@ export function createAnnotationLayer(
     visible: true,
     opacity: 1.0
   }
-} 
+}

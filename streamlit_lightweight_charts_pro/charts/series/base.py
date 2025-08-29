@@ -47,6 +47,7 @@ logger = get_logger(__name__)
 # pylint: disable=no-member, invalid-name
 @chainable_property("title", top_level=True)
 @chainable_property("visible", top_level=True)
+@chainable_property("z_index", allow_none=True, top_level=True)
 @chainable_property("price_scale_id", top_level=True)
 @chainable_property("price_scale", allow_none=True, top_level=True)
 @chainable_property("price_format")
@@ -193,6 +194,7 @@ class Series(ABC):
         self._price_line_color = ""
         self._price_line_style = LineStyle.DASHED
         self._tooltip = None
+        self._z_index = 100
 
     @staticmethod
     def prepare_index(df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:

@@ -1,358 +1,471 @@
-import { IChartApi, UTCTimestamp } from 'lightweight-charts';
+import {IChartApi} from 'lightweight-charts'
+import {ChartReadyDetector} from './utils/chartReadyDetection'
+import {ResizeObserverManager} from './utils/resizeObserverManager'
+import {ChartCoordinateService} from './services/ChartCoordinateService'
 
 export interface RectangleConfig {
-  time1: UTCTimestamp;
-  price1: number;
-  time2: UTCTimestamp;
-  price2: number;
-  fillColor: string;
-  borderColor: string;
-  borderWidth: number;
-  borderStyle: 'solid' | 'dashed' | 'dotted';
-  opacity: number;
-  priceScaleId?: string;
+  id: string
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  color: string
+  borderColor?: string
+  borderWidth?: number
+  fillOpacity?: number
+  borderOpacity?: number
+  label?: string
+  labelColor?: string
+  labelFontSize?: number
+  labelBackground?: string
+  labelPadding?: number
+  zIndex?: number
 }
 
 export class RectangleOverlayPlugin {
-  private rectangles: RectangleConfig[] = [];
-  private chart: IChartApi | null = null;
-  private series: any = null;
-  private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
-  private container: HTMLElement | null = null;
-  private isDisposed: boolean = false;
-  private animationFrameId: number | null = null;
+  private rectangles: RectangleConfig[] = []
+  private chart: IChartApi | null = null
+  private container: HTMLElement | null = null
+  private canvas: HTMLCanvasElement | null = null
+  private ctx: CanvasRenderingContext2D | null = null
+  private series: any = null
+  private isDisposed: boolean = false
+  private isInitialized: boolean = false
+  private resizeObserverManager: ResizeObserverManager
+  private redrawTimeout: NodeJS.Timeout | null = null
+  private lastCanvasSize = {width: 0, height: 0}
 
-  constructor(rectangles?: RectangleConfig[]) {
-    if (rectangles) this.rectangles = rectangles;
+  constructor() {
+    this.resizeObserverManager = new ResizeObserverManager()
   }
 
   setChart(chart: IChartApi, series?: any) {
-    this.chart = chart;
-    this.series = series;
-    this.init();
+    this.chart = chart
+    this.series = series
+    this.init()
   }
 
-  private init() {
-    if (!this.chart) return;
-    
-    try {
-      this.container = this.chart.chartElement();
-      if (!this.container) return;
+  private async init() {
+    if (!this.chart) return
 
+    try {
+      // Wait for chart to be ready before initializing
+      const container = this.chart.chartElement()
+      if (!container) {
+        return
+      }
+
+      // Wait for chart to be fully ready
+      const isReady = await ChartReadyDetector.waitForChartReady(this.chart, container, {
+        minWidth: 200,
+        minHeight: 200
+      })
+
+      if (!isReady) {
+        console.warn('⚠️ Chart not ready after timeout, proceeding with fallback initialization')
+      }
+
+      this.container = container
+      this.createCanvas()
+      this.setupResizeObserver()
+      this.setupEventListeners()
+      this.isInitialized = true
+    } catch (error) {
+      console.error('❌ Failed to initialize rectangle plugin:', error)
+    }
+  }
+
+  private createCanvas() {
+    if (!this.container) return
+
+    try {
       // Create canvas overlay
-      this.canvas = document.createElement('canvas');
-      this.canvas.style.position = 'absolute';
-      this.canvas.style.top = '0';
-      this.canvas.style.left = '0';
-      this.canvas.style.pointerEvents = 'none';
-      this.canvas.style.zIndex = '1';
-      
-      this.container.style.position = 'relative';
-      this.container.appendChild(this.canvas);
+      this.canvas = document.createElement('canvas')
+      this.canvas.style.position = 'absolute'
+      this.canvas.style.top = '0'
+      this.canvas.style.left = '0'
+      this.canvas.style.pointerEvents = 'none'
+
+      // Set Z-index from config or use default of 20
+      const defaultZIndex = 20
+      this.canvas.style.zIndex = defaultZIndex.toString()
+
+      this.container.style.position = 'relative'
+      this.container.appendChild(this.canvas)
 
       // Get canvas context
-      this.ctx = this.canvas.getContext('2d');
-      if (!this.ctx) return;
+      this.ctx = this.canvas.getContext('2d')
+      if (!this.ctx) {
+        throw new Error('Failed to get canvas context')
+      }
 
       // Set initial canvas size
-      this.resizeCanvas();
+      this.resizeCanvas()
+    } catch (error) {
+      console.error('❌ Failed to create canvas:', error)
+    }
+  }
 
+  private setupResizeObserver() {
+    if (!this.container || !this.canvas) return
+
+    // Use our ResizeObserverManager for better handling
+    this.resizeObserverManager.addObserver(
+      'rectangle-plugin',
+      this.container,
+      entry => {
+        if (this.isDisposed) return
+
+        // Handle both single entry and array of entries
+        const entries = Array.isArray(entry) ? entry : [entry]
+
+        entries.forEach(singleEntry => {
+          const {width, height} = singleEntry.contentRect
+
+          // Check if dimensions are valid before resizing
+          if (width > 100 && height > 100) {
+            this.handleResize()
+          }
+        })
+      },
+      {throttleMs: 100, debounceMs: 50}
+    )
+  }
+
+  private setupEventListeners() {
+    if (!this.chart) return
+
+    try {
       // Listen for chart updates (time scale changes, panning, zooming)
       this.chart.timeScale().subscribeVisibleTimeRangeChange(() => {
         if (!this.isDisposed) {
-          this.scheduleRedraw();
+          this.scheduleRedraw()
         }
-      });
+      })
 
-      // Listen for crosshair movement (includes price scale changes and resize events)
+      // Listen for crosshair movement (includes price scale changes)
       this.chart.subscribeCrosshairMove(() => {
         if (!this.isDisposed) {
-          // Check if this is a resize event by comparing canvas size
-          const currentRect = this.container?.getBoundingClientRect();
-          if (currentRect && this.canvas) {
-            const sizeChanged = currentRect.width !== this.canvas.width || currentRect.height !== this.canvas.height;
-            if (sizeChanged) {
-              this.handleResize();
-            } else {
-              // This is likely a price scale change or other chart update
-              this.scheduleRedraw();
-            }
-          } else {
-            this.scheduleRedraw();
-          }
+          this.scheduleRedraw()
         }
-      });
+      })
+    } catch (error) {
+      console.warn('⚠️ Failed to set up some event listeners:', error)
+    }
+  }
 
-      // Add mouse event listeners for immediate response to price scale dragging
-      if (this.container) {
-        let isDragging = false;
-        let lastMouseY = 0;
-        
-        const handleMouseDown = (e: MouseEvent) => {
-          // Check if mouse is over the price scale area (right side of chart)
-          const rect = this.container!.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          
-          // If mouse is in the right price scale area, start tracking
-          if (mouseX > rect.width * 0.8) { // Right 20% of chart
-            isDragging = true;
-            lastMouseY = e.clientY;
-          }
-        };
-        
-        const handleMouseMove = (e: MouseEvent) => {
-          if (isDragging) {
-            const deltaY = Math.abs(e.clientY - lastMouseY);
-            if (deltaY > 2) { // Only redraw if there's significant movement
-              this.scheduleRedraw();
-              lastMouseY = e.clientY;
+  private async resizeCanvas() {
+    if (!this.canvas || !this.container || !this.chart) return
+
+    try {
+      // Use consolidated service for chart dimensions
+      const coordinateService = ChartCoordinateService.getInstance()
+      const dimensions = await coordinateService.getChartDimensionsWithFallback(
+        this.chart,
+        this.container,
+        {minWidth: 200, minHeight: 200}
+      )
+
+      const {width, height} = dimensions.container
+
+      // Only resize if dimensions actually changed
+      if (width !== this.lastCanvasSize.width || height !== this.lastCanvasSize.height) {
+        this.canvas.width = width
+        this.canvas.height = height
+        this.lastCanvasSize = {width, height}
+
+        // Canvas resized successfully
+
+        // Redraw after resize
+        this.scheduleRedraw()
+      }
+    } catch (error) {
+      console.error('❌ Error resizing canvas with consolidated service, using fallback:', error)
+
+      // Fallback to manual dimension calculation
+      this.fallbackResizeCanvas()
+    }
+  }
+
+  private fallbackResizeCanvas() {
+    if (!this.canvas || !this.container) return
+
+    try {
+      // Method 1: Try container dimensions first
+      let width = 0
+      let height = 0
+
+      try {
+        const rect = this.container.getBoundingClientRect()
+        width = rect.width
+        height = rect.height
+      } catch (error) {
+        width = this.container.offsetWidth
+        height = this.container.offsetHeight
+      }
+
+      // Method 2: Fallback to offset dimensions
+      if (!width || !height) {
+        width = this.container.offsetWidth || 800
+        height = this.container.offsetHeight || 600
+      }
+
+      // Method 3: Use chart element dimensions if available
+      if ((!width || !height) && this.chart) {
+        try {
+          const chartElement = this.chart.chartElement()
+          if (chartElement) {
+            const chartRect = chartElement.getBoundingClientRect()
+            if (chartRect.width > 0 && chartRect.height > 0) {
+              width = chartRect.width
+              height = chartRect.height
             }
           }
-        };
-        
-        const handleMouseUp = () => {
-          isDragging = false;
-        };
-        
-        this.container.addEventListener('mousedown', handleMouseDown);
-        this.container.addEventListener('mousemove', handleMouseMove);
-        this.container.addEventListener('mouseup', handleMouseUp);
-        
-        // Store event listeners for cleanup
-        (this as any).mouseListeners = { handleMouseDown, handleMouseMove, handleMouseUp };
+        } catch (error) {
+          // Ignore error
+        }
       }
 
-      // Also listen for any series data changes which might affect price scale
-      if (this.series) {
-        this.series.subscribeDataChanged(() => {
-          if (!this.isDisposed) {
-            this.scheduleRedraw();
-          }
-        });
-      }
+      // Ensure minimum dimensions
+      width = Math.max(width, 200)
+      height = Math.max(height, 200)
 
-      // Use ResizeObserver for more reliable resize detection
-      if (window.ResizeObserver && this.container) {
-        const resizeObserver = new ResizeObserver(() => {
-          if (!this.isDisposed) {
-            this.handleResize();
-          }
-        });
-        resizeObserver.observe(this.container);
-        
-        // Store the observer for cleanup
-        (this as any).resizeObserver = resizeObserver;
-      }
+      // Only resize if dimensions actually changed
+      if (width !== this.lastCanvasSize.width || height !== this.lastCanvasSize.height) {
+        this.canvas.width = width
+        this.canvas.height = height
+        this.lastCanvasSize = {width, height}
 
-      // Initial draw
-      this.scheduleRedraw();
+        // Fallback canvas resize successful
+
+        // Redraw after resize
+        this.scheduleRedraw()
+      }
     } catch (error) {
-      console.warn('[RectanglePlugin] Initialization error:', error);
+      console.error('❌ Error in fallback canvas resize:', error)
     }
   }
 
-  private resizeCanvas() {
-    if (!this.canvas || !this.container) return;
-    
-    const rect = this.container.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      this.canvas.width = rect.width;
-      this.canvas.height = rect.height;
-      this.canvas.style.width = `${rect.width}px`;
-      this.canvas.style.height = `${rect.height}px`;
-    }
-  }
+  private async handleResize() {
+    if (this.isDisposed) return
 
-  private handleResize() {
-    // Resize the canvas
-    this.resizeCanvas();
-    
-    // Redraw rectangles with updated clipping boundaries
-    this.scheduleRedraw();
+    try {
+      await this.resizeCanvas()
+    } catch (error) {
+      console.error('❌ Error handling resize:', error)
+    }
   }
 
   private scheduleRedraw() {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
+    if (this.redrawTimeout) {
+      clearTimeout(this.redrawTimeout)
     }
-    this.animationFrameId = requestAnimationFrame(() => {
-      this.drawRectangles();
-    });
+
+    this.redrawTimeout = setTimeout(() => {
+      if (!this.isDisposed) {
+        this.redraw()
+      }
+    }, 16) // ~60fps
   }
 
-  private timeToCoordinate(time: UTCTimestamp): number | null {
-    try {
-      if (!this.chart) return null;
-      const timeScale = this.chart.timeScale();
-      return timeScale.timeToCoordinate(time);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  private priceToCoordinate(price: number): number | null {
-    try {
-      if (!this.series) return null;
-      return this.series.priceToCoordinate(price);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  private drawRectangles() {
-    if (this.isDisposed || !this.ctx || !this.canvas || !this.chart || !this.series) return;
+  private redraw() {
+    if (!this.ctx || !this.canvas || this.isDisposed) return
 
     try {
       // Clear canvas
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-      // Get chart dimensions for proper clipping
-      const leftPriceScale = this.chart.priceScale('left');
-      const rightPriceScale = this.chart.priceScale('right');
-      
-      // Calculate clipping boundaries
-      const leftClip = leftPriceScale ? leftPriceScale.width() : 0;
-      const rightClip = rightPriceScale ? this.canvas.width - rightPriceScale.width() : this.canvas.width;
-      
-      // Calculate bottom clipping boundary using chart's main content area
-      // Get the height of the chart's main drawing area (excluding X-axis)
-      let bottomClip = this.canvas.height - 40; // Default fallback
-      
-      if (this.container) {
-        try {
-          // Look for the main chart content area (usually the largest canvas or div)
-          const chartCanvas = this.container.querySelector('canvas');
-          if (chartCanvas) {
-            const canvasRect = chartCanvas.getBoundingClientRect();
-            const containerRect = this.container.getBoundingClientRect();
-            const canvasBottom = canvasRect.bottom - containerRect.top;
-            bottomClip = Math.min(bottomClip, canvasBottom);
-          }
-        } catch (e) {
-          // Fallback to default if canvas detection fails
-        }
-      }
-
-      // Draw each rectangle
-      for (const rect of this.rectangles) {
-        // Convert coordinates
-        const time1Pixel = this.timeToCoordinate(rect.time1);
-        const time2Pixel = this.timeToCoordinate(rect.time2);
-        const price1Pixel = this.priceToCoordinate(rect.price1);
-        const price2Pixel = this.priceToCoordinate(rect.price2);
-
-        if (time1Pixel === null || time2Pixel === null || price1Pixel === null || price2Pixel === null) {
-          continue;
-        }
-
-        // Calculate rectangle dimensions
-        let x = Math.min(time1Pixel, time2Pixel);
-        let width = Math.abs(time2Pixel - time1Pixel);
-        const y = Math.min(price1Pixel, price2Pixel);
-        const height = Math.abs(price2Pixel - price1Pixel);
-
-        if (width <= 0 || height <= 0) continue;
-
-        // Draw rectangle with canvas clipping
-        this.ctx.save();
-        
-        // Set up clipping region (left, top, width, height)
-        this.ctx.beginPath();
-        this.ctx.rect(leftClip, 0, rightClip - leftClip, bottomClip);
-        this.ctx.clip();
-        
-        // Set fill style
-        this.ctx.fillStyle = rect.fillColor;
-        this.ctx.globalAlpha = rect.opacity || 0.2;
-        this.ctx.fillRect(x, y, width, height);
-
-        // Set border style
-        if (rect.borderWidth > 0) {
-          this.ctx.strokeStyle = rect.borderColor;
-          this.ctx.lineWidth = rect.borderWidth;
-          this.ctx.globalAlpha = 1.0;
-          
-          if (rect.borderStyle === 'dashed') {
-            this.ctx.setLineDash([5, 5]);
-          } else if (rect.borderStyle === 'dotted') {
-            this.ctx.setLineDash([2, 2]);
-          } else {
-            this.ctx.setLineDash([]);
-          }
-          
-          this.ctx.strokeRect(x, y, width, height);
-        }
-
-        this.ctx.restore();
-      }
+      // Draw all rectangles
+      this.rectangles.forEach(rect => {
+        this.drawRectangle(rect)
+      })
     } catch (error) {
-      console.warn('[RectanglePlugin] Error drawing rectangles:', error);
+      console.error('❌ Error during redraw:', error)
     }
   }
 
-  setRectangles(rects: RectangleConfig[]) {
-    this.rectangles = rects;
-    this.scheduleRedraw();
+  private drawRectangle(rect: RectangleConfig) {
+    if (!this.ctx || !this.canvas) return
+
+    try {
+      const {x1, y1, x2, y2, color, borderColor, borderWidth, fillOpacity, borderOpacity} = rect
+
+      // Calculate actual coordinates based on chart scale
+      const actualCoords = this.calculateActualCoordinates(x1, y1, x2, y2)
+      if (!actualCoords) return
+
+      const {ax1, ay1, ax2, ay2} = actualCoords
+
+      // Set fill style
+      this.ctx.fillStyle = color
+      if (fillOpacity !== undefined) {
+        this.ctx.globalAlpha = fillOpacity
+      }
+
+      // Draw filled rectangle
+      this.ctx.fillRect(ax1, ay1, ax2 - ax1, ay2 - ay1)
+
+      // Reset alpha for border
+      this.ctx.globalAlpha = 1.0
+
+      // Draw border if specified
+      if (borderColor && borderWidth) {
+        this.ctx.strokeStyle = borderColor
+        this.ctx.lineWidth = borderWidth
+        if (borderOpacity !== undefined) {
+          this.ctx.globalAlpha = borderOpacity
+        }
+        this.ctx.strokeRect(ax1, ay1, ax2 - ax1, ay2 - ay1)
+        this.ctx.globalAlpha = 1.0
+      }
+
+      // Draw label if specified
+      if (rect.label) {
+        this.drawLabel(rect, ax1, ay1, ax2, ay2)
+      }
+    } catch (error) {
+      console.error('❌ Error drawing rectangle:', error)
+    }
+  }
+
+  private calculateActualCoordinates(x1: number, y1: number, x2: number, y2: number) {
+    if (!this.chart || !this.canvas) return null
+
+    try {
+      // Method 1: Try to use chart's coordinate system (simplified for now)
+      try {
+        // For now, just use pixel coordinates directly
+        // TODO: Implement proper coordinate conversion when lightweight-charts API is available
+      } catch (error) {}
+
+      // Method 2: Use pixel coordinates directly
+      return {
+        ax1: x1,
+        ay1: y1,
+        ax2: x2,
+        ay2: y2
+      }
+    } catch (error) {
+      console.error('❌ Error calculating coordinates:', error)
+      return null
+    }
+  }
+
+  private drawLabel(rect: RectangleConfig, x1: number, y1: number, x2: number, y2: number) {
+    if (!this.ctx || !rect.label) return
+
+    try {
+      const labelX = (x1 + x2) / 2
+      const labelY = Math.min(y1, y2) - 10
+
+      // Set label style
+      this.ctx.font = `${rect.labelFontSize || 12}px Arial`
+      this.ctx.fillStyle = rect.labelColor || '#000000'
+      this.ctx.textAlign = 'center'
+      this.ctx.textBaseline = 'bottom'
+
+      // Draw label background if specified
+      if (rect.labelBackground) {
+        const textMetrics = this.ctx.measureText(rect.label)
+        const padding = rect.labelPadding || 4
+        const bgWidth = textMetrics.width + padding * 2
+        const bgHeight = (rect.labelFontSize || 12) + padding * 2
+
+        this.ctx.fillStyle = rect.labelBackground
+        this.ctx.fillRect(labelX - bgWidth / 2, labelY - bgHeight + padding, bgWidth, bgHeight)
+
+        // Reset text color
+        this.ctx.fillStyle = rect.labelColor || '#000000'
+      }
+
+      // Draw label text
+      this.ctx.fillText(rect.label, labelX, labelY)
+    } catch (error) {
+      console.error('❌ Error drawing label:', error)
+    }
+  }
+
+  /**
+   * Update canvas Z-index based on the highest Z-index of all rectangles
+   * Default Z-index is 20 if no rectangles have Z-index specified
+   */
+  private updateCanvasZIndex() {
+    if (!this.canvas) return
+
+    const defaultZIndex = 20
+    let maxZIndex = defaultZIndex
+
+    // Find the highest Z-index among all rectangles
+    for (const rect of this.rectangles) {
+      if (rect.zIndex !== undefined && rect.zIndex > maxZIndex) {
+        maxZIndex = rect.zIndex
+      }
+    }
+
+    // Update canvas Z-index
+    this.canvas.style.zIndex = maxZIndex.toString()
+
+    if (maxZIndex !== defaultZIndex) {
+    }
   }
 
   addRectangle(rect: RectangleConfig) {
-    this.rectangles.push(rect);
-    this.scheduleRedraw();
+    this.rectangles.push(rect)
+    this.updateCanvasZIndex()
+    this.scheduleRedraw()
+  }
+
+  removeRectangle(id: string) {
+    const index = this.rectangles.findIndex(r => r.id === id)
+    if (index !== -1) {
+      this.rectangles.splice(index, 1)
+      this.updateCanvasZIndex()
+      this.scheduleRedraw()
+    }
+  }
+
+  updateRectangle(id: string, updates: Partial<RectangleConfig>) {
+    const rect = this.rectangles.find(r => r.id === id)
+    if (rect) {
+      Object.assign(rect, updates)
+      this.updateCanvasZIndex()
+      this.scheduleRedraw()
+    }
   }
 
   clearRectangles() {
-    this.rectangles = [];
-    this.scheduleRedraw();
+    this.rectangles = []
+    this.updateCanvasZIndex()
+    this.scheduleRedraw()
   }
 
-  removeRectangle(index: number) {
-    this.rectangles.splice(index, 1);
-    this.scheduleRedraw();
+  getRectangles(): RectangleConfig[] {
+    return [...this.rectangles]
   }
 
-  destroy() {
-    this.isDisposed = true;
-    
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
+  dispose() {
+    this.isDisposed = true
+
+    // Cleanup resize observers
+    this.resizeObserverManager.cleanup()
+
+    // Clear timeout
+    if (this.redrawTimeout) {
+      clearTimeout(this.redrawTimeout)
+      this.redrawTimeout = null
     }
-    
-    // Clean up ResizeObserver
-    if ((this as any).resizeObserver) {
-      (this as any).resizeObserver.disconnect();
-      (this as any).resizeObserver = null;
+
+    // Remove canvas
+    if (this.canvas && this.canvas.parentNode) {
+      this.canvas.parentNode.removeChild(this.canvas)
     }
-    
-    // Clean up mouse event listeners
-    if (this.container && (this as any).mouseListeners) {
-      const { handleMouseDown, handleMouseMove, handleMouseUp } = (this as any).mouseListeners;
-      this.container.removeEventListener('mousedown', handleMouseDown);
-      this.container.removeEventListener('mousemove', handleMouseMove);
-      this.container.removeEventListener('mouseup', handleMouseUp);
-      (this as any).mouseListeners = null;
-    }
-    
-    if (this.canvas && this.container) {
-      try {
-        this.container.removeChild(this.canvas);
-      } catch (e) {
-        // Canvas already removed
-      }
-    }
-    
-    this.rectangles = [];
-    this.canvas = null;
-    this.ctx = null;
-    this.container = null;
-    this.chart = null;
-    this.series = null;
+
+    // Clear references
+    this.chart = null
+    this.container = null
+    this.canvas = null
+    this.ctx = null
+    this.series = null
+    this.rectangles = []
   }
 }
-
-export function registerRectanglePlugin(chart: IChartApi, series?: any, rectangles?: RectangleConfig[]): RectangleOverlayPlugin {
-  const plugin = new RectangleOverlayPlugin(rectangles);
-  plugin.setChart(chart, series);
-  return plugin;
-} 

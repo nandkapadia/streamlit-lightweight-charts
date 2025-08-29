@@ -1,7 +1,7 @@
-import { 
-  UTCTimestamp, 
-  SeriesMarker, 
-  Time, 
+import {
+  UTCTimestamp,
+  SeriesMarker,
+  Time,
   ISeriesPrimitive,
   IPrimitivePaneView,
   IPrimitivePaneRenderer,
@@ -11,9 +11,9 @@ import {
   Coordinate,
   LineSeries
 } from 'lightweight-charts'
-import { TradeConfig, TradeVisualizationOptions } from './types'
+import {TradeConfig, TradeVisualizationOptions} from './types'
 
-// Trade rectangle data interface
+// Trade rectangle interfaces
 interface TradeRectangleData {
   time1: UTCTimestamp
   time2: UTCTimestamp
@@ -27,7 +27,6 @@ interface TradeRectangleData {
   priceScaleId?: string
 }
 
-// Trade rectangle renderer data interface
 interface TradeRectangleRendererData {
   x1: Coordinate | null
   y1: Coordinate | null
@@ -40,7 +39,6 @@ interface TradeRectangleRendererData {
   opacity: number
 }
 
-// Trade rectangle view data interface
 interface TradeRectangleViewData {
   data: TradeRectangleRendererData[]
 }
@@ -54,18 +52,22 @@ class TradeRectanglePaneRenderer implements IPrimitivePaneRenderer {
   }
 
   draw(target: any) {
+    // Draw method for foreground elements (if needed)
+    // Currently not used for rectangles as we draw them in background
+  }
+
+  drawBackground(target: any) {
     const rectangles = this._viewData.data
     if (rectangles.length === 0) return
+
+    // Drawing rectangles in background
 
     target.useBitmapCoordinateSpace((scope: any) => {
       const ctx = scope.context
       ctx.scale(scope.horizontalPixelRatio, scope.verticalPixelRatio)
 
-      rectangles.forEach(rect => {
-        if (
-          rect.x1 === null || rect.y1 === null ||
-          rect.x2 === null || rect.y2 === null
-        ) {
+      rectangles.forEach((rect, index) => {
+        if (rect.x1 === null || rect.y1 === null || rect.x2 === null || rect.y2 === null) {
           return
         }
 
@@ -80,18 +82,18 @@ class TradeRectanglePaneRenderer implements IPrimitivePaneRenderer {
           return
         }
 
-        // Draw fill
+        // Draw fill in background
         ctx.save()
         ctx.fillStyle = rect.fillColor
         ctx.globalAlpha = rect.opacity
         ctx.fillRect(x, y, width, height)
 
-        // Draw border
+        // Draw border in background
         if (rect.borderWidth > 0) {
           ctx.strokeStyle = rect.borderColor
           ctx.lineWidth = rect.borderWidth
           ctx.globalAlpha = 1.0
-          
+
           // Set line style
           if (rect.borderStyle === 'dashed') {
             ctx.setLineDash([5, 5])
@@ -100,10 +102,12 @@ class TradeRectanglePaneRenderer implements IPrimitivePaneRenderer {
           } else {
             ctx.setLineDash([])
           }
-          
+
           ctx.strokeRect(x, y, width, height)
         }
         ctx.restore()
+
+        // Rectangle drawn successfully
       })
     })
   }
@@ -124,25 +128,23 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
   update() {
     const timeScale = this._source.getChart().timeScale()
     const series = this._source.getSeries()
-    
+
     this._data.data = this._source.getRectangles().map((rect, index) => {
       // Convert timestamps to coordinates
-      const x1 = timeScale.timeToCoordinate(rect.time1) ?? null;
-      const y1 = series.priceToCoordinate(rect.price1) ?? null;
-      const x2 = timeScale.timeToCoordinate(rect.time2) ?? null;
-      const y2 = series.priceToCoordinate(rect.price2) ?? null;
-      
-      // Validate coordinates
-      const validCoordinates = x1 !== null && y1 !== null && x2 !== null && y2 !== null;
-      const positiveCoordinates = validCoordinates && x1 >= 0 && x2 >= 0 && y1 >= 0 && y2 >= 0;
-      
+      const x1 = timeScale.timeToCoordinate(rect.time1) ?? null
+      const y1 = series.priceToCoordinate(rect.price1) ?? null
+      const x2 = timeScale.timeToCoordinate(rect.time2) ?? null
+      const y2 = series.priceToCoordinate(rect.price2) ?? null
 
-      
-      // Only return valid coordinates
-      if (!validCoordinates || !positiveCoordinates) {
-        console.warn(`⚠️ [TradeRectanglePaneView] Invalid coordinates for rectangle ${index}, skipping`);
+      // Check if we have at least some valid coordinates
+      const hasValidCoordinates = x1 !== null || x2 !== null || y1 !== null || y2 !== null
+
+      if (!hasValidCoordinates) {
         return {
-          x1: null, y1: null, x2: null, y2: null,
+          x1: null,
+          y1: null,
+          x2: null,
+          y2: null,
           fillColor: rect.fillColor,
           borderColor: rect.borderColor,
           borderWidth: rect.borderWidth,
@@ -150,9 +152,35 @@ class TradeRectanglePaneView implements IPrimitivePaneView {
           opacity: rect.opacity
         }
       }
-      
+
+      // Handle partial viewport visibility - use chart bounds for coordinates outside viewport
+      const chartElement = this._source.getChart().chartElement()
+      const chartRect = chartElement?.getBoundingClientRect()
+
+      let finalX1: Coordinate | null = x1
+      let finalX2: Coordinate | null = x2
+      let finalY1: Coordinate | null = y1
+      let finalY2: Coordinate | null = y2
+
+      // If time coordinates are null (outside viewport), use chart bounds
+      if (x1 === null) {
+        finalX1 = 0 as Coordinate // Start from left edge
+      }
+      if (x2 === null) {
+        finalX2 = (chartRect ? chartRect.width : 0) as Coordinate // Extend to right edge
+      }
+      if (y1 === null) {
+        finalY1 = 0 as Coordinate // Start from top edge
+      }
+      if (y2 === null) {
+        finalY2 = (chartRect ? chartRect.height : 0) as Coordinate // Extend to bottom edge
+      }
+
       return {
-        x1, y1, x2, y2,
+        x1: finalX1,
+        y1: finalY1,
+        x2: finalX2,
+        y2: finalY2,
         fillColor: rect.fillColor,
         borderColor: rect.borderColor,
         borderWidth: rect.borderWidth,
@@ -178,30 +206,30 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
   constructor(chart: IChartApi, priceScaleId: string = 'right') {
     this.chart = chart
     this._paneViews = [new TradeRectanglePaneView(this)]
-    
 
-    
     // Create a dummy line series to attach the primitive to (following official pattern)
     this.dummySeries = chart.addSeries(LineSeries, {
       color: 'transparent',
       lineWidth: 0 as any,
       visible: false,
-      priceScaleId: priceScaleId,
-    });
+      priceScaleId: priceScaleId
+    })
 
     // Add minimal dummy data to ensure the time scale is properly initialized
-    const dummyData = [{
-      time: Math.floor(Date.now() / 1000) as UTCTimestamp,
-      value: 0
-    }];
-    this.dummySeries.setData(dummyData);
+    const dummyData = [
+      {
+        time: Math.floor(Date.now() / 1000) as UTCTimestamp,
+        value: 0
+      }
+    ]
+    this.dummySeries.setData(dummyData)
 
     // Attach the primitive to the dummy series for rendering
     try {
       this.dummySeries.attachPrimitive(this)
-      this.isAttached = true;
+      this.isAttached = true
     } catch (error) {
-      console.error('❌ [TradeRectanglePlugin] Failed to attach primitive to dummy series:', error);
+      console.error('❌ [TradeRectanglePlugin] Failed to attach primitive to dummy series:', error)
     }
   }
 
@@ -219,8 +247,7 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
   }
 
   // ISeriesPrimitive implementation
-  attached(param: SeriesAttachedParameter<Time>): void {
-  }
+  attached(param: SeriesAttachedParameter<Time>): void {}
 
   detached(): void {
     // Primitive is detached from the series
@@ -258,45 +285,48 @@ export class TradeRectanglePlugin implements ISeriesPrimitive<Time> {
   destroy(): void {
     if (this.isAttached) {
       this.dummySeries.detachPrimitive(this)
-      this.isAttached = false;
+      this.isAttached = false
     }
     // Remove the dummy series from the chart
-    this.chart.removeSeries(this.dummySeries);
+    this.chart.removeSeries(this.dummySeries)
   }
 }
 
 // Create trade rectangles from trade data
-function createTradeRectangles(trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]): TradeRectangleData[] {
+function createTradeRectangles(
+  trades: TradeConfig[],
+  options: TradeVisualizationOptions,
+  chartData?: any[]
+): TradeRectangleData[] {
   const rectangles: TradeRectangleData[] = []
 
   trades.forEach((trade, index) => {
-    
     // Validate trade data
-    if (!trade.entryTime || !trade.exitTime || 
-        typeof trade.entryPrice !== 'number' || typeof trade.exitPrice !== 'number') {
-      console.warn(`❌ [createTradeRectangles] Invalid trade data for trade ${index}:`, trade);
+    if (
+      !trade.entryTime ||
+      !trade.exitTime ||
+      typeof trade.entryPrice !== 'number' ||
+      typeof trade.exitPrice !== 'number'
+    ) {
       return
     }
 
     // Parse times and validate
     const time1 = parseTime(trade.entryTime)
     const time2 = parseTime(trade.exitTime)
-    
 
-    
     if (time1 === null || time2 === null || time1 === time2) {
-      console.warn(`❌ [createTradeRectangles] Invalid times for trade ${index}:`, { time1, time2 });
       return
     }
 
     // Find nearest available times in chart data if provided
     let adjustedTime1 = time1
     let adjustedTime2 = time2
-    
+
     if (chartData && chartData.length > 0) {
       const nearestTime1 = findNearestTime(time1, chartData)
       const nearestTime2 = findNearestTime(time2, chartData)
-      
+
       if (nearestTime1) adjustedTime1 = nearestTime1
       if (nearestTime2) adjustedTime2 = nearestTime2
     }
@@ -306,13 +336,13 @@ function createTradeRectangles(trades: TradeConfig[], options: TradeVisualizatio
       return
     }
 
-    const color = trade.isProfitable 
-      ? (options.rectangleColorProfit || '#4CAF50')
-      : (options.rectangleColorLoss || '#F44336')
+    const color = trade.isProfitable
+      ? options.rectangleColorProfit || '#4CAF50'
+      : options.rectangleColorLoss || '#F44336'
 
     const opacity = options.rectangleFillOpacity || 0.2
 
-    rectangles.push({
+    const rectangle: TradeRectangleData = {
       time1: Math.min(adjustedTime1, adjustedTime2) as UTCTimestamp,
       price1: Math.min(trade.entryPrice, trade.exitPrice),
       time2: Math.max(adjustedTime1, adjustedTime2) as UTCTimestamp,
@@ -320,22 +350,32 @@ function createTradeRectangles(trades: TradeConfig[], options: TradeVisualizatio
       fillColor: color,
       borderColor: color,
       borderWidth: options.rectangleBorderWidth || 1,
-      borderStyle: 'solid',
+      borderStyle: 'solid' as const,
       opacity: opacity
-    })
+    }
+
+    rectangles.push(rectangle)
   })
 
   return rectangles
 }
 
 // Create trade markers
-function createTradeMarkers(trades: TradeConfig[], options: TradeVisualizationOptions, chartData?: any[]): SeriesMarker<Time>[] {
+function createTradeMarkers(
+  trades: TradeConfig[],
+  options: TradeVisualizationOptions,
+  chartData?: any[]
+): SeriesMarker<Time>[] {
   const markers: SeriesMarker<Time>[] = []
 
   trades.forEach((trade, index) => {
     // Validate trade data
-    if (!trade.entryTime || !trade.exitTime || 
-        typeof trade.entryPrice !== 'number' || typeof trade.exitPrice !== 'number') {
+    if (
+      !trade.entryTime ||
+      !trade.exitTime ||
+      typeof trade.entryPrice !== 'number' ||
+      typeof trade.exitPrice !== 'number'
+    ) {
       console.warn(`Invalid trade data for trade ${index}:`, trade)
       return
     }
@@ -343,7 +383,7 @@ function createTradeMarkers(trades: TradeConfig[], options: TradeVisualizationOp
     // Parse times and validate
     const entryTime = parseTime(trade.entryTime)
     const exitTime = parseTime(trade.exitTime)
-    
+
     if (!entryTime || !exitTime) {
       console.warn(`Invalid trade data for trade ${index}:`, trade)
       return
@@ -352,41 +392,45 @@ function createTradeMarkers(trades: TradeConfig[], options: TradeVisualizationOp
     // Find nearest available times in chart data if provided
     let adjustedEntryTime = entryTime
     let adjustedExitTime = exitTime
-    
+
     if (chartData && chartData.length > 0) {
       const nearestEntryTime = findNearestTime(entryTime, chartData)
       const nearestExitTime = findNearestTime(exitTime, chartData)
-      
+
       if (nearestEntryTime) adjustedEntryTime = nearestEntryTime
       if (nearestExitTime) adjustedExitTime = nearestExitTime
-      
     }
 
     // Entry marker
-    const entryColor = trade.tradeType === 'long' 
-      ? (options.entryMarkerColorLong || '#2196F3')
-      : (options.entryMarkerColorShort || '#FF9800')
+    const entryColor =
+      trade.tradeType === 'long'
+        ? options.entryMarkerColorLong || '#2196F3'
+        : options.entryMarkerColorShort || '#FF9800'
 
     const entryMarker: SeriesMarker<Time> = {
       time: adjustedEntryTime,
       position: trade.tradeType === 'long' ? 'belowBar' : 'aboveBar',
       color: entryColor,
       shape: trade.tradeType === 'long' ? 'arrowUp' : 'arrowDown',
-      text: options.showPnlInMarkers && trade.text ? trade.text : `Entry: $${trade.entryPrice.toFixed(2)}`
+      text:
+        options.showPnlInMarkers && trade.text
+          ? trade.text
+          : `Entry: $${trade.entryPrice.toFixed(2)}`
     }
     markers.push(entryMarker)
 
     // Exit marker
-    const exitColor = trade.isProfitable 
-      ? (options.exitMarkerColorProfit || '#4CAF50')
-      : (options.exitMarkerColorLoss || '#F44336')
+    const exitColor = trade.isProfitable
+      ? options.exitMarkerColorProfit || '#4CAF50'
+      : options.exitMarkerColorLoss || '#F44336'
 
     const exitMarker: SeriesMarker<Time> = {
       time: adjustedExitTime,
       position: trade.tradeType === 'long' ? 'aboveBar' : 'belowBar',
       color: exitColor,
       shape: trade.tradeType === 'long' ? 'arrowDown' : 'arrowUp',
-      text: options.showPnlInMarkers && trade.text ? trade.text : `Exit: $${trade.exitPrice.toFixed(2)}`
+      text:
+        options.showPnlInMarkers && trade.text ? trade.text : `Exit: $${trade.exitPrice.toFixed(2)}`
     }
     markers.push(exitMarker)
   })
@@ -401,14 +445,16 @@ function findNearestTime(targetTime: UTCTimestamp, chartData: any[]): UTCTimesta
   }
 
   // Convert chart data times to timestamps for comparison
-  const availableTimes = chartData.map(item => {
-    if (typeof item.time === 'number') {
-      return item.time
-    } else if (typeof item.time === 'string') {
-      return Math.floor(new Date(item.time).getTime() / 1000) as UTCTimestamp
-    }
-    return null
-  }).filter(time => time !== null) as UTCTimestamp[]
+  const availableTimes = chartData
+    .map(item => {
+      if (typeof item.time === 'number') {
+        return item.time
+      } else if (typeof item.time === 'string') {
+        return Math.floor(new Date(item.time).getTime() / 1000) as UTCTimestamp
+      }
+      return null
+    })
+    .filter(time => time !== null) as UTCTimestamp[]
 
   if (availableTimes.length === 0) {
     return null
@@ -440,7 +486,7 @@ function parseTime(timeStr: string | number): UTCTimestamp | null {
       }
       return Math.floor(timeStr) as UTCTimestamp
     }
-    
+
     // If it's a string, try to parse as date
     if (typeof timeStr === 'string') {
       // First try to parse as Unix timestamp string
@@ -452,7 +498,7 @@ function parseTime(timeStr: string | number): UTCTimestamp | null {
         }
         return Math.floor(timestamp) as UTCTimestamp
       }
-      
+
       // Try to parse as date string
       const date = new Date(timeStr)
       if (isNaN(date.getTime())) {
@@ -461,7 +507,7 @@ function parseTime(timeStr: string | number): UTCTimestamp | null {
       }
       return Math.floor(date.getTime() / 1000) as UTCTimestamp
     }
-    
+
     return null
   } catch (error) {
     console.error(`Error parsing time ${timeStr}:`, error)
@@ -471,8 +517,8 @@ function parseTime(timeStr: string | number): UTCTimestamp | null {
 
 // Main function to create trade visual elements
 export function createTradeVisualElements(
-  trades: TradeConfig[], 
-  options: TradeVisualizationOptions, 
+  trades: TradeConfig[],
+  options: TradeVisualizationOptions,
   chartData?: any[],
   priceScaleId?: string
 ): {
@@ -485,7 +531,7 @@ export function createTradeVisualElements(
   const annotations: any[] = []
 
   if (!trades || trades.length === 0) {
-    return { markers, rectangles, annotations }
+    return {markers, rectangles, annotations}
   }
 
   // Create markers if enabled
@@ -523,11 +569,11 @@ export function createTradeVisualElements(
       // Calculate midpoint for annotation position
       const entryTime = parseTime(trade.entryTime)
       const exitTime = parseTime(trade.exitTime)
-      
+
       if (entryTime === null || exitTime === null) {
         return
       }
-      
+
       const midTime = (entryTime + exitTime) / 2
       const midPrice = (trade.entryPrice + trade.exitPrice) / 2
 
@@ -544,5 +590,5 @@ export function createTradeVisualElements(
     })
   }
 
-  return { markers, rectangles, annotations }
-} 
+  return {markers, rectangles, annotations}
+}

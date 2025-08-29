@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import {MutableRefObject} from 'react'
 import {
   IChartApi,
   ISeriesApi,
@@ -8,17 +8,17 @@ import {
   CandlestickSeries,
   HistogramSeries,
   BaselineSeries,
-  createSeriesMarkers,
-} from 'lightweight-charts';
-import { SeriesConfig } from '../types';
-import { createBandSeries, BandData } from '../bandSeriesPlugin';
-import { SignalSeries, createSignalSeriesPlugin } from '../signalSeriesPlugin';
-import { createTrendFillSeriesPlugin } from '../trendFillSeriesPlugin';
-import { cleanLineStyleOptions } from './lineStyle';
-import { createTradeVisualElements } from '../tradeVisualization';
+  createSeriesMarkers
+} from 'lightweight-charts'
+import {SeriesConfig} from '../types'
+import {createBandSeries, BandData} from '../bandSeriesPlugin'
+import {SignalSeries, createSignalSeriesPlugin} from '../signalSeriesPlugin'
+import {createTrendFillSeriesPlugin} from '../trendFillSeriesPlugin'
+import {cleanLineStyleOptions} from './lineStyle'
+import {createTradeVisualElements} from '../tradeVisualization'
 
 interface SeriesFactoryContext {
-  signalPluginRefs?: MutableRefObject<{ [key: string]: SignalSeries }>;
+  signalPluginRefs?: MutableRefObject<{[key: string]: SignalSeries}>
 }
 
 export function createSeries(
@@ -26,9 +26,9 @@ export function createSeries(
   seriesConfig: SeriesConfig,
   context: SeriesFactoryContext = {},
   chartId?: string,
-  seriesIndex?: number,
+  seriesIndex?: number
 ): ISeriesApi<any> | null {
-  const { signalPluginRefs } = context;
+  const {signalPluginRefs} = context
 
   const {
     type,
@@ -43,31 +43,33 @@ export function createSeries(
     priceLineWidth: topLevelPriceLineWidth,
     priceLineColor: topLevelPriceLineColor,
     priceLineStyle: topLevelPriceLineStyle,
-    priceScaleId: topLevelPriceScaleId,
-  } = seriesConfig;
+    priceScaleId: topLevelPriceScaleId
+  } = seriesConfig
 
   const lastValueVisible =
-    topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible;
+    topLevelLastValueVisible !== undefined ? topLevelLastValueVisible : options.lastValueVisible
   const priceLineVisible =
-    topLevelPriceLineVisible !== undefined ? topLevelPriceLineVisible : options.priceLineVisible;
+    topLevelPriceLineVisible !== undefined ? topLevelPriceLineVisible : options.priceLineVisible
   const priceLineSource =
-    topLevelPriceLineSource !== undefined ? topLevelPriceLineSource : options.priceLineSource;
+    topLevelPriceLineSource !== undefined ? topLevelPriceLineSource : options.priceLineSource
   const priceLineWidth =
-    topLevelPriceLineWidth !== undefined ? topLevelPriceLineWidth : options.priceLineWidth;
+    topLevelPriceLineWidth !== undefined ? topLevelPriceLineWidth : options.priceLineWidth
   const priceLineColor =
-    topLevelPriceLineColor !== undefined ? topLevelPriceLineColor : options.priceLineColor;
+    topLevelPriceLineColor !== undefined ? topLevelPriceLineColor : options.priceLineColor
   const priceLineStyle =
-    topLevelPriceLineStyle !== undefined ? topLevelPriceLineStyle : options.priceLineStyle;
+    topLevelPriceLineStyle !== undefined ? topLevelPriceLineStyle : options.priceLineStyle
   const priceScaleId =
-    topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId;
+    topLevelPriceScaleId !== undefined ? topLevelPriceScaleId : options.priceScaleId
 
   // Ensure paneId has a default value
-  const finalPaneId = paneId !== undefined ? paneId : 0;
+  const finalPaneId = paneId !== undefined ? paneId : 0
 
-  let series: ISeriesApi<any>;
-  const normalizedType = type?.toLowerCase();
-  const { priceFormat, ...otherOptions } = options;
-  const cleanedOptions = cleanLineStyleOptions(otherOptions);
+  let series: ISeriesApi<any>
+  const normalizedType = type?.toLowerCase()
+  const {priceFormat, ...otherOptions} = options
+  const cleanedOptions = cleanLineStyleOptions(otherOptions)
+
+  // No Z-index needed - using Z-order system for primitives
 
   switch (normalizedType) {
     case 'area': {
@@ -86,20 +88,20 @@ export function createSeries(
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        areaOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(AreaSeries, areaOptions, finalPaneId);
+      if (priceFormat) {
+        areaOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(AreaSeries, areaOptions, finalPaneId)
       try {
         if (lastValueVisible === false) {
-          series.applyOptions({ lastValueVisible: false });
+          series.applyOptions({lastValueVisible: false})
         }
       } catch {
         // ignore
       }
-      break;
+      break
     }
     case 'band': {
       try {
@@ -108,19 +110,19 @@ export function createSeries(
             color: '#4CAF50',
             lineStyle: 0,
             lineWidth: 2,
-            lineVisible: true,
+            lineVisible: true
           },
           middleLine: cleanedOptions.middleLine || {
             color: '#2196F3',
             lineStyle: 0,
             lineWidth: 2,
-            lineVisible: true,
+            lineVisible: true
           },
           lowerLine: cleanedOptions.lowerLine || {
             color: '#F44336',
             lineStyle: 0,
             lineWidth: 2,
-            lineVisible: true,
+            lineVisible: true
           },
           upperFillColor: cleanedOptions.upperFillColor || 'rgba(76, 175, 80, 0.1)',
           lowerFillColor: cleanedOptions.lowerFillColor || 'rgba(244, 67, 54, 0.1)',
@@ -133,43 +135,43 @@ export function createSeries(
           priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
           priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
           priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-        };
-        const bandSeries = createBandSeries(chart, bandSeriesOptions);
+          priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
+        }
+        const bandSeries = createBandSeries(chart, bandSeriesOptions)
         if (data && data.length > 0) {
-          bandSeries.setData(data as BandData[]);
+          bandSeries.setData(data as BandData[])
         }
         return {
           setData: (newData: any[]) => {
             try {
-              bandSeries.setData(newData as BandData[]);
+              bandSeries.setData(newData as BandData[])
             } catch {}
           },
           update: (newData: any) => {
             try {
-              bandSeries.update(newData as BandData);
+              bandSeries.update(newData as BandData)
             } catch {}
           },
           applyOptions: (options: any) => {
             try {
-              bandSeries.setOptions(cleanLineStyleOptions(options));
+              bandSeries.setOptions(cleanLineStyleOptions(options))
             } catch {}
           },
           priceScale: () => {
             try {
-              return chart.priceScale(priceScaleId || 'right');
+              return chart.priceScale(priceScaleId || 'right')
             } catch {
-              return null;
+              return null
             }
           },
           remove: () => {
             try {
-              bandSeries.remove();
+              bandSeries.remove()
             } catch {}
-          },
-        } as unknown as ISeriesApi<any>;
+          }
+        } as unknown as ISeriesApi<any>
       } catch {
-        return null;
+        return null
       }
     }
     case 'signal': {
@@ -181,22 +183,22 @@ export function createSeries(
             neutralColor: cleanedOptions.neutralColor || '#f0f0f0',
             signalColor: cleanedOptions.signalColor || '#ff0000',
             alertColor: cleanedOptions.alertColor,
-            visible: cleanedOptions.visible !== false,
+            visible: cleanedOptions.visible !== false
           },
-          paneId: finalPaneId,
-        });
+          paneId: finalPaneId
+        })
         if (signalPluginRefs && chartId !== undefined && seriesIndex !== undefined) {
-          signalPluginRefs.current[`${chartId}-${seriesIndex}`] = signalSeries;
+          signalPluginRefs.current[`${chartId}-${seriesIndex}`] = signalSeries
         }
         return {
           setData: (newData: any[]) => {
             try {
-              signalSeries.updateData(newData);
+              signalSeries.updateData(newData)
             } catch {}
           },
           update: (newData: any) => {
             try {
-              signalSeries.updateData([newData]);
+              signalSeries.updateData([newData])
             } catch {}
           },
           applyOptions: (options: any) => {
@@ -205,35 +207,32 @@ export function createSeries(
                 neutralColor: options.neutralColor || '#f0f0f0',
                 signalColor: options.signalColor || '#ff0000',
                 alertColor: options.alertColor,
-                visible: options.visible !== false,
-              });
+                visible: options.visible !== false
+              })
             } catch {}
           },
           priceScale: () => {
             try {
-              return chart.priceScale(priceScaleId || 'right');
+              return chart.priceScale(priceScaleId || 'right')
             } catch {
-              return null;
+              return null
             }
           },
           remove: () => {
             try {
-              signalSeries.destroy();
+              signalSeries.destroy()
               if (signalPluginRefs && chartId !== undefined && seriesIndex !== undefined) {
-                delete signalPluginRefs.current[`${chartId}-${seriesIndex}`];
+                delete signalPluginRefs.current[`${chartId}-${seriesIndex}`]
               }
             } catch {}
-          },
-        } as unknown as ISeriesApi<any>;
+          }
+        } as unknown as ISeriesApi<any>
       } catch {
-        return null;
+        return null
       }
     }
     case 'trend_fill': {
       try {
-        console.log('[SeriesFactory] Creating trend_fill series with data:', data)
-        console.log('[SeriesFactory] Options:', cleanedOptions)
-        
         const trendFillSeries = createTrendFillSeriesPlugin(chart, {
           type: 'trend_fill',
           data: data || [],
@@ -245,80 +244,75 @@ export function createSeries(
               color: cleanedOptions.upper_trend_line?.color || '#F44336',
               lineWidth: cleanedOptions.upper_trend_line?.lineWidth || 2,
               lineStyle: cleanedOptions.upper_trend_line?.lineStyle || 0,
-              visible: cleanedOptions.upper_trend_line?.visible !== false,
+              visible: cleanedOptions.upper_trend_line?.visible !== false
             },
             lower_trend_line: {
               color: cleanedOptions.lower_trend_line?.color || '#4CAF50',
               lineWidth: cleanedOptions.lower_trend_line?.lineWidth || 2,
               lineStyle: cleanedOptions.lower_trend_line?.lineStyle || 0,
-              visible: cleanedOptions.lower_trend_line?.visible !== false,
+              visible: cleanedOptions.lower_trend_line?.visible !== false
             },
             base_line: {
               color: cleanedOptions.base_line?.color || '#666666',
               lineWidth: cleanedOptions.base_line?.lineWidth || 1,
               lineStyle: cleanedOptions.base_line?.lineStyle || 1,
-              visible: cleanedOptions.base_line?.visible !== false,
+              visible: cleanedOptions.base_line?.visible !== false
             },
-            visible: cleanedOptions.visible !== false,
+            visible: cleanedOptions.visible !== false
           },
-          paneId: finalPaneId,
-        });
-        
+          paneId: finalPaneId
+        })
+
         // Set the data immediately
         if (data && data.length > 0) {
-          console.log('[SeriesFactory] Setting initial data for trend_fill series')
           trendFillSeries.setData(data)
         }
-        
+
         return {
           setData: (newData: any[]) => {
             try {
-              console.log('[SeriesFactory] setData called with:', newData)
-              trendFillSeries.setData(newData);
+              trendFillSeries.setData(newData)
             } catch (error) {
-              console.error('[SeriesFactory] Error in setData:', error)
+              // Error handling
             }
           },
           update: (newData: any) => {
             try {
-              console.log('[SeriesFactory] update called with:', newData)
-              trendFillSeries.updateData([newData]);
+              trendFillSeries.updateData([newData])
             } catch (error) {
-              console.error('[SeriesFactory] Error in update:', error)
+              // Error handling
             }
           },
           applyOptions: (options: any) => {
             try {
-              console.log('[SeriesFactory] applyOptions called with:', options)
-              trendFillSeries.applyOptions(options);
+              trendFillSeries.applyOptions(options)
             } catch (error) {
-              console.error('[SeriesFactory] Error in applyOptions:', error)
+              // Error handling
             }
           },
           priceScale: () => {
             try {
-              return chart.priceScale(priceScaleId || 'right');
+              return chart.priceScale(priceScaleId || 'right')
             } catch {
-              return null;
+              return null
             }
           },
           remove: () => {
             try {
-              trendFillSeries.destroy();
+              trendFillSeries.destroy()
             } catch (error) {
-              console.error('[SeriesFactory] Error in remove:', error)
+              // Error handling
             }
-          },
-        } as unknown as ISeriesApi<any>;
+          }
+        } as unknown as ISeriesApi<any>
       } catch (error) {
-        console.error('[SeriesFactory] Error creating trend_fill series:', error)
-        return null;
+        return null
       }
     }
     case 'baseline': {
       const baselineOptions: any = {
         ...cleanedOptions,
-        baseValue: cleanedOptions.baseValue || { price: 0 },
+        baseValue: cleanedOptions.baseValue || {price: 0},
         topLineColor: cleanedOptions.topLineColor || 'rgba(76, 175, 80, 0.4)',
         topFillColor1: cleanedOptions.topFillColor1 || 'rgba(76, 175, 80, 0.0)',
         topFillColor2: cleanedOptions.topFillColor2 || 'rgba(76, 175, 80, 0.4)',
@@ -332,24 +326,24 @@ export function createSeries(
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        baselineOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(BaselineSeries, baselineOptions, finalPaneId);
-      break;
+      if (priceFormat) {
+        baselineOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(BaselineSeries, baselineOptions, finalPaneId)
+      break
     }
     case 'histogram': {
       const histogramOptions: any = {
         ...cleanedOptions,
         priceFormat: priceFormat || {
-          type: 'volume',
+          type: 'volume'
         },
         priceScaleId: priceScaleId || '',
         scaleMargins: cleanedOptions.scaleMargins || {
           top: 0.75,
-          bottom: 0,
+          bottom: 0
         },
         lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
         color: cleanedOptions.color || '#2196F3',
@@ -357,58 +351,96 @@ export function createSeries(
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        histogramOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(HistogramSeries, histogramOptions, finalPaneId);
-      break;
+      if (priceFormat) {
+        histogramOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(HistogramSeries, histogramOptions, finalPaneId)
+      break
     }
     case 'line': {
       // Process lineOptions if provided
-      const lineSpecificOptions = seriesConfig.lineOptions || {};
-      
+      const lineSpecificOptions = seriesConfig.lineOptions || {}
+
       const lineOptions: any = {
         ...cleanedOptions,
         // Apply line-specific options from lineOptions object
-        lineStyle: lineSpecificOptions.lineStyle !== undefined ? lineSpecificOptions.lineStyle : cleanedOptions.lineStyle,
-        lineType: lineSpecificOptions.lineType !== undefined ? lineSpecificOptions.lineType : cleanedOptions.lineType,
-        lineVisible: lineSpecificOptions.lineVisible !== undefined ? lineSpecificOptions.lineVisible : cleanedOptions.lineVisible,
-        pointMarkersVisible: lineSpecificOptions.pointMarkersVisible !== undefined ? lineSpecificOptions.pointMarkersVisible : cleanedOptions.pointMarkersVisible,
-        pointMarkersRadius: lineSpecificOptions.pointMarkersRadius !== undefined ? lineSpecificOptions.pointMarkersRadius : cleanedOptions.pointMarkersRadius,
-        crosshairMarkerVisible: lineSpecificOptions.crosshairMarkerVisible !== undefined ? lineSpecificOptions.crosshairMarkerVisible : cleanedOptions.crosshairMarkerVisible,
-        crosshairMarkerRadius: lineSpecificOptions.crosshairMarkerRadius !== undefined ? lineSpecificOptions.crosshairMarkerRadius : cleanedOptions.crosshairMarkerRadius,
-        crosshairMarkerBorderColor: lineSpecificOptions.crosshairMarkerBorderColor !== undefined ? lineSpecificOptions.crosshairMarkerBorderColor : cleanedOptions.crosshairMarkerBorderColor,
-        crosshairMarkerBackgroundColor: lineSpecificOptions.crosshairMarkerBackgroundColor !== undefined ? lineSpecificOptions.crosshairMarkerBackgroundColor : cleanedOptions.crosshairMarkerBackgroundColor,
-        crosshairMarkerBorderWidth: lineSpecificOptions.crosshairMarkerBorderWidth !== undefined ? lineSpecificOptions.crosshairMarkerBorderWidth : cleanedOptions.crosshairMarkerBorderWidth,
-        lastPriceAnimation: lineSpecificOptions.lastPriceAnimation !== undefined ? lineSpecificOptions.lastPriceAnimation : lastPriceAnimation,
+        lineStyle:
+          lineSpecificOptions.lineStyle !== undefined
+            ? lineSpecificOptions.lineStyle
+            : cleanedOptions.lineStyle,
+        lineType:
+          lineSpecificOptions.lineType !== undefined
+            ? lineSpecificOptions.lineType
+            : cleanedOptions.lineType,
+        lineVisible:
+          lineSpecificOptions.lineVisible !== undefined
+            ? lineSpecificOptions.lineVisible
+            : cleanedOptions.lineVisible,
+        pointMarkersVisible:
+          lineSpecificOptions.pointMarkersVisible !== undefined
+            ? lineSpecificOptions.pointMarkersVisible
+            : cleanedOptions.pointMarkersVisible,
+        pointMarkersRadius:
+          lineSpecificOptions.pointMarkersRadius !== undefined
+            ? lineSpecificOptions.pointMarkersRadius
+            : cleanedOptions.crosshairMarkerRadius,
+        crosshairMarkerVisible:
+          lineSpecificOptions.crosshairMarkerVisible !== undefined
+            ? lineSpecificOptions.crosshairMarkerVisible
+            : cleanedOptions.crosshairMarkerVisible,
+        crosshairMarkerRadius:
+          lineSpecificOptions.crosshairMarkerRadius !== undefined
+            ? lineSpecificOptions.crosshairMarkerRadius
+            : cleanedOptions.crosshairMarkerRadius,
+        crosshairMarkerBorderColor:
+          lineSpecificOptions.crosshairMarkerBorderColor !== undefined
+            ? lineSpecificOptions.crosshairMarkerBorderColor
+            : cleanedOptions.crosshairMarkerBorderColor,
+        crosshairMarkerBackgroundColor:
+          lineSpecificOptions.crosshairMarkerBackgroundColor !== undefined
+            ? lineSpecificOptions.crosshairMarkerBackgroundColor
+            : cleanedOptions.crosshairMarkerBackgroundColor,
+        crosshairMarkerBorderWidth:
+          lineSpecificOptions.crosshairMarkerBorderWidth !== undefined
+            ? lineSpecificOptions.crosshairMarkerBorderWidth
+            : cleanedOptions.crosshairMarkerBorderWidth,
+        lastPriceAnimation:
+          lineSpecificOptions.lastPriceAnimation !== undefined
+            ? lineSpecificOptions.lastPriceAnimation
+            : lastPriceAnimation,
         // Default values
         color: cleanedOptions.color || '#2196F3', // Restore original default color
         lineWidth: cleanedOptions.lineWidth || 2,
-        crossHairMarkerVisible: lineSpecificOptions.crosshairMarkerVisible !== undefined ? lineSpecificOptions.crosshairMarkerVisible : (cleanedOptions.crossHairMarkerVisible !== undefined ? cleanedOptions.crossHairMarkerVisible : true),
+        crossHairMarkerVisible:
+          lineSpecificOptions.crosshairMarkerVisible !== undefined
+            ? lineSpecificOptions.crosshairMarkerVisible
+            : cleanedOptions.crossHairMarkerVisible !== undefined
+              ? cleanedOptions.crossHairMarkerVisible
+              : true,
         priceScaleId: priceScaleId || '',
         lastValueVisible: lastValueVisible !== undefined ? lastValueVisible : true,
         priceLineVisible: priceLineVisible !== undefined ? priceLineVisible : true,
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        lineOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(LineSeries, lineOptions, finalPaneId);
-      
+      if (priceFormat) {
+        lineOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(LineSeries, lineOptions, finalPaneId)
+
       // Apply lastValueVisible: false after series creation if needed
       try {
         if (lastValueVisible === false) {
-          series.applyOptions({ lastValueVisible: false });
+          series.applyOptions({lastValueVisible: false})
         }
       } catch {
         // ignore
       }
-      break;
+      break
     }
     case 'bar': {
       const barOptions: any = {
@@ -422,13 +454,13 @@ export function createSeries(
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        barOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(BarSeries, barOptions, finalPaneId);
-      break;
+      if (priceFormat) {
+        barOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(BarSeries, barOptions, finalPaneId)
+      break
     }
     case 'candlestick': {
       const candlestickOptions: any = {
@@ -444,176 +476,136 @@ export function createSeries(
         priceLineSource: priceLineSource !== undefined ? priceLineSource : 'lastBar',
         priceLineWidth: priceLineWidth !== undefined ? priceLineWidth : 1,
         priceLineColor: priceLineColor !== undefined ? priceLineColor : '',
-        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2,
-      };
-      if (priceFormat) {
-        candlestickOptions.priceFormat = priceFormat;
+        priceLineStyle: priceLineStyle !== undefined ? priceLineStyle : 2
       }
-      series = chart.addSeries(CandlestickSeries, candlestickOptions, finalPaneId);
-      break;
+      if (priceFormat) {
+        candlestickOptions.priceFormat = priceFormat
+      }
+      series = chart.addSeries(CandlestickSeries, candlestickOptions, finalPaneId)
+      break
     }
     default:
-      return null;
+      return null
   }
 
   if (priceScale) {
-    series.priceScale().applyOptions(cleanLineStyleOptions(priceScale));
+    series.priceScale().applyOptions(cleanLineStyleOptions(priceScale))
   }
 
   if (data && data.length > 0) {
-    series.setData(data);
+    series.setData(data)
   }
 
   if (seriesConfig.priceLines && Array.isArray(seriesConfig.priceLines)) {
     seriesConfig.priceLines.forEach((priceLine: any, index: number) => {
       try {
-        series.createPriceLine(priceLine);
+        series.createPriceLine(priceLine)
       } catch (error) {
-        console.warn(`❌ Failed to create price line ${index + 1} for series:`, error);
+        console.warn(`❌ Failed to create price line ${index + 1} for series:`, error)
       }
-    });
+    })
   }
 
   if (seriesConfig.markers && Array.isArray(seriesConfig.markers)) {
     try {
-      console.log('🔍 [seriesFactory] Processing series markers:', {
-        markersCount: seriesConfig.markers.length,
-        seriesType: seriesConfig.type,
-        hasChartData: !!data,
-        chartDataCount: data?.length || 0
-      });
-      
       // Apply timestamp snapping to all markers (like trade visualization)
-      const snappedMarkers = applyTimestampSnapping(seriesConfig.markers, data);
-      console.log('✅ [seriesFactory] Markers processed, calling createSeriesMarkers');
-      createSeriesMarkers(series, snappedMarkers);
+      const snappedMarkers = applyTimestampSnapping(seriesConfig.markers, data)
+      createSeriesMarkers(series, snappedMarkers)
     } catch (error) {
-      console.warn('❌ Failed to create markers for series:', error);
+      // Error handling
     }
   }
 
   // Store paneId as a property on the series object for legend functionality
   if (finalPaneId !== undefined) {
-    (series as any).paneId = finalPaneId;
+    ;(series as any).paneId = finalPaneId
   }
 
   // Add trade visualization if configured for this series
-      if (seriesConfig.trades && seriesConfig.tradeVisualizationOptions && seriesConfig.trades.length > 0) {
-        try {
-          // Create trade visual elements (markers, rectangles, annotations)
-          const tradeOptions = seriesConfig.tradeVisualizationOptions;
-          const visualElements = createTradeVisualElements(seriesConfig.trades, tradeOptions, data);
-          
-          // Add trade markers to the series
-          if (visualElements.markers && visualElements.markers.length > 0) {
-            createSeriesMarkers(series, visualElements.markers);
-          }
-          
-          // Store rectangle data for later processing by the chart component
-          if (visualElements.rectangles && visualElements.rectangles.length > 0) {
-            // Store the rectangle data in the chart for later processing
-            if (!(chart as any)._pendingTradeRectangles) {
-              (chart as any)._pendingTradeRectangles = [];
-            }
-            (chart as any)._pendingTradeRectangles.push({
-              rectangles: visualElements.rectangles,
-              series: series,
-              chartId: chartId
-            });
-          }
-          
-        } catch (error) {
-          console.warn('❌ Failed to create trade visualization for series:', error);
-        }
+  if (
+    seriesConfig.trades &&
+    seriesConfig.tradeVisualizationOptions &&
+    seriesConfig.trades.length > 0
+  ) {
+    try {
+      // Create trade visual elements (markers, rectangles, annotations)
+      const tradeOptions = seriesConfig.tradeVisualizationOptions
+      const visualElements = createTradeVisualElements(seriesConfig.trades, tradeOptions, data)
+
+      // Add trade markers to the series
+      if (visualElements.markers && visualElements.markers.length > 0) {
+        createSeriesMarkers(series, visualElements.markers)
       }
 
-  return series;
+      // Store rectangle data for later processing by the chart component
+      if (visualElements.rectangles && visualElements.rectangles.length > 0) {
+        // Store the rectangle data in the chart for later processing
+        if (!(chart as any)._pendingTradeRectangles) {
+          ;(chart as any)._pendingTradeRectangles = []
+        }
+        ;(chart as any)._pendingTradeRectangles.push({
+          rectangles: visualElements.rectangles,
+          series: series,
+          chartId: chartId
+        })
+      }
+    } catch (error) {
+      console.error(`❌ [seriesFactory] Error processing trades:`, error)
+    }
+  }
+
+  return series
 }
 
 /**
  * Apply timestamp snapping to markers to ensure they align with chart data.
  * This function implements the same logic as the trade visualization system
  * but applies it to all markers, not just trade markers.
- * 
+ *
  * @param markers Array of markers to snap
  * @param chartData Chart data for timestamp reference
  * @returns Array of markers with snapped timestamps
  */
 function applyTimestampSnapping(markers: any[], chartData?: any[]): any[] {
-  console.log('🔍 [applyTimestampSnapping] Starting timestamp snapping for markers:', {
-    markersCount: markers?.length || 0,
-    chartDataCount: chartData?.length || 0,
-    hasChartData: !!chartData
-  });
-
   if (!chartData || chartData.length === 0) {
-    console.log('⚠️ [applyTimestampSnapping] No chart data available, returning markers as-is');
-    return markers;
+    return markers
   }
 
   // Extract available timestamps from chart data
-  const availableTimes = chartData.map(item => {
-    if (typeof item.time === 'number') {
-      return item.time;
-    } else if (typeof item.time === 'string') {
-      return Math.floor(new Date(item.time).getTime() / 1000);
-    }
-    return null;
-  }).filter(time => time !== null);
-
-  console.log('🔍 [applyTimestampSnapping] Available chart timestamps:', {
-    total: availableTimes.length,
-    sample: availableTimes.slice(0, 5),
-    range: availableTimes.length > 0 ? `${availableTimes[0]} to ${availableTimes[availableTimes.length - 1]}` : 'none'
-  });
+  const availableTimes = chartData
+    .map(item => {
+      if (typeof item.time === 'number') {
+        return item.time
+      } else if (typeof item.time === 'string') {
+        return Math.floor(new Date(item.time).getTime() / 1000)
+      }
+      return null
+    })
+    .filter(time => time !== null)
 
   if (availableTimes.length === 0) {
-    console.log('⚠️ [applyTimestampSnapping] No valid timestamps available, returning markers as-is');
-    return markers;
+    return markers
   }
 
   // Apply timestamp snapping to each marker
   const snappedMarkers = markers.map((marker, index) => {
     if (marker.time && typeof marker.time === 'number') {
-      const originalTime = marker.time;
-      
       // Find nearest available timestamp
       const nearestTime = availableTimes.reduce((nearest, current) => {
-        const currentDiff = Math.abs(current - marker.time);
-        const nearestDiff = Math.abs(nearest - marker.time);
-        return currentDiff < nearestDiff ? current : nearest;
-      });
-
-      const timeDiff = Math.abs(originalTime - nearestTime);
-      
-      console.log(`🎯 [applyTimestampSnapping] Marker ${index + 1} timestamp snapping:`, {
-        originalTime,
-        nearestTime,
-        timeDiff,
-        marker: {
-          text: marker.text,
-          position: marker.position,
-          shape: marker.shape
-        }
-      });
+        const currentDiff = Math.abs(current - marker.time)
+        const nearestDiff = Math.abs(nearest - marker.time)
+        return currentDiff < nearestDiff ? current : nearest
+      })
 
       // Return marker with snapped timestamp
       return {
         ...marker,
         time: nearestTime
-      };
+      }
     } else {
-      console.log(`⚠️ [applyTimestampSnapping] Marker ${index + 1} has no valid time:`, marker);
-      return marker;
+      return marker
     }
-  });
+  })
 
-  console.log('✅ [applyTimestampSnapping] Timestamp snapping completed:', {
-    inputMarkers: markers.length,
-    outputMarkers: snappedMarkers.length,
-    markersWithSnapping: snappedMarkers.filter(m => m.time !== markers.find(om => om.text === m.text)?.time).length
-  });
-
-  return snappedMarkers;
+  return snappedMarkers
 }
-

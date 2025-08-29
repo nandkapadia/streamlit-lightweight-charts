@@ -65,7 +65,7 @@ class LegendOptions(Options):
     border_color: str = "#e1e3e6"
     border_width: int = 1
     border_radius: int = 4
-    padding: int = 5  # Changed from 8 to 5 as requested
+    padding: int = 8
     margin: int = 4
     z_index: int = 1000
     price_format: str = ""
