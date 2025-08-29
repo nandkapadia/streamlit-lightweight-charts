@@ -184,14 +184,6 @@ export class ChartCoordinateService {
       const priceScaleWidth = this.getPriceScaleWidth(chart)
       const timeScaleHeight = this.getTimeScaleHeight(chart)
 
-      // Get chart element for accurate positioning
-      const chartElement = chart.chartElement()
-      const chartRect = chartElement ? chartElement.getBoundingClientRect() : null
-      const containerRect = chartElement?.parentElement?.getBoundingClientRect()
-
-      // Calculate chart's position relative to its container
-      const chartOffsetX = chartRect && containerRect ? chartRect.left - containerRect.left : 0
-
       // For legend positioning, we need coordinates relative to the chart element itself
       // The legend is appended to the chart element, so coordinates should be relative to it
       const legendOffsetX = 0 // Legend is positioned relative to chart element

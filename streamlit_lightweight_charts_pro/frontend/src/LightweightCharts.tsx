@@ -743,7 +743,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(
         // Wait for data to be loaded and then fit content
         const handleDataLoaded = async (retryCount = 0) => {
           const maxRetries = 50 // Prevent infinite loops
-          const currentChartId = chart.chartElement().id || 'default'
 
           if (retryCount >= maxRetries) {
             return
@@ -1467,14 +1466,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(
                 throw new Error('Component disposed during retry')
               }
 
-              // Wait for chart to have timeScale and be fully functional
-              try {
-                const timeScale = chart.timeScale()
-                const visibleRange = timeScale.getVisibleRange()
-              } catch (error) {
-                throw new Error('Chart timeScale not ready yet')
-              }
-
               // Check if chart has panes available via API
               try {
                 const panes = chart.panes()
@@ -1613,7 +1604,6 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(
         })
 
         // Create legends for each pane that has a config
-        let legendsCreated = 0
         seriesByPane.forEach((paneSeries, paneId) => {
           let legendConfig = legendsConfig[paneId.toString()]
 
@@ -1665,13 +1655,12 @@ const LightweightCharts: React.FC<LightweightChartsProps> = React.memo(
             const pane = chart.panes()[paneId]
             if (pane && typeof pane.attachPrimitive === 'function') {
               pane.attachPrimitive(legendPlugin)
-              legendsCreated++
+              // legendsCreated++
             } else {
               // Fallback: attach to the first series in the pane
               const firstSeries = paneSeries[0]
               if (firstSeries && typeof firstSeries.attachPrimitive === 'function') {
                 firstSeries.attachPrimitive(legendPlugin)
-                legendsCreated++
               } else {
                 console.error(`❌ Neither pane nor series support primitives for pane ${paneId}`)
                 return
